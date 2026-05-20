@@ -31,7 +31,7 @@ The system SHALL render an `AppShell` component inside the lazy signed-in applic
 
 ### Requirement: Sidebar provides persistent navigation
 
-The system SHALL render a left sidebar with the "AutoKPO" logo text, three navigation items, and a version badge in the footer. The sidebar SHALL be 240px wide on desktop and rendered as a full-screen HeroUI Drawer on mobile. The drawer SHALL include a visible close button (× icon) in the top-right corner so users can dismiss it without tapping the backdrop.
+The system SHALL render a left sidebar with the "AutoKPO" logo text, three navigation items, and a version footer. The sidebar SHALL be 240px wide on desktop and rendered as a full-screen HeroUI Drawer on mobile. The drawer SHALL include a visible close button (× icon) in the top-right corner so users can dismiss it without tapping the backdrop.
 
 All sidebar and nav-item colors SHALL be expressed as Tailwind utility classes using the registered sidebar design tokens (`bg-sidebar-bg`, `text-sidebar-fg`, `text-sidebar-muted`, `border-sidebar-border`, `bg-sidebar-item-hover`, `bg-sidebar-active-bg`, `text-sidebar-active-fg`). No inline `style` props or external CSS class names (`.sidebar-nav-item`, `.sidebar-nav-item--active`) SHALL be used.
 
@@ -83,11 +83,18 @@ All sidebar and nav-item colors SHALL be expressed as Tailwind utility classes u
 - **WHEN** the sidebar is rendered
 - **THEN** the "AutoKPO" text SHALL appear at the top of the sidebar
 
-#### Scenario: Version badge in sidebar footer
+#### Scenario: Sidebar navigation includes help item
 
-- **WHEN** the sidebar is rendered in a production build
-- **THEN** a HeroUI Chip component with `variant="soft"` and `color="success"` SHALL appear at the bottom of the sidebar displaying the version string from `apps/app/package.json` (e.g. `v1.2.0`)
-- **AND** the version SHALL be injected at build time via Vite `define` as `__APP_VERSION__` — `package.json` SHALL NOT be included in the bundle
+- **WHEN** the sidebar is rendered
+- **THEN** the nav SHALL include a "Pomoć" item (icon: LuCircleHelp, route: /help) anchored below the main nav items via `mt-auto`
+- **AND** the help item label SHALL be wrapped with Lingui `<Trans>` for i18n support
+
+#### Scenario: Version footer has version badge and AGPL source link
+
+- **WHEN** the sidebar is rendered
+- **THEN** the version footer SHALL display the version badge (HeroUI Chip, `variant="soft"`, `color="success"`) on the left and a compact `AGPL-3.0 · [LuGithub icon]` link to `https://github.com/balakin/autokpo` on the right
+- **AND** the link SHALL render without underline decoration
+- **AND** the link SHALL open in a new tab
 
 #### Scenario: Version badge shows dev suffix in development mode
 
@@ -221,3 +228,12 @@ All test files that render components depending on React Router SHALL use `creat
 
 - **WHEN** a test uses `renderWithProviders` from `tests/render-helpers.tsx`
 - **THEN** it SHALL continue to provide React Router context via `createMemoryRouter` and `RouterProvider` imported from `react-router` and `react-router/dom`
+
+### Requirement: Route structure includes /help
+
+The signed-in route tree SHALL include a `/help` route that renders the lazy-loaded `HelpPage` component inside the AppShell content area.
+
+#### Scenario: /help renders inside AppShell
+
+- **WHEN** a signed-in user navigates to `/help`
+- **THEN** the `HelpPage` SHALL render inside the AppShell content area via `<Outlet />`

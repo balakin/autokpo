@@ -104,7 +104,7 @@ export function AuthShell({ children }: AuthShellProps) {
           <span>AGPL-3.0</span>
           {' · '}
           <Link
-            href={import.meta.env.VITE_SOURCE_URL}
+            href="https://github.com/balakin/autokpo"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-muted hover:text-foreground"

@@ -40,7 +40,7 @@ msgstr "{year} (zauzeto)"
 msgid "1 {selectedCurrency} = {formattedExchangeMiddle} (paritet {parity})"
 msgstr "1 {selectedCurrency} = {formattedExchangeMiddle} (paritet {parity})"
 
-#: src/app-shell/sidebar.tsx:70
+#: src/app-shell/sidebar.tsx:77
 msgid "12 meseci"
 msgstr "12 meseci"
 
@@ -52,9 +52,33 @@ msgstr "Akcije"
 msgid "Ako ponovo budete želeli da koristite AutoKPO, možete napraviti novi nalog u bilo kom trenutku."
 msgstr "Ako ponovo budete želeli da koristite AutoKPO, možete napraviti novi nalog u bilo kom trenutku."
 
+#: src/help/help-page.tsx:80
+msgid "Ako ste naišli na grešku ili imate predlog za poboljšanje, otvorite tiket na GitHub-u. Opišite šta se dogodilo, šta ste očekivali i korake za reprodukciju."
+msgstr "Ako ste naišli na grešku ili imate predlog za poboljšanje, otvorite tiket na GitHub-u. Opišite šta se dogodilo, šta ste očekivali i korake za reprodukciju."
+
+#: src/help/help-page.tsx:139
+msgid "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
+msgstr "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
+
+#: src/help/help-page.tsx:57
+msgid "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između vaših uređaja."
+msgstr "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između vaših uređaja."
+
+#: src/help/help-page.tsx:157
+msgid "Autori"
+msgstr "Autori"
+
 #: src/currency/currency-convert-modal.tsx:253
 msgid "Beta funkcija. Kursevi se preuzimaju sa <0>kurs.resenje.org<1/></0>. Molimo vas da proverite zvanični kurs na sajtu <2>NBS<3/></2> pre primene."
 msgstr "Beta funkcija. Kursevi se preuzimaju sa <0>kurs.resenje.org<1/></0>. Molimo vas da proverite zvanični kurs na sajtu <2>NBS<3/></2> pre primene."
+
+#: src/help/help-page.tsx:117
+msgid "čl. 33 — rolling 12 meseci"
+msgstr "čl. 33 — rolling 12 meseci"
+
+#: src/help/help-page.tsx:109
+msgid "čl. 42 — godišnji limit"
+msgstr "čl. 42 — godišnji limit"
 
 #: src/setup-wizard/start-step.tsx:19
 msgid "Da biste mogli da koristite knjigu, potrebno je da popunite:"
@@ -99,6 +123,10 @@ msgstr "Dodaj u omiljene za {year}"
 msgid "Dodaj unos"
 msgstr "Dodaj unos"
 
+#: src/help/help-page.tsx:134
+msgid "Doprinesite projektu"
+msgstr "Doprinesite projektu"
+
 #: src/auth/oauth-callback.tsx:114
 msgid "Došlo je do greške. Pokušajte ponovo."
 msgstr "Došlo je do greške. Pokušajte ponovo."
@@ -124,6 +152,10 @@ msgstr "Email adresa"
 #: src/entity-profiles/entity-profile-preview.tsx:89
 msgid "Firma-radnje"
 msgstr "Firma-radnje"
+
+#: src/help/help-page.tsx:194
+msgid "GNU Affero General Public License v3.0"
+msgstr "GNU Affero General Public License v3.0"
 
 #: src/books/add-book-modal.tsx:128
 msgid "Godina"
@@ -215,10 +247,13 @@ msgstr "Izvezi podatke"
 msgid "Izvezi podatke naloga"
 msgstr "Izvezi podatke naloga"
 
-#: src/app-shell/sidebar.tsx:127
 #: src/auth/auth-shell.tsx:112
 msgid "Izvorni kod"
 msgstr "Izvorni kod"
+
+#: src/help/help-page.tsx:145
+msgid "Izvorni kod na GitHub-u"
+msgstr "Izvorni kod na GitHub-u"
 
 #: src/auth/auth-entry.tsx:65
 #: src/auth/email-otp-sign-in.tsx:79
@@ -240,7 +275,11 @@ msgstr "Još nema uspešne sinhronizacije na ovom uređaju."
 msgid "Još nemate nijednu knjigu. Dodajte prvu da započnete."
 msgstr "Još nemate nijednu knjigu. Dodajte prvu da započnete."
 
-#: src/app-shell/sidebar.tsx:32
+#: src/help/help-page.tsx:75
+msgid "Kako prijaviti problem"
+msgstr "Kako prijaviti problem"
+
+#: src/app-shell/sidebar.tsx:39
 #: src/app-shell/top-bar.tsx:31
 #: src/app-shell/top-bar.tsx:35
 #: src/books/book-library.tsx:39
@@ -276,6 +315,10 @@ msgstr "Kreirana"
 #: src/settings/account-settings-page.tsx:447
 msgid "Kreirana:"
 msgstr "Kreirana:"
+
+#: src/help/help-page.tsx:186
+msgid "Licenca"
+msgstr "Licenca"
 
 #: src/dashboard/dashboard-page.tsx:66
 msgid "Limit: {annualLimitFormatted} (<0>čl. 42 ZPDGa</0>)"
@@ -425,6 +468,10 @@ msgstr "Nova knjiga"
 msgid "Novi unos"
 msgstr "Novi unos"
 
+#: src/help/help-page.tsx:52
+msgid "O projektu"
+msgstr "O projektu"
+
 #: src/books/book-library.tsx:185
 msgid "Obrisati knjigu za {year}?"
 msgstr "Obrisati knjigu za {year}?"
@@ -531,6 +578,10 @@ msgstr "Opis prometa"
 msgid "Opšte"
 msgstr "Opšte"
 
+#: src/help/help-page.tsx:167
+msgid "Osnivač projekta"
+msgstr "Osnivač projekta"
+
 #: src/setup-wizard/unsaved-changes-dialog.tsx:42
 msgid "Ostanite"
 msgstr "Ostanite"
@@ -572,11 +623,11 @@ msgstr "Otkriveni duplikati knjiga"
 msgid "Otvori"
 msgstr "Otvori"
 
-#: src/app-shell/top-bar.tsx:52
+#: src/app-shell/top-bar.tsx:53
 msgid "Otvori meni"
 msgstr "Otvori meni"
 
-#: src/app-shell/sidebar.tsx:62
+#: src/app-shell/sidebar.tsx:69
 #: src/dashboard/dashboard-page.tsx:61
 msgid "Ova godina"
 msgstr "Ova godina"
@@ -601,8 +652,8 @@ msgstr "Ovu radnju nije moguće poništiti."
 msgid "Označite knjigu zvezdicom u <0>Knjigama</0> da biste je dodali ovde."
 msgstr "Označite knjigu zvezdicom u <0>Knjigama</0> da biste je dodali ovde."
 
-#: src/app-shell/sidebar.tsx:31
-#: src/app-shell/top-bar.tsx:39
+#: src/app-shell/sidebar.tsx:38
+#: src/app-shell/top-bar.tsx:40
 #: src/dashboard/dashboard-page.tsx:49
 msgid "Panel"
 msgstr "Panel"
@@ -645,7 +696,7 @@ msgstr "podaci o obvezniku"
 msgid "Podaci o obvezniku"
 msgstr "Podaci o obvezniku"
 
-#: src/app-shell/sidebar.tsx:33
+#: src/app-shell/sidebar.tsx:40
 #: src/app-shell/top-bar.tsx:37
 #: src/settings/settings-page.tsx:25
 #: src/settings/settings-page.tsx:30
@@ -689,6 +740,11 @@ msgstr "Polje je obavezno"
 #: src/settings/account-settings-page.tsx:925
 msgid "Pomerite i zumirajte sliku da izaberete deo koji će se prikazivati kao profilna slika."
 msgstr "Pomerite i zumirajte sliku da izaberete deo koji će se prikazivati kao profilna slika."
+
+#: src/app-shell/sidebar.tsx:129
+#: src/app-shell/top-bar.tsx:39
+msgid "Pomoć"
+msgstr "Pomoć"
 
 #: src/auth/email-form.tsx:98
 msgid "Pošalji kod"
@@ -774,6 +830,10 @@ msgstr "Prijava nije uspela."
 #: src/auth/oauth-callback.tsx:112
 msgid "Prijava nije završena. Pokušajte ponovo."
 msgstr "Prijava nije završena. Pokušajte ponovo."
+
+#: src/help/help-page.tsx:87
+msgid "Prijavite problem na GitHub-u"
+msgstr "Prijavite problem na GitHub-u"
 
 #: src/currency/currency-convert-modal.tsx:284
 msgid "Primeni"
@@ -921,6 +981,10 @@ msgstr "Svega (RSD)"
 msgid "Svetla"
 msgstr "Svetla"
 
+#: src/help/help-page.tsx:172
+msgid "Svi doprinosioci"
+msgstr "Svi doprinosioci"
+
 #: src/auth/auth-shell.tsx:84
 #: src/auth/auth-shell.tsx:85
 #: src/settings/general-settings-page.tsx:53
@@ -1064,6 +1128,18 @@ msgstr "Za pregled i izmenu naloga potrebna je internet veza. Opšta podešavanj
 #: src/books/book-library.tsx:51
 msgid "Za svaku godinu zadržite jednu knjigu, a ostale obrišite."
 msgstr "Za svaku godinu zadržite jednu knjigu, a ostale obrišite."
+
+#: src/help/help-page.tsx:114
+msgid "Zakon o porezu na dodatu vrednost"
+msgstr "Zakon o porezu na dodatu vrednost"
+
+#: src/help/help-page.tsx:106
+msgid "Zakon o porezu na dohodak građana"
+msgstr "Zakon o porezu na dohodak građana"
+
+#: src/help/help-page.tsx:99
+msgid "Zakonski propisi"
+msgstr "Zakonski propisi"
 
 #: src/app-shell/mobile-drawer.tsx:47
 #: src/auth/profile-popover.tsx:170

@@ -15,6 +15,7 @@ import {
   BookScope,
   DashboardPage,
   GeneralSettingsPage,
+  HelpPage,
   LazySignedInApp,
   LazySignedInBoundary,
   SettingsPage,
@@ -45,6 +46,7 @@ export function createAppRoutes(): RouteObject[] {
             { path: '/dashboard', element: <DashboardPage /> },
             { path: '/books', element: <BookLibrary /> },
             { path: '/books/:bookId', element: <BookScope /> },
+            { path: '/help', element: <HelpPage /> },
             {
               path: '/settings',
               element: <SettingsPage />,

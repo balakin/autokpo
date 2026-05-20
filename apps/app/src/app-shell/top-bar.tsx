@@ -36,6 +36,7 @@ function useBreadcrumbs(): BreadcrumbItem[] {
   if (pathname === '/settings' || pathname.startsWith('/settings/')) {
     return [{ label: t`Podešavanja` }];
   }
+  if (pathname === '/help') return [{ label: t`Pomoć` }];
   return [{ label: t`Panel` }];
 }
 

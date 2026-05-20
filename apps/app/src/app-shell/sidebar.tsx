@@ -1,7 +1,14 @@
 import { Chip, Link as HeroLink } from '@heroui/react';
 import { Trans } from '@lingui/react/macro';
 import type { ReactNode } from 'react';
-import { LuBook, LuLayoutDashboard, LuSettings, LuTag } from 'react-icons/lu';
+import {
+  LuBook,
+  LuCircleHelp,
+  LuGithub,
+  LuLayoutDashboard,
+  LuSettings,
+  LuTag,
+} from 'react-icons/lu';
 import { Link, useLocation } from 'react-router';
 import { tv } from 'tailwind-variants';
 
@@ -112,33 +119,37 @@ export function Sidebar({ closeButton, onNavigate }: SidebarProps) {
             </Link>
           );
         })}
-      </nav>
-
-      {/* License notice */}
-      <div className="border-t border-sidebar-border px-4 py-2">
-        <p className="text-xs text-sidebar-muted">
-          <span>AGPL-3.0 · </span>
-          <HeroLink
-            href={import.meta.env.VITE_SOURCE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-sidebar-muted hover:text-sidebar-fg"
+        <div className="mt-auto pt-1">
+          <Link
+            to="/help"
+            onClick={() => onNavigate?.()}
+            className={navLink({ active: isActive('/help') })}
           >
-            <Trans>Izvorni kod</Trans>
-            <HeroLink.Icon />
-          </HeroLink>
-        </p>
-      </div>
+            <LuCircleHelp className="size-4 shrink-0" aria-hidden="true" />
+            <Trans>Pomoć</Trans>
+          </Link>
+        </div>
+      </nav>
 
       {/* Stats footer */}
       <SidebarStatsFooter />
 
-      {/* Version badge */}
-      <div className="border-t border-sidebar-border p-4">
+      {/* Version badge + GitHub link */}
+      <div className="flex items-center justify-between border-t border-sidebar-border p-4">
         <Chip size="sm" variant="soft" color="success">
           <LuTag className="size-3" />
           <Chip.Label>v{__APP_VERSION__}</Chip.Label>
         </Chip>
+        <HeroLink
+          href="https://github.com/balakin/autokpo"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 text-xs text-sidebar-muted no-underline hover:text-sidebar-fg"
+        >
+          <span>AGPL-3.0</span>
+          <span aria-hidden="true">·</span>
+          <LuGithub className="size-3.5" />
+        </HeroLink>
       </div>
     </div>
   );

@@ -54,13 +54,18 @@ All sidebar and nav-item colors SHALL be expressed as Tailwind utility classes u
 - **WHEN** the sidebar is rendered
 - **THEN** the "AutoKPO" text SHALL appear at the top of the sidebar
 
-#### Scenario: Version footer has version badge and help button
+#### Scenario: Sidebar navigation includes help item
 
 - **WHEN** the sidebar is rendered
-- **THEN** the version footer SHALL display the version badge (HeroUI Chip, `variant="soft"`, `color="success"`) and a `LuCircleHelp` icon-only button in a `justify-between` row
-- **AND** the `LuCircleHelp` button SHALL navigate to `/help` when pressed
-- **AND** the `LuCircleHelp` button's aria-label SHALL be a translatable string (e.g. "Pomoć")
-- **AND** NO AGPL notice block SHALL appear in the sidebar
+- **THEN** the nav SHALL include a "Pomoć" item (icon: LuCircleHelp, route: /help) anchored below the main nav items via `mt-auto`
+- **AND** the help item label SHALL be wrapped with Lingui `<Trans>` for i18n support
+
+#### Scenario: Version footer has version badge and AGPL source link
+
+- **WHEN** the sidebar is rendered
+- **THEN** the version footer SHALL display the version badge (HeroUI Chip, `variant="soft"`, `color="success"`) on the left and a compact `AGPL-3.0 · [LuGithub icon]` link to `VITE_SOURCE_URL` on the right
+- **AND** the link SHALL render without underline decoration
+- **AND** the link SHALL open in a new tab
 
 #### Scenario: Version badge shows dev suffix in development mode
 

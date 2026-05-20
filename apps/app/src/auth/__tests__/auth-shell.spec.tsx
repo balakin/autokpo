@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { I18nWrapper } from 'tests/render-helpers';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { AuthShell } from '../auth-shell';
 
@@ -13,14 +13,6 @@ function renderAuthShell() {
     </I18nWrapper>,
   );
 }
-
-beforeEach(() => {
-  vi.stubEnv('VITE_SOURCE_URL', 'https://example.com/repo');
-});
-
-afterEach(() => {
-  vi.unstubAllEnvs();
-});
 
 describe('AuthShell AGPL notice', () => {
   it('displays the AGPL-3.0 license identifier', () => {
@@ -35,10 +27,10 @@ describe('AuthShell AGPL notice', () => {
     ).toBeInTheDocument();
   });
 
-  it('source link points to VITE_SOURCE_URL', () => {
+  it('source link points to the GitHub repo', () => {
     renderAuthShell();
     const link = screen.getByRole('link', { name: /Izvorni kod/i });
-    expect(link).toHaveAttribute('href', 'https://example.com/repo');
+    expect(link).toHaveAttribute('href', 'https://github.com/balakin/autokpo');
   });
 
   it('source link opens in a new tab', () => {

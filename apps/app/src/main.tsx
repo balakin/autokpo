@@ -15,12 +15,6 @@ import { ThemeProvider } from './settings/theme-provider';
 
 import './index.css';
 
-if (!import.meta.env.VITE_SOURCE_URL) {
-  throw new Error(
-    'VITE_SOURCE_URL is required but not set. Set it in your .env file.',
-  );
-}
-
 const queryClient = new QueryClient();
 
 createRoot(document.getElementById('root')!).render(

@@ -33,6 +33,9 @@ const AccountSettingsPageChunk = lazyRouteComponent(() =>
     ({ AccountSettingsPage }) => AccountSettingsPage,
   ),
 );
+const HelpPageChunk = lazyRouteComponent(() =>
+  import('./help/help-page').then(({ HelpPage }) => HelpPage),
+);
 
 export function LazySignedInApp() {
   return <SignedInAppChunk />;
@@ -60,6 +63,10 @@ export function GeneralSettingsPage() {
 
 export function AccountSettingsPage() {
   return <AccountSettingsPageChunk />;
+}
+
+export function HelpPage() {
+  return <HelpPageChunk />;
 }
 
 export function LazySignedInBoundary({ children }: { children: ReactNode }) {

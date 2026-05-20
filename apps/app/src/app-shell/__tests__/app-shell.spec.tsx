@@ -3,7 +3,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { I18nWrapper } from 'tests/render-helpers';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AuthContext } from '../../auth/auth-context';
 import { DocContext } from '../../crdt/doc-context';
@@ -34,6 +34,7 @@ function renderAppShell(initialPath = '/dashboard') {
           { path: 'actions', element: <ActionsPage /> },
           { path: 'settings/general', element: <div>Settings</div> },
           { path: 'settings/account', element: <div>Account Settings</div> },
+          { path: 'help', element: <div>Help</div> },
         ],
       },
     ],
@@ -252,42 +253,29 @@ describe('AppShell', () => {
   });
 });
 
-describe('Sidebar AGPL notice', () => {
-  beforeEach(() => {
-    vi.stubEnv('VITE_SOURCE_URL', 'https://example.com/repo');
+describe('Sidebar help and footer', () => {
+  it('renders the Pomoć nav link in the sidebar', () => {
+    renderAppShell();
+    const sidebar = screen.getByRole('complementary');
+    expect(
+      within(sidebar).getByRole('link', { name: 'Pomoć' }),
+    ).toHaveAttribute('href', '/help');
   });
 
-  afterEach(() => {
-    vi.unstubAllEnvs();
-  });
-
-  it('displays the AGPL-3.0 license identifier', () => {
+  it('renders AGPL-3.0 text in the version footer', () => {
     renderAppShell();
     const sidebar = screen.getByRole('complementary');
     expect(within(sidebar).getByText(/AGPL-3\.0/)).toBeInTheDocument();
   });
 
-  it('renders a source code link with the translated label', () => {
+  it('renders AGPL-3.0 GitHub link in the version footer', () => {
     renderAppShell();
     const sidebar = screen.getByRole('complementary');
-    expect(
-      within(sidebar).getByRole('link', { name: /Izvorni kod/i }),
-    ).toBeInTheDocument();
-  });
-
-  it('source link points to VITE_SOURCE_URL', () => {
-    renderAppShell();
-    const sidebar = screen.getByRole('complementary');
-    const link = within(sidebar).getByRole('link', { name: /Izvorni kod/i });
-    expect(link).toHaveAttribute('href', 'https://example.com/repo');
-  });
-
-  it('source link opens in a new tab', () => {
-    renderAppShell();
-    const sidebar = screen.getByRole('complementary');
-    const link = within(sidebar).getByRole('link', { name: /Izvorni kod/i });
-    expect(link).toHaveAttribute('target', '_blank');
-    expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
-    expect(link).toHaveAttribute('rel', expect.stringContaining('noreferrer'));
+    const ghLink = within(sidebar).getByRole('link', { name: /AGPL-3\.0/i });
+    expect(ghLink).toHaveAttribute(
+      'href',
+      'https://github.com/balakin/autokpo',
+    );
+    expect(ghLink).toHaveAttribute('target', '_blank');
   });
 });

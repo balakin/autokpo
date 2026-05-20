@@ -1,7 +1,9 @@
 ## Purpose
 
 Define the application shell layout, navigation, breadcrumbs, route structure, and router test utility expectations.
+
 ## Requirements
+
 ### Requirement: AppShell wraps all routes with shared layout
 
 The system SHALL render an `AppShell` component inside the lazy signed-in application shell for all signed-in application routes. The AppShell SHALL contain a sidebar, a mobile drawer, a top bar, and a content area rendered via `<Outlet />`. The AppShell SHALL continue to render child route content correctly when it is loaded behind a lazy signed-in application boundary.
@@ -235,4 +237,3 @@ The signed-in route tree SHALL include a `/help` route that renders the lazy-loa
 
 - **WHEN** a signed-in user navigates to `/help`
 - **THEN** the `HelpPage` SHALL render inside the AppShell content area via `<Outlet />`
-

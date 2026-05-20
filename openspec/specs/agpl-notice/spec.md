@@ -1,7 +1,9 @@
 ## Purpose
 
 Display AGPL-3.0 license notices with links to the source repository in both the unauthenticated shell footer and the authenticated sidebar footer.
+
 ## Requirements
+
 ### Requirement: AGPL notice in unauthenticated shell
 
 The `AuthShell` component SHALL display a footer containing an AGPL-3.0 license notice with a link to the source repository. The notice MUST be visible on all auth pages (login, registration, etc.) without requiring any user interaction.
@@ -14,7 +16,7 @@ The `AuthShell` component SHALL display a footer containing an AGPL-3.0 license 
 #### Scenario: Source link opens externally
 
 - **WHEN** a user clicks the source code link in the auth shell footer
-- **THEN** the link opens in a new browser tab (target="_blank" with rel="noopener noreferrer")
+- **THEN** the link opens in a new browser tab (target="\_blank" with rel="noopener noreferrer")
 
 ### Requirement: AGPL notice in authenticated sidebar
 
@@ -47,4 +49,3 @@ The human-readable label in the AGPL notice (e.g. "Source code") SHALL use the L
 
 - **WHEN** the app locale is changed
 - **THEN** the source link label in both notice locations reflects the translation for the active locale
-

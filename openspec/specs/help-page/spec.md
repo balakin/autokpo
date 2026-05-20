@@ -1,4 +1,10 @@
-## ADDED Requirements
+# help-page Specification
+
+## Purpose
+
+Provide a dedicated `/help` page with structured information about the AutoKPO project: project description, bug reporting instructions, relevant Serbian tax laws, contribution guidelines, author attribution, and license details.
+
+## Requirements
 
 ### Requirement: Help page is accessible via /help route
 
@@ -35,11 +41,11 @@ Section content:
 3. **Zakonski propisi** (icon: `LuScale`) — Two law links, each with an article reference subtitle below:
    - Zakon o porezu na dohodak građana: `https://mfin.gov.rs/sr/propisi-1/zakon-o-porezu-na-dohodak-gradjana-1` / subtitle: "čl. 42 — godišnji limit"
    - Zakon o porezu na dodatu vrednost: `https://purs.gov.rs/pravna-lica/pdv/zakon/202/zakon-o-porezu-na-dodatu-vrednost.html` / subtitle: "čl. 33 — rolling 12 meseci"
-4. **Doprinesite projektu** (icon: `LuGitPullRequest`) — Invitation to submit pull requests, with a link to `VITE_SOURCE_URL`.
+4. **Doprinesite projektu** (icon: `LuGitPullRequest`) — Invitation to submit pull requests, with a link to `https://github.com/balakin/autokpo`.
 5. **Autori** (icon: `LuUsers`) — Two list items:
    - "Dmitrii Balakin" link to `https://github.com/dm-balakin` with subtitle "Osnivač projekta"
    - "Svi doprinosioci" link to `https://github.com/balakin/autokpo/graphs/contributors` (no subtitle)
-6. **Licenca** (icon: `LuShield`) — One list item: "AGPL-3.0" link to `VITE_SOURCE_URL` with subtitle "GNU Affero General Public License v3.0"
+6. **Licenca** (icon: `LuShield`) — One list item: "AGPL-3.0" link to `https://github.com/balakin/autokpo/blob/main/LICENSE` with subtitle "GNU Affero General Public License v3.0"
 
 #### Scenario: All sections are present
 
@@ -67,7 +73,7 @@ Section content:
 #### Scenario: License card uses list pattern
 
 - **WHEN** the user views the "Licenca" card
-- **THEN** an "AGPL-3.0" link to `VITE_SOURCE_URL` SHALL be present
+- **THEN** an "AGPL-3.0" link to `https://github.com/balakin/autokpo/blob/main/LICENSE` SHALL be present
 - **AND** the subtitle "GNU Affero General Public License v3.0" SHALL appear below the link
 
 #### Scenario: All strings are translatable

@@ -1,5 +1,7 @@
-## ADDED Requirements
+## Purpose
 
+Display AGPL-3.0 license notices with links to the source repository in both the unauthenticated shell footer and the authenticated sidebar footer.
+## Requirements
 ### Requirement: AGPL notice in unauthenticated shell
 
 The `AuthShell` component SHALL display a footer containing an AGPL-3.0 license notice with a link to the source repository. The notice MUST be visible on all auth pages (login, registration, etc.) without requiring any user interaction.
@@ -12,30 +14,30 @@ The `AuthShell` component SHALL display a footer containing an AGPL-3.0 license 
 #### Scenario: Source link opens externally
 
 - **WHEN** a user clicks the source code link in the auth shell footer
-- **THEN** the link opens in a new browser tab (target="\_blank" with rel="noopener noreferrer")
+- **THEN** the link opens in a new browser tab (target="_blank" with rel="noopener noreferrer")
 
 ### Requirement: AGPL notice in authenticated sidebar
 
-The `Sidebar` component SHALL display an AGPL-3.0 license notice with a source link in the bottom meta area, alongside the existing version badge. The notice MUST be visible whenever the sidebar is visible (both desktop and mobile drawer).
+The `Sidebar` component SHALL display a compact `AGPL-3.0 · [GitHub icon]` link in the bottom version footer, positioned to the right of the version badge. The link SHALL point to `https://github.com/balakin/autokpo`, open in a new tab, and render without underline decoration. The standalone AGPL text block and "Izvorni kod" labeled link that previously appeared as a separate section above the version badge are removed.
 
-#### Scenario: Notice visible in sidebar
+#### Scenario: Compact AGPL link visible in sidebar footer
 
 - **WHEN** an authenticated user views the sidebar (desktop or mobile)
-- **THEN** the bottom meta area displays the AGPL-3.0 notice and source link alongside the version badge
+- **THEN** the version footer SHALL display the text "AGPL-3.0" and a GitHub icon as a single no-underline link to `https://github.com/balakin/autokpo`
 
 #### Scenario: Source link opens externally
 
-- **WHEN** a user clicks the source code link in the sidebar
-- **THEN** the link opens in a new browser tab (target="\_blank" with rel="noopener noreferrer")
+- **WHEN** a user clicks the AGPL-3.0 link in the sidebar footer
+- **THEN** the link SHALL open in a new browser tab (`target="_blank"`, `rel="noopener noreferrer"`)
 
-### Requirement: Source URL configured via environment variable
+### Requirement: Source URL is hardcoded
 
-The source repository URL SHALL be read from the `VITE_SOURCE_URL` Vite environment variable, declared as required in `ImportMetaEnv` in `vite-env.d.ts`, and documented in `.env.example`. `VITE_SOURCE_URL` is required — omitting it is a misconfiguration. This allows forks to point to their own repository without modifying source code.
+The source repository URL SHALL be hardcoded to `https://github.com/balakin/autokpo` as a constant in each component that references it. No environment variable is used.
 
-#### Scenario: URL sourced from env var
+#### Scenario: URL is the canonical repository
 
-- **WHEN** the AGPL notice is rendered in either `AuthShell` or `Sidebar`
-- **THEN** the source link href is `import.meta.env.VITE_SOURCE_URL`
+- **WHEN** the AGPL notice is rendered in either `AuthShell`, `Sidebar`, or the help page
+- **THEN** the source link href is `https://github.com/balakin/autokpo`
 
 ### Requirement: Notice text is translated
 
@@ -45,3 +47,4 @@ The human-readable label in the AGPL notice (e.g. "Source code") SHALL use the L
 
 - **WHEN** the app locale is changed
 - **THEN** the source link label in both notice locations reflects the translation for the active locale
+

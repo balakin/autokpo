@@ -63,7 +63,7 @@ All sidebar and nav-item colors SHALL be expressed as Tailwind utility classes u
 #### Scenario: Version footer has version badge and AGPL source link
 
 - **WHEN** the sidebar is rendered
-- **THEN** the version footer SHALL display the version badge (HeroUI Chip, `variant="soft"`, `color="success"`) on the left and a compact `AGPL-3.0 · [LuGithub icon]` link to `VITE_SOURCE_URL` on the right
+- **THEN** the version footer SHALL display the version badge (HeroUI Chip, `variant="soft"`, `color="success"`) on the left and a compact `AGPL-3.0 · [LuGithub icon]` link to `https://github.com/balakin/autokpo` on the right
 - **AND** the link SHALL render without underline decoration
 - **AND** the link SHALL open in a new tab
 

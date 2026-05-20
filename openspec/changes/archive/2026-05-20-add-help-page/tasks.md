@@ -29,3 +29,13 @@
 
 - [x] 5.1 Update `app-shell.spec.tsx` — assert Pomoć nav link is present, assert AGPL-3.0 GitHub link is in the footer
 - [x] 5.2 Add `help-page.spec.tsx` — render `HelpPage` and assert all six sections, key links, and correct href values
+
+## 6. Remove VITE_SOURCE_URL
+
+- [x] 6.1 Remove startup check from `main.tsx`
+- [x] 6.2 Replace `import.meta.env.VITE_SOURCE_URL` in `sidebar.tsx` with hardcoded URL
+- [x] 6.3 Replace `import.meta.env.VITE_SOURCE_URL` in `auth-shell.tsx` with hardcoded URL
+- [x] 6.4 Replace two `import.meta.env.VITE_SOURCE_URL` usages in `help-page.tsx` with `GITHUB_REPO` constant
+- [x] 6.5 Remove `VITE_SOURCE_URL` from `vite-env.d.ts`
+- [x] 6.6 Remove `VITE_SOURCE_URL` from `.env` and `.env.example`
+- [x] 6.7 Update tests — remove `vi.stubEnv('VITE_SOURCE_URL', ...)` from `app-shell.spec.tsx`, `auth-shell.spec.tsx`, and `help-page.spec.tsx`

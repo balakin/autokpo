@@ -1,0 +1,25 @@
+.indicator-exit {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+.indicator-exit-active {
+  opacity: 0;
+  transform: scale(0.3) rotate(45deg);
+  transition:
+    opacity 0.2s ease-in,
+    transform 0.2s ease-in;
+}
+
+.indicator-enter {
+  opacity: 0;
+  transform: scale(0.3) rotate(-45deg);
+}
+
+.indicator-enter-active {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+  transition:
+    opacity 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}

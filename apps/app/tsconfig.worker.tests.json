@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "worker/*": ["./worker/*"],
+      "tests/*": ["./tests/worker/*"]
+    },
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.worker.tests.tsbuildinfo",
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "types": [
+      "@cloudflare/vitest-pool-workers/types",
+      "./worker-configuration",
+      "./worker/env",
+      "./tests/worker/env"
+    ],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["tests/worker", "worker/**/*.spec.ts"]
+}

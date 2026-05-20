@@ -1,0 +1,43 @@
+name: 🚀 CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  verify:
+    name: 🔍 Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v6
+
+      - name: ⚙️ Setup
+        uses: ./.github/actions/setup
+
+      - name: 💾 Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: .turbo/cache
+          key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}
+          restore-keys: |
+            turbo-${{ runner.os }}-
+
+      - name: 🔧 Check worker types are up to date
+        run: pnpm check:worker-types
+
+      - name: 🔎 Run linter
+        run: pnpm lint
+
+      - name: 🧪 Run tests
+        run: pnpm test
+
+      - name: 🏗️ Build project
+        run: pnpm build

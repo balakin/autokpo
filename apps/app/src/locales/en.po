@@ -1,0 +1,1071 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-04-19 14:23+0200\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. placeholder {0}: item.count
+#: src/books/book-library.tsx:59
+msgid "{0, plural, one {# knjiga} few {# knjige} many {# knjiga} other {# knjiga}}"
+msgstr "{0, plural, one {# book} other {# books}}"
+
+#. placeholder {0}: book.entryCount
+#: src/books/book-library.tsx:134
+msgid "{0, plural, one {# unos} few {# unosa} many {# unosa} other {# unosa}}"
+msgstr "{0, plural, one {# entry} other {# entries}}"
+
+#. placeholder {0}: book.entryCount
+#: src/books/book-library.tsx:190
+msgid "{0, plural, one {Knjiga sadrži # unos. Ovu radnju nije moguće poništiti.} few {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.} many {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.} other {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.}}"
+msgstr "{0, plural, one {The book contains # entry. This action cannot be undone.} few {The book contains # entries. This action cannot be undone.} many {The book contains # entries. This action cannot be undone.} other {The book contains # entries. This action cannot be undone.}}"
+
+#: src/auth/oauth-callback.tsx:66
+msgid "{providerName} prijava nije bila uspešna."
+msgstr "{providerName} sign in failed."
+
+#: src/books/add-book-modal.tsx:138
+msgid "{year} (zauzeto)"
+msgstr "{year} (taken)"
+
+#: src/currency/currency-convert-modal.tsx:230
+msgid "1 {selectedCurrency} = {formattedExchangeMiddle} (paritet {parity})"
+msgstr "1 {selectedCurrency} = {formattedExchangeMiddle} (parity {parity})"
+
+#: src/app-shell/sidebar.tsx:70
+msgid "12 meseci"
+msgstr "12 months"
+
+#: src/entries/entries-table.tsx:47
+msgid "Akcije"
+msgstr "Actions"
+
+#: src/auth/goodbye-page.tsx:27
+msgid "Ako ponovo budete želeli da koristite AutoKPO, možete napraviti novi nalog u bilo kom trenutku."
+msgstr "If you want to use AutoKPO again, you can create a new account at any time."
+
+#: src/currency/currency-convert-modal.tsx:253
+msgid "Beta funkcija. Kursevi se preuzimaju sa <0>kurs.resenje.org<1/></0>. Molimo vas da proverite zvanični kurs na sajtu <2>NBS<3/></2> pre primene."
+msgstr "Beta feature. Exchange rates are fetched from <0>kurs.resenje.org<1/></0>, a service not affiliated with NBS. Please verify the official rate on the <2>NBS<3/></2> website before applying."
+
+#: src/setup-wizard/start-step.tsx:19
+msgid "Da biste mogli da koristite knjigu, potrebno je da popunite:"
+msgstr "To use the book, you need to fill in:"
+
+#: src/setup-wizard/profile-step.tsx:41
+msgid "Dalje"
+msgstr "Next"
+
+#: src/entries/entries-table.tsx:35
+msgid "Datum i opis knjiženja"
+msgstr "Date and description"
+
+#: src/entries/entries-schema.ts:50
+#: src/entries/entries-schema.ts:53
+msgid "Datum mora biti u godini knjige"
+msgstr "Date must be within the book's year"
+
+#: src/entries/entries-schema.ts:56
+msgid "Datum ne može biti u budućnosti"
+msgstr "Date cannot be in the future"
+
+#: src/entries/entry-form.tsx:113
+#: src/entries/entry-form.tsx:129
+msgid "Datum prometa"
+msgstr "Transaction date"
+
+#: src/auth/auth-entry.tsx:27
+msgid "Dobrodošli"
+msgstr "Welcome"
+
+#: src/books/add-book-modal.tsx:166
+msgid "Dodaj"
+msgstr "Add"
+
+#: src/books/book-library.tsx:158
+msgid "Dodaj u omiljene za {year}"
+msgstr "Add {year} to favorites"
+
+#: src/working-layout/working-layout.tsx:175
+#: src/working-layout/working-layout.tsx:179
+msgid "Dodaj unos"
+msgstr "Add entry"
+
+#: src/auth/oauth-callback.tsx:114
+msgid "Došlo je do greške. Pokušajte ponovo."
+msgstr "An error occurred. Please try again."
+
+#: src/pwa/pwa-registerer.tsx:28
+msgid "Dostupno je ažuriranje"
+msgstr "Update available"
+
+#: src/settings/account-settings-page.tsx:411
+msgid "Druga sesija"
+msgstr "Other session"
+
+#: src/books/book-library.tsx:120
+msgid "Duplikat"
+msgstr "Duplicate"
+
+#: src/auth/email-form.tsx:68
+#: src/settings/account-settings-page.tsx:657
+msgid "Email adresa"
+msgstr "Email address"
+
+#: src/entity-profiles/entity-profile-form.tsx:124
+#: src/entity-profiles/entity-profile-preview.tsx:89
+msgid "Firma-radnje"
+msgstr "Company/Shop"
+
+#: src/books/add-book-modal.tsx:128
+msgid "Godina"
+msgstr "Year"
+
+#: src/working-layout/working-layout.tsx:49
+#: src/working-layout/working-layout.tsx:65
+#: src/working-layout/working-layout.tsx:72
+msgid "Godišnji prihod"
+msgstr "Annual income"
+
+#: src/currency/currency-convert-modal.tsx:225
+msgid "Greška pri učitavanju kursa. Pokušajte ponovo."
+msgstr "Error loading exchange rate. Please try again."
+
+#: src/auth/auth-entry.tsx:58
+msgid "ili"
+msgstr "or"
+
+#: src/auth/profile-popover.tsx:210
+msgid "Imate lokalne izmene koje nisu sinhronizovane. Ako nastavite, može doći do gubitka podataka koji nisu poslati."
+msgstr "You have local changes that are not synced. If you continue, unsent data may be lost."
+
+#: src/setup-wizard/unsaved-changes-dialog.tsx:34
+msgid "Imate nesačuvane izmene. Da li zaista želite da napustite stranicu?"
+msgstr "You have unsaved changes. Are you sure you want to leave the page?"
+
+#: src/settings/account-settings-page.tsx:426
+msgid "IP adresa"
+msgstr "IP address"
+
+#: src/settings/account-settings-page.tsx:429
+msgid "IP adresa nije dostupna"
+msgstr "IP address is not available"
+
+#: src/settings/account-settings-page.tsx:456
+msgid "Ističe"
+msgstr "Expires"
+
+#: src/settings/account-settings-page.tsx:459
+msgid "Ističe:"
+msgstr "Expires:"
+
+#: src/books/add-book-modal.tsx:120
+msgid "Izaberite godinu"
+msgstr "Select year"
+
+#: src/books/add-book-modal.tsx:104
+msgid "Izaberite godinu za novu knjigu."
+msgstr "Select a year for the new book."
+
+#: src/settings/account-settings-page.tsx:758
+msgid "Izaberite JPEG, PNG ili WebP sliku."
+msgstr "Choose a JPEG, PNG, or WebP image."
+
+#: src/auth/auth-entry.tsx:30
+msgid "Izaberite način prijave."
+msgstr "Choose your way to sign in."
+
+#: src/settings/general-settings-page.tsx:33
+msgid "Izaberite svetlu, tamnu ili sistemsku temu."
+msgstr "Choose light, dark or system theme."
+
+#: src/currency/currency-convert-modal.tsx:152
+msgid "Izaberite valutu"
+msgstr "Select currency"
+
+#: src/signatures/signature-preview.tsx:48
+msgid "Izmijenite podatke potpisa."
+msgstr "Edit signature details."
+
+#: src/entity-profiles/entity-profile-preview.tsx:46
+msgid "Izmijenite podatke profila obveznika."
+msgstr "Edit taxpayer profile details."
+
+#: src/entries/entry-modal.tsx:50
+msgid "Izmijenite podatke unosa."
+msgstr "Edit entry details."
+
+#: src/currency/currency-convert-modal.tsx:182
+msgid "Iznos u stranoj valuti"
+msgstr "Foreign currency amount"
+
+#: src/settings/general-settings-page.tsx:145
+msgid "Izvezi podatke"
+msgstr "Export data"
+
+#: src/settings/account-settings-page.tsx:575
+msgid "Izvezi podatke naloga"
+msgstr "Export account data"
+
+#: src/app-shell/sidebar.tsx:127
+#: src/auth/auth-shell.tsx:112
+msgid "Izvorni kod"
+msgstr "Source code"
+
+#: src/auth/auth-entry.tsx:65
+#: src/auth/email-otp-sign-in.tsx:79
+msgid "Jednokratni kod"
+msgstr "One-time code"
+
+#: src/auth/auth-shell.tsx:40
+#: src/auth/auth-shell.tsx:46
+#: src/settings/general-settings-page.tsx:74
+#: src/settings/general-settings-page.tsx:83
+msgid "Jezik"
+msgstr "Language"
+
+#: src/settings/last-successful-sync-status.tsx:42
+msgid "Još nema uspešne sinhronizacije na ovom uređaju."
+msgstr "No successful sync on this device yet."
+
+#: src/books/book-library.tsx:78
+msgid "Još nemate nijednu knjigu. Dodajte prvu da započnete."
+msgstr "You don't have any books yet. Add the first one to get started."
+
+#: src/app-shell/sidebar.tsx:32
+#: src/app-shell/top-bar.tsx:31
+#: src/app-shell/top-bar.tsx:35
+#: src/books/book-library.tsx:39
+msgid "Knjige"
+msgstr "Books"
+
+#: src/auth/email-otp-sign-in.tsx:70
+msgid "Kod nije važeći ili je istekao."
+msgstr "The code is invalid or has expired."
+
+#: src/entries/entry-form.tsx:202
+#: src/entries/entry-form.tsx:247
+msgid "Konvertuj valutu"
+msgstr "Convert currency"
+
+#: src/currency/currency-convert-modal.tsx:120
+msgid "Konverzija valute"
+msgstr "Currency conversion"
+
+#: src/auth/user-avatar.tsx:36
+msgid "Korisnički avatar"
+msgstr "User avatar"
+
+#: src/entries/entries-table.tsx:29
+#: src/working-layout/working-layout.tsx:171
+msgid "KPO unosi"
+msgstr "KPO entries"
+
+#: src/settings/account-settings-page.tsx:444
+msgid "Kreirana"
+msgstr "Created"
+
+#: src/settings/account-settings-page.tsx:447
+msgid "Kreirana:"
+msgstr "Created:"
+
+#: src/dashboard/dashboard-page.tsx:66
+msgid "Limit: {annualLimitFormatted} (<0>čl. 42 ZPDGa</0>)"
+msgstr "Limit: {annualLimitFormatted} (<0>Art. 42 ZPDGa</0>)"
+
+#: src/working-layout/working-layout.tsx:79
+msgid "Limit: {limitFormatted} (<0>čl. 42 ZPDGa</0>)"
+msgstr "Limit: {limitFormatted} (<0>Art. 42 ZPDGa</0>)"
+
+#: src/dashboard/dashboard-page.tsx:85
+msgid "Limit: {rollingLimitFormatted} (<0>čl. 33 ZPDV</0>)"
+msgstr "Limit: {rollingLimitFormatted} (<0>Art. 33 ZPDV</0>)"
+
+#: src/auth/email-form.tsx:78
+msgid "mail@example.com"
+msgstr "mail@example.com"
+
+#: src/auth/email-otp-sign-in.tsx:108
+msgid "Možete poslati kod ponovo za {resendSecondsLeft}s"
+msgstr "You can send code again in {resendSecondsLeft}s"
+
+#: src/auth/profile-popover.tsx:68
+#: src/settings/account-settings-page.tsx:856
+#: src/settings/settings-page.tsx:47
+msgid "Nalog"
+msgstr "Account"
+
+#: src/auth/goodbye-page.tsx:16
+msgid "Nalog je obrisan"
+msgstr "Account deleted"
+
+#: src/auth/oauth-callback.tsx:91
+msgid "Nalog sa ovom email adresom već postoji. Prijavite se putem jednokratnog koda na email."
+msgstr "An account with this email address already exists. Sign in using the one-time code sent to your email."
+
+#: src/setup-wizard/unsaved-changes-dialog.tsx:45
+msgid "Napustite"
+msgstr "Leave"
+
+#: src/setup-wizard/unsaved-changes-dialog.tsx:29
+msgid "Napustiti stranicu?"
+msgstr "Leave page?"
+
+#: src/app-shell/mobile-drawer.tsx:37
+msgid "Navigacija"
+msgstr "Navigation"
+
+#: src/auth/email-otp-sign-in.tsx:130
+msgid "Nazad"
+msgstr "Back"
+
+#: src/auth/goodbye-page.tsx:39
+#: src/auth/oauth-callback.tsx:81
+msgid "Nazad na prijavu"
+msgstr "Back to sign in"
+
+#: src/lazy-chunk-error-boundary.tsx:46
+msgid "Ne možemo da učitamo ovaj deo aplikacije"
+msgstr "We can't load this part of the app"
+
+#: src/entries/entries-schema.ts:45
+#: src/entries/entries-schema.ts:47
+msgid "Neispravan format datuma"
+msgstr "Invalid date format"
+
+#: src/pwa/offline-indicator.tsx:15
+msgid "Neke funkcionalnosti mogu biti nedostupne dok se ponovo ne povežete."
+msgstr "Some features may be unavailable until you reconnect."
+
+#: src/settings/account-settings-page.tsx:309
+msgid "Nema drugih aktivnih sesija."
+msgstr "There are no other active sessions."
+
+#: src/dashboard/dashboard-page.tsx:130
+msgid "Nema podataka za prikaz"
+msgstr "No data to display"
+
+#: src/entries/entries-table.tsx:55
+msgid "Nema unetih stavki"
+msgstr "No entries"
+
+#: src/auth/profile-popover.tsx:92
+#: src/settings/account-settings-page.tsx:873
+msgid "Nesinhronizovano"
+msgstr "Not synced"
+
+#: src/books/book-library.tsx:125
+msgid "Nezavršeno"
+msgstr "Incomplete"
+
+#: src/settings/account-settings-page.tsx:449
+#: src/settings/account-settings-page.tsx:461
+msgid "nije dostupna"
+msgstr "is not available"
+
+#: src/settings/account-settings-page.tsx:605
+msgid "Nije moguće obrisati nalog. Proverite internet vezu i pokušajte ponovo."
+msgstr "Unable to delete account. Check your internet connection and try again."
+
+#: src/settings/account-settings-page.tsx:271
+msgid "Nije moguće odjaviti ostale sesije. Pokušajte ponovo."
+msgstr "Unable to sign out other sessions. Please try again."
+
+#: src/settings/account-settings-page.tsx:261
+msgid "Nije moguće odjaviti sesiju. Pokušajte ponovo."
+msgstr "Unable to sign out the session. Please try again."
+
+#: src/settings/account-settings-page.tsx:553
+msgid "Nije moguće preuzeti podatke naloga. Proverite internet vezu i pokušajte ponovo."
+msgstr "Could not download account data. Check your internet connection and try again."
+
+#: src/settings/account-settings-page.tsx:789
+msgid "Nije moguće pripremiti profilnu sliku za slanje."
+msgstr "Unable to prepare the profile image for upload."
+
+#: src/settings/account-settings-page.tsx:733
+msgid "Nije moguće sačuvati profilnu sliku. Pokušajte ponovo."
+msgstr "Unable to save the profile image. Please try again."
+
+#: src/settings/account-settings-page.tsx:221
+msgid "Nije moguće učitati nalog"
+msgstr "Unable to load account"
+
+#: src/settings/account-settings-page.tsx:372
+msgid "Nije moguće učitati sesije"
+msgstr "Unable to load sessions"
+
+#: src/settings/account-settings-page.tsx:743
+msgid "Nije moguće ukloniti profilnu sliku. Pokušajte ponovo."
+msgstr "Unable to remove the profile image. Please try again."
+
+#: src/auth/email-form.tsx:52
+#: src/auth/email-otp-sign-in.tsx:54
+msgid "Nismo uspeli da pošaljemo kod. Pokušajte ponovo."
+msgstr "We couldn't send the code. Please try again."
+
+#: src/auth/email-otp-sign-in.tsx:110
+msgid "Niste dobili kod?"
+msgstr "Didn't receive a code?"
+
+#: src/books/add-book-modal.tsx:101
+#: src/books/book-library.tsx:34
+msgid "Nova knjiga"
+msgstr "New book"
+
+#: src/entries/entry-modal.tsx:45
+msgid "Novi unos"
+msgstr "New entry"
+
+#: src/books/book-library.tsx:185
+msgid "Obrisati knjigu za {year}?"
+msgstr "Delete book for {year}?"
+
+#: src/entries/entries-table.tsx:129
+msgid "Obrisati unos?"
+msgstr "Delete entry?"
+
+#: src/books/book-library.tsx:208
+#: src/entries/entries-table.tsx:115
+#: src/entries/entries-table.tsx:120
+#: src/entries/entries-table.tsx:152
+msgid "Obriši"
+msgstr "Delete"
+
+#: src/books/book-library.tsx:175
+msgid "Obriši knjigu za {year}"
+msgstr "Delete book for {year}"
+
+#: src/settings/account-settings-page.tsx:688
+#: src/settings/account-settings-page.tsx:889
+msgid "Obriši nalog"
+msgstr "Delete account"
+
+#: src/settings/account-settings-page.tsx:630
+msgid "Obriši nalog?"
+msgstr "Delete account?"
+
+#: src/entity-profiles/entity-profile-form.tsx:106
+#: src/entity-profiles/entity-profile-preview.tsx:83
+msgid "Obveznik"
+msgstr "Taxpayer"
+
+#: src/entries/entry-form.tsx:223
+#: src/entries/entry-form.tsx:277
+msgid "Od izvršenih usluga"
+msgstr "From services rendered"
+
+#: src/entries/entries-table.tsx:41
+msgid "Od izvršenih usluga (RSD)"
+msgstr "From services rendered (RSD)"
+
+#: src/entries/entry-form.tsx:178
+#: src/entries/entry-form.tsx:276
+msgid "Od prodaje proizvoda"
+msgstr "From product sales"
+
+#: src/entries/entries-table.tsx:38
+msgid "Od prodaje proizvoda (RSD)"
+msgstr "From product sales (RSD)"
+
+#: src/signatures/signature-form.tsx:92
+#: src/signatures/signature-preview.tsx:85
+msgid "Odgovorno lice"
+msgstr "Responsible person"
+
+#: src/setup-wizard/start-step.tsx:45
+msgid "odgovorno lice i sastavljač za PDF"
+msgstr "responsible person and compiler for PDF"
+
+#: src/auth/profile-popover.tsx:205
+msgid "Odjava sa nesinhronizovanim izmenama?"
+msgstr "Sign out with unsynced changes?"
+
+#: src/auth/profile-popover.tsx:120
+msgid "Odjava zahteva internet vezu. Ako je hitno, obrišite site data ovog sajta u browseru."
+msgstr "Sign-out requires an internet connection. If urgent, clear this site's data in your browser."
+
+#: src/auth/profile-popover.tsx:221
+msgid "Odjavi ipak"
+msgstr "Sign out anyway"
+
+#: src/settings/account-settings-page.tsx:476
+#: src/settings/account-settings-page.tsx:479
+msgid "Odjavi ovu sesiju"
+msgstr "Sign out this session"
+
+#: src/auth/profile-popover.tsx:134
+msgid "Odjavi se"
+msgstr "Sign out"
+
+#: src/settings/account-settings-page.tsx:321
+msgid "Odjavi sve ostale sesije"
+msgstr "Sign out all other sessions"
+
+#: src/auth/profile-popover.tsx:85
+msgid "Offline"
+msgstr "Offline"
+
+#: src/dashboard/dashboard-page.tsx:149
+msgid "Omiljene knjige"
+msgstr "Favorite books"
+
+#: src/auth/profile-popover.tsx:80
+#: src/settings/account-settings-page.tsx:867
+msgid "Online"
+msgstr "Online"
+
+#: src/entries/entry-form.tsx:164
+msgid "Opis prometa"
+msgstr "Transaction description"
+
+#: src/settings/settings-page.tsx:39
+msgid "Opšte"
+msgstr "General"
+
+#: src/setup-wizard/unsaved-changes-dialog.tsx:42
+msgid "Ostanite"
+msgstr "Stay"
+
+#: src/pwa/pwa-registerer.tsx:30
+msgid "Osveži"
+msgstr "Reload"
+
+#: src/lazy-chunk-error-boundary.tsx:59
+msgid "Osveži aplikaciju"
+msgstr "Reload app"
+
+#: src/pwa/pwa-registerer.tsx:37
+msgid "Osvežite aplikaciju da biste koristili najnoviju verziju."
+msgstr "Reload the app to use the latest version."
+
+#: src/auth/oauth-callback.tsx:98
+msgid "Otkazali ste prijavu. Pokušajte ponovo."
+msgstr "You cancelled the sign-in. Please try again."
+
+#: src/auth/profile-popover.tsx:218
+#: src/books/add-book-modal.tsx:163
+#: src/books/book-library.tsx:201
+#: src/currency/currency-convert-modal.tsx:281
+#: src/entity-profiles/entity-profile-preview.tsx:59
+#: src/entries/entries-table.tsx:145
+#: src/entries/entry-modal.tsx:66
+#: src/settings/account-settings-page.tsx:680
+#: src/settings/account-settings-page.tsx:937
+#: src/signatures/signature-preview.tsx:61
+msgid "Otkaži"
+msgstr "Cancel"
+
+#: src/books/book-library.tsx:47
+msgid "Otkriveni duplikati knjiga"
+msgstr "Duplicate books detected"
+
+#: src/books/book-library.tsx:150
+msgid "Otvori"
+msgstr "Open"
+
+#: src/app-shell/top-bar.tsx:52
+msgid "Otvori meni"
+msgstr "Open menu"
+
+#: src/app-shell/sidebar.tsx:62
+#: src/dashboard/dashboard-page.tsx:61
+msgid "Ova godina"
+msgstr "This year"
+
+#: src/settings/account-settings-page.tsx:183
+msgid "Ova podešavanja zahtevaju internet vezu."
+msgstr "These settings require an internet connection."
+
+#: src/settings/account-settings-page.tsx:643
+msgid "Ova radnja se ne može opozvati."
+msgstr "This action cannot be undone."
+
+#: src/settings/account-settings-page.tsx:636
+msgid "Ova radnja trajno briše vaš AutoKPO nalog i sve sinhronizovane podatke. Lokalni podaci na ovom uređaju biće uklonjeni nakon odjave."
+msgstr "This action permanently deletes your AutoKPO account and all synchronized data. Local data on this device will be removed after sign-out."
+
+#: src/entries/entries-table.tsx:138
+msgid "Ovu radnju nije moguće poništiti."
+msgstr "This action cannot be undone."
+
+#: src/dashboard/dashboard-page.tsx:166
+msgid "Označite knjigu zvezdicom u <0>Knjigama</0> da biste je dodali ovde."
+msgstr "Star a book in <0>Books</0> to add it here."
+
+#: src/app-shell/sidebar.tsx:31
+#: src/app-shell/top-bar.tsx:39
+#: src/dashboard/dashboard-page.tsx:49
+msgid "Panel"
+msgstr "Dashboard"
+
+#: src/stats/income-chart.tsx:100
+msgid "Paušalni limit"
+msgstr "Flat-rate limit"
+
+#: src/entity-profiles/entity-profile-form.tsx:83
+#: src/entity-profiles/entity-profile-preview.tsx:77
+msgid "PIB"
+msgstr "TIN"
+
+#: src/entity-profiles/entity-profile-schema.ts:31
+msgid "PIB mora imati tačno 9 cifara"
+msgstr "TIN must have exactly 9 digits"
+
+#: src/entity-profiles/entity-profile-schema.ts:30
+msgid "PIB mora sadržati samo cifre"
+msgstr "TIN must contain digits only"
+
+#: src/setup-wizard/wizard-stepper.tsx:20
+msgid "Početak"
+msgstr "Start"
+
+#: src/setup-wizard/start-step.tsx:55
+msgid "Počnite"
+msgstr "Get started"
+
+#: src/settings/general-settings-page.tsx:118
+msgid "Podaci"
+msgstr "Data"
+
+#: src/setup-wizard/start-step.tsx:33
+msgid "podaci o obvezniku"
+msgstr "taxpayer data"
+
+#: src/entity-profiles/entity-profile-preview.tsx:25
+#: src/setup-wizard/profile-step.tsx:27
+msgid "Podaci o obvezniku"
+msgstr "Taxpayer data"
+
+#: src/app-shell/sidebar.tsx:33
+#: src/app-shell/top-bar.tsx:37
+#: src/settings/settings-page.tsx:25
+#: src/settings/settings-page.tsx:30
+msgid "Podešavanja"
+msgstr "Settings"
+
+#: src/auth/profile-popover.tsx:110
+#: src/settings/account-settings-page.tsx:96
+#: src/settings/account-settings-page.tsx:141
+#: src/settings/account-settings-page.tsx:180
+#: src/settings/account-settings-page.tsx:213
+msgid "Podešavanja naloga"
+msgstr "Account settings"
+
+#: src/settings/account-settings-page.tsx:193
+msgid "Podešavanja naloga nisu dostupna offline"
+msgstr "Account settings are not available offline"
+
+#: src/setup-wizard/start-step.tsx:14
+msgid "Podešavanje knjige"
+msgstr "Book setup"
+
+#: src/books/add-book-modal.tsx:26
+#: src/currency/currency-convert-modal.tsx:36
+#: src/currency/currency-convert-modal.tsx:37
+#: src/entity-profiles/entity-profile-schema.ts:29
+#: src/entity-profiles/entity-profile-schema.ts:32
+#: src/entity-profiles/entity-profile-schema.ts:33
+#: src/entity-profiles/entity-profile-schema.ts:34
+#: src/entity-profiles/entity-profile-schema.ts:37
+#: src/entity-profiles/entity-profile-schema.ts:41
+#: src/entries/entries-schema.ts:13
+#: src/entries/entries-schema.ts:25
+#: src/entries/entries-schema.ts:35
+#: src/entries/entries-schema.ts:44
+#: src/signatures/signature-schema.ts:13
+#: src/signatures/signature-schema.ts:14
+msgid "Polje je obavezno"
+msgstr "This field is required"
+
+#: src/settings/account-settings-page.tsx:925
+msgid "Pomerite i zumirajte sliku da izaberete deo koji će se prikazivati kao profilna slika."
+msgstr "Move and zoom the image to choose the part that will appear as your profile image."
+
+#: src/auth/email-form.tsx:98
+msgid "Pošalji kod"
+msgstr "Send code"
+
+#: src/auth/email-otp-sign-in.tsx:119
+msgid "Pošalji ponovo"
+msgstr "Resend"
+
+#: src/auth/auth-entry.tsx:68
+msgid "Poslaćemo vam kod za prijavu na email."
+msgstr "We'll send a sign-in code to your email."
+
+#: src/settings/last-successful-sync-status.tsx:86
+#: src/settings/last-successful-sync-status.tsx:105
+msgid "Poslednja uspešna sinhronizacija:"
+msgstr "Last successful sync:"
+
+#: src/dashboard/dashboard-page.tsx:80
+msgid "Poslednjih 12 meseci"
+msgstr "Last 12 months"
+
+#: src/setup-wizard/signature-step.tsx:25
+#: src/setup-wizard/start-step.tsx:43
+#: src/setup-wizard/wizard-stepper.tsx:34
+#: src/signatures/signature-preview.tsx:27
+#: src/working-layout/working-layout.tsx:159
+msgid "Potpis"
+msgstr "Signature"
+
+#: src/signatures/signature-form.tsx:53
+msgid "Potpis je sačuvan"
+msgstr "Signature saved"
+
+#: src/auth/email-auth-page.tsx:53
+msgid "Potvrdite prijavu"
+msgstr "Confirm sign-in"
+
+#: src/settings/account-settings-page.tsx:99
+msgid "Pregled podataka povezanih sa vašim nalogom."
+msgstr "Review the information connected to your account."
+
+#: src/settings/account-settings-page.tsx:282
+msgid "Pregledajte aktivne prijave na drugim uređajima."
+msgstr "Review active sign-ins on other devices."
+
+#: src/working-layout/working-layout.tsx:138
+msgid "Preuzeti dokument je nacrt. Obavezno ga potpišite i overite pečatom (Član 13, stav 2 Pravilnika o poslovnim knjigama)."
+msgstr "The downloaded document is a draft. You must sign it and stamp it with a seal (Article 13, paragraph 2 of the Business Records Regulations)."
+
+#: src/pdf/download-pdf-button.tsx:27
+msgid "Preuzmi PDF"
+msgstr "Download PDF"
+
+#: src/settings/account-settings-page.tsx:565
+msgid "Preuzmite kopiju podataka vašeg naloga."
+msgstr "Download a copy of your account data."
+
+#: src/settings/general-settings-page.tsx:121
+msgid "Preuzmite kopiju svih podataka knjiga i stavki."
+msgstr "Download a copy of all your book and entry data."
+
+#: src/stats/income-chart.tsx:52
+msgid "Prihod"
+msgstr "Income"
+
+#: src/dashboard/dashboard-page.tsx:117
+msgid "Prihodi po godinama"
+msgstr "Income by year"
+
+#: src/auth/auth-entry.tsx:50
+msgid "Prijava GitHub"
+msgstr "Sign in with GitHub"
+
+#: src/auth/auth-entry.tsx:42
+msgid "Prijava Google"
+msgstr "Sign in with Google"
+
+#: src/auth/oauth-callback.tsx:68
+msgid "Prijava nije uspela."
+msgstr "Sign-in failed."
+
+#: src/auth/oauth-callback.tsx:112
+msgid "Prijava nije završena. Pokušajte ponovo."
+msgstr "Sign-in did not complete. Please try again."
+
+#: src/currency/currency-convert-modal.tsx:284
+msgid "Primeni"
+msgstr "Apply"
+
+#: src/auth/profile-popover.tsx:144
+#: src/auth/profile-popover.tsx:158
+#: src/auth/profile-popover.tsx:163
+#: src/auth/profile-popover.tsx:186
+#: src/setup-wizard/start-step.tsx:31
+#: src/setup-wizard/wizard-stepper.tsx:29
+#: src/working-layout/working-layout.tsx:155
+msgid "Profil"
+msgstr "Profile"
+
+#: src/entity-profiles/entity-profile-form.tsx:62
+msgid "Profil je sačuvan"
+msgstr "Profile saved"
+
+#: src/settings/account-settings-page.tsx:728
+msgid "Profilna slika je sačuvana."
+msgstr "Profile image saved."
+
+#: src/settings/account-settings-page.tsx:739
+msgid "Profilna slika je uklonjena."
+msgstr "Profile image removed."
+
+#: src/settings/account-settings-page.tsx:784
+msgid "Profilna slika mora biti manja od 256 KB."
+msgstr "Profile image must be smaller than 256 KB."
+
+#: src/settings/account-settings-page.tsx:833
+#: src/settings/account-settings-page.tsx:836
+msgid "Promeni profilnu sliku"
+msgstr "Change profile photo"
+
+#: src/settings/account-settings-page.tsx:224
+#: src/settings/account-settings-page.tsx:375
+msgid "Proverite internet vezu i pokušajte ponovo kasnije."
+msgstr "Check your internet connection and try again later."
+
+#: src/entries/entries-table.tsx:32
+msgid "Redni broj"
+msgstr "No."
+
+#: src/dashboard/dashboard-page.tsx:99
+msgid "Rekordna godina"
+msgstr "Record year"
+
+#: src/dashboard/dashboard-page.tsx:105
+msgid "Rekordnih 12 meseci"
+msgstr "Record 12 months"
+
+#: src/auth/email-form.tsx:46
+msgid "Sačekajte trenutak i pokušajte ponovo."
+msgstr "Please wait a moment and try again."
+
+#: src/entity-profiles/entity-profile-preview.tsx:62
+#: src/entries/entry-modal.tsx:69
+#: src/setup-wizard/signature-step.tsx:38
+#: src/signatures/signature-preview.tsx:64
+msgid "Sačuvaj"
+msgstr "Save"
+
+#: src/settings/account-settings-page.tsx:943
+msgid "Sačuvaj sliku"
+msgstr "Save image"
+
+#: src/working-layout/working-layout.tsx:149
+msgid "Sadržaj knjige"
+msgstr "Book contents"
+
+#: src/signatures/signature-form.tsx:74
+#: src/signatures/signature-preview.tsx:79
+msgid "Sastavio"
+msgstr "Compiled by"
+
+#: src/entity-profiles/entity-profile-form.tsx:142
+#: src/entity-profiles/entity-profile-preview.tsx:95
+msgid "Sedište"
+msgstr "Registered address"
+
+#: src/auth/oauth-callback.tsx:109
+msgid "Sesija je istekla. Pokušajte ponovo."
+msgstr "The session expired. Please try again."
+
+#: src/settings/account-settings-page.tsx:257
+msgid "Sesija je odjavljena."
+msgstr "The session has been signed out."
+
+#: src/settings/account-settings-page.tsx:279
+msgid "Sesije"
+msgstr "Sessions"
+
+#: src/entity-profiles/entity-profile-form.tsx:183
+#: src/entity-profiles/entity-profile-preview.tsx:109
+msgid "Šifra delatnosti"
+msgstr "Activity code"
+
+#: src/entity-profiles/entity-profile-schema.ts:42
+msgid "Šifra delatnosti mora imati tačno 4 cifre"
+msgstr "Activity code must have exactly 4 digits"
+
+#: src/entity-profiles/entity-profile-form.tsx:160
+#: src/entity-profiles/entity-profile-preview.tsx:101
+msgid "Šifra poreskog obveznika"
+msgstr "Taxpayer code"
+
+#: src/entity-profiles/entity-profile-schema.ts:38
+msgid "Šifra poreskog obveznika mora imati tačno 8 cifara"
+msgstr "Taxpayer code must have exactly 8 digits"
+
+#: src/auth/profile-popover.tsx:97
+#: src/settings/account-settings-page.tsx:878
+msgid "Sinhronizovano"
+msgstr "Synced"
+
+#: src/settings/general-settings-page.tsx:133
+msgid "Sinhronizuj sada"
+msgstr "Sync now"
+
+#: src/auth/auth-shell.tsx:88
+#: src/auth/auth-shell.tsx:89
+#: src/settings/general-settings-page.tsx:57
+#: src/settings/general-settings-page.tsx:58
+msgid "Sistemska"
+msgstr "System"
+
+#: src/settings/account-settings-page.tsx:267
+msgid "Sve ostale sesije su odjavljene."
+msgstr "All other sessions have been signed out."
+
+#: src/setup-wizard/start-step.tsx:50
+msgid "Sve podatke možete promeniti kasnije u podešavanjima."
+msgstr "You can change all data later in settings."
+
+#: src/entries/entries-table.tsx:44
+msgid "Svega (RSD)"
+msgstr "Total (RSD)"
+
+#: src/auth/auth-shell.tsx:80
+#: src/auth/auth-shell.tsx:81
+#: src/settings/general-settings-page.tsx:49
+#: src/settings/general-settings-page.tsx:50
+msgid "Svetla"
+msgstr "Light"
+
+#: src/auth/auth-shell.tsx:84
+#: src/auth/auth-shell.tsx:85
+#: src/settings/general-settings-page.tsx:53
+#: src/settings/general-settings-page.tsx:54
+msgid "Tamna"
+msgstr "Dark"
+
+#: src/auth/auth-shell.tsx:69
+#: src/auth/auth-shell.tsx:73
+#: src/settings/general-settings-page.tsx:30
+#: src/settings/general-settings-page.tsx:39
+msgid "Tema"
+msgstr "Theme"
+
+#: src/settings/account-settings-page.tsx:409
+#: src/settings/account-settings-page.tsx:417
+msgid "Trenutna sesija"
+msgstr "Current session"
+
+#: src/settings/general-settings-page.tsx:77
+msgid "Trenutni jezik: {localeName}"
+msgstr "Current language: {localeName}"
+
+#: src/settings/account-settings-page.tsx:146
+msgid "Učitavanje podataka naloga…"
+msgstr "Loading account data…"
+
+#: src/settings/account-settings-page.tsx:336
+msgid "Učitavanje sesija…"
+msgstr "Loading sessions…"
+
+#: src/books/book-library.tsx:157
+msgid "Ukloni iz omiljenih za {year}"
+msgstr "Remove {year} from favorites"
+
+#: src/settings/account-settings-page.tsx:843
+#: src/settings/account-settings-page.tsx:846
+msgid "Ukloni profilnu sliku"
+msgstr "Remove profile image"
+
+#: src/stats/stat-card.tsx:71
+msgid "Ukupno"
+msgstr "Total"
+
+#: src/entries/entry-form.tsx:88
+msgid "Unesite ispravan datum pre konverzije"
+msgstr "Enter a valid date before converting"
+
+#: src/auth/email-form.tsx:28
+msgid "Unesite ispravnu email adresu."
+msgstr "Enter a valid email address."
+
+#: src/auth/email-auth-page.tsx:56
+msgid "Unesite jednokratni kod koji smo poslali na:"
+msgstr "Enter the one-time code we sent to:"
+
+#: src/entries/entry-modal.tsx:52
+msgid "Unesite podatke novog unosa."
+msgstr "Enter new entry details."
+
+#: src/working-layout/working-layout.tsx:151
+msgid "Unosi"
+msgstr "Entries"
+
+#: src/settings/last-successful-sync-status.tsx:117
+msgid "upravo sada"
+msgstr "just now"
+
+#: src/settings/account-settings-page.tsx:435
+msgid "Uređaj"
+msgstr "Device"
+
+#: src/settings/account-settings-page.tsx:438
+msgid "Uređaj nije poznat"
+msgstr "Device is unknown"
+
+#: src/entity-profiles/entity-profile-preview.tsx:29
+#: src/entity-profiles/entity-profile-preview.tsx:33
+#: src/entries/entries-table.tsx:100
+#: src/entries/entries-table.tsx:105
+#: src/signatures/signature-preview.tsx:31
+#: src/signatures/signature-preview.tsx:35
+msgid "Uredi"
+msgstr "Edit"
+
+#: src/signatures/signature-preview.tsx:45
+msgid "Uredi potpis"
+msgstr "Edit signature"
+
+#: src/entity-profiles/entity-profile-preview.tsx:43
+msgid "Uredi profil"
+msgstr "Edit profile"
+
+#: src/settings/account-settings-page.tsx:809
+#: src/settings/account-settings-page.tsx:904
+msgid "Uredi profilnu sliku"
+msgstr "Edit profile image"
+
+#: src/entries/entry-modal.tsx:43
+msgid "Uredi unos"
+msgstr "Edit entry"
+
+#: src/currency/currency-convert-modal.tsx:149
+msgid "Valuta"
+msgstr "Currency"
+
+#: src/pwa/offline-indicator.tsx:14
+msgid "Van mreže ste"
+msgstr "You are offline"
+
+#: src/auth/goodbye-page.tsx:19
+msgid "Vaš AutoKPO nalog i sinhronizovani podaci su trajno uklonjeni."
+msgstr "Your AutoKPO account and synchronized data have been permanently removed."
+
+#: src/auth/oauth-callback.tsx:102
+msgid "Vaš nalog nema javnu email adresu. Prijavite se putem jednokratnog koda na email."
+msgstr "Your account has no public email address. Sign in via one-time code instead."
+
+#: src/settings/account-settings-page.tsx:562
+msgid "Vaši podaci"
+msgstr "Your data"
+
+#: src/lazy-chunk-error-boundary.tsx:49
+msgid "Verovatno je dostupna nova verzija. Osvežite aplikaciju da biste nastavili."
+msgstr "A new version is probably available. Reload the app to continue."
+
+#: src/entries/entries-schema.ts:14
+#: src/entries/entries-schema.ts:15
+#: src/entries/entries-schema.ts:29
+msgid "Vrednost ne može biti negativna"
+msgstr "Value cannot be negative"
+
+#: src/settings/account-settings-page.tsx:648
+msgid "Za potvrdu unesite email adresu naloga:"
+msgstr "To confirm, enter the account email address:"
+
+#: src/settings/account-settings-page.tsx:196
+msgid "Za pregled i izmenu naloga potrebna je internet veza. Opšta podešavanja aplikacije ostaju dostupna bez interneta."
+msgstr "An internet connection is required to view and edit your account. General app settings remain available without internet."
+
+#: src/books/book-library.tsx:51
+msgid "Za svaku godinu zadržite jednu knjigu, a ostale obrišite."
+msgstr "Keep one book per year and delete the others."
+
+#: src/app-shell/mobile-drawer.tsx:47
+#: src/auth/profile-popover.tsx:170
+msgid "Zatvori"
+msgstr "Close"

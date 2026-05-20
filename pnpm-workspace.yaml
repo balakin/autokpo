@@ -1,0 +1,12 @@
+packages:
+  - 'apps/*'
+
+allowBuilds:
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
+  workerd: true
+autoInstallPeers: false
+engineStrict: true
+minimumReleaseAge: 2880
+strictPeerDependencies: true

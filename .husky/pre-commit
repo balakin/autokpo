@@ -1,0 +1,4 @@
+pnpm lint-staged
+pnpm i18n:extract
+git add apps/app/src/locales/ apps/app/worker/locales/
+pnpm check:worker-types

@@ -1,0 +1,74 @@
+// IMPORTANT: After any change to this file, run `pnpm generate:worker-types` to regenerate types.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "autokpo",
+  "compatibility_date": "2026-04-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "./worker/main.ts",
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/avatars/*"],
+  },
+  "r2_buckets": [
+    {
+      "binding": "AVATARS",
+      "bucket_name": "autokpo-avatars-dev",
+    },
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "autokpo-dev",
+      "database_id": "PLACEHOLDER_SET_VIA_WRANGLER_D1_CREATE",
+      "migrations_dir": "./worker/db/migrations",
+    },
+  ],
+  "vars": {
+    "APP_URL": "http://localhost:5173",
+    "RESEND_FROM_EMAIL": "AutoKPO <autokpo@resend.dev>",
+  },
+  "secrets": {
+    "required": [
+      "BETTER_AUTH_SECRET",
+      "GOOGLE_CLIENT_ID",
+      "GOOGLE_CLIENT_SECRET",
+      "GITHUB_CLIENT_ID",
+      "GITHUB_CLIENT_SECRET",
+      "RESEND_API_KEY",
+      "TURNSTILE_SECRET_KEY",
+    ],
+  },
+  "env": {
+    "production": {
+      "r2_buckets": [
+        {
+          "binding": "AVATARS",
+          "bucket_name": "autokpo-avatars-production",
+        },
+      ],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "autokpo-production",
+          "database_id": "PLACEHOLDER_SET_VIA_WRANGLER_D1_CREATE",
+          "migrations_dir": "./worker/db/migrations",
+        },
+      ],
+      "vars": {
+        "APP_URL": "https://example.com",
+        "RESEND_FROM_EMAIL": "AutoKPO <autokpo@resend.dev>",
+      },
+      "secrets": {
+        "required": [
+          "BETTER_AUTH_SECRET",
+          "GOOGLE_CLIENT_ID",
+          "GOOGLE_CLIENT_SECRET",
+          "GITHUB_CLIENT_ID",
+          "GITHUB_CLIENT_SECRET",
+          "RESEND_API_KEY",
+          "TURNSTILE_SECRET_KEY",
+        ],
+      },
+    },
+  },
+}

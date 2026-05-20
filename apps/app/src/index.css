@@ -1,0 +1,223 @@
+@import 'tailwindcss';
+@import '@heroui/styles';
+
+/* ── Manrope (UI sans-serif) ───────────────────────────────────────────── */
+@font-face {
+  font-family: Manrope;
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/fonts/manrope/Manrope-VariableFont_wght.woff2') format('woff2');
+}
+
+/* ── JetBrains Mono (tabular / financial numbers) ──────────────────────── */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono/JetBrainsMono-VariableFont_wght.woff2')
+    format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: italic;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono/JetBrainsMono-Italic-VariableFont_wght.woff2')
+    format('woff2');
+}
+
+@theme inline {
+  /* Soft, warm typography */
+  --font-sans: 'Manrope', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* ── Nordic Winter — Calm, Airy, Soft ──────────────────────────────────── */
+
+/* Light mode — soft arctic glow */
+:root {
+  /* Primitive Colors (shared between themes) */
+  --white: oklch(100% 0 0);
+  --black: oklch(0% 0 0);
+  --snow: oklch(0.9911 0 0);
+  --eclipse: oklch(0.2103 0.0059 285.89);
+
+  /* Core backgrounds — soft layered whites */
+  --background: oklch(0.97 0.005 240);
+  --surface: oklch(0.995 0.003 240);
+  --surface-secondary: oklch(0.96 0.004 240);
+  --overlay: oklch(0.995 0.003 240);
+
+  /* Core foregrounds — dark text on light backgrounds */
+  --foreground: oklch(0.2 0.015 260);
+  --surface-foreground: oklch(0.2 0.015 260);
+  --surface-secondary-foreground: oklch(0.2 0.015 260);
+  --overlay-foreground: oklch(0.2 0.015 260);
+
+  /* Text hierarchy */
+  --muted: oklch(0.5 0.02 250);
+  --scrollbar: oklch(0.85 0.008 240);
+
+  /* Default button/action colors */
+  --default: oklch(0.94 0.005 240);
+  --default-foreground: oklch(0.2 0.015 260);
+
+  /* Primary accent — soft dusty blue */
+  --accent: oklch(0.6 0.1 245);
+  --accent-foreground: oklch(1 0 0);
+  --accent-soft: oklch(0.92 0.03 245);
+  --accent-soft-foreground: oklch(0.3 0.03 245);
+
+  /* Semantic colors */
+  --success: oklch(0.55 0.1 155);
+  --success-foreground: oklch(0.2 0.015 260);
+  --danger: oklch(0.6 0.12 25);
+  --danger-foreground: oklch(1 0 0);
+  --warning: oklch(0.7 0.1 85);
+  --warning-foreground: oklch(0.2 0.015 260);
+
+  /* Component colors */
+  --segment: oklch(0.995 0.003 240);
+  --segment-foreground: oklch(0.2 0.015 260);
+
+  /* Borders and separators */
+  --border: oklch(0.88 0.008 240);
+  --separator: oklch(0.9 0.006 240);
+  --focus: var(--accent);
+  --link: var(--foreground);
+
+  /* Backdrop */
+  --backdrop: rgba(0, 0, 0, 0.5);
+
+  /* Form fields — HeroUI base variables (generates --color-* variants) */
+  --field-background: oklch(0.995 0.003 240);
+  --field-foreground: oklch(0.2 0.015 260);
+  --field-placeholder: oklch(0.5 0.02 250);
+  --field-border: transparent;
+
+  /* Shadows — soft elevation */
+  --surface-shadow:
+    0 2px 4px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.06),
+    0 0 1px 0 rgba(0, 0, 0, 0.06);
+  --overlay-shadow:
+    0 4px 16px 0 rgba(24, 24, 27, 0.08), 0 8px 24px 0 rgba(24, 24, 27, 0.09);
+  --field-shadow:
+    0 2px 4px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.06),
+    0 0 1px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Dark mode — deep arctic night */
+.dark,
+[data-theme='dark'] {
+  /* Primitive Colors (shared between themes) */
+  --white: oklch(100% 0 0);
+  --black: oklch(0% 0 0);
+  --snow: oklch(0.9911 0 0);
+  --eclipse: oklch(0.2103 0.0059 285.89);
+
+  /* Core backgrounds — clear layer hierarchy */
+  --background: oklch(0.12 0.015 255);
+  --surface: oklch(0.16 0.012 255);
+  --surface-secondary: oklch(0.2 0.01 255);
+  --overlay: oklch(0.18 0.012 255);
+
+  /* Core foregrounds — light text on dark backgrounds */
+  --foreground: oklch(0.95 0.005 260);
+  --surface-foreground: oklch(0.95 0.005 260);
+  --surface-secondary-foreground: oklch(0.95 0.005 260);
+  --overlay-foreground: oklch(0.95 0.005 260);
+
+  /* Text hierarchy — light enough for dark backgrounds */
+  --muted: oklch(0.78 0.015 255);
+  --scrollbar: oklch(0.35 0.015 255);
+
+  /* Default button/action colors — secondary buttons, clearer contrast */
+  --default: oklch(0.28 0.015 255);
+  --default-foreground: oklch(0.95 0.005 260);
+
+  /* Primary accent — accessible contrast with white text */
+  --accent: oklch(0.48 0.08 245);
+  --accent-foreground: oklch(1 0 0);
+  --accent-soft: oklch(0.28 0.04 245);
+  --accent-soft-foreground: oklch(0.85 0.02 245);
+
+  /* Semantic colors */
+  --success: oklch(0.72 0.12 155);
+  --success-foreground: oklch(0.12 0.01 155);
+  --danger: oklch(0.65 0.12 25);
+  --danger-foreground: oklch(1 0 0);
+  --warning: oklch(0.8 0.1 85);
+  --warning-foreground: oklch(0.2 0.01 85);
+
+  /* Component colors — selected tab indicator */
+  --segment: oklch(0.38 0.012 255);
+  --segment-foreground: oklch(0.95 0.005 260);
+
+  /* Borders and separators */
+  --border: oklch(0.28 0.015 255);
+  --separator: oklch(0.25 0.015 255);
+  --focus: var(--accent);
+  --link: var(--foreground);
+
+  /* Backdrop */
+  --backdrop: rgba(0, 0, 0, 0.6);
+
+  /* Form fields — HeroUI base variables (generates --color-* variants) */
+  --field-background: oklch(0.26 0.015 255);
+  --field-foreground: oklch(0.95 0.005 260);
+  --field-placeholder: oklch(0.6 0.02 250);
+  --field-border: transparent;
+
+  /* Shadows — subtle in dark mode */
+  --surface-shadow: 0 0 0 0 transparent inset;
+  --overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  --field-shadow: 0 0 0 0 transparent inset;
+}
+
+html,
+body,
+#root {
+  background: var(--background);
+}
+
+/* Sidebar — darker than main background for contrast (light) */
+:root,
+[data-theme='light'] {
+  --sidebar-bg: oklch(0.935 0.008 240);
+  --sidebar-fg: oklch(0.2 0.015 260);
+  --sidebar-muted: oklch(0.5 0.02 250);
+  --sidebar-border: oklch(0.88 0.01 240);
+  --sidebar-item-hover: oklch(0.9 0.012 240);
+  --sidebar-active-fg: oklch(1 0 0);
+  --sidebar-active-bg: oklch(0.6 0.1 245);
+}
+
+/* Sidebar — lighter surface to contrast with main content (dark) */
+.dark,
+[data-theme='dark'] {
+  --sidebar-bg: oklch(0.18 0.015 255);
+  --sidebar-fg: oklch(0.95 0.005 260);
+  --sidebar-muted: oklch(0.68 0.015 260);
+  --sidebar-border: oklch(0.24 0.02 255);
+  --sidebar-item-hover: oklch(0.24 0.025 255);
+  --sidebar-active-fg: oklch(1 0 0);
+  --sidebar-active-bg: oklch(0.52 0.08 245);
+}
+
+/* Make sidebar colors available to Tailwind */
+@theme inline {
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-fg: var(--sidebar-fg);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-item-hover: var(--sidebar-item-hover);
+  --color-sidebar-active-fg: var(--sidebar-active-fg);
+  --color-sidebar-active-bg: var(--sidebar-active-bg);
+
+  /* HeroUI accent soft colors for secondary buttons */
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-foreground: var(--accent-soft-foreground);
+}

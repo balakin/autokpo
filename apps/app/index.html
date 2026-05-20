@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f3f5f6" />
+    <title>AutoKPO</title>
+    <script>
+      try {
+        var t = localStorage.getItem('autokpo:theme');
+        var dark =
+          t === 'dark' ||
+          ((t === 'system' || !t) &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches);
+        var resolved = dark ? 'dark' : 'light';
+        document.documentElement.classList.add(resolved);
+        document.documentElement.setAttribute('data-theme', resolved);
+        document.documentElement.style.colorScheme = resolved;
+        document
+          .querySelector('meta[name="theme-color"]')
+          ?.setAttribute('content', dark ? '#080d16' : '#f3f5f6');
+      } catch {}
+    </script>
+  </head>
+  <body class="text-foreground">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

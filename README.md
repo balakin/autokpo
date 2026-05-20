@@ -39,6 +39,26 @@ cp apps/app/.dev.vars.example apps/app/.dev.vars
 pnpm dev
 ```
 
+## Releases
+
+This project uses [Changesets](https://github.com/changesets/changesets) for versioning and changelog generation. Releases are published as GitHub Releases (not npm).
+
+**Adding a changeset to your PR:**
+
+```bash
+pnpm changeset
+# follow the prompts: select bump type (patch/minor/major) and write a summary
+# commit the generated .changeset/*.md file with your PR
+```
+
+**Release flow:**
+
+1. PRs with changesets land on `main` → CI automatically creates or updates a "Release PR" (`chore: release packages`)
+2. When you're ready to release, review and merge the Release PR
+3. CI tags the new version and creates a GitHub Release
+
+See the [Changesets documentation](https://github.com/changesets/changesets/blob/main/docs/intro-to-using-changesets.md) for a full guide.
+
 ## License
 
 [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0). If you run a modified version of this software over a network, you must make the corresponding source code available to users.

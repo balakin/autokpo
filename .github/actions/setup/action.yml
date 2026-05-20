@@ -1,6 +1,12 @@
 name: Setup Node.js and pnpm
 description: Sets up Node.js, pnpm, and caches dependencies
 
+inputs:
+  cache:
+    description: Whether to cache the pnpm store
+    required: false
+    default: 'true'
+
 runs:
   using: composite
   steps:
@@ -18,10 +24,12 @@ runs:
 
     - name: 💾 Get pnpm store path
       id: pnpm-cache
+      if: ${{ inputs.cache == 'true' }}
       shell: bash
       run: echo "path=$(pnpm store path)" >> $GITHUB_OUTPUT
 
     - name: 💾 Cache pnpm store
+      if: ${{ inputs.cache == 'true' }}
       uses: actions/cache@v5
       with:
         path: ${{ steps.pnpm-cache.outputs.path }}

@@ -88,7 +88,7 @@ describe('AppShell', () => {
 
   it('renders the version badge', () => {
     renderAppShell();
-    expect(screen.getByText(/v0\./i)).toBeInTheDocument();
+    expect(screen.getByText(`v${__APP_VERSION__}`)).toBeInTheDocument();
   });
 
   it('shows "Panel" breadcrumb on /dashboard', () => {

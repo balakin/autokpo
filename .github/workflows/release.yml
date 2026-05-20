@@ -1,0 +1,37 @@
+name: 🚀 Release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  release:
+    name: 📦 Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to create git tags and GitHub Releases (changesets/action)
+      issues: write # to post issue comments (changesets/action)
+      pull-requests: write # to create and update the Release PR (changesets/action)
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v6
+
+      - name: ⚙️ Setup
+        uses: ./.github/actions/setup
+        with:
+          cache: false # clean install to prevent cache poisoning from PR-sourced cache entries
+
+      - name: Create Release Pull Request or Publish
+        uses: changesets/action@v1
+        with:
+          publish: pnpm changeset tag
+          title: 'chore: release packages'
+          commit: 'chore: release packages'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

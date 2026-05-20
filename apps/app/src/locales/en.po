@@ -74,11 +74,11 @@ msgstr "Beta feature. Exchange rates are fetched from <0>kurs.resenje.org<1/></0
 
 #: src/help/help-page.tsx:117
 msgid "čl. 33 — rolling 12 meseci"
-msgstr ""
+msgstr "Art. 33 — rolling 12 months"
 
 #: src/help/help-page.tsx:109
 msgid "čl. 42 — godišnji limit"
-msgstr ""
+msgstr "Art. 42 — annual limit"
 
 #: src/setup-wizard/start-step.tsx:19
 msgid "Da biste mogli da koristite knjigu, potrebno je da popunite:"
@@ -155,7 +155,7 @@ msgstr "Company/Shop"
 
 #: src/help/help-page.tsx:194
 msgid "GNU Affero General Public License v3.0"
-msgstr ""
+msgstr "GNU Affero General Public License v3.0"
 
 #: src/books/add-book-modal.tsx:128
 msgid "Godina"
@@ -580,7 +580,7 @@ msgstr "General"
 
 #: src/help/help-page.tsx:167
 msgid "Osnivač projekta"
-msgstr ""
+msgstr "Project founder"
 
 #: src/setup-wizard/unsaved-changes-dialog.tsx:42
 msgid "Ostanite"

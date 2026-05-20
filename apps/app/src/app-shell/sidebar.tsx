@@ -137,7 +137,7 @@ export function Sidebar({ closeButton, onNavigate }: SidebarProps) {
       <div className="border-t border-sidebar-border p-4">
         <Chip size="sm" variant="soft" color="success">
           <LuTag className="size-3" />
-          <Chip.Label>v0.0.0-dev</Chip.Label>
+          <Chip.Label>v{__APP_VERSION__}</Chip.Label>
         </Chip>
       </div>
     </div>

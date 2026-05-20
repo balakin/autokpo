@@ -85,8 +85,14 @@ All sidebar and nav-item colors SHALL be expressed as Tailwind utility classes u
 
 #### Scenario: Version badge in sidebar footer
 
-- **WHEN** the sidebar is rendered
-- **THEN** a HeroUI Chip component with `variant="soft"` and `color="success"` SHALL appear at the bottom of the sidebar displaying the current version string
+- **WHEN** the sidebar is rendered in a production build
+- **THEN** a HeroUI Chip component with `variant="soft"` and `color="success"` SHALL appear at the bottom of the sidebar displaying the version string from `apps/app/package.json` (e.g. `v1.2.0`)
+- **AND** the version SHALL be injected at build time via Vite `define` as `__APP_VERSION__` — `package.json` SHALL NOT be included in the bundle
+
+#### Scenario: Version badge shows dev suffix in development mode
+
+- **WHEN** the app runs in Vite development mode (`mode === 'development'`)
+- **THEN** the version badge SHALL display the version with a `-dev` suffix (e.g. `v1.2.0-dev`)
 
 ---
 

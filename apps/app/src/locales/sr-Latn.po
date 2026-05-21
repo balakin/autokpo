@@ -64,6 +64,14 @@ msgstr "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošl
 msgid "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između vaših uređaja."
 msgstr "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između vaših uređaja."
 
+#: src/e2ee/encryption-setup-screen.tsx:73
+msgid "AutoKPO ne može da vidi, resetuje ili vrati ovu šifru. Ako je izgubite, šifrovani podaci ne mogu biti vraćeni."
+msgstr "AutoKPO ne može da vidi, resetuje ili vrati ovu šifru. Ako je izgubite, šifrovani podaci ne mogu biti vraćeni."
+
+#: src/e2ee/encryption-unlock-screen.tsx:106
+msgid "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju nedostupni."
+msgstr "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju nedostupni."
+
 #: src/help/help-page.tsx:157
 msgid "Autori"
 msgstr "Autori"
@@ -248,6 +256,7 @@ msgid "Izvezi podatke naloga"
 msgstr "Izvezi podatke naloga"
 
 #: src/auth/auth-shell.tsx:112
+#: src/e2ee/encryption-shell.tsx:47
 msgid "Izvorni kod"
 msgstr "Izvorni kod"
 
@@ -262,6 +271,8 @@ msgstr "Jednokratni kod"
 
 #: src/auth/auth-shell.tsx:40
 #: src/auth/auth-shell.tsx:46
+#: src/e2ee/encryption-profile-popover.tsx:75
+#: src/e2ee/encryption-profile-popover.tsx:81
 #: src/settings/general-settings-page.tsx:74
 #: src/settings/general-settings-page.tsx:83
 msgid "Jezik"
@@ -341,6 +352,7 @@ msgid "Možete poslati kod ponovo za {resendSecondsLeft}s"
 msgstr "Možete poslati kod ponovo za {resendSecondsLeft}s"
 
 #: src/auth/profile-popover.tsx:68
+#: src/e2ee/encryption-profile-popover.tsx:63
 #: src/settings/account-settings-page.tsx:856
 #: src/settings/settings-page.tsx:47
 msgid "Nalog"
@@ -361,6 +373,10 @@ msgstr "Napustite"
 #: src/setup-wizard/unsaved-changes-dialog.tsx:29
 msgid "Napustiti stranicu?"
 msgstr "Napustiti stranicu?"
+
+#: src/e2ee/encryption-setup-screen.tsx:172
+msgid "Nastavi ka aplikaciji"
+msgstr "Nastavi ka aplikaciji"
 
 #: src/app-shell/mobile-drawer.tsx:37
 msgid "Navigacija"
@@ -537,6 +553,7 @@ msgid "Odjava sa nesinhronizovanim izmenama?"
 msgstr "Odjava sa nesinhronizovanim izmenama?"
 
 #: src/auth/profile-popover.tsx:120
+#: src/e2ee/encryption-profile-popover.tsx:139
 msgid "Odjava zahteva internet vezu. Ako je hitno, obrišite site data ovog sajta u browseru."
 msgstr "Odjava zahteva internet vezu. Ako je hitno, obrišite site data ovog sajta u browseru."
 
@@ -550,6 +567,7 @@ msgid "Odjavi ovu sesiju"
 msgstr "Odjavi ovu sesiju"
 
 #: src/auth/profile-popover.tsx:134
+#: src/e2ee/encryption-profile-popover.tsx:153
 msgid "Odjavi se"
 msgstr "Odjavi se"
 
@@ -614,6 +632,18 @@ msgstr "Otkazali ste prijavu. Pokušajte ponovo."
 #: src/signatures/signature-preview.tsx:61
 msgid "Otkaži"
 msgstr "Otkaži"
+
+#: src/e2ee/encryption-unlock-screen.tsx:91
+msgid "Otključaj podatke"
+msgstr "Otključaj podatke"
+
+#: src/e2ee/encryption-unlock-screen.tsx:44
+msgid "Otključajte podatke"
+msgstr "Otključajte podatke"
+
+#: src/e2ee/encryption-unlock-screen.tsx:47
+msgid "Otključajte podatke za ovu sesiju."
+msgstr "Otključajte podatke za ovu sesiju."
 
 #: src/books/book-library.tsx:47
 msgid "Otkriveni duplikati knjiga"
@@ -719,6 +749,10 @@ msgstr "Podešavanja naloga nisu dostupna offline"
 msgid "Podešavanje knjige"
 msgstr "Podešavanje knjige"
 
+#: src/e2ee/encryption-setup-screen.tsx:62
+msgid "Podesite šifru za šifrovanje"
+msgstr "Podesite šifru za šifrovanje"
+
 #: src/books/add-book-modal.tsx:26
 #: src/currency/currency-convert-modal.tsx:36
 #: src/currency/currency-convert-modal.tsx:37
@@ -779,9 +813,18 @@ msgstr "Potpis"
 msgid "Potpis je sačuvan"
 msgstr "Potpis je sačuvan"
 
+#: src/e2ee/encryption-setup-screen.tsx:33
+msgid "Potvrdite da razumete da šifra ne može biti vraćena."
+msgstr "Potvrdite da razumete da šifra ne može biti vraćena."
+
 #: src/auth/email-auth-page.tsx:53
 msgid "Potvrdite prijavu"
 msgstr "Potvrdite prijavu"
+
+#: src/e2ee/encryption-setup-screen.tsx:114
+#: src/e2ee/encryption-setup-screen.tsx:118
+msgid "Potvrdite šifru"
+msgstr "Potvrdite šifru"
 
 #: src/settings/account-settings-page.tsx:99
 msgid "Pregled podataka povezanih sa vašim nalogom."
@@ -831,6 +874,10 @@ msgstr "Prijava nije uspela."
 msgid "Prijava nije završena. Pokušajte ponovo."
 msgstr "Prijava nije završena. Pokušajte ponovo."
 
+#: src/e2ee/encryption-setup-screen.tsx:65
+msgid "Prijava potvrđuje vaš nalog. Ova odvojena šifra otključava vaše šifrovane podatke posle prijave."
+msgstr "Prijava potvrđuje vaš nalog. Ova odvojena šifra otključava vaše šifrovane podatke posle prijave."
+
 #: src/help/help-page.tsx:87
 msgid "Prijavite problem na GitHub-u"
 msgstr "Prijavite problem na GitHub-u"
@@ -843,6 +890,9 @@ msgstr "Primeni"
 #: src/auth/profile-popover.tsx:158
 #: src/auth/profile-popover.tsx:163
 #: src/auth/profile-popover.tsx:186
+#: src/e2ee/encryption-profile-popover.tsx:46
+#: src/e2ee/encryption-profile-popover.tsx:166
+#: src/e2ee/encryption-profile-popover.tsx:171
 #: src/setup-wizard/start-step.tsx:31
 #: src/setup-wizard/wizard-stepper.tsx:29
 #: src/working-layout/working-layout.tsx:155
@@ -874,6 +924,10 @@ msgstr "Promeni profilnu sliku"
 #: src/settings/account-settings-page.tsx:375
 msgid "Proverite internet vezu i pokušajte ponovo kasnije."
 msgstr "Proverite internet vezu i pokušajte ponovo kasnije."
+
+#: src/e2ee/encryption-setup-screen.tsx:152
+msgid "Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane podatke bez nje."
+msgstr "Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane podatke bez nje."
 
 #: src/entries/entries-table.tsx:32
 msgid "Redni broj"
@@ -937,6 +991,18 @@ msgstr "Šifra delatnosti"
 msgid "Šifra delatnosti mora imati tačno 4 cifre"
 msgstr "Šifra delatnosti mora imati tačno 4 cifre"
 
+#: src/e2ee/encryption-setup-screen.tsx:38
+msgid "Šifra i potvrda se ne poklapaju."
+msgstr "Šifra i potvrda se ne poklapaju."
+
+#: src/e2ee/encryption-setup-screen.tsx:30
+msgid "Šifra mora imati najmanje 8 znakova."
+msgstr "Šifra mora imati najmanje 8 znakova."
+
+#: src/e2ee/encryption-unlock-screen.tsx:78
+msgid "Šifra nije tačna. Pokušajte ponovo."
+msgstr "Šifra nije tačna. Pokušajte ponovo."
+
 #: src/entity-profiles/entity-profile-form.tsx:160
 #: src/entity-profiles/entity-profile-preview.tsx:101
 msgid "Šifra poreskog obveznika"
@@ -945,6 +1011,13 @@ msgstr "Šifra poreskog obveznika"
 #: src/entity-profiles/entity-profile-schema.ts:38
 msgid "Šifra poreskog obveznika mora imati tačno 8 cifara"
 msgstr "Šifra poreskog obveznika mora imati tačno 8 cifara"
+
+#: src/e2ee/encryption-setup-screen.tsx:88
+#: src/e2ee/encryption-setup-screen.tsx:92
+#: src/e2ee/encryption-unlock-screen.tsx:61
+#: src/e2ee/encryption-unlock-screen.tsx:65
+msgid "Šifra za šifrovanje"
+msgstr "Šifra za šifrovanje"
 
 #: src/auth/profile-popover.tsx:97
 #: src/settings/account-settings-page.tsx:878
@@ -957,6 +1030,8 @@ msgstr "Sinhronizuj sada"
 
 #: src/auth/auth-shell.tsx:88
 #: src/auth/auth-shell.tsx:89
+#: src/e2ee/encryption-profile-popover.tsx:123
+#: src/e2ee/encryption-profile-popover.tsx:124
 #: src/settings/general-settings-page.tsx:57
 #: src/settings/general-settings-page.tsx:58
 msgid "Sistemska"
@@ -976,6 +1051,8 @@ msgstr "Svega (RSD)"
 
 #: src/auth/auth-shell.tsx:80
 #: src/auth/auth-shell.tsx:81
+#: src/e2ee/encryption-profile-popover.tsx:115
+#: src/e2ee/encryption-profile-popover.tsx:116
 #: src/settings/general-settings-page.tsx:49
 #: src/settings/general-settings-page.tsx:50
 msgid "Svetla"
@@ -987,6 +1064,8 @@ msgstr "Svi doprinosioci"
 
 #: src/auth/auth-shell.tsx:84
 #: src/auth/auth-shell.tsx:85
+#: src/e2ee/encryption-profile-popover.tsx:119
+#: src/e2ee/encryption-profile-popover.tsx:120
 #: src/settings/general-settings-page.tsx:53
 #: src/settings/general-settings-page.tsx:54
 msgid "Tamna"
@@ -994,6 +1073,8 @@ msgstr "Tamna"
 
 #: src/auth/auth-shell.tsx:69
 #: src/auth/auth-shell.tsx:73
+#: src/e2ee/encryption-profile-popover.tsx:104
+#: src/e2ee/encryption-profile-popover.tsx:108
 #: src/settings/general-settings-page.tsx:30
 #: src/settings/general-settings-page.tsx:39
 msgid "Tema"
@@ -1044,6 +1125,10 @@ msgstr "Unesite jednokratni kod koji smo poslali na:"
 #: src/entries/entry-modal.tsx:52
 msgid "Unesite podatke novog unosa."
 msgstr "Unesite podatke novog unosa."
+
+#: src/e2ee/encryption-setup-screen.tsx:29
+msgid "Unesite šifru za šifrovanje."
+msgstr "Unesite šifru za šifrovanje."
 
 #: src/working-layout/working-layout.tsx:151
 msgid "Unosi"
@@ -1129,6 +1214,10 @@ msgstr "Za pregled i izmenu naloga potrebna je internet veza. Opšta podešavanj
 msgid "Za svaku godinu zadržite jednu knjigu, a ostale obrišite."
 msgstr "Za svaku godinu zadržite jednu knjigu, a ostale obrišite."
 
+#: src/e2ee/encryption-unlock-screen.tsx:101
+msgid "Zaboravili ste šifru?"
+msgstr "Zaboravili ste šifru?"
+
 #: src/help/help-page.tsx:114
 msgid "Zakon o porezu na dodatu vrednost"
 msgstr "Zakon o porezu na dodatu vrednost"
@@ -1143,5 +1232,6 @@ msgstr "Zakonski propisi"
 
 #: src/app-shell/mobile-drawer.tsx:47
 #: src/auth/profile-popover.tsx:170
+#: src/e2ee/encryption-profile-popover.tsx:178
 msgid "Zatvori"
 msgstr "Zatvori"

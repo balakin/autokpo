@@ -4,12 +4,12 @@ Users need a clear, trustworthy step after authentication to set up or unlock en
 
 ## What Changes
 
-- Add a fullscreen encryption shell shown after auth and before the main app.
+- Add a fullscreen encryption shell shown after auth and before the main app, with account access available before encrypted data mounts.
 - Add first-time encryption setup UI that explains the encryption password, collects and confirms it, and requires acknowledgement that it cannot be recovered.
 - Add returning-user unlock UI that asks for the encryption password and keeps data unlocked for the current auth session.
 - Add a simple forgot-password explanation path that states encrypted data cannot be recovered without the encryption password.
 - Introduce the minimal E2EE frontend module structure under `apps/app/src/e2ee` to own encryption session state, shell, gate, setup, and unlock UI.
-- Clear session encryption material on logout.
+- Clear session encryption unlock material on logout, auth-session loss, and authenticated-user changes.
 - Defer PIN unlock, configurable session strategies, password change, destructive reset, and security settings tab to future changes.
 
 ## Capabilities
@@ -24,8 +24,8 @@ Users need a clear, trustworthy step after authentication to set up or unlock en
 
 ## Impact
 
-- Affects authenticated app entry, signed-in routing/gating, logout handling, and CRDT provider mounting order.
+- Affects authenticated app entry, signed-in routing/gating, logout/auth cleanup handling, and signed-in provider mounting order.
 - Adds a new app source module at `apps/app/src/e2ee` for E2EE-related frontend boundaries.
-- Adds new UI components for encryption shell, setup, unlock, and forgot-password explanation.
-- Uses existing theme/language controls and app visual patterns where possible.
+- Adds new UI components for encryption shell, setup, unlock, forgot-password explanation, and a pre-unlock profile popover/drawer.
+- Uses existing theme/language controls, user avatar, offline sign-out guard, and app visual patterns where possible.
 - Does not introduce full cryptographic persistence or remote E2EE protocol changes in this UI-focused change; it defines the minimal user-facing boundary needed for those later layers.

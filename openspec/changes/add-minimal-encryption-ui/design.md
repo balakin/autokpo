@@ -12,8 +12,8 @@ This change is intentionally UI-focused and minimal. It creates the post-auth sh
 - Provide first-time setup UI for creating an encryption password with explicit non-recovery acknowledgement.
 - Provide returning-user unlock UI for entering the encryption password.
 - Keep encrypted data unlocked for the current auth session after successful setup/unlock.
-- Clear session encryption material when logout/auth cleanup runs.
-- Preserve access to global language and theme controls before encrypted data is unlocked.
+- Clear session encryption material when logout/auth cleanup runs, auth is lost, or the local authenticated user changes.
+- Preserve access to account context, logout, and global language/theme controls before encrypted data is unlocked.
 
 **Non-Goals:**
 
@@ -29,6 +29,8 @@ This change is intentionally UI-focused and minimal. It creates the post-auth sh
 ### Use a dedicated `EncryptionShell` for setup and unlock
 
 The setup and unlock screens SHALL render in a fullscreen shell instead of inside the main app shell. This mirrors the auth entry experience and avoids showing app navigation before encrypted data is available.
+
+The shell SHALL keep only account-level controls available before unlock: app identity, source/license footer, and a profile trigger that exposes the signed-in account, language selector, theme selector, and logout. On mobile this account surface SHALL use a drawer; on wider screens it SHALL use a popover. Logout remains guarded by online state because the existing auth sign-out flow requires network access.
 
 Alternatives considered:
 
@@ -60,6 +62,8 @@ Alternatives considered:
 
 After successful setup or unlock, the app SHALL stay unlocked until logout for that auth session. Logout SHALL clear encryption session material. This keeps MVP UX small while matching the desired session-scoped model.
 
+Auth refreshes that prove the user is signed out, and cross-tab stored-session changes to a different authenticated user, SHALL also clear local unlock material. This avoids carrying a session-storage unlock marker across local account changes.
+
 Alternatives considered:
 
 - **Ask repeatedly during a session**: deferred until specific lock events and UX expectations are defined.
@@ -77,5 +81,5 @@ Alternatives considered:
 
 - **User confusion between sign-in and encryption password** → Mitigate with repeated, concise copy: sign-in identifies the user; encryption password unlocks data and cannot be recovered.
 - **MVP lacks password recovery/reset** → Mitigate with honest forgot-password messaging and defer destructive reset to a dedicated change.
-- **Session-scoped unlock may feel implicit without settings** → Mitigate by stating on setup/unlock that data is unlocked for the current session and cleared on logout.
+- **Session-scoped unlock may feel implicit without settings** → Mitigate by stating on setup/unlock that data is unlocked for the current session and cleared on logout/auth cleanup.
 - **UI gate before real crypto can become placeholder-only** → Mitigate by defining explicit provider/gate seams so later crypto storage and sync work can plug into the same boundary without redesigning user flow.

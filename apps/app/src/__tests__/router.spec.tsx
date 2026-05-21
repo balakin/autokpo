@@ -3,6 +3,7 @@ import { Outlet, RouterProvider, createMemoryRouter } from 'react-router';
 import { I18nWrapper } from 'tests/render-helpers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { LOCAL_ENCRYPTION_UNLOCK_KEY } from '../e2ee/cleanup';
 import { createAppRoutes } from '../router';
 
 const getSessionMock = vi.hoisted(() => vi.fn());
@@ -67,13 +68,44 @@ describe('router bundle boundaries', () => {
     expect(dashboardRenderMock).not.toHaveBeenCalled();
   });
 
-  it('loads signed-in app and dashboard route for remembered signed-in user', async () => {
+  it('shows encryption setup before loading signed-in app for remembered signed-in user', async () => {
     localStorage.setItem(
       'autokpo:session',
       JSON.stringify({
         userId: 'user-1',
         email: 'user@example.com',
         image: null,
+      }),
+    );
+
+    renderRouter('/dashboard');
+
+    expect(
+      await screen.findByText('Podesite šifru za šifrovanje'),
+    ).toBeInTheDocument();
+    expect(signedInAppRenderMock).not.toHaveBeenCalled();
+    expect(dashboardRenderMock).not.toHaveBeenCalled();
+  });
+
+  it('loads signed-in app and dashboard route for unlocked remembered user', async () => {
+    localStorage.setItem(
+      'autokpo:session',
+      JSON.stringify({
+        userId: 'user-1',
+        email: 'user@example.com',
+        image: null,
+      }),
+    );
+    localStorage.setItem(
+      'autokpo:e2ee:profile:user-1',
+      JSON.stringify({ version: 1, verifier: 'secret123' }),
+    );
+    sessionStorage.setItem(
+      LOCAL_ENCRYPTION_UNLOCK_KEY,
+      JSON.stringify({
+        version: 1,
+        userId: 'user-1',
+        unlockedAt: '2026-01-01T00:00:00.000Z',
       }),
     );
 

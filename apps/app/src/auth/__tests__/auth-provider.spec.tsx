@@ -126,6 +126,14 @@ describe('AuthProvider', () => {
 
   it('reacts to cross-tab storage updates', () => {
     getSessionMock.mockImplementation(() => new Promise(() => {}));
+    sessionStorage.setItem(
+      'autokpo:e2ee:local-unlock',
+      JSON.stringify({
+        version: 1,
+        userId: 'previous-user',
+        unlockedAt: '2026-01-01T00:00:00.000Z',
+      }),
+    );
     render(
       <AuthProvider>
         <Harness />
@@ -155,6 +163,7 @@ describe('AuthProvider', () => {
 
     expect(screen.getByTestId('userId')).toHaveTextContent('leader-user');
     expect(screen.getByTestId('email')).toHaveTextContent('leader@example.com');
+    expect(sessionStorage.getItem('autokpo:e2ee:local-unlock')).toBeNull();
   });
 
   it('polls until importing image status becomes ready', async () => {

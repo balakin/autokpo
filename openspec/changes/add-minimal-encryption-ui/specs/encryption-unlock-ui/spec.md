@@ -2,7 +2,7 @@
 
 ### Requirement: Encryption shell presents setup and unlock fullscreen
 
-The system SHALL present encryption setup and unlock screens in a fullscreen shell after authentication and before the signed-in app shell. The shell SHALL include the app identity, language selector, theme selector, and a centered content card.
+The system SHALL present encryption setup and unlock screens in a fullscreen shell after authentication and before the signed-in app shell. The shell SHALL include the app identity, account-level profile controls, a centered content card, and the app footer without rendering data-backed app navigation.
 
 #### Scenario: First-time setup uses encryption shell
 
@@ -19,7 +19,14 @@ The system SHALL present encryption setup and unlock screens in a fullscreen she
 #### Scenario: Shell exposes global preferences
 
 - **WHEN** the encryption shell is displayed
-- **THEN** the user SHALL be able to change language and theme without unlocking encrypted data
+- **THEN** the user SHALL be able to open account-level profile controls without unlocking encrypted data
+- **AND** the user SHALL be able to change language and theme from those controls
+
+#### Scenario: Shell exposes logout before unlock
+
+- **WHEN** the encryption shell is displayed
+- **THEN** the user SHALL be able to access logout from the account-level profile controls without unlocking encrypted data
+- **AND** logout SHALL follow the app's online-only sign-out behavior
 
 ### Requirement: First-time setup explains encryption password purpose
 

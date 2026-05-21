@@ -20,6 +20,7 @@ import {
   LazySignedInBoundary,
   SettingsPage,
 } from './route-lazy-components';
+import { SignedInEncryptionBoundary } from './signed-in-encryption-boundary';
 
 export function createAppRoutes(): RouteObject[] {
   return [
@@ -37,9 +38,11 @@ export function createAppRoutes(): RouteObject[] {
         {
           element: (
             <SignedInGate>
-              <LazySignedInBoundary>
-                <LazySignedInApp />
-              </LazySignedInBoundary>
+              <SignedInEncryptionBoundary>
+                <LazySignedInBoundary>
+                  <LazySignedInApp />
+                </LazySignedInBoundary>
+              </SignedInEncryptionBoundary>
             </SignedInGate>
           ),
           children: [

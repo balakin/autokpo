@@ -1,8 +1,8 @@
 ## MODIFIED Requirements
 
-### Requirement: Logout and auth rejection clear local residue
+### Requirement: Logout and auth-session loss clear local residue
 
-The system SHALL provide a logout flow that clears the authenticated session and removes local user-specific residue from the device, including encryption session material. The same cleanup SHALL run when the app receives an authoritative sync auth rejection (`401 unauthorized` or `409 local_user_mismatch`).
+The system SHALL provide a logout flow that clears the authenticated session and removes local user-specific residue from the device, including encryption session material. The same encryption-session cleanup SHALL run when auth refresh reports no authenticated user, when the local stored session changes to a different user, and when the app receives an authoritative sync auth rejection (`401 unauthorized` or `409 local_user_mismatch`).
 
 #### Scenario: Explicit logout clears local residue
 
@@ -17,6 +17,18 @@ The system SHALL provide a logout flow that clears the authenticated session and
 
 - **WHEN** the sync client receives `401 unauthorized` or `409 local_user_mismatch`
 - **THEN** the app runs the same logout cleanup flow as explicit logout
+
+#### Scenario: Auth refresh loses session
+
+- **WHEN** auth refresh reports no authenticated user
+- **THEN** the app clears the stored authenticated session
+- **AND** clears encryption session material
+
+#### Scenario: Stored session changes to another user
+
+- **WHEN** the app observes the stored authenticated session change to a different user id
+- **THEN** the app updates the authenticated user state
+- **AND** clears encryption session material for the previous user
 
 ### Requirement: Navigation guards protect signed-in and signed-out routes
 

@@ -1,3 +1,4 @@
+import { clearLocalEncryptionUnlockMaterial } from '../e2ee/cleanup';
 import { getStoredLocale } from '../i18n/locale-storage';
 
 import { authClient } from './auth-client';
@@ -145,6 +146,7 @@ export async function refreshSession(): Promise<string | null> {
   const session = await authClient.getSession();
   const nextUser = session.data?.user;
   if (!nextUser?.id) {
+    clearLocalEncryptionUnlockMaterial();
     writeStoredSession(null);
     return null;
   }
@@ -163,5 +165,6 @@ export async function logoutSession(): Promise<void> {
   if (typeof caches !== 'undefined') {
     await caches.delete('avatars');
   }
+  clearLocalEncryptionUnlockMaterial();
   writeStoredSession(null);
 }

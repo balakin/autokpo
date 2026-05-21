@@ -4,8 +4,7 @@ import { getDb } from './db';
 import { user } from './db/schema/auth';
 
 export const AVATAR_PUBLIC_PREFIX = '/avatars/';
-export const IMMUTABLE_AVATAR_CACHE_CONTROL =
-  'public, max-age=31536000, immutable';
+export const AVATAR_CACHE_CONTROL = 'no-store';
 
 const USER_UPLOAD_MAX_BYTES = 256 * 1024;
 const PROVIDER_IMPORT_MAX_BYTES = 1 * 1024 * 1024;
@@ -64,7 +63,7 @@ export async function storeUserUploadedAvatar(
   await bucket.put(key, bytes, {
     httpMetadata: {
       contentType: 'image/webp',
-      cacheControl: IMMUTABLE_AVATAR_CACHE_CONTROL,
+      cacheControl: AVATAR_CACHE_CONTROL,
     },
   });
   return { key, publicPath: avatarKeyToPublicPath(key) };
@@ -124,7 +123,7 @@ export async function importPendingAvatar(
     await env.AVATARS.put(key, bytes, {
       httpMetadata: {
         contentType,
-        cacheControl: IMMUTABLE_AVATAR_CACHE_CONTROL,
+        cacheControl: AVATAR_CACHE_CONTROL,
       },
     });
 

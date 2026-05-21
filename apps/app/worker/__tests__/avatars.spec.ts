@@ -11,7 +11,6 @@ import {
 } from '../../tests/worker/request-helpers';
 import {
   AVATAR_PUBLIC_PREFIX,
-  IMMUTABLE_AVATAR_CACHE_CONTROL,
   avatarKeyToPublicPath,
   createAvatarKey,
   importPendingAvatar,
@@ -23,7 +22,6 @@ import {
 import { getDb } from '../db';
 import { user } from '../db/schema/auth';
 import app from '../main';
-import { avatarsRouter } from '../routes/avatars';
 
 const sessionState: SessionState = { userId: 'avatar-user-1', headers: null };
 const authHeaders = makeAuthHeaders(sessionState);
@@ -85,47 +83,56 @@ describe('avatar storage helpers', () => {
 });
 
 describe('GET /avatars/:id', () => {
-  it('serves avatar bytes with immutable headers', async () => {
-    const id = '11111111-1111-4111-8111-111111111111';
+  const AVATAR_ID = '11111111-1111-4111-8111-111111111111';
+
+  it('returns 404 for invalid avatar id', async () => {
+    const res = await req('/avatars/not-a-uuid');
+    expect(res.status).toBe(404);
+  });
+
+  it('returns 401 when unauthenticated', async () => {
+    sessionState.userId = null;
+    const res = await req(`/avatars/${AVATAR_ID}`);
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 404 when avatar does not belong to requesting user', async () => {
+    await authHeaders();
+    const res = await req(`/avatars/${AVATAR_ID}`);
+    expect(res.status).toBe(404);
+  });
+
+  it('serves avatar bytes with no-store cache control to its owner', async () => {
     const bytes = new Uint8Array([1, 2, 3]);
-    await workerTestEnv.AVATARS.put(id, bytes, {
-      httpMetadata: {
-        contentType: 'image/webp',
-        cacheControl: IMMUTABLE_AVATAR_CACHE_CONTROL,
-      },
+    await workerTestEnv.AVATARS.put(AVATAR_ID, bytes, {
+      httpMetadata: { contentType: 'image/webp', cacheControl: 'no-store' },
     });
 
-    const res = await avatarsRouter.fetch(
-      new Request(`http://localhost/avatars/${id}`),
-      workerTestEnv,
-      mockCtx,
-    );
+    const db = getDb(workerTestEnv.DB);
+    await authHeaders();
+    await db
+      .update(user)
+      .set({ image: avatarKeyToPublicPath(AVATAR_ID) })
+      .where(eq(user.id, 'avatar-user-1'));
 
+    const res = await req(`/avatars/${AVATAR_ID}`);
     expect(res.status).toBe(200);
     expect(new Uint8Array(await res.arrayBuffer())).toEqual(bytes);
     expect(res.headers.get('Content-Type')).toBe('image/webp');
-    expect(res.headers.get('Cache-Control')).toBe(
-      IMMUTABLE_AVATAR_CACHE_CONTROL,
-    );
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
     expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff');
   });
 
-  it('returns 404 for invalid ids and missing objects', async () => {
-    const invalid = await avatarsRouter.fetch(
-      new Request('http://localhost/avatars/not-a-uuid'),
-      workerTestEnv,
-      mockCtx,
-    );
-    expect(invalid.status).toBe(404);
+  it('returns 404 when R2 object is missing', async () => {
+    const db = getDb(workerTestEnv.DB);
+    await authHeaders();
+    await db
+      .update(user)
+      .set({ image: avatarKeyToPublicPath(AVATAR_ID) })
+      .where(eq(user.id, 'avatar-user-1'));
 
-    const missing = await avatarsRouter.fetch(
-      new Request(
-        'http://localhost/avatars/11111111-1111-4111-8111-111111111111',
-      ),
-      workerTestEnv,
-      mockCtx,
-    );
-    expect(missing.status).toBe(404);
+    const res = await req(`/avatars/${AVATAR_ID}`);
+    expect(res.status).toBe(404);
   });
 });
 

@@ -3,7 +3,8 @@ import { Hono } from 'hono';
 
 import { requireSession } from '../auth';
 import {
-  IMMUTABLE_AVATAR_CACHE_CONTROL,
+  AVATAR_CACHE_CONTROL,
+  avatarKeyToPublicPath,
   isValidAvatarId,
   isValidUserUploadSize,
   isWebP,
@@ -22,6 +23,20 @@ avatarsRouter.get('/avatars/:id', async (c) => {
     return c.body(null, 404);
   }
 
+  const session = await requireSession(c);
+  if (session instanceof Response) return session;
+
+  const db = getDb(c.env.DB);
+  const [currentUser] = await db
+    .select({ image: user.image })
+    .from(user)
+    .where(eq(user.id, session.user.id))
+    .limit(1);
+
+  if (currentUser?.image !== avatarKeyToPublicPath(id)) {
+    return c.body(null, 404);
+  }
+
   const object = await c.env.AVATARS.get(id);
   if (!object) {
     return c.body(null, 404);
@@ -29,7 +44,7 @@ avatarsRouter.get('/avatars/:id', async (c) => {
 
   const headers = new Headers();
   object.writeHttpMetadata(headers);
-  headers.set('Cache-Control', IMMUTABLE_AVATAR_CACHE_CONTROL);
+  headers.set('Cache-Control', AVATAR_CACHE_CONTROL);
   headers.set('X-Content-Type-Options', 'nosniff');
 
   return new Response(object.body, { headers });

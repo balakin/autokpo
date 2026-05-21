@@ -160,5 +160,8 @@ export async function refreshSession(): Promise<string | null> {
 
 export async function logoutSession(): Promise<void> {
   await authClient.signOut();
+  if (typeof caches !== 'undefined') {
+    await caches.delete('avatars');
+  }
   writeStoredSession(null);
 }

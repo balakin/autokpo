@@ -391,7 +391,7 @@ msgstr "Назад"
 msgid "Nazad na prijavu"
 msgstr "Вернуться к входу"
 
-#: src/e2ee/encryption-gate.tsx:110
+#: src/e2ee/encryption-gate.tsx:117
 msgid "Ne možemo da proverimo šifrovanje"
 msgstr "Не удалось проверить шифрование"
 
@@ -647,7 +647,7 @@ msgstr "Разблокировка"
 
 #: src/e2ee/encryption-unlock-screen.tsx:47
 msgid "Otključajte podatke za ovu sesiju."
-msgstr ""
+msgstr "Разблокируйте данные для этого сеанса."
 
 #: src/books/book-library.tsx:47
 msgid "Otkriveni duplikati knjiga"
@@ -757,7 +757,7 @@ msgstr "Настройка книги"
 msgid "Podesite šifru za šifrovanje"
 msgstr "Настройте пароль шифрования"
 
-#: src/e2ee/encryption-gate.tsx:126
+#: src/e2ee/encryption-gate.tsx:133
 msgid "Pokušaj ponovo"
 msgstr "Попробовать снова"
 
@@ -933,7 +933,7 @@ msgstr "Изменить фото профиля"
 msgid "Proverite internet vezu i pokušajte ponovo kasnije."
 msgstr "Проверьте подключение к интернету и попробуйте позже."
 
-#: src/e2ee/encryption-gate.tsx:113
+#: src/e2ee/encryption-gate.tsx:120
 msgid "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
 msgstr "Проверьте подключение к интернету и попробуйте снова. Мы не будем создавать новый ключ, пока не проверим существующую настройку учётной записи."
 

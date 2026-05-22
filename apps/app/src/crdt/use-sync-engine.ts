@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 
 import { useAuth } from '../auth/use-auth';
 import { useRequiredUserId } from '../auth/use-required-user-id';
+import { useEncryptionContext } from '../e2ee/encryption-context';
 import { useLeader } from '../leader';
 import { createLogger } from '../utils/create-logger';
 
@@ -20,6 +21,8 @@ import {
   REMOTE_ORIGIN,
   applyRecordsToDoc,
   computeDelta,
+  decryptSyncPayload,
+  encryptSyncPayload,
   hasPendingChanges,
   schedulePushIfPendingChanges,
 } from './sync-logic';
@@ -30,7 +33,7 @@ import { applyUpdate, encodeStateAsUpdate, encodeStateVector } from './y';
 const SYNC_QUERY_KEY = ['sync'] as const;
 const STALE_TIME_MS = 5 * 60 * 1000;
 const PUSH_DEBOUNCE_MS = 2 * 1000;
-const MAX_BLOB_BYTES = 1 * 1024 * 1024;
+const MAX_PLAINTEXT_DELTA_BYTES = 1 * 1024 * 1024;
 
 const log = createLogger('sync');
 
@@ -43,6 +46,7 @@ export function useSyncEngine(): void {
   const ydoc = useDoc();
   const { isLeader } = useLeader();
   const syncState = useSyncMetadataStore();
+  const { masterKey, keyId } = useEncryptionContext();
   const isLeaderRef = useRef(isLeader);
   isLeaderRef.current = isLeader;
   const pushInFlightRef = useRef(false);
@@ -52,6 +56,10 @@ export function useSyncEngine(): void {
     async () => {},
   );
   const schedulePushRef = useRef<() => void>(() => {});
+  const masterKeyRef = useRef(masterKey);
+  masterKeyRef.current = masterKey;
+  const keyIdRef = useRef(keyId);
+  keyIdRef.current = keyId;
 
   const handleAuthFailureRef = useRef((error: unknown): boolean => {
     if (!(error instanceof SyncRequestError)) return false;
@@ -68,13 +76,30 @@ export function useSyncEngine(): void {
   const pushMutation = useMutation({
     mutationFn: ({
       delta,
-      idempotencyKey,
+      id,
+      encryptionKeyId,
+      encryptionAlgorithm,
+      encryptionVersion,
+      iv,
       localUserId,
     }: {
-      delta: Uint8Array<ArrayBuffer>;
-      idempotencyKey: string;
+      delta: Uint8Array;
+      id: string;
+      encryptionKeyId: string;
+      encryptionAlgorithm: 'aes-256-gcm';
+      encryptionVersion: number;
+      iv: Uint8Array;
       localUserId: string;
-    }) => pushHttp({ delta, idempotencyKey, localUserId }),
+    }) =>
+      pushHttp({
+        delta,
+        id,
+        encryptionKeyId,
+        encryptionAlgorithm,
+        encryptionVersion,
+        iv,
+        localUserId,
+      }),
     retry: (count, err) => {
       if ((err as { status?: number })?.status === 413) return false;
       return count < 3;
@@ -86,14 +111,32 @@ export function useSyncEngine(): void {
     mutationFn: ({
       snapshot,
       replacesUpTo,
-      idempotencyKey,
+      id,
+      encryptionKeyId,
+      encryptionAlgorithm,
+      encryptionVersion,
+      iv,
       localUserId,
     }: {
-      snapshot: Uint8Array<ArrayBuffer>;
+      snapshot: Uint8Array;
       replacesUpTo: number;
-      idempotencyKey: string;
+      id: string;
+      encryptionKeyId: string;
+      encryptionAlgorithm: 'aes-256-gcm';
+      encryptionVersion: number;
+      iv: Uint8Array;
       localUserId: string;
-    }) => compactHttp({ snapshot, replacesUpTo, idempotencyKey, localUserId }),
+    }) =>
+      compactHttp({
+        snapshot,
+        replacesUpTo,
+        id,
+        encryptionKeyId,
+        encryptionAlgorithm,
+        encryptionVersion,
+        iv,
+        localUserId,
+      }),
     retry: (count, err) => {
       if ((err as { status?: number })?.status === 413) return false;
       return count < 3;
@@ -128,11 +171,28 @@ export function useSyncEngine(): void {
           result.head,
           result.status,
         );
+        // Decrypt each record ciphertext before applying to the Y.Doc.
+        const plaintexts = await Promise.all(
+          result.records.map((record) =>
+            decryptSyncPayload(
+              {
+                encryptionAlgorithm: record.encryptionAlgorithm,
+                encryptionVersion: record.encryptionVersion as 1,
+                iv: record.iv,
+                ciphertext: record.ciphertext,
+              },
+              masterKeyRef.current,
+              userId,
+              record.encryptionKeyId,
+              record.kind,
+            ),
+          ),
+        );
         // Apply all received records inside one Yjs transaction so
         // partial application is impossible.
-        applyRecordsToDoc(ydoc, result.records);
-        for (const record of result.records) {
-          post({ type: 'remote-update', bytes: record.bytes });
+        applyRecordsToDoc(ydoc, plaintexts);
+        for (const plaintext of plaintexts) {
+          post({ type: 'remote-update', bytes: plaintext });
         }
         // Re-read after async gap to avoid clobbering a concurrent
         // push that may have advanced cursor or set dirty. Preserve
@@ -196,18 +256,35 @@ export function useSyncEngine(): void {
     };
 
     doCompactRef.current = async (replacesUpTo: number) => {
-      const snapshot = encodeStateAsUpdate(ydoc);
-      const idempotencyKey = crypto.randomUUID();
+      const plainSnapshot = encodeStateAsUpdate(ydoc);
+      const {
+        encryptionVersion,
+        encryptionAlgorithm,
+        iv,
+        ciphertext: encryptedSnapshot,
+      } = await encryptSyncPayload(
+        plainSnapshot,
+        masterKeyRef.current,
+        userId,
+        keyIdRef.current,
+        'snapshot',
+      );
+      const id = crypto.randomUUID();
+      const encryptionKeyId = keyIdRef.current;
       log(
         'compact: replacesUpTo=%d, snapshot=%d bytes',
         replacesUpTo,
-        snapshot.byteLength,
+        plainSnapshot.byteLength,
       );
       try {
         const result = await compactMutation.mutateAsync({
-          snapshot,
+          snapshot: encryptedSnapshot,
           replacesUpTo,
-          idempotencyKey,
+          id,
+          encryptionKeyId,
+          encryptionAlgorithm,
+          encryptionVersion,
+          iv,
           localUserId: userId,
         });
         // "Push as poll": the server assigns a dense monotonic seq,
@@ -267,26 +344,46 @@ export function useSyncEngine(): void {
       // Derive the delta since last acked state vector.
       // If stateVector is null (after 410 recovery), send full doc state.
       const { cursor } = syncState.read();
-      const delta = computeDelta(ydoc, syncState.read().stateVector);
+      const plainDelta = computeDelta(ydoc, syncState.read().stateVector);
       // Delta too large for a single POST — compact instead.
       // Compact may pull afterwards if a gap is detected.
-      if (delta.byteLength > MAX_BLOB_BYTES) {
-        log('push: delta %d bytes exceeds max, compacting', delta.byteLength);
+      if (plainDelta.byteLength > MAX_PLAINTEXT_DELTA_BYTES) {
+        log(
+          'push: delta %d bytes exceeds max, compacting',
+          plainDelta.byteLength,
+        );
         await doCompactRef.current(cursor);
         return;
       }
-      const idempotencyKey = crypto.randomUUID();
+      const {
+        encryptionVersion,
+        encryptionAlgorithm,
+        iv,
+        ciphertext: encryptedDelta,
+      } = await encryptSyncPayload(
+        plainDelta,
+        masterKeyRef.current,
+        userId,
+        keyIdRef.current,
+        'update',
+      );
+      const id = crypto.randomUUID();
+      const encryptionKeyId = keyIdRef.current;
       log(
         'push: delta=%d bytes, cursor=%d, dirty=%s',
-        delta.byteLength,
+        plainDelta.byteLength,
         cursor,
         syncState.read().dirty,
       );
       pushInFlightRef.current = true;
       try {
         const result = await pushMutation.mutateAsync({
-          delta,
-          idempotencyKey,
+          delta: encryptedDelta,
+          id,
+          encryptionKeyId,
+          encryptionAlgorithm,
+          encryptionVersion,
+          iv,
           localUserId: userId,
         });
         // "Push as poll": compute prevHead from the assigned seq.

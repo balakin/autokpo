@@ -7,10 +7,14 @@ import {
   mockCtx,
   type SessionState,
 } from '../../tests/worker/request-helpers';
+import { getDb } from '../db';
+import { userEncryptionKey } from '../db/schema';
 import app from '../main';
 
 const sessionState: SessionState = { userId: 'user-1', headers: null };
 const authHeaders = makeAuthHeaders(sessionState);
+const TEST_KEY_ID = 'test-key-1';
+const TEST_ALGORITHM = 'aes-256-gcm';
 
 async function syncRequest(path: string, init?: RequestInit | Request) {
   const headers = mergeHeaders(
@@ -25,29 +29,13 @@ async function syncRequest(path: string, init?: RequestInit | Request) {
   return app.request(request, undefined, workerTestEnv, mockCtx);
 }
 
-function parseBinaryStream(buffer: ArrayBuffer): Array<{
-  seq: number;
-  kind: number;
-  bytes: Uint8Array;
-}> {
-  const records: Array<{ seq: number; kind: number; bytes: Uint8Array }> = [];
-  const view = new DataView(buffer);
-  let offset = 0;
-  while (offset < buffer.byteLength) {
-    const seq = view.getUint32(offset, false);
-    offset += 4;
-    const kind = view.getUint8(offset);
-    offset += 1;
-    const len = view.getUint32(offset, false);
-    offset += 4;
-    const bytes = new Uint8Array(buffer.slice(offset, offset + len));
-    offset += len;
-    records.push({ seq, kind, bytes });
-  }
-  return records;
+function toBase64(bytes: Uint8Array): string {
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
 }
 
-function makeBlob(values: number[]): Uint8Array {
+function makeCiphertext(values: number[]): Uint8Array {
   return new Uint8Array(values);
 }
 
@@ -60,11 +48,59 @@ function syncHeaders(
   };
 }
 
+const TEST_IV = new Uint8Array(12).fill(0xcd);
+
+function pushBody(ciphertext: Uint8Array, id = crypto.randomUUID()) {
+  return {
+    method: 'POST',
+    headers: syncHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({
+      id,
+      encryptionKeyId: TEST_KEY_ID,
+      encryptionAlgorithm: TEST_ALGORITHM,
+      encryptionVersion: 1,
+      iv: toBase64(TEST_IV),
+      ciphertext: toBase64(ciphertext),
+    }),
+  };
+}
+
+function compactBody(
+  ciphertext: Uint8Array,
+  replacesUpTo: number,
+  id = crypto.randomUUID(),
+) {
+  return {
+    method: 'POST',
+    headers: syncHeaders({
+      'Content-Type': 'application/json',
+      'X-Replaces-Up-To': String(replacesUpTo),
+    }),
+    body: JSON.stringify({
+      id,
+      encryptionKeyId: TEST_KEY_ID,
+      encryptionAlgorithm: TEST_ALGORITHM,
+      encryptionVersion: 1,
+      iv: toBase64(TEST_IV),
+      ciphertext: toBase64(ciphertext),
+    }),
+  };
+}
+
+async function insertTestEncryptionKey() {
+  const db = getDb(workerTestEnv.DB);
+  await db
+    .insert(userEncryptionKey)
+    .values({ id: TEST_KEY_ID, userId: 'user-1' })
+    .onConflictDoNothing();
+}
+
 describe('GET /api/sync', () => {
   afterEach(async () => {
     sessionState.userId = 'user-1';
     sessionState.headers = null;
-    await workerTestEnv.DB.exec('DELETE FROM updates');
+    await workerTestEnv.DB.exec('DELETE FROM sync_record');
+    await workerTestEnv.DB.exec('DELETE FROM user_encryption_key');
     await clearAuthData();
   });
 
@@ -91,43 +127,52 @@ describe('GET /api/sync', () => {
     expect(await res.json()).toEqual({ code: 'local_user_mismatch' });
   });
 
-  it('returns binary record stream with ETag', async () => {
+  it('returns JSON records array with ETag', async () => {
+    await authHeaders(); // ensure user exists
+    await insertTestEncryptionKey();
+    const ciphertexts = [
+      makeCiphertext([1]),
+      makeCiphertext([2]),
+      makeCiphertext([3]),
+    ];
     for (let i = 0; i < 3; i++) {
-      await syncRequest('/api/sync', {
-        method: 'POST',
-        headers: syncHeaders({
-          'Content-Type': 'application/octet-stream',
-          'Idempotency-Key': `key-${i}`,
-          'Content-Length': '1',
-        }),
-        body: makeBlob([i]),
-      });
+      await syncRequest('/api/sync', pushBody(ciphertexts[i]));
     }
 
     const res = await syncRequest('/api/sync', { headers: syncHeaders() });
     expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toContain('application/json');
     expect(res.headers.get('ETag')).toBe('"3"');
 
-    const buffer = await res.arrayBuffer();
-    const records = parseBinaryStream(buffer);
-    expect(records).toHaveLength(3);
-    expect(records[0].seq).toBe(1);
-    expect(records[0].kind).toBe(0x01);
-    expect(records[1].seq).toBe(2);
-    expect(records[2].seq).toBe(3);
+    const rawBody: unknown = await res.json();
+    const body = rawBody as {
+      records: Array<{
+        seq: number;
+        kind: string;
+        encryptionKeyId: string;
+        encryptionAlgorithm: string;
+        encryptionVersion: number;
+        iv: string;
+        ciphertext: string;
+      }>;
+    };
+    expect(body.records).toHaveLength(3);
+    expect(body.records[0].seq).toBe(1);
+    expect(body.records[0].kind).toBe('update');
+    expect(body.records[0].encryptionKeyId).toBe(TEST_KEY_ID);
+    expect(body.records[0].encryptionAlgorithm).toBe(TEST_ALGORITHM);
+    expect(body.records[0].encryptionVersion).toBe(1);
+    expect(body.records[0].iv).toBe(toBase64(TEST_IV));
+    expect(body.records[0].ciphertext).toBe(toBase64(ciphertexts[0]));
+    expect(body.records[1].seq).toBe(2);
+    expect(body.records[2].seq).toBe(3);
   });
 
   it('returns 304 when If-None-Match matches head', async () => {
+    await authHeaders();
+    await insertTestEncryptionKey();
     for (let i = 0; i < 3; i++) {
-      await syncRequest('/api/sync', {
-        method: 'POST',
-        headers: syncHeaders({
-          'Content-Type': 'application/octet-stream',
-          'Idempotency-Key': `key-full-${i}`,
-          'Content-Length': '1',
-        }),
-        body: makeBlob([i]),
-      });
+      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
     }
 
     const res = await syncRequest('/api/sync', {
@@ -137,24 +182,18 @@ describe('GET /api/sync', () => {
     expect(res.headers.get('ETag')).toBe('"3"');
   });
 
-  it('returns full stream when no If-None-Match header', async () => {
+  it('returns full records when no If-None-Match header', async () => {
+    await authHeaders();
+    await insertTestEncryptionKey();
     for (let i = 0; i < 2; i++) {
-      await syncRequest('/api/sync', {
-        method: 'POST',
-        headers: syncHeaders({
-          'Content-Type': 'application/octet-stream',
-          'Idempotency-Key': `key-no-match-${i}`,
-          'Content-Length': '1',
-        }),
-        body: makeBlob([i]),
-      });
+      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
     }
 
     const res = await syncRequest('/api/sync', { headers: syncHeaders() });
     expect(res.status).toBe(200);
-    const buffer = await res.arrayBuffer();
-    const records = parseBinaryStream(buffer);
-    expect(records).toHaveLength(2);
+    const rawBody: unknown = await res.json();
+    const body = rawBody as { records: unknown[] };
+    expect(body.records).toHaveLength(2);
   });
 
   it('returns 410 when cursor is newer than head', async () => {
@@ -164,12 +203,13 @@ describe('GET /api/sync', () => {
     expect(res.status).toBe(410);
   });
 
-  it('empty body with ETag "0" when no records', async () => {
+  it('returns empty records with ETag "0" when no records exist', async () => {
     const res = await syncRequest('/api/sync', { headers: syncHeaders() });
     expect(res.status).toBe(200);
     expect(res.headers.get('ETag')).toBe('"0"');
-    const ab = await res.arrayBuffer();
-    expect(ab.byteLength).toBe(0);
+    const rawBody: unknown = await res.json();
+    const body = rawBody as { records: unknown[] };
+    expect(body.records).toHaveLength(0);
   });
 });
 
@@ -177,7 +217,8 @@ describe('POST /api/sync', () => {
   afterEach(async () => {
     sessionState.userId = 'user-1';
     sessionState.headers = null;
-    await workerTestEnv.DB.exec('DELETE FROM updates');
+    await workerTestEnv.DB.exec('DELETE FROM sync_record');
+    await workerTestEnv.DB.exec('DELETE FROM user_encryption_key');
     await clearAuthData();
   });
 
@@ -185,189 +226,108 @@ describe('POST /api/sync', () => {
     sessionState.userId = null;
     const res = await syncRequest('/api/sync', {
       method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/octet-stream',
-        'Idempotency-Key': 'unauth',
-        'Content-Length': '1',
+      headers: syncHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({
+        id: 'uuid-1',
+        encryptionKeyId: TEST_KEY_ID,
+        encryptionAlgorithm: TEST_ALGORITHM,
+        encryptionVersion: 1,
+        iv: toBase64(TEST_IV),
+        ciphertext: toBase64(makeCiphertext([1])),
       }),
-      body: makeBlob([1]),
     });
     expect(res.status).toBe(401);
     expect(await res.json()).toEqual({ code: 'unauthorized' });
   });
 
-  it('returns 400 when missing Idempotency-Key', async () => {
-    const blob = makeBlob([1]);
+  it('returns 400 for missing or invalid body fields', async () => {
     const res = await syncRequest('/api/sync', {
       method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/octet-stream',
-        'Content-Length': String(blob.byteLength),
-      }),
-      body: blob,
+      headers: syncHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ ciphertext: toBase64(makeCiphertext([1])) }), // missing id and encryptionKeyId
     });
     expect(res.status).toBe(400);
   });
 
-  it('returns 415 for wrong Content-Type', async () => {
-    const res = await syncRequest('/api/sync', {
-      method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/json',
-        'Idempotency-Key': 'key-415',
-        'Content-Length': '1',
-      }),
-      body: JSON.stringify({}),
-    });
-    expect(res.status).toBe(415);
-  });
-
-  it('returns 413 when Content-Length exceeds MAX_BLOB_BYTES', async () => {
-    const bigBody = new Uint8Array(1024 * 1024 + 1);
-    const res = await syncRequest('/api/sync', {
-      method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/octet-stream',
-        'Idempotency-Key': 'key-big',
-        'Content-Length': String(1024 * 1024 + 1),
-      }),
-      body: bigBody,
-    });
-    expect(res.status).toBe(413);
-  });
-
   it('assigns sequential seq and returns ETag', async () => {
-    const r1 = await syncRequest('/api/sync', {
-      method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/octet-stream',
-        'Idempotency-Key': 'seq-key-1',
-        'Content-Length': '1',
-      }),
-      body: makeBlob([1]),
-    });
+    await authHeaders();
+    await insertTestEncryptionKey();
+
+    const r1 = await syncRequest('/api/sync', pushBody(makeCiphertext([1])));
     expect(r1.status).toBe(200);
     expect(r1.headers.get('ETag')).toBe('"1"');
 
-    const r2 = await syncRequest('/api/sync', {
-      method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/octet-stream',
-        'Idempotency-Key': 'seq-key-2',
-        'Content-Length': '1',
-      }),
-      body: makeBlob([2]),
-    });
+    const r2 = await syncRequest('/api/sync', pushBody(makeCiphertext([2])));
     expect(r2.status).toBe(200);
     expect(r2.headers.get('ETag')).toBe('"2"');
   });
 
   it('idempotent duplicate returns same ETag', async () => {
-    const key = 'idempotent-dup-key';
-    const blob = makeBlob([42]);
+    await authHeaders();
+    await insertTestEncryptionKey();
+    const id = crypto.randomUUID();
+    const ciphertext = makeCiphertext([42]);
 
-    const r1 = await syncRequest('/api/sync', {
-      method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/octet-stream',
-        'Idempotency-Key': key,
-        'Content-Length': '1',
-      }),
-      body: blob,
-    });
+    const r1 = await syncRequest('/api/sync', pushBody(ciphertext, id));
     expect(r1.status).toBe(200);
     expect(r1.headers.get('ETag')).toBe('"1"');
 
-    const r2 = await syncRequest('/api/sync', {
-      method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/octet-stream',
-        'Idempotency-Key': key,
-        'Content-Length': '1',
-      }),
-      body: blob,
-    });
+    const r2 = await syncRequest('/api/sync', pushBody(ciphertext, id));
     expect(r2.status).toBe(200);
     expect(r2.headers.get('ETag')).toBe('"1"');
   });
 
-  it('same key different blob returns 409', async () => {
-    const key = 'key-conflict';
-    const r1 = await syncRequest('/api/sync', {
-      method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/octet-stream',
-        'Idempotency-Key': key,
-        'Content-Length': '1',
-      }),
-      body: makeBlob([1]),
-    });
+  it('same id different ciphertext returns 409', async () => {
+    await authHeaders();
+    await insertTestEncryptionKey();
+    const id = crypto.randomUUID();
+
+    const r1 = await syncRequest(
+      '/api/sync',
+      pushBody(makeCiphertext([1]), id),
+    );
     expect(r1.status).toBe(200);
 
-    const r2 = await syncRequest('/api/sync', {
-      method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/octet-stream',
-        'Idempotency-Key': key,
-        'Content-Length': '1',
-      }),
-      body: makeBlob([2]),
-    });
+    const r2 = await syncRequest(
+      '/api/sync',
+      pushBody(makeCiphertext([2]), id),
+    );
     expect(r2.status).toBe(409);
     expect(await r2.json()).toEqual({ code: 'idempotency_conflict' });
   });
 
   it('emits X-Compact-Hint when over soft cap rows', async () => {
-    const blob = makeBlob([1]);
+    await authHeaders();
+    await insertTestEncryptionKey();
+    const ciphertext = makeCiphertext([1]);
     for (let i = 0; i < 200; i++) {
-      await syncRequest('/api/sync', {
-        method: 'POST',
-        headers: syncHeaders({
-          'Content-Type': 'application/octet-stream',
-          'Idempotency-Key': `soft-cap-key-${i}`,
-          'Content-Length': '1',
-        }),
-        body: blob,
-      });
+      await syncRequest('/api/sync', pushBody(ciphertext));
     }
 
-    const res = await syncRequest('/api/sync', {
-      method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/octet-stream',
-        'Idempotency-Key': 'soft-cap-last-key',
-        'Content-Length': '1',
-      }),
-      body: blob,
-    });
+    const res = await syncRequest('/api/sync', pushBody(ciphertext));
 
     expect(res.status).toBe(200);
     expect(res.headers.get('X-Compact-Hint')).toBe('please');
   });
 
   it('returns 413 when hard cap exceeded', async () => {
-    const blob = new Uint8Array(1024 * 1024);
+    await authHeaders();
+    await insertTestEncryptionKey();
+    const ciphertext = new Uint8Array(1024 * 1024);
     for (let i = 0; i < 4; i++) {
-      await syncRequest('/api/sync', {
-        method: 'POST',
-        headers: syncHeaders({
-          'Content-Type': 'application/octet-stream',
-          'Idempotency-Key': `hard-cap-key-${i}`,
-          'Content-Length': String(blob.byteLength),
-        }),
-        body: blob,
-      });
+      await syncRequest('/api/sync', pushBody(ciphertext));
     }
 
-    const res = await syncRequest('/api/sync', {
-      method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/octet-stream',
-        'Idempotency-Key': 'hard-cap-last-key',
-        'Content-Length': '1',
-      }),
-      body: makeBlob([1]),
-    });
+    const res = await syncRequest('/api/sync', pushBody(makeCiphertext([1])));
+    expect(res.status).toBe(413);
+  });
+
+  it('returns 413 when single ciphertext exceeds MAX_CIPHERTEXT_BYTES', async () => {
+    await authHeaders();
+    await insertTestEncryptionKey();
+    const oversized = new Uint8Array(1024 * 1024 + 17);
+
+    const res = await syncRequest('/api/sync', pushBody(oversized));
     expect(res.status).toBe(413);
   });
 });
@@ -376,164 +336,119 @@ describe('POST /api/sync/compact', () => {
   afterEach(async () => {
     sessionState.userId = 'user-1';
     sessionState.headers = null;
-    await workerTestEnv.DB.exec('DELETE FROM updates');
+    await workerTestEnv.DB.exec('DELETE FROM sync_record');
+    await workerTestEnv.DB.exec('DELETE FROM user_encryption_key');
     await clearAuthData();
   });
 
   it('inserts snapshot and returns ETag', async () => {
+    await authHeaders();
+    await insertTestEncryptionKey();
     for (let i = 0; i < 5; i++) {
-      await syncRequest('/api/sync', {
-        method: 'POST',
-        headers: syncHeaders({
-          'Content-Type': 'application/octet-stream',
-          'Idempotency-Key': `compact-pre-${i}`,
-          'Content-Length': '1',
-        }),
-        body: makeBlob([i]),
-      });
+      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
     }
 
-    const res = await syncRequest('/api/sync/compact', {
-      method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/octet-stream',
-        'Idempotency-Key': 'compact-key-1',
-        'X-Replaces-Up-To': '5',
-        'Content-Length': '1',
-      }),
-      body: makeBlob([99]),
-    });
+    const res = await syncRequest(
+      '/api/sync/compact',
+      compactBody(makeCiphertext([99]), 5),
+    );
 
     expect(res.status).toBe(200);
     expect(res.headers.get('ETag')).toBe('"6"');
   });
 
   it('idempotent repeat returns same ETag without re-inserting', async () => {
-    const key = 'compact-idempotent-key';
+    await authHeaders();
+    await insertTestEncryptionKey();
+    const id = crypto.randomUUID();
 
-    const r1 = await syncRequest('/api/sync/compact', {
-      method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/octet-stream',
-        'Idempotency-Key': key,
-        'X-Replaces-Up-To': '0',
-        'Content-Length': '1',
-      }),
-      body: makeBlob([99]),
-    });
+    const r1 = await syncRequest(
+      '/api/sync/compact',
+      compactBody(makeCiphertext([99]), 0, id),
+    );
     expect(r1.status).toBe(200);
     const etag1 = r1.headers.get('ETag');
 
-    const r2 = await syncRequest('/api/sync/compact', {
-      method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/octet-stream',
-        'Idempotency-Key': key,
-        'X-Replaces-Up-To': '0',
-        'Content-Length': '1',
-      }),
-      body: makeBlob([99]),
-    });
+    const r2 = await syncRequest(
+      '/api/sync/compact',
+      compactBody(makeCiphertext([99]), 0, id),
+    );
     expect(r2.status).toBe(200);
     expect(r2.headers.get('ETag')).toBe(etag1);
 
     const getRes = await syncRequest('/api/sync', { headers: syncHeaders() });
-    const buffer = await getRes.arrayBuffer();
-    const records = parseBinaryStream(buffer);
-    const snapshots = records.filter((r) => r.kind === 0x02);
+    const rawBody: unknown = await getRes.json();
+    const body = rawBody as { records: Array<{ kind: string }> };
+    const snapshots = body.records.filter((r) => r.kind === 'snapshot');
     expect(snapshots).toHaveLength(1);
   });
 
   it('returns 409 when X-Replaces-Up-To exceeds head', async () => {
+    await authHeaders();
+    await insertTestEncryptionKey();
     for (let i = 0; i < 3; i++) {
-      await syncRequest('/api/sync', {
-        method: 'POST',
-        headers: syncHeaders({
-          'Content-Type': 'application/octet-stream',
-          'Idempotency-Key': `compact-future-pre-${i}`,
-          'Content-Length': '1',
-        }),
-        body: makeBlob([i]),
-      });
+      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
     }
 
-    const res = await syncRequest('/api/sync/compact', {
-      method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/octet-stream',
-        'Idempotency-Key': 'compact-future-key',
-        'X-Replaces-Up-To': '999',
-        'Content-Length': '1',
-      }),
-      body: makeBlob([99]),
-    });
+    const res = await syncRequest(
+      '/api/sync/compact',
+      compactBody(makeCiphertext([99]), 999),
+    );
     expect(res.status).toBe(409);
   });
 
-  it('returns 400 for missing required headers', async () => {
+  it('returns 400 for missing X-Replaces-Up-To header', async () => {
     const res = await syncRequest('/api/sync/compact', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/octet-stream',
-        'Content-Length': '1',
-      },
-      body: makeBlob([99]),
+      headers: syncHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        encryptionKeyId: TEST_KEY_ID,
+        encryptionAlgorithm: TEST_ALGORITHM,
+        encryptionVersion: 1,
+        iv: toBase64(TEST_IV),
+        ciphertext: toBase64(makeCiphertext([99])),
+      }),
     });
     expect(res.status).toBe(400);
   });
 
   it('keeps tail within COMPACT_TAIL_MAX_ROWS and COMPACT_TAIL_MAX_BYTES', async () => {
-    const blob = new Uint8Array(60 * 1024);
+    await authHeaders();
+    await insertTestEncryptionKey();
+    const ciphertext = new Uint8Array(60 * 1024);
     for (let i = 0; i < 50; i++) {
-      await syncRequest('/api/sync', {
-        method: 'POST',
-        headers: syncHeaders({
-          'Content-Type': 'application/octet-stream',
-          'Idempotency-Key': `compact-tail-pre-${i}`,
-          'Content-Length': String(blob.byteLength),
-        }),
-        body: blob,
-      });
+      await syncRequest('/api/sync', pushBody(ciphertext));
     }
 
-    const compactRes = await syncRequest('/api/sync/compact', {
-      method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/octet-stream',
-        'Idempotency-Key': 'compact-tail-key',
-        'X-Replaces-Up-To': '50',
-        'Content-Length': '1',
-      }),
-      body: makeBlob([99]),
-    });
+    const compactRes = await syncRequest(
+      '/api/sync/compact',
+      compactBody(makeCiphertext([99]), 50),
+    );
     expect(compactRes.status).toBe(200);
 
     const getRes = await syncRequest('/api/sync', { headers: syncHeaders() });
-    const buffer = await getRes.arrayBuffer();
-    const records = parseBinaryStream(buffer);
+    const rawBody2: unknown = await getRes.json();
+    const body = rawBody2 as {
+      records: Array<{ kind: string; ciphertext: string }>;
+    };
 
-    const tailRecords = records.filter((r) => r.kind === 0x01);
+    const tailRecords = body.records.filter((r) => r.kind === 'update');
     expect(tailRecords.length).toBeLessThanOrEqual(50);
 
-    const totalTailBytes = tailRecords.reduce(
-      (sum, r) => sum + r.bytes.byteLength,
-      0,
-    );
+    const totalTailBytes = tailRecords.reduce((sum, r) => {
+      return sum + atob(r.ciphertext).length;
+    }, 0);
     expect(totalTailBytes).toBeLessThanOrEqual(256 * 1024);
   });
 
-  it('binary body is accepted', async () => {
-    const binaryBlob = new Uint8Array([0xde, 0xad, 0xbe, 0xef]);
-    const res = await syncRequest('/api/sync/compact', {
-      method: 'POST',
-      headers: syncHeaders({
-        'Content-Type': 'application/octet-stream',
-        'Idempotency-Key': 'compact-binary-key',
-        'X-Replaces-Up-To': '0',
-        'Content-Length': String(binaryBlob.byteLength),
-      }),
-      body: binaryBlob,
-    });
+  it('JSON body is accepted', async () => {
+    await authHeaders();
+    await insertTestEncryptionKey();
+    const res = await syncRequest(
+      '/api/sync/compact',
+      compactBody(new Uint8Array([0xde, 0xad, 0xbe, 0xef]), 0),
+    );
     expect(res.status).toBe(200);
   });
 });

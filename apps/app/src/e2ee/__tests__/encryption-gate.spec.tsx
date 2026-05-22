@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { I18nWrapper } from '../../../tests/app/render-helpers';
 import { AuthContext } from '../../auth/auth-context';
+import { useEncryptionContext } from '../encryption-context';
 import { EncryptionGate } from '../encryption-gate';
 import type {
   CreateEncryptionKeyRequest,
@@ -331,5 +332,74 @@ describe('EncryptionGate', () => {
     expect(
       screen.queryByRole('button', { name: /reset/i }),
     ).not.toBeInTheDocument();
+  });
+
+  it('provides EncryptionContext with masterKey and keyId after unlock', async () => {
+    const user = userEvent.setup();
+    cacheRecord();
+
+    let capturedContext: { masterKey: Uint8Array; keyId: string } | null = null;
+
+    function ContextCapture() {
+      capturedContext = useEncryptionContext();
+      return null;
+    }
+
+    localStorage.setItem('autokpo:locale', 'sr-Latn');
+    render(
+      <I18nWrapper>
+        <AuthContext
+          value={{
+            user: { id: 'user-1', email: 'user@example.com', image: null },
+            refresh: () => Promise.resolve('user-1'),
+            logout: () => Promise.resolve(),
+          }}
+        >
+          <EncryptionGate userId="user-1">
+            <ContextCapture />
+            <div>protected content</div>
+          </EncryptionGate>
+        </AuthContext>
+      </I18nWrapper>,
+    );
+
+    await user.type(screen.getByLabelText(/Šifra za šifrovanje/i), 'secret123');
+    await user.click(
+      screen.getByRole('button', { name: /Otključaj podatke/i }),
+    );
+
+    await screen.findByText('protected content');
+
+    expect(capturedContext).not.toBeNull();
+    expect(capturedContext!.masterKey).toEqual(masterKey);
+    expect(capturedContext!.keyId).toBe('key-1');
+  });
+
+  it('does not render children (and thus context) when locked', () => {
+    cacheRecord();
+
+    renderGate();
+
+    // Children are not rendered when locked
+    expect(screen.queryByText('protected content')).not.toBeInTheDocument();
+  });
+});
+
+describe('useEncryptionContext', () => {
+  it('throws when called outside EncryptionContext provider', () => {
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    function Thief() {
+      useEncryptionContext();
+      return null;
+    }
+
+    expect(() => render(<Thief />)).toThrow(
+      'useEncryptionContext called outside EncryptionContext provider',
+    );
+
+    consoleError.mockRestore();
   });
 });

@@ -2,6 +2,7 @@ import { Button, Card, Spinner } from '@heroui/react';
 import { Trans } from '@lingui/react/macro';
 import { useEffect, useReducer, useState, type ReactNode } from 'react';
 
+import { EncryptionContext } from './encryption-context';
 import { createWrappedMasterKey, unwrapMasterKey } from './encryption-crypto';
 import {
   createInitialEncryptionGateState,
@@ -72,7 +73,7 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
       );
       const record = await createEncryptionKeyRecord(request);
       writeCachedEncryptionKeyRecord(userId, record);
-      dispatch({ type: 'unlocked', masterKey });
+      dispatch({ type: 'unlocked', masterKey, keyId: record.key.id });
     } catch {
       dispatch({ type: 'setup-failed' });
     }
@@ -86,15 +87,21 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
         (await fetchEncryptionKeyRecord());
       writeCachedEncryptionKeyRecord(userId, record);
       const masterKey = await unwrapMasterKey(password, record);
-      dispatch({ type: 'unlocked', masterKey });
+      dispatch({ type: 'unlocked', masterKey, keyId: record.key.id });
       return;
     } catch {
       dispatch({ type: 'unlock-failed' });
     }
   }
 
-  if (session.status === 'unlocked' && gateState.masterKey) {
-    return children;
+  if (session.status === 'unlocked' && gateState.masterKey && gateState.keyId) {
+    return (
+      <EncryptionContext
+        value={{ masterKey: gateState.masterKey, keyId: gateState.keyId }}
+      >
+        {children}
+      </EncryptionContext>
+    );
   }
 
   if (session.status === 'checking') {

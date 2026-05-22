@@ -6,6 +6,13 @@ import type * as SyncClient from '../sync-client';
 import { SyncRequestError } from '../sync-client';
 import { useSyncEngine } from '../use-sync-engine';
 
+vi.mock('../../e2ee/encryption-context', () => ({
+  useEncryptionContext: () => ({
+    masterKey: new Uint8Array(32).fill(1),
+    keyId: 'key-1',
+  }),
+}));
+
 const logoutMock = vi.hoisted(() => vi.fn());
 const pullMock = vi.hoisted(() => vi.fn());
 

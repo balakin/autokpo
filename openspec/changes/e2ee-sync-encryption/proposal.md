@@ -6,8 +6,8 @@ Sync blobs are currently stored and transmitted in plaintext, meaning the Cloudf
 
 - **BREAKING** Rename DB table `updates` → `sync_record` and restructure its schema
 - **BREAKING** Replace binary octet-stream wire format with JSON for push, compact, and pull
-- Add `encryption_key_id` column to `sync_record` linking each row to the key that encrypted it
-- Encrypted blob format: self-contained `[enc_version: u8][iv: 12 bytes][ciphertext…]`
+- Add `encryption_key_id` and `encryption_algorithm` columns to `sync_record` linking each row to the key and algorithm that encrypted it
+- Encrypted blob format: self-contained `[encryption_version: u8][iv: 12 bytes][ciphertext…]`
 - New `EncryptionContext` React context exposes unwrapped master key to the sync engine
 - Sync engine encrypts deltas and snapshots before upload, decrypts records after pull
 

@@ -7,6 +7,7 @@ export type EncryptionGateState = {
   userId: string;
   session: EncryptionSessionState;
   masterKey: Uint8Array | null;
+  keyId: string | null;
 };
 
 export type EncryptionGateAction =
@@ -18,7 +19,7 @@ export type EncryptionGateAction =
   | { type: 'setup-failed' }
   | { type: 'unlock-submitted' }
   | { type: 'unlock-failed' }
-  | { type: 'unlocked'; masterKey: Uint8Array };
+  | { type: 'unlocked'; masterKey: Uint8Array; keyId: string };
 
 export function createInitialEncryptionGateState(
   userId: string,
@@ -27,6 +28,7 @@ export function createInitialEncryptionGateState(
     userId,
     session: getInitialEncryptionSessionState(userId),
     masterKey: null,
+    keyId: null,
   };
 }
 
@@ -80,6 +82,7 @@ export function encryptionGateReducer(
         ...state,
         session: { status: 'unlocked', hasProfile: true },
         masterKey: action.masterKey,
+        keyId: action.keyId,
       };
   }
 }

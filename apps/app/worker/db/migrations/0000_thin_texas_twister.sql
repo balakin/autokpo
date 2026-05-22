@@ -92,15 +92,19 @@ CREATE TABLE `user_encryption_key_wrapping` (
 --> statement-breakpoint
 CREATE INDEX `user_encryption_key_wrapping_key_id_idx` ON `user_encryption_key_wrapping` (`key_id`);--> statement-breakpoint
 CREATE INDEX `user_encryption_key_wrapping_user_id_idx` ON `user_encryption_key_wrapping` (`user_id`);--> statement-breakpoint
-CREATE TABLE `updates` (
+CREATE TABLE `sync_record` (
+	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
 	`seq` integer NOT NULL,
-	`blob` blob NOT NULL,
+	`encryption_algorithm` text NOT NULL,
+	`encryption_version` integer NOT NULL,
+	`iv` blob NOT NULL,
+	`ciphertext` blob NOT NULL,
 	`kind` text NOT NULL,
-	`idempotency_key` text,
+	`encryption_key_id` text NOT NULL,
 	`created` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	PRIMARY KEY(`user_id`, `seq`),
-	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`encryption_key_id`) REFERENCES `user_encryption_key`(`key_id`) ON UPDATE no action ON DELETE restrict
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `updates_user_id_idempotency_key_idx` ON `updates` (`user_id`,`idempotency_key`);
+CREATE UNIQUE INDEX `sync_record_user_id_seq_idx` ON `sync_record` (`user_id`,`seq`);

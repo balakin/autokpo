@@ -1,10 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import * as Y from 'yjs';
 
-import type { SyncRecord } from '../sync-client';
 import {
   applyRecordsToDoc,
   computeDelta,
+  decryptSyncPayload,
+  encryptSyncPayload,
   hasPendingChanges,
   REMOTE_ORIGIN,
   schedulePushIfPendingChanges,
@@ -95,47 +96,34 @@ describe('computeDelta', () => {
 });
 
 describe('applyRecordsToDoc', () => {
-  it('applies a single record to the document', () => {
+  it('applies a single plaintext to the document', () => {
     const source = new Y.Doc();
     source.getMap('data').set('name', 'test');
+    const plaintext = Y.encodeStateAsUpdate(source);
 
     const target = new Y.Doc();
-    const record: SyncRecord = {
-      seq: 1,
-      kind: 0,
-      bytes: Y.encodeStateAsUpdate(source),
-    };
-
-    applyRecordsToDoc(target as never, [record]);
+    applyRecordsToDoc(target as never, [plaintext]);
 
     expect(target.getMap('data').get('name')).toBe('test');
   });
 
-  it('applies multiple records in order within one transaction', () => {
+  it('applies multiple plaintexts in order within one transaction', () => {
     const doc1 = new Y.Doc();
     doc1.getMap('root').set('a', 1);
-    const record1: SyncRecord = {
-      seq: 1,
-      kind: 0,
-      bytes: Y.encodeStateAsUpdate(doc1),
-    };
+    const bytes1 = Y.encodeStateAsUpdate(doc1);
 
     const doc2 = new Y.Doc();
     doc2.getMap('root').set('b', 2);
-    const record2: SyncRecord = {
-      seq: 2,
-      kind: 0,
-      bytes: Y.encodeStateAsUpdate(doc2),
-    };
+    const bytes2 = Y.encodeStateAsUpdate(doc2);
 
     const target = new Y.Doc();
-    applyRecordsToDoc(target as never, [record1, record2]);
+    applyRecordsToDoc(target as never, [bytes1, bytes2]);
 
     expect(target.getMap('root').get('a')).toBe(1);
     expect(target.getMap('root').get('b')).toBe(2);
   });
 
-  it('does nothing for empty records array', () => {
+  it('does nothing for empty array', () => {
     const doc = new Y.Doc();
     doc.getMap('root').set('existing', true);
     const before = Y.encodeStateAsUpdate(doc);
@@ -148,11 +136,7 @@ describe('applyRecordsToDoc', () => {
   it('marks updates with REMOTE_ORIGIN', () => {
     const source = new Y.Doc();
     source.getMap('root').set('k', 'v');
-    const record: SyncRecord = {
-      seq: 1,
-      kind: 0,
-      bytes: Y.encodeStateAsUpdate(source),
-    };
+    const bytes = Y.encodeStateAsUpdate(source);
 
     const origins: unknown[] = [];
     const target = new Y.Doc();
@@ -160,7 +144,7 @@ describe('applyRecordsToDoc', () => {
       origins.push(origin);
     });
 
-    applyRecordsToDoc(target as never, [record]);
+    applyRecordsToDoc(target as never, [bytes]);
 
     expect(origins).toEqual([REMOTE_ORIGIN]);
   });
@@ -192,5 +176,140 @@ describe('schedulePushIfPendingChanges', () => {
       fn,
     );
     expect(fn).not.toHaveBeenCalled();
+  });
+});
+
+describe('encryptSyncPayload / decryptSyncPayload', () => {
+  const masterKey = crypto.getRandomValues(new Uint8Array(32));
+  const userId = 'user-abc';
+  const keyId = 'key-xyz';
+
+  it('roundtrip: encrypt then decrypt returns original plaintext', async () => {
+    const plaintext = new Uint8Array([1, 2, 3, 4, 5]);
+    const encrypted = await encryptSyncPayload(
+      plaintext,
+      masterKey,
+      userId,
+      keyId,
+      'update',
+    );
+    const decrypted = await decryptSyncPayload(
+      encrypted,
+      masterKey,
+      userId,
+      keyId,
+      'update',
+    );
+    expect(decrypted).toEqual(plaintext);
+  });
+
+  it('returns aes-256-gcm, encryptionVersion=1, 12-byte IV, and ciphertext of correct length', async () => {
+    const plaintext = new Uint8Array([10, 20, 30]);
+    const encrypted = await encryptSyncPayload(
+      plaintext,
+      masterKey,
+      userId,
+      keyId,
+      'update',
+    );
+    expect(encrypted.encryptionAlgorithm).toBe('aes-256-gcm');
+    expect(encrypted.encryptionVersion).toBe(1);
+    expect(encrypted.iv.byteLength).toBe(12);
+    expect(encrypted.ciphertext.byteLength).toBe(plaintext.byteLength + 16); // plaintext + GCM tag
+  });
+
+  it('decryption fails when AAD userId differs', async () => {
+    const plaintext = new Uint8Array([1, 2]);
+    const encrypted = await encryptSyncPayload(
+      plaintext,
+      masterKey,
+      userId,
+      keyId,
+      'update',
+    );
+    await expect(
+      decryptSyncPayload(encrypted, masterKey, 'other-user', keyId, 'update'),
+    ).rejects.toThrow();
+  });
+
+  it('decryption fails when AAD kind differs', async () => {
+    const plaintext = new Uint8Array([1, 2]);
+    const encrypted = await encryptSyncPayload(
+      plaintext,
+      masterKey,
+      userId,
+      keyId,
+      'update',
+    );
+    await expect(
+      decryptSyncPayload(encrypted, masterKey, userId, keyId, 'snapshot'),
+    ).rejects.toThrow();
+  });
+
+  it('decryption fails when AAD keyId differs', async () => {
+    const plaintext = new Uint8Array([1, 2]);
+    const encrypted = await encryptSyncPayload(
+      plaintext,
+      masterKey,
+      userId,
+      keyId,
+      'update',
+    );
+    await expect(
+      decryptSyncPayload(encrypted, masterKey, userId, 'other-key', 'update'),
+    ).rejects.toThrow();
+  });
+
+  it('snapshot roundtrip works correctly', async () => {
+    const plaintext = new Uint8Array([0xaa, 0xbb, 0xcc]);
+    const encrypted = await encryptSyncPayload(
+      plaintext,
+      masterKey,
+      userId,
+      keyId,
+      'snapshot',
+    );
+    const decrypted = await decryptSyncPayload(
+      encrypted,
+      masterKey,
+      userId,
+      keyId,
+      'snapshot',
+    );
+    expect(decrypted).toEqual(plaintext);
+  });
+
+  it('throws on unknown encryption_algorithm', async () => {
+    await expect(
+      decryptSyncPayload(
+        {
+          encryptionAlgorithm: 'ChaCha20-Poly1305' as 'aes-256-gcm',
+          encryptionVersion: 1,
+          iv: new Uint8Array(12),
+          ciphertext: new Uint8Array(16),
+        },
+        masterKey,
+        userId,
+        keyId,
+        'update',
+      ),
+    ).rejects.toThrow('Unsupported encryption_algorithm');
+  });
+
+  it('throws on unknown encryption_version', async () => {
+    await expect(
+      decryptSyncPayload(
+        {
+          encryptionAlgorithm: 'aes-256-gcm',
+          encryptionVersion: 99 as 1,
+          iv: new Uint8Array(12),
+          ciphertext: new Uint8Array(16),
+        },
+        masterKey,
+        userId,
+        keyId,
+        'update',
+      ),
+    ).rejects.toThrow('Unsupported encryption_version');
   });
 });

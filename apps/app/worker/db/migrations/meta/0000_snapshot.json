@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "f7e8e897-4fbc-487a-89b7-c8ad6dbcf8fc",
+  "id": "cd4f6558-ba69-4c4e-a879-b5e12db6a119",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -598,9 +598,16 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "updates": {
-      "name": "updates",
+    "sync_record": {
+      "name": "sync_record",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
         "user_id": {
           "name": "user_id",
           "type": "text",
@@ -615,8 +622,29 @@
           "notNull": true,
           "autoincrement": false
         },
-        "blob": {
-          "name": "blob",
+        "encryption_algorithm": {
+          "name": "encryption_algorithm",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encryption_version": {
+          "name": "encryption_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "iv": {
+          "name": "iv",
+          "type": "blob",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ciphertext": {
+          "name": "ciphertext",
           "type": "blob",
           "primaryKey": false,
           "notNull": true,
@@ -629,11 +657,11 @@
           "notNull": true,
           "autoincrement": false
         },
-        "idempotency_key": {
-          "name": "idempotency_key",
+        "encryption_key_id": {
+          "name": "encryption_key_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "created": {
@@ -646,29 +674,33 @@
         }
       },
       "indexes": {
-        "updates_user_id_idempotency_key_idx": {
-          "name": "updates_user_id_idempotency_key_idx",
-          "columns": ["user_id", "idempotency_key"],
+        "sync_record_user_id_seq_idx": {
+          "name": "sync_record_user_id_seq_idx",
+          "columns": ["user_id", "seq"],
           "isUnique": true
         }
       },
       "foreignKeys": {
-        "updates_user_id_user_id_fk": {
-          "name": "updates_user_id_user_id_fk",
-          "tableFrom": "updates",
+        "sync_record_user_id_user_id_fk": {
+          "name": "sync_record_user_id_user_id_fk",
+          "tableFrom": "sync_record",
           "tableTo": "user",
           "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        },
+        "sync_record_encryption_key_id_user_encryption_key_key_id_fk": {
+          "name": "sync_record_encryption_key_id_user_encryption_key_key_id_fk",
+          "tableFrom": "sync_record",
+          "tableTo": "user_encryption_key",
+          "columnsFrom": ["encryption_key_id"],
+          "columnsTo": ["key_id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "updates_user_id_seq_pk": {
-          "columns": ["user_id", "seq"],
-          "name": "updates_user_id_seq_pk"
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
     }

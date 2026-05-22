@@ -1,22 +1,22 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
 
+import { bytesToBase64 } from '../../e2ee/base64';
 import {
   pull,
   push,
   compact,
   SyncGoneError,
-  parseRecordStream,
   type SyncRecord,
 } from '../sync-client';
 
 const SYNC_BASE = '/api/sync';
 
-function makeFakeResponse(
-  body: ArrayBuffer | null,
+function makeFakeJsonResponse(
+  body: unknown,
   status: number,
   headers: Record<string, string> = {},
 ): Response {
-  const mockRes = {
+  return {
     ok: status >= 200 && status < 300,
     status,
     headers: {
@@ -24,53 +24,50 @@ function makeFakeResponse(
         return headers[name] ?? null;
       },
     },
-    arrayBuffer: () => body ?? new ArrayBuffer(0),
+    json: () => Promise.resolve(body),
   } as unknown as Response;
-  return mockRes;
 }
 
-function buildRecordStream(records: SyncRecord[]): ArrayBuffer {
-  let totalSize = 0;
-  for (const r of records) {
-    totalSize += 9 + r.bytes.byteLength;
-  }
-  const buf = new ArrayBuffer(totalSize);
-  const view = new DataView(buf);
-  let offset = 0;
-  for (const r of records) {
-    view.setUint32(offset, r.seq);
-    view.setUint8(offset + 4, r.kind);
-    view.setUint32(offset + 5, r.bytes.byteLength);
-    new Uint8Array(buf, offset + 9).set(r.bytes);
-    offset += 9 + r.bytes.byteLength;
-  }
-  return buf;
+function makeFakeEmptyResponse(
+  status: number,
+  headers: Record<string, string> = {},
+): Response {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    headers: {
+      get(name: string) {
+        return headers[name] ?? null;
+      },
+    },
+    json: () => Promise.resolve(null),
+  } as unknown as Response;
 }
 
-describe('parseRecordStream', () => {
-  it('parses a binary buffer with multiple records', () => {
-    const records: SyncRecord[] = [
-      { seq: 1, kind: 1, bytes: new Uint8Array([0x01]) },
-      { seq: 2, kind: 2, bytes: new Uint8Array([0x02, 0x03]) },
-      { seq: 3, kind: 1, bytes: new Uint8Array([0x04, 0x05, 0x06]) },
-    ];
-    const buf = buildRecordStream(records);
-    const result = parseRecordStream(buf);
-    expect(result).toEqual(records);
-  });
+const TEST_IV = new Uint8Array(12).fill(0xab);
+const TEST_ALGORITHM = 'aes-256-gcm';
 
-  it('returns empty array for empty buffer', () => {
-    expect(parseRecordStream(new ArrayBuffer(0))).toEqual([]);
-  });
-
-  it('handles single record', () => {
-    const records = [{ seq: 5, kind: 1, bytes: new Uint8Array([0xfa]) }];
-    const buf = buildRecordStream(records);
-    const result = parseRecordStream(buf);
-    expect(result).toEqual(records);
-    expect(result[0].bytes.byteLength).toBe(1);
-  });
-});
+function buildJsonRecords(
+  records: Array<{
+    seq: number;
+    kind: 'update' | 'snapshot';
+    encryptionKeyId: string;
+    encryptionAlgorithm?: 'aes-256-gcm';
+    ciphertext: Uint8Array;
+    encryptionVersion?: number;
+    iv?: Uint8Array;
+  }>,
+) {
+  return records.map((r) => ({
+    seq: r.seq,
+    kind: r.kind,
+    encryptionKeyId: r.encryptionKeyId,
+    encryptionAlgorithm: r.encryptionAlgorithm ?? TEST_ALGORITHM,
+    encryptionVersion: r.encryptionVersion ?? 1,
+    iv: bytesToBase64(r.iv ?? TEST_IV),
+    ciphertext: bytesToBase64(r.ciphertext),
+  }));
+}
 
 describe('pull', () => {
   beforeEach(() => {
@@ -84,7 +81,7 @@ describe('pull', () => {
   it('sends If-None-Match header when cursor > 0', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeResponse(new ArrayBuffer(0), 304, { ETag: '"10"' }),
+      makeFakeEmptyResponse(304, { ETag: '"10"' }),
     );
     await pull({ since: 10, localUserId: 'user-1' });
     expect(mockFetch).toHaveBeenCalledWith(SYNC_BASE, {
@@ -95,7 +92,7 @@ describe('pull', () => {
   it('does not send If-None-Match header when cursor is 0', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeResponse(new ArrayBuffer(0), 304, { ETag: '"0"' }),
+      makeFakeEmptyResponse(304, { ETag: '"0"' }),
     );
     await pull({ since: 0, localUserId: 'user-1' });
     const call = mockFetch.mock.calls[0] as [string, RequestInit?];
@@ -105,7 +102,7 @@ describe('pull', () => {
   it('returns empty records and head on 304', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeResponse(null, 304, { ETag: '"42"' }),
+      makeFakeEmptyResponse(304, { ETag: '"42"' }),
     );
     const result = await pull({ since: 41, localUserId: 'user-1' });
     expect(result).toEqual({ records: [], head: 42, status: 304 });
@@ -113,30 +110,66 @@ describe('pull', () => {
 
   it('throws SyncGoneError on 410', async () => {
     const mockFetch = vi.mocked(fetch);
-    mockFetch.mockResolvedValueOnce(makeFakeResponse(null, 410));
+    mockFetch.mockResolvedValueOnce(makeFakeEmptyResponse(410));
     await expect(pull({ since: 5, localUserId: 'user-1' })).rejects.toThrow(
       SyncGoneError,
     );
   });
 
-  it('parses binary record stream on 200', async () => {
+  it('parses JSON record array on 200 and base64-decodes ciphertexts', async () => {
     const mockFetch = vi.mocked(fetch);
-    const records: SyncRecord[] = [
-      { seq: 3, kind: 1, bytes: new Uint8Array([0xaa, 0xbb]) },
-      { seq: 4, kind: 2, bytes: new Uint8Array([0xcc]) },
-    ];
+    const ciphertext1 = new Uint8Array([0xaa, 0xbb]);
+    const ciphertext2 = new Uint8Array([0xcc]);
     mockFetch.mockResolvedValueOnce(
-      makeFakeResponse(buildRecordStream(records), 200, { ETag: '"5"' }),
+      makeFakeJsonResponse(
+        {
+          records: buildJsonRecords([
+            {
+              seq: 3,
+              kind: 'update',
+              encryptionKeyId: 'key-1',
+              ciphertext: ciphertext1,
+            },
+            {
+              seq: 4,
+              kind: 'snapshot',
+              encryptionKeyId: 'key-1',
+              ciphertext: ciphertext2,
+            },
+          ]),
+        },
+        200,
+        { ETag: '"5"' },
+      ),
     );
     const result = await pull({ since: 2, localUserId: 'user-1' });
     expect(result.head).toBe(5);
-    expect(result.records).toEqual(records);
+    expect(result.status).toBe(200);
+    expect(result.records).toHaveLength(2);
+    expect(result.records[0]).toMatchObject<SyncRecord>({
+      seq: 3,
+      kind: 'update',
+      encryptionKeyId: 'key-1',
+      encryptionAlgorithm: TEST_ALGORITHM,
+      encryptionVersion: 1,
+      iv: TEST_IV,
+      ciphertext: ciphertext1,
+    });
+    expect(result.records[1]).toMatchObject<SyncRecord>({
+      seq: 4,
+      kind: 'snapshot',
+      encryptionKeyId: 'key-1',
+      encryptionAlgorithm: TEST_ALGORITHM,
+      encryptionVersion: 1,
+      iv: TEST_IV,
+      ciphertext: ciphertext2,
+    });
   });
 
-  it('returns empty records with head=0 on empty 200 response', async () => {
+  it('returns empty records with head=0 on empty 200 JSON response', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeResponse(new ArrayBuffer(0), 200, { ETag: '"0"' }),
+      makeFakeJsonResponse({ records: [] }, 200, { ETag: '"0"' }),
     );
     const result = await pull({ since: 0, localUserId: 'user-1' });
     expect(result).toEqual({ records: [], head: 0, status: 200 });
@@ -152,32 +185,54 @@ describe('push', () => {
     vi.restoreAllMocks();
   });
 
-  it('sends Idempotency-Key and Content-Length headers', async () => {
+  it('sends JSON body with id, encryptionKeyId, encryptionAlgorithm, encryptionVersion, iv, and base64 ciphertext', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeResponse(null, 200, { ETag: '"7"' }),
+      makeFakeEmptyResponse(200, { ETag: '"7"' }),
     );
     const delta = new Uint8Array([1, 2, 3]);
     await push({
       delta,
-      idempotencyKey: 'test-key-123',
+      id: 'test-uuid-123',
+      encryptionKeyId: 'key-1',
+      encryptionAlgorithm: TEST_ALGORITHM,
+      encryptionVersion: 1,
+      iv: TEST_IV,
       localUserId: 'user-1',
     });
     const call = mockFetch.mock.calls[0] as [string, RequestInit?];
     expect(call[1]?.headers).toMatchObject({
-      'Idempotency-Key': 'test-key-123',
-      'Content-Length': '3',
+      'Content-Type': 'application/json',
     });
+    expect(call[1]?.headers).not.toHaveProperty('Idempotency-Key');
+    const body = JSON.parse(call[1]?.body as string) as {
+      id: string;
+      encryptionKeyId: string;
+      encryptionAlgorithm: string;
+      encryptionVersion: number;
+      iv: string;
+      ciphertext: string;
+    };
+    expect(body.id).toBe('test-uuid-123');
+    expect(body.encryptionKeyId).toBe('key-1');
+    expect(body.encryptionAlgorithm).toBe(TEST_ALGORITHM);
+    expect(body.encryptionVersion).toBe(1);
+    expect(body.iv).toBe(bytesToBase64(TEST_IV));
+    expect(body.ciphertext).toBe(bytesToBase64(delta));
   });
 
   it('parses ETag response for assignedSeq', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeResponse(null, 200, { ETag: '"15"' }),
+      makeFakeEmptyResponse(200, { ETag: '"15"' }),
     );
     const result = await push({
       delta: new Uint8Array([1]),
-      idempotencyKey: 'key',
+      id: 'uuid-1',
+      encryptionKeyId: 'key-1',
+      encryptionAlgorithm: TEST_ALGORITHM,
+      encryptionVersion: 1,
+      iv: TEST_IV,
       localUserId: 'user-1',
     });
     expect(result.assignedSeq).toBe(15);
@@ -186,14 +241,18 @@ describe('push', () => {
   it('detects X-Compact-Hint header', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeResponse(null, 200, {
+      makeFakeEmptyResponse(200, {
         ETag: '"8"',
         'X-Compact-Hint': 'please',
       }),
     );
     const result = await push({
       delta: new Uint8Array([1]),
-      idempotencyKey: 'key',
+      id: 'uuid-1',
+      encryptionKeyId: 'key-1',
+      encryptionAlgorithm: TEST_ALGORITHM,
+      encryptionVersion: 1,
+      iv: TEST_IV,
       localUserId: 'user-1',
     });
     expect(result.compactHint).toBe(true);
@@ -202,11 +261,15 @@ describe('push', () => {
   it('compactHint is false when header is absent', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeResponse(null, 200, { ETag: '"3"' }),
+      makeFakeEmptyResponse(200, { ETag: '"3"' }),
     );
     const result = await push({
       delta: new Uint8Array([1]),
-      idempotencyKey: 'key',
+      id: 'uuid-1',
+      encryptionKeyId: 'key-1',
+      encryptionAlgorithm: TEST_ALGORITHM,
+      encryptionVersion: 1,
+      iv: TEST_IV,
       localUserId: 'user-1',
     });
     expect(result.compactHint).toBe(false);
@@ -214,11 +277,15 @@ describe('push', () => {
 
   it('throws Error on 413', async () => {
     const mockFetch = vi.mocked(fetch);
-    mockFetch.mockResolvedValueOnce(makeFakeResponse(null, 413));
+    mockFetch.mockResolvedValueOnce(makeFakeEmptyResponse(413));
     await expect(
       push({
         delta: new Uint8Array([1]),
-        idempotencyKey: 'key',
+        id: 'uuid-1',
+        encryptionKeyId: 'key-1',
+        encryptionAlgorithm: TEST_ALGORITHM,
+        encryptionVersion: 1,
+        iv: TEST_IV,
         localUserId: 'user-1',
       }),
     ).rejects.toThrow('hard cap exceeded');
@@ -234,34 +301,57 @@ describe('compact', () => {
     vi.restoreAllMocks();
   });
 
-  it('sends X-Replaces-Up-To and Idempotency-Key headers', async () => {
+  it('sends JSON body with id, encryptionKeyId, encryptionAlgorithm, encryptionVersion, iv, and base64 snapshot', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeResponse(null, 200, { ETag: '"12"' }),
+      makeFakeEmptyResponse(200, { ETag: '"12"' }),
     );
     const snapshot = new Uint8Array([0x01, 0x02]);
     await compact({
       snapshot,
       replacesUpTo: 10,
-      idempotencyKey: 'compact-key-abc',
+      id: 'compact-uuid-abc',
+      encryptionKeyId: 'key-1',
+      encryptionAlgorithm: TEST_ALGORITHM,
+      encryptionVersion: 1,
+      iv: TEST_IV,
       localUserId: 'user-1',
     });
     const call = mockFetch.mock.calls[0] as [string, RequestInit?];
     expect(call[1]?.headers).toMatchObject({
+      'Content-Type': 'application/json',
       'X-Replaces-Up-To': '10',
-      'Idempotency-Key': 'compact-key-abc',
     });
+    expect(call[1]?.headers).not.toHaveProperty('Idempotency-Key');
+    const body = JSON.parse(call[1]?.body as string) as {
+      id: string;
+      encryptionKeyId: string;
+      encryptionAlgorithm: string;
+      encryptionVersion: number;
+      iv: string;
+      ciphertext: string;
+    };
+    expect(body.id).toBe('compact-uuid-abc');
+    expect(body.encryptionKeyId).toBe('key-1');
+    expect(body.encryptionAlgorithm).toBe(TEST_ALGORITHM);
+    expect(body.encryptionVersion).toBe(1);
+    expect(body.iv).toBe(bytesToBase64(TEST_IV));
+    expect(body.ciphertext).toBe(bytesToBase64(snapshot));
   });
 
   it('parses ETag for assignedSeq', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeResponse(null, 200, { ETag: '"20"' }),
+      makeFakeEmptyResponse(200, { ETag: '"20"' }),
     );
     const result = await compact({
       snapshot: new Uint8Array([1]),
       replacesUpTo: 15,
-      idempotencyKey: 'key',
+      id: 'uuid-1',
+      encryptionKeyId: 'key-1',
+      encryptionAlgorithm: TEST_ALGORITHM,
+      encryptionVersion: 1,
+      iv: TEST_IV,
       localUserId: 'user-1',
     });
     expect(result.assignedSeq).toBe(20);
@@ -269,12 +359,16 @@ describe('compact', () => {
 
   it('throws Error on non-ok status', async () => {
     const mockFetch = vi.mocked(fetch);
-    mockFetch.mockResolvedValueOnce(makeFakeResponse(null, 500));
+    mockFetch.mockResolvedValueOnce(makeFakeEmptyResponse(500));
     await expect(
       compact({
         snapshot: new Uint8Array([1]),
         replacesUpTo: 5,
-        idempotencyKey: 'key',
+        id: 'uuid-1',
+        encryptionKeyId: 'key-1',
+        encryptionAlgorithm: TEST_ALGORITHM,
+        encryptionVersion: 1,
+        iv: TEST_IV,
         localUserId: 'user-1',
       }),
     ).rejects.toThrow('compact failed: 500');

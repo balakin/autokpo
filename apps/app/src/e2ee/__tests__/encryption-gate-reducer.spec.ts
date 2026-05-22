@@ -14,6 +14,7 @@ function state(
     userId: 'user-1',
     session: { status: 'checking', hasProfile: false },
     masterKey: null,
+    keyId: null,
     ...overrides,
   };
 }
@@ -90,13 +91,18 @@ describe('encryptionGateReducer', () => {
     });
   });
 
-  it('stores the master key only after unlock succeeds', () => {
+  it('stores the master key and keyId only after unlock succeeds', () => {
     expect(
-      encryptionGateReducer(state(), { type: 'unlocked', masterKey }),
+      encryptionGateReducer(state(), {
+        type: 'unlocked',
+        masterKey,
+        keyId: 'key-1',
+      }),
     ).toEqual({
       userId: 'user-1',
       session: { status: 'unlocked', hasProfile: true },
       masterKey,
+      keyId: 'key-1',
     });
   });
 });

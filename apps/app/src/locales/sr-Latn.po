@@ -52,15 +52,15 @@ msgstr "Akcije"
 msgid "Ako ponovo budete želeli da koristite AutoKPO, možete napraviti novi nalog u bilo kom trenutku."
 msgstr "Ako ponovo budete želeli da koristite AutoKPO, možete napraviti novi nalog u bilo kom trenutku."
 
-#: src/help/help-page.tsx:80
+#: src/help/help-page.tsx:81
 msgid "Ako ste naišli na grešku ili imate predlog za poboljšanje, otvorite tiket na GitHub-u. Opišite šta se dogodilo, šta ste očekivali i korake za reprodukciju."
 msgstr "Ako ste naišli na grešku ili imate predlog za poboljšanje, otvorite tiket na GitHub-u. Opišite šta se dogodilo, šta ste očekivali i korake za reprodukciju."
 
-#: src/help/help-page.tsx:139
+#: src/help/help-page.tsx:140
 msgid "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
 msgstr "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
 
-#: src/help/help-page.tsx:57
+#: src/help/help-page.tsx:58
 msgid "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između vaših uređaja."
 msgstr "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između vaših uređaja."
 
@@ -72,7 +72,7 @@ msgstr "AutoKPO ne može da vidi, resetuje ili vrati ovu šifru. Ako je izgubite
 msgid "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju nedostupni."
 msgstr "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju nedostupni."
 
-#: src/help/help-page.tsx:157
+#: src/help/help-page.tsx:158
 msgid "Autori"
 msgstr "Autori"
 
@@ -80,11 +80,11 @@ msgstr "Autori"
 msgid "Beta funkcija. Kursevi se preuzimaju sa <0>kurs.resenje.org<1/></0>. Molimo vas da proverite zvanični kurs na sajtu <2>NBS<3/></2> pre primene."
 msgstr "Beta funkcija. Kursevi se preuzimaju sa <0>kurs.resenje.org<1/></0>. Molimo vas da proverite zvanični kurs na sajtu <2>NBS<3/></2> pre primene."
 
-#: src/help/help-page.tsx:117
+#: src/help/help-page.tsx:118
 msgid "čl. 33 — rolling 12 meseci"
 msgstr "čl. 33 — rolling 12 meseci"
 
-#: src/help/help-page.tsx:109
+#: src/help/help-page.tsx:110
 msgid "čl. 42 — godišnji limit"
 msgstr "čl. 42 — godišnji limit"
 
@@ -131,7 +131,7 @@ msgstr "Dodaj u omiljene za {year}"
 msgid "Dodaj unos"
 msgstr "Dodaj unos"
 
-#: src/help/help-page.tsx:134
+#: src/help/help-page.tsx:135
 msgid "Doprinesite projektu"
 msgstr "Doprinesite projektu"
 
@@ -161,7 +161,7 @@ msgstr "Email adresa"
 msgid "Firma-radnje"
 msgstr "Firma-radnje"
 
-#: src/help/help-page.tsx:194
+#: src/help/help-page.tsx:198
 msgid "GNU Affero General Public License v3.0"
 msgstr "GNU Affero General Public License v3.0"
 
@@ -260,7 +260,7 @@ msgstr "Izvezi podatke naloga"
 msgid "Izvorni kod"
 msgstr "Izvorni kod"
 
-#: src/help/help-page.tsx:145
+#: src/help/help-page.tsx:146
 msgid "Izvorni kod na GitHub-u"
 msgstr "Izvorni kod na GitHub-u"
 
@@ -286,7 +286,7 @@ msgstr "Još nema uspešne sinhronizacije na ovom uređaju."
 msgid "Još nemate nijednu knjigu. Dodajte prvu da započnete."
 msgstr "Još nemate nijednu knjigu. Dodajte prvu da započnete."
 
-#: src/help/help-page.tsx:75
+#: src/help/help-page.tsx:76
 msgid "Kako prijaviti problem"
 msgstr "Kako prijaviti problem"
 
@@ -327,7 +327,7 @@ msgstr "Kreirana"
 msgid "Kreirana:"
 msgstr "Kreirana:"
 
-#: src/help/help-page.tsx:186
+#: src/help/help-page.tsx:190
 msgid "Licenca"
 msgstr "Licenca"
 
@@ -488,7 +488,7 @@ msgstr "Nova knjiga"
 msgid "Novi unos"
 msgstr "Novi unos"
 
-#: src/help/help-page.tsx:52
+#: src/help/help-page.tsx:53
 msgid "O projektu"
 msgstr "O projektu"
 
@@ -600,7 +600,7 @@ msgstr "Opis prometa"
 msgid "Opšte"
 msgstr "Opšte"
 
-#: src/help/help-page.tsx:167
+#: src/help/help-page.tsx:168
 msgid "Osnivač projekta"
 msgstr "Osnivač projekta"
 
@@ -886,7 +886,7 @@ msgstr "Prijava nije završena. Pokušajte ponovo."
 msgid "Prijava potvrđuje vaš nalog. Ova odvojena šifra otključava vaše šifrovane podatke posle prijave."
 msgstr "Prijava potvrđuje vaš nalog. Ova odvojena šifra otključava vaše šifrovane podatke posle prijave."
 
-#: src/help/help-page.tsx:87
+#: src/help/help-page.tsx:88
 msgid "Prijavite problem na GitHub-u"
 msgstr "Prijavite problem na GitHub-u"
 
@@ -1031,6 +1031,10 @@ msgstr "Šifra poreskog obveznika mora imati tačno 8 cifara"
 msgid "Šifra za šifrovanje"
 msgstr "Šifra za šifrovanje"
 
+#: src/help/help-page.tsx:212
+msgid "Šifrovanje"
+msgstr "Šifrovanje"
+
 #: src/auth/profile-popover.tsx:97
 #: src/settings/account-settings-page.tsx:878
 msgid "Sinhronizovano"
@@ -1070,7 +1074,7 @@ msgstr "Svega (RSD)"
 msgid "Svetla"
 msgstr "Svetla"
 
-#: src/help/help-page.tsx:172
+#: src/help/help-page.tsx:173
 msgid "Svi doprinosioci"
 msgstr "Svi doprinosioci"
 
@@ -1204,6 +1208,10 @@ msgstr "Vaš nalog nema javnu email adresu. Prijavite se putem jednokratnog koda
 msgid "Vaši podaci"
 msgstr "Vaši podaci"
 
+#: src/help/help-page.tsx:217
+msgid "Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje se izvodi iz vaše lozinke <0>Argon2id</0> algoritmom, a svi podaci se šifruju <1>AES-256-GCM</1> algoritmom. Server nikada ne vidi vaše podatke u čitljivom obliku."
+msgstr "Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje se izvodi iz vaše lozinke <0>Argon2id</0> algoritmom, a svi podaci se šifruju <1>AES-256-GCM</1> algoritmom. Server nikada ne vidi vaše podatke u čitljivom obliku."
+
 #: src/lazy-chunk-error-boundary.tsx:49
 msgid "Verovatno je dostupna nova verzija. Osvežite aplikaciju da biste nastavili."
 msgstr "Verovatno je dostupna nova verzija. Osvežite aplikaciju da biste nastavili."
@@ -1230,15 +1238,15 @@ msgstr "Za svaku godinu zadržite jednu knjigu, a ostale obrišite."
 msgid "Zaboravili ste šifru?"
 msgstr "Zaboravili ste šifru?"
 
-#: src/help/help-page.tsx:114
+#: src/help/help-page.tsx:115
 msgid "Zakon o porezu na dodatu vrednost"
 msgstr "Zakon o porezu na dodatu vrednost"
 
-#: src/help/help-page.tsx:106
+#: src/help/help-page.tsx:107
 msgid "Zakon o porezu na dohodak građana"
 msgstr "Zakon o porezu na dohodak građana"
 
-#: src/help/help-page.tsx:99
+#: src/help/help-page.tsx:100
 msgid "Zakonski propisi"
 msgstr "Zakonski propisi"
 

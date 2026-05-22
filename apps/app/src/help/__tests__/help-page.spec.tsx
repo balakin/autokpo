@@ -24,7 +24,7 @@ beforeEach(() => {
 });
 
 describe('HelpPage', () => {
-  it('renders all six section headings', () => {
+  it('renders all seven section headings', () => {
     renderHelpPage();
     expect(screen.getByText('O projektu')).toBeInTheDocument();
     expect(screen.getByText('Kako prijaviti problem')).toBeInTheDocument();
@@ -32,6 +32,7 @@ describe('HelpPage', () => {
     expect(screen.getByText('Doprinesite projektu')).toBeInTheDocument();
     expect(screen.getByText('Autori')).toBeInTheDocument();
     expect(screen.getByText('Licenca')).toBeInTheDocument();
+    expect(screen.getByText('Šifrovanje')).toBeInTheDocument();
   });
 
   it('links to GitHub Issues for bug reports', () => {
@@ -84,6 +85,15 @@ describe('HelpPage', () => {
       'href',
       'https://github.com/balakin/autokpo/blob/main/LICENSE',
     );
+  });
+
+  it('displays encryption algorithm names and zero-knowledge statement', () => {
+    renderHelpPage();
+    expect(screen.getByText('Argon2id')).toBeInTheDocument();
+    expect(screen.getByText('AES-256-GCM')).toBeInTheDocument();
+    expect(
+      screen.getByText(/Server nikada ne vidi vaše podatke/i),
+    ).toBeInTheDocument();
   });
 
   it('all external links open in a new tab', () => {

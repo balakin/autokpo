@@ -5,6 +5,7 @@ import {
   LuBug,
   LuGitPullRequest,
   LuInfo,
+  LuKeyRound,
   LuScale,
   LuShield,
   LuUsers,
@@ -122,8 +123,8 @@ export function HelpPage() {
         </Card>
       </div>
 
-      {/* Meta — 3 columns */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:gap-6">
+      {/* Contribute + Authors — 2 columns */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-6">
         <Card>
           <Card.Header className="flex-row items-center gap-2">
             <LuGitPullRequest
@@ -175,7 +176,10 @@ export function HelpPage() {
             </ul>
           </Card.Content>
         </Card>
+      </div>
 
+      {/* License + Encryption — 2 columns */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-6">
         <Card>
           <Card.Header className="flex-row items-center gap-2">
             <LuShield
@@ -195,6 +199,31 @@ export function HelpPage() {
                 </span>
               </li>
             </ul>
+          </Card.Content>
+        </Card>
+
+        <Card>
+          <Card.Header className="flex-row items-center gap-2">
+            <LuKeyRound
+              className="size-4 shrink-0 text-muted"
+              aria-hidden="true"
+            />
+            <Card.Title>
+              <Trans>Šifrovanje</Trans>
+            </Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <p className="text-sm/relaxed  text-muted">
+              <Trans>
+                Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje se
+                izvodi iz vaše lozinke{' '}
+                <strong className="text-foreground">Argon2id</strong>{' '}
+                algoritmom, a svi podaci se šifruju{' '}
+                <strong className="text-foreground">AES-256-GCM</strong>{' '}
+                algoritmom. Server nikada ne vidi vaše podatke u čitljivom
+                obliku.
+              </Trans>
+            </p>
           </Card.Content>
         </Card>
       </div>

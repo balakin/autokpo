@@ -391,6 +391,10 @@ msgstr "Back"
 msgid "Nazad na prijavu"
 msgstr "Back to sign in"
 
+#: src/e2ee/encryption-gate.tsx:110
+msgid "Ne možemo da proverimo šifrovanje"
+msgstr "We can't check encryption"
+
 #: src/lazy-chunk-error-boundary.tsx:46
 msgid "Ne možemo da učitamo ovaj deo aplikacije"
 msgstr "We can't load this part of the app"
@@ -643,7 +647,7 @@ msgstr "Unlock data"
 
 #: src/e2ee/encryption-unlock-screen.tsx:47
 msgid "Otključajte podatke za ovu sesiju."
-msgstr "Unlock data for this session."
+msgstr ""
 
 #: src/books/book-library.tsx:47
 msgid "Otkriveni duplikati knjiga"
@@ -752,6 +756,10 @@ msgstr "Book setup"
 #: src/e2ee/encryption-setup-screen.tsx:62
 msgid "Podesite šifru za šifrovanje"
 msgstr "Set up an encryption password"
+
+#: src/e2ee/encryption-gate.tsx:126
+msgid "Pokušaj ponovo"
+msgstr "Try again"
 
 #: src/books/add-book-modal.tsx:26
 #: src/currency/currency-convert-modal.tsx:36
@@ -924,6 +932,10 @@ msgstr "Change profile photo"
 #: src/settings/account-settings-page.tsx:375
 msgid "Proverite internet vezu i pokušajte ponovo kasnije."
 msgstr "Check your internet connection and try again later."
+
+#: src/e2ee/encryption-gate.tsx:113
+msgid "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
+msgstr "Check your internet connection and try again. We won't create a new key until we verify the account's existing setup."
 
 #: src/e2ee/encryption-setup-screen.tsx:152
 msgid "Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane podatke bez nje."

@@ -391,6 +391,10 @@ msgstr "Назад"
 msgid "Nazad na prijavu"
 msgstr "Вернуться к входу"
 
+#: src/e2ee/encryption-gate.tsx:110
+msgid "Ne možemo da proverimo šifrovanje"
+msgstr "Не удалось проверить шифрование"
+
 #: src/lazy-chunk-error-boundary.tsx:46
 msgid "Ne možemo da učitamo ovaj deo aplikacije"
 msgstr "Не удалось загрузить эту часть приложения"
@@ -643,7 +647,7 @@ msgstr "Разблокировка"
 
 #: src/e2ee/encryption-unlock-screen.tsx:47
 msgid "Otključajte podatke za ovu sesiju."
-msgstr "Разблокируйте данные для этой сессии."
+msgstr ""
 
 #: src/books/book-library.tsx:47
 msgid "Otkriveni duplikati knjiga"
@@ -752,6 +756,10 @@ msgstr "Настройка книги"
 #: src/e2ee/encryption-setup-screen.tsx:62
 msgid "Podesite šifru za šifrovanje"
 msgstr "Настройте пароль шифрования"
+
+#: src/e2ee/encryption-gate.tsx:126
+msgid "Pokušaj ponovo"
+msgstr "Попробовать снова"
 
 #: src/books/add-book-modal.tsx:26
 #: src/currency/currency-convert-modal.tsx:36
@@ -924,6 +932,10 @@ msgstr "Изменить фото профиля"
 #: src/settings/account-settings-page.tsx:375
 msgid "Proverite internet vezu i pokušajte ponovo kasnije."
 msgstr "Проверьте подключение к интернету и попробуйте позже."
+
+#: src/e2ee/encryption-gate.tsx:113
+msgid "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
+msgstr "Проверьте подключение к интернету и попробуйте снова. Мы не будем создавать новый ключ, пока не проверим существующую настройку учётной записи."
 
 #: src/e2ee/encryption-setup-screen.tsx:152
 msgid "Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane podatke bez nje."

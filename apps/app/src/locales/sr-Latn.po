@@ -391,6 +391,10 @@ msgstr "Nazad"
 msgid "Nazad na prijavu"
 msgstr "Nazad na prijavu"
 
+#: src/e2ee/encryption-gate.tsx:110
+msgid "Ne možemo da proverimo šifrovanje"
+msgstr "Ne možemo da proverimo šifrovanje"
+
 #: src/lazy-chunk-error-boundary.tsx:46
 msgid "Ne možemo da učitamo ovaj deo aplikacije"
 msgstr "Ne možemo da učitamo ovaj deo aplikacije"
@@ -753,6 +757,10 @@ msgstr "Podešavanje knjige"
 msgid "Podesite šifru za šifrovanje"
 msgstr "Podesite šifru za šifrovanje"
 
+#: src/e2ee/encryption-gate.tsx:126
+msgid "Pokušaj ponovo"
+msgstr "Pokušaj ponovo"
+
 #: src/books/add-book-modal.tsx:26
 #: src/currency/currency-convert-modal.tsx:36
 #: src/currency/currency-convert-modal.tsx:37
@@ -924,6 +932,10 @@ msgstr "Promeni profilnu sliku"
 #: src/settings/account-settings-page.tsx:375
 msgid "Proverite internet vezu i pokušajte ponovo kasnije."
 msgstr "Proverite internet vezu i pokušajte ponovo kasnije."
+
+#: src/e2ee/encryption-gate.tsx:113
+msgid "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
+msgstr "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
 
 #: src/e2ee/encryption-setup-screen.tsx:152
 msgid "Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane podatke bez nje."

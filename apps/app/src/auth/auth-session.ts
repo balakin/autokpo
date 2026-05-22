@@ -143,12 +143,19 @@ export async function verifyEmailOtpSession(
 }
 
 export async function refreshSession(): Promise<string | null> {
+  const previousSession = readStoredSession();
   const session = await authClient.getSession();
   const nextUser = session.data?.user;
   if (!nextUser?.id) {
-    clearLocalEncryptionUnlockMaterial();
+    if (previousSession?.userId) {
+      clearLocalEncryptionUnlockMaterial(previousSession.userId);
+    }
     writeStoredSession(null);
     return null;
+  }
+
+  if (previousSession?.userId && previousSession.userId !== nextUser.id) {
+    clearLocalEncryptionUnlockMaterial(previousSession.userId);
   }
 
   writeStoredSession({
@@ -161,10 +168,13 @@ export async function refreshSession(): Promise<string | null> {
 }
 
 export async function logoutSession(): Promise<void> {
+  const previousSession = readStoredSession();
   await authClient.signOut();
   if (typeof caches !== 'undefined') {
     await caches.delete('avatars');
   }
-  clearLocalEncryptionUnlockMaterial();
+  if (previousSession?.userId) {
+    clearLocalEncryptionUnlockMaterial(previousSession.userId);
+  }
   writeStoredSession(null);
 }

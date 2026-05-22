@@ -40,7 +40,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const nextAuthState = authStateFromSession(readStoredSession());
       setAuthState((previousAuthState) => {
         if (previousAuthState.user?.id !== nextAuthState.user?.id) {
-          clearLocalEncryptionUnlockMaterial();
+          if (previousAuthState.user?.id) {
+            clearLocalEncryptionUnlockMaterial(previousAuthState.user.id);
+          }
         }
         return nextAuthState;
       });

@@ -1,12 +1,21 @@
-import { useState, type ReactNode } from 'react';
+import { Button, Card, Spinner } from '@heroui/react';
+import { Trans } from '@lingui/react/macro';
+import { useEffect, useReducer, useState, type ReactNode } from 'react';
 
+import { createWrappedMasterKey, unwrapMasterKey } from './encryption-crypto';
 import {
-  createPlaceholderEncryptionProfile,
-  getInitialEncryptionSessionState,
-  unlockEncryptionSession,
-  verifyPlaceholderEncryptionPassword,
-  type EncryptionSessionState,
-} from './encryption-session';
+  createInitialEncryptionGateState,
+  encryptionGateReducer,
+} from './encryption-gate-reducer';
+import {
+  createEncryptionKeyRecord,
+  EncryptionKeyNotFoundError,
+  fetchEncryptionKeyRecord,
+} from './encryption-key-api';
+import {
+  readCachedEncryptionKeyRecord,
+  writeCachedEncryptionKeyRecord,
+} from './encryption-key-cache';
 import { EncryptionSetupScreen } from './encryption-setup-screen';
 import { EncryptionShell } from './encryption-shell';
 import { EncryptionUnlockScreen } from './encryption-unlock-screen';
@@ -16,55 +25,118 @@ type EncryptionGateProps = {
   children: ReactNode;
 };
 
-type GateState = {
-  userId: string;
-  state: EncryptionSessionState;
-};
-
 export function EncryptionGate({ userId, children }: EncryptionGateProps) {
-  const [gateState, setGateState] = useState<GateState>(() => ({
+  return (
+    <EncryptionGateForUser key={userId} userId={userId}>
+      {children}
+    </EncryptionGateForUser>
+  );
+}
+
+function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
+  const [gateState, dispatch] = useReducer(
+    encryptionGateReducer,
     userId,
-    state: getInitialEncryptionSessionState(userId),
-  }));
-  const state =
-    gateState.userId === userId
-      ? gateState.state
-      : getInitialEncryptionSessionState(userId);
+    createInitialEncryptionGateState,
+  );
+  const session = gateState.session;
 
-  function setState(nextState: EncryptionSessionState) {
-    setGateState({ userId, state: nextState });
-  }
+  useEffect(() => {
+    if (session.status !== 'checking') return;
+    let cancelled = false;
+    void fetchEncryptionKeyRecord()
+      .then((record) => {
+        if (cancelled) return;
+        writeCachedEncryptionKeyRecord(userId, record);
+        dispatch({ type: 'check-succeeded' });
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        if (isEncryptionKeyNotFoundError(error)) {
+          dispatch({ type: 'check-missing' });
+          return;
+        }
+        dispatch({ type: 'check-failed' });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [session.status, userId]);
 
-  function setup(password: string) {
-    setState({ status: 'setup-submitting', hasProfile: false });
+  async function setup(password: string) {
+    dispatch({ type: 'setup-submitted' });
     try {
-      createPlaceholderEncryptionProfile(userId, password);
-      setState({ status: 'unlocked', hasProfile: true });
+      const { request, masterKey } = await createWrappedMasterKey(
+        userId,
+        password,
+      );
+      const record = await createEncryptionKeyRecord(request);
+      writeCachedEncryptionKeyRecord(userId, record);
+      dispatch({ type: 'unlocked', masterKey });
     } catch {
-      setState({ status: 'error', hasProfile: false, error: 'setup' });
+      dispatch({ type: 'setup-failed' });
     }
   }
 
-  function unlock(password: string) {
-    setState({ status: 'unlock-submitting', hasProfile: true });
-    if (verifyPlaceholderEncryptionPassword(userId, password)) {
-      unlockEncryptionSession(userId);
-      setState({ status: 'unlocked', hasProfile: true });
+  async function unlock(password: string) {
+    dispatch({ type: 'unlock-submitted' });
+    try {
+      const record =
+        readCachedEncryptionKeyRecord(userId) ??
+        (await fetchEncryptionKeyRecord());
+      writeCachedEncryptionKeyRecord(userId, record);
+      const masterKey = await unwrapMasterKey(password, record);
+      dispatch({ type: 'unlocked', masterKey });
       return;
+    } catch {
+      dispatch({ type: 'unlock-failed' });
     }
-    setState({ status: 'error', hasProfile: true, error: 'unlock' });
   }
 
-  if (state.status === 'unlocked') {
+  if (session.status === 'unlocked' && gateState.masterKey) {
     return children;
   }
 
-  if (!state.hasProfile) {
+  if (session.status === 'checking') {
+    return <EncryptionGateLoading />;
+  }
+
+  if (session.status === 'error' && session.error === 'check') {
+    return (
+      <EncryptionShell>
+        <Card className="w-full max-w-md gap-4 border-border bg-surface/90 p-5 shadow-overlay backdrop-blur-sm sm:p-6">
+          <Card.Header className="gap-1 p-0">
+            <Card.Title className="text-2xl/tight font-bold tracking-tight">
+              <Trans>Ne možemo da proverimo šifrovanje</Trans>
+            </Card.Title>
+            <Card.Description className="text-base/6">
+              <Trans>
+                Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi
+                ključ dok ne proverimo postojeće podešavanje naloga.
+              </Trans>
+            </Card.Description>
+          </Card.Header>
+          <Card.Content className="p-0 pt-2">
+            <Button
+              fullWidth
+              size="lg"
+              variant="secondary"
+              onPress={() => dispatch({ type: 'retry-check' })}
+            >
+              <Trans>Pokušaj ponovo</Trans>
+            </Button>
+          </Card.Content>
+        </Card>
+      </EncryptionShell>
+    );
+  }
+
+  if (!session.hasProfile) {
     return (
       <EncryptionShell>
         <EncryptionSetupScreen
-          isSubmitting={state.status === 'setup-submitting'}
-          onSubmit={setup}
+          isSubmitting={session.status === 'setup-submitting'}
+          onSubmit={(password) => void setup(password)}
         />
       </EncryptionShell>
     );
@@ -73,10 +145,38 @@ export function EncryptionGate({ userId, children }: EncryptionGateProps) {
   return (
     <EncryptionShell>
       <EncryptionUnlockScreen
-        hasUnlockError={state.status === 'error' && state.error === 'unlock'}
-        isSubmitting={state.status === 'unlock-submitting'}
-        onSubmit={unlock}
+        hasUnlockError={
+          session.status === 'error' && session.error === 'unlock'
+        }
+        isSubmitting={session.status === 'unlock-submitting'}
+        onSubmit={(password) => void unlock(password)}
       />
     </EncryptionShell>
+  );
+}
+
+function EncryptionGateLoading() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setIsVisible(true), 250);
+    return () => window.clearTimeout(timeout);
+  }, []);
+
+  if (!isVisible) return null;
+
+  return (
+    <div className="grid min-h-screen place-items-center bg-background text-muted">
+      <Spinner color="current" size="sm" />
+    </div>
+  );
+}
+
+function isEncryptionKeyNotFoundError(
+  error: unknown,
+): error is EncryptionKeyNotFoundError {
+  return (
+    error instanceof EncryptionKeyNotFoundError ||
+    (error instanceof Error && error.name === 'EncryptionKeyNotFoundError')
   );
 }

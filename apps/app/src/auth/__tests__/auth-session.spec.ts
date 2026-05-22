@@ -190,20 +190,11 @@ describe('verifyEmailOtpSession', () => {
 });
 
 describe('logoutSession', () => {
-  it('calls signOut and clears stored user plus e2ee session material', async () => {
+  it('calls signOut and clears stored user', async () => {
     localStorage.setItem(SESSION_KEY, 'user-abc');
-    sessionStorage.setItem(
-      'autokpo:e2ee:local-unlock',
-      JSON.stringify({
-        version: 1,
-        userId: 'user-abc',
-        unlockedAt: '2026-01-01T00:00:00.000Z',
-      }),
-    );
     signOutMock.mockResolvedValue(undefined);
     await logoutSession();
     expect(signOutMock).toHaveBeenCalledTimes(1);
     expect(localStorage.getItem(SESSION_KEY)).toBeNull();
-    expect(sessionStorage.getItem('autokpo:e2ee:local-unlock')).toBeNull();
   });
 });

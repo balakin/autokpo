@@ -61,6 +61,37 @@ CREATE TABLE `verification` (
 );
 --> statement-breakpoint
 CREATE INDEX `verification_identifier_idx` ON `verification` (`identifier`);--> statement-breakpoint
+CREATE TABLE `user_encryption_key` (
+	`key_id` text PRIMARY KEY NOT NULL,
+	`user_id` text NOT NULL,
+	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	`revoked_at` integer,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE INDEX `user_encryption_key_user_id_idx` ON `user_encryption_key` (`user_id`);--> statement-breakpoint
+CREATE TABLE `user_encryption_key_wrapping` (
+	`wrapping_id` text PRIMARY KEY NOT NULL,
+	`key_id` text NOT NULL,
+	`user_id` text NOT NULL,
+	`method` text NOT NULL,
+	`kdf_version` integer NOT NULL,
+	`kdf_algorithm` text NOT NULL,
+	`kdf_params_json` text NOT NULL,
+	`kdf_salt` blob NOT NULL,
+	`wrap_version` integer NOT NULL,
+	`wrap_algorithm` text NOT NULL,
+	`wrap_params_json` text NOT NULL,
+	`wrap_iv` blob NOT NULL,
+	`wrapped_master_key` blob NOT NULL,
+	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	`revoked_at` integer,
+	FOREIGN KEY (`key_id`) REFERENCES `user_encryption_key`(`key_id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE INDEX `user_encryption_key_wrapping_key_id_idx` ON `user_encryption_key_wrapping` (`key_id`);--> statement-breakpoint
+CREATE INDEX `user_encryption_key_wrapping_user_id_idx` ON `user_encryption_key_wrapping` (`user_id`);--> statement-breakpoint
 CREATE TABLE `updates` (
 	`user_id` text NOT NULL,
 	`seq` integer NOT NULL,

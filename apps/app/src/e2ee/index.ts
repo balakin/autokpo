@@ -3,5 +3,4 @@ export { clearLocalEncryptionUnlockMaterial } from './cleanup';
 export {
   getInitialEncryptionSessionState,
   hasEncryptionProfile,
-  isEncryptionSessionUnlocked,
 } from './encryption-session';

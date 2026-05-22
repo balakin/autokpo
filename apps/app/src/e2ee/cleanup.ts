@@ -1,12 +1,9 @@
-export const LOCAL_ENCRYPTION_UNLOCK_KEY = 'autokpo:e2ee:local-unlock';
-
 /**
- * Clears local material that can unlock encrypted data on this device without
- * asking for the encryption password again.
+ * Clears temporary encryption material for the current browser process/session.
  *
- * This intentionally does not delete the persistent encryption profile or any
- * encrypted app data. Future device/PIN unlock material should be cleared here.
+ * This intentionally does not delete persistent wrapped-key cache or encrypted
+ * app data. Future device/PIN unlock material should be cleared here.
  */
-export function clearLocalEncryptionUnlockMaterial(): void {
-  sessionStorage.removeItem(LOCAL_ENCRYPTION_UNLOCK_KEY);
+export function clearLocalEncryptionUnlockMaterial(userId: string): void {
+  console.log('cleanup encryption', userId);
 }

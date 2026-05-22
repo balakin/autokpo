@@ -23,9 +23,9 @@ The sync wire format is a hand-rolled binary frame stream (`[seq: u32][kind: u8]
 
 ## Decisions
 
-### 1. Split envelope: JSON fields for algorithm, IV, and encryption_version, base64 ciphertext for blob
+### 1. Split envelope: JSON fields for algorithm, IV, and encryption_version, base64 ciphertext field
 
-All envelope metadata (`encryption_algorithm`, `encryption_version`, `iv`) is sent as top-level JSON fields. The `blob` field in the wire format and the `blob` DB column contain **ciphertext only** (no length prefix, no embedded IV):
+All envelope metadata (`encryption_algorithm`, `encryption_version`, `iv`) is sent as top-level JSON fields. The `ciphertext` field in the wire format and the `ciphertext` DB column contain **ciphertext only** (no length prefix, no embedded IV):
 
 Push/compact request body:
 
@@ -36,7 +36,7 @@ Push/compact request body:
   "encryptionAlgorithm": "aes-256-gcm",
   "encryptionVersion": 1,
   "iv": "<base64 12 bytes>",
-  "blob": "<base64 ciphertext>"
+  "ciphertext": "<base64 ciphertext>"
 }
 ```
 
@@ -50,13 +50,13 @@ Pull response per record:
   "encryptionAlgorithm": "aes-256-gcm",
   "encryptionVersion": 1,
   "iv": "<base64 12 bytes>",
-  "blob": "<base64 ciphertext>"
+  "ciphertext": "<base64 ciphertext>"
 }
 ```
 
-The DB schema mirrors the wire format: `sync_record` has separate `encryption_algorithm TEXT NOT NULL`, `encryption_version INTEGER NOT NULL`, and `iv BLOB NOT NULL` columns alongside `blob`.
+The DB schema mirrors the wire format: `sync_record` has separate `encryption_algorithm TEXT NOT NULL`, `encryption_version INTEGER NOT NULL`, `iv BLOB NOT NULL`, and `ciphertext BLOB NOT NULL` columns.
 
-**Why:** Envelope metadata (algorithm, version, IV) is now inspectable without decoding the binary blob. Server can validate `encryptionAlgorithm` and `encryptionVersion` via Zod and enforce `iv.byteLength === 12` without any binary parsing. All DB columns are typed and queryable. The `blob` column stores only opaque ciphertext — consistent with the server's role as a storage relay that cannot read it.
+**Why:** Envelope metadata (algorithm, version, IV) is now inspectable without decoding the binary blob. Server can validate `encryptionAlgorithm` and `encryptionVersion` via Zod and enforce `iv.byteLength === 12` without any binary parsing. All DB columns are typed and queryable. The `ciphertext` column stores only opaque ciphertext — consistent with the server's role as a storage relay that cannot read it.
 
 **Alternative considered:** Self-contained binary blob `[encryption_version: u8][iv: 12 bytes][ciphertext…]` stored and transmitted as a single base64 field. Considered initially; discarded because it forces the server to do manual byte-offset parsing to validate IV length, couples the DB schema to a client-defined binary layout, and makes envelope fields opaque to server-side queries and debugging.
 
@@ -96,7 +96,7 @@ Encoded as UTF-8 via `TextEncoder`, matching the existing `masterKeyAad` pattern
 
 ## Risks / Trade-offs
 
-- **Base64 overhead** → ~33% larger payloads (on blob and IV). Acceptable at this scale; the 1 MiB ciphertext limit already dominates sizing concerns.
+- **Base64 overhead** → ~33% larger payloads (on ciphertext and IV). Acceptable at this scale; the 1 MiB ciphertext limit already dominates sizing concerns.
 - **Binary migration** → No data migration needed; app is not deployed. New rows are always encrypted.
 - **AAD does not bind to seq** → Seq is server-assigned; client cannot include it at encrypt time. Server could theoretically reorder rows, but Yjs CRDT semantics make reordering harmless — updates commute and `Y.applyUpdate` is idempotent.
 - **Single active key assumption** → `encryption_key_id` column is stored per row, so key rotation is possible in future. Current implementation reads only the session key.

@@ -2,29 +2,29 @@
 
 ### Requirement: Sync blobs are encrypted before upload
 
-The sync engine SHALL encrypt every Yjs delta and snapshot blob using AES-256-GCM with a random 12-byte IV before sending it to the server. The `blob` field in the request body SHALL contain only the raw ciphertext (base64-encoded). The algorithm, IV, and encryption version SHALL be sent as separate JSON fields `encryptionAlgorithm`, `iv` (base64), and `encryptionVersion` (integer). The plaintext SHALL never leave the browser.
+The sync engine SHALL encrypt every Yjs delta and snapshot blob using AES-256-GCM with a random 12-byte IV before sending it to the server. The `ciphertext` field in the request body SHALL contain only the raw ciphertext (base64-encoded). The algorithm, IV, and encryption version SHALL be sent as separate JSON fields `encryptionAlgorithm`, `iv` (base64), and `encryptionVersion` (integer). The plaintext SHALL never leave the browser.
 
 #### Scenario: Push encrypts delta before upload
 
 - **WHEN** the sync engine prepares a push
 - **THEN** it SHALL generate a random 12-byte IV
 - **AND** encrypt the Yjs delta bytes using AES-256-GCM with the session master key
-- **AND** send the request body `{ id, encryptionKeyId, encryptionAlgorithm: "aes-256-gcm", encryptionVersion: 1, iv: <base64>, blob: <base64 ciphertext> }`
+- **AND** send the request body `{ id, encryptionKeyId, encryptionAlgorithm: "aes-256-gcm", encryptionVersion: 1, iv: <base64>, ciphertext: <base64 ciphertext> }`
 
 #### Scenario: Compact encrypts snapshot before upload
 
 - **WHEN** the sync engine prepares a compact
 - **THEN** it SHALL encrypt the full Yjs snapshot using the same split-envelope format
-- **AND** send `{ id, encryptionKeyId, encryptionAlgorithm: "aes-256-gcm", encryptionVersion: 1, iv: <base64>, blob: <base64 ciphertext> }` in the compact request body
+- **AND** send `{ id, encryptionKeyId, encryptionAlgorithm: "aes-256-gcm", encryptionVersion: 1, iv: <base64>, ciphertext: <base64 ciphertext> }` in the compact request body
 
 ### Requirement: Received sync blobs are decrypted before application
 
-The sync engine SHALL decrypt every received blob before applying it to the Y.Doc. Each pull response record SHALL include `encryptionAlgorithm`, `encryptionVersion`, `iv` (base64), and `blob` (base64 ciphertext) as separate fields; the client SHALL base64-decode `iv` and `blob`, then decrypt using AES-256-GCM.
+The sync engine SHALL decrypt every received record before applying it to the Y.Doc. Each pull response record SHALL include `encryptionAlgorithm`, `encryptionVersion`, `iv` (base64), and `ciphertext` (base64 ciphertext) as separate fields; the client SHALL base64-decode `iv` and `ciphertext`, then decrypt using AES-256-GCM.
 
 #### Scenario: Pull decrypts records before applying to Y.Doc
 
 - **WHEN** the sync engine receives records from a pull response
-- **THEN** for each record it SHALL read `encryptionAlgorithm` and `encryptionVersion`, decode `iv` and `blob` from base64
+- **THEN** for each record it SHALL read `encryptionAlgorithm` and `encryptionVersion`, decode `iv` and `ciphertext` from base64
 - **AND** decrypt the ciphertext using AES-256-GCM with the IV and session master key
 - **AND** pass the resulting plaintext bytes to `applyRecordsToDoc`
 

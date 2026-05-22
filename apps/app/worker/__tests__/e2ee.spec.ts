@@ -84,9 +84,9 @@ describe('/api/e2ee/key', () => {
     const created = await create.json();
     expect(created).toMatchObject({
       version: 1,
-      key: { keyId: payload.keyId, userId: 'e2ee-user-1', revokedAt: null },
+      key: { id: payload.keyId, userId: 'e2ee-user-1', revokedAt: null },
       wrapping: {
-        wrappingId: payload.wrappingId,
+        id: payload.wrappingId,
         keyId: payload.keyId,
         userId: 'e2ee-user-1',
         method: 'password',

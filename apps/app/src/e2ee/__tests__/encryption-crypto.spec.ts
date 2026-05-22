@@ -18,13 +18,13 @@ function makeRecord(
   return {
     version: 1,
     key: {
-      keyId: request.keyId,
+      id: request.keyId,
       userId,
       createdAt: '2026-01-01T00:00:00.000Z',
       revokedAt: null,
     },
     wrapping: {
-      wrappingId: request.wrappingId,
+      id: request.wrappingId,
       keyId: request.keyId,
       userId,
       method: 'password',
@@ -82,7 +82,7 @@ describe('encryption crypto helpers', () => {
     deriveKekMock.mockResolvedValue(new Uint8Array(32).fill(7));
     const { request } = await createWrappedMasterKey('user-1', 'password');
     const record = makeRecord(request);
-    record.wrapping.wrappingId = 'different-wrapping';
+    record.wrapping.id = 'different-wrapping';
 
     await expect(unwrapMasterKey('password', record)).rejects.toThrow(
       'Failed to unwrap master key',

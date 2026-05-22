@@ -13,14 +13,14 @@ export const wrapParamsV1Schema = z.object({
 });
 
 const encryptionKeySchema = z.object({
-  keyId: z.string(),
+  id: z.string(),
   userId: z.string(),
   createdAt: z.string(),
   revokedAt: z.string().nullable(),
 });
 
 const encryptionKeyWrappingSchema = z.object({
-  wrappingId: z.string(),
+  id: z.string(),
   keyId: z.string(),
   userId: z.string(),
   method: z.literal('password'),
@@ -43,7 +43,7 @@ export const serializedEncryptionKeyRecordSchema = z
     key: encryptionKeySchema,
     wrapping: encryptionKeyWrappingSchema,
   })
-  .refine((record) => record.key.keyId === record.wrapping.keyId, {
+  .refine((record) => record.key.id === record.wrapping.keyId, {
     path: ['wrapping', 'keyId'],
   })
   .refine((record) => record.key.userId === record.wrapping.userId, {

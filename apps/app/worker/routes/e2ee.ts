@@ -52,7 +52,7 @@ e2eeRouter.post('/key', async (c) => {
 
   const db = getDb(c.env.DB);
   const [existing] = await db
-    .select({ keyId: userEncryptionKey.keyId })
+    .select({ id: userEncryptionKey.id })
     .from(userEncryptionKey)
     .where(
       and(
@@ -68,11 +68,11 @@ e2eeRouter.post('/key', async (c) => {
 
   await db.batch([
     db.insert(userEncryptionKey).values({
-      keyId: parsed.keyId,
+      id: parsed.keyId,
       userId: session.user.id,
     }),
     db.insert(userEncryptionKeyWrapping).values({
-      wrappingId: parsed.wrappingId,
+      id: parsed.wrappingId,
       keyId: parsed.keyId,
       userId: session.user.id,
       method: 'password',
@@ -116,7 +116,7 @@ async function getActivePasswordWrapping(
     .where(
       and(
         eq(userEncryptionKeyWrapping.userId, userId),
-        eq(userEncryptionKeyWrapping.keyId, key.keyId),
+        eq(userEncryptionKeyWrapping.keyId, key.id),
         eq(userEncryptionKeyWrapping.method, 'password'),
         isNull(userEncryptionKeyWrapping.revokedAt),
       ),
@@ -190,13 +190,13 @@ function serializeRecord(
   return {
     version: 1,
     key: {
-      keyId: key.keyId,
+      id: key.id,
       userId: key.userId,
       createdAt: serializeTimestamp(key.createdAt),
       revokedAt: serializeNullableTimestamp(key.revokedAt),
     },
     wrapping: {
-      wrappingId: wrapping.wrappingId,
+      id: wrapping.id,
       keyId: wrapping.keyId,
       userId: wrapping.userId,
       method: wrapping.method,

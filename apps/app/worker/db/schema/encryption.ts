@@ -20,7 +20,7 @@ const blobBytes = customType<{ data: Uint8Array; driverData: ArrayBuffer }>({
 export const userEncryptionKey = sqliteTable(
   'user_encryption_key',
   {
-    keyId: text('key_id').primaryKey(),
+    id: text('key_id').primaryKey(),
     userId: text('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
@@ -35,10 +35,10 @@ export const userEncryptionKey = sqliteTable(
 export const userEncryptionKeyWrapping = sqliteTable(
   'user_encryption_key_wrapping',
   {
-    wrappingId: text('wrapping_id').primaryKey(),
+    id: text('wrapping_id').primaryKey(),
     keyId: text('key_id')
       .notNull()
-      .references(() => userEncryptionKey.keyId, { onDelete: 'cascade' }),
+      .references(() => userEncryptionKey.id, { onDelete: 'cascade' }),
     userId: text('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),

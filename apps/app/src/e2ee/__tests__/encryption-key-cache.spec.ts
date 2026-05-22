@@ -10,13 +10,13 @@ function makeRecord(userId = 'user-1'): SerializedEncryptionKeyRecord {
   return {
     version: 1,
     key: {
-      keyId: 'key-1',
+      id: 'key-1',
       userId,
       createdAt: '2026-01-01T00:00:00.000Z',
       revokedAt: null,
     },
     wrapping: {
-      wrappingId: 'wrapping-1',
+      id: 'wrapping-1',
       keyId: 'key-1',
       userId,
       method: 'password',

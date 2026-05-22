@@ -66,11 +66,7 @@ export async function unwrapMasterKey(
       keyBytes: kek,
       iv: wrapIv,
       ciphertext: wrappedMasterKey,
-      aad: masterKeyAad(
-        record.key.userId,
-        record.key.keyId,
-        record.wrapping.wrappingId,
-      ),
+      aad: masterKeyAad(record.key.userId, record.key.id, record.wrapping.id),
     });
     if (masterKey.byteLength !== MASTER_KEY_BYTES) {
       throw new EncryptionUnlockError();

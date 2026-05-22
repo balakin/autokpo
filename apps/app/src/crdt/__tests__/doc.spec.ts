@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import * as Y from 'yjs';
 
-import { bootstrap } from '../doc';
+import { bootstrap, createRuntime } from '../doc';
 import type { TypedDoc } from '../typed-doc';
 
 function makeDoc(): TypedDoc {
@@ -29,6 +29,19 @@ describe('bootstrap — schemaVersion', () => {
     bootstrap(doc, 'en');
     expect(doc.getMap('meta').get('schemaVersion')).toBe(99);
   });
+
+  it('seeds createdAt when absent', () => {
+    const doc = makeDoc();
+    bootstrap(doc, 'en');
+    expect(doc.getMap('meta').get('createdAt')).toEqual(expect.any(String));
+  });
+
+  it('does not overwrite existing createdAt', () => {
+    const doc = makeDoc();
+    doc.transact(() => doc.getMap('meta').set('createdAt', 'existing'));
+    bootstrap(doc, 'en');
+    expect(doc.getMap('meta').get('createdAt')).toBe('existing');
+  });
 });
 
 describe('bootstrap — locale seeding', () => {
@@ -55,5 +68,30 @@ describe('bootstrap — locale seeding', () => {
     doc.transact(() => doc.getMap('user').set('locale', 'ru'));
     bootstrap(doc, 'en');
     expect(doc.getMap('user').get('locale')).toBe('ru');
+  });
+});
+
+describe('createRuntime', () => {
+  it('drains queued persistence writes before destroying the Y.Doc', async () => {
+    const userId = `runtime-destroy:${crypto.randomUUID()}`;
+    const runtime = createRuntime(userId, {
+      masterKey: new Uint8Array(32).fill(9),
+      keyId: 'key-1',
+    });
+    await runtime.whenReady;
+
+    for (let i = 0; i < 500; i += 1) {
+      runtime.ydoc.getMap('meta').set('serverCursor', i);
+    }
+    await runtime.destroy();
+
+    const nextRuntime = createRuntime(userId, {
+      masterKey: new Uint8Array(32).fill(9),
+      keyId: 'key-1',
+    });
+    await nextRuntime.whenReady;
+
+    expect(nextRuntime.ydoc.getMap('meta').get('serverCursor')).toBe(499);
+    await nextRuntime.destroy();
   });
 });

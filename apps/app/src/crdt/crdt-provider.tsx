@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { useEncryptionContext } from '../e2ee/encryption-context';
 import { getStoredLocale } from '../i18n/locale-storage';
 
 import { CrdtLocaleProvider } from './crdt-locale-provider';
@@ -15,11 +16,12 @@ export function CrdtProvider({
   userId: string;
   children: React.ReactNode;
 }) {
+  const { masterKey, keyId } = useEncryptionContext();
   const [runtime, setRuntime] = useState<CrdtRuntime | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    const nextRuntime = createRuntime(userId);
+    const nextRuntime = createRuntime(userId, { masterKey, keyId });
 
     async function init() {
       await nextRuntime.whenReady;
@@ -35,7 +37,7 @@ export function CrdtProvider({
       setRuntime(null);
       void nextRuntime.destroy();
     };
-  }, [userId]);
+  }, [keyId, masterKey, userId]);
 
   if (runtime === null) return null;
 

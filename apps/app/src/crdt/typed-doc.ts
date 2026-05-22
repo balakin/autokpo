@@ -23,6 +23,7 @@ export type BookMapData = Omit<Book, 'entries' | 'profile' | 'signature'> & {
 };
 
 type DocMeta = {
+  createdAt: string;
   schemaVersion: number;
   serverCursor: number;
 };

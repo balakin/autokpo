@@ -83,7 +83,7 @@ The system SHALL await encrypted IndexedDB persistence readiness before mounting
 
 ### Requirement: Cross-tab Y.Doc fan-out via BroadcastChannel and IndexedDB
 
-The system SHALL propagate Yjs update bytes between tabs of the same origin so that an edit made in one tab is reflected in all other open tabs. Propagation SHALL use both `BroadcastChannel` (for low-latency UI updates) and encrypted IndexedDB persistence (for durability), accepting that idempotent `Y.applyUpdate` makes duplicate delivery safe.
+The system SHALL propagate Yjs update bytes between tabs of the same origin so that an edit made in one tab is reflected in all other open tabs. Live open-tab propagation SHALL use `BroadcastChannel` for low-latency UI updates, while encrypted IndexedDB persistence SHALL provide durable startup/reload recovery. The system SHALL accept that idempotent `Y.applyUpdate` makes duplicate delivery safe.
 
 #### Scenario: Edit in tab B appears in tab C
 

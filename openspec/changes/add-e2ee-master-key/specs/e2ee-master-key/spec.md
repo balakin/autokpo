@@ -77,6 +77,45 @@ The system SHALL unlock encryption by deriving the KEK locally and unwrapping th
 - **AND** the system SHALL keep encryption locked
 - **AND** the system SHALL NOT clear the authenticated session
 
+### Requirement: Backend check gates first-time setup
+
+When no wrapped key record is cached locally, the system SHALL verify with the backend whether an active key exists before allowing the setup flow. This prevents creating a duplicate key when one already exists on the backend but has not been cached yet.
+
+#### Scenario: No local cache triggers backend check
+
+- **WHEN** an authenticated user opens the app
+- **AND** no wrapped key record is cached in localStorage for that user
+- **THEN** the system SHALL fetch the active key record from the backend before showing setup or unlock UI
+
+#### Scenario: Backend confirms key exists — proceed to unlock
+
+- **WHEN** the backend returns an active key record during the initial check
+- **THEN** the system SHALL cache the returned record in localStorage
+- **AND** proceed to the unlock screen
+
+#### Scenario: Backend confirms key is absent — proceed to setup
+
+- **WHEN** the backend returns a 404 during the initial check
+- **THEN** the system SHALL proceed to the setup screen
+
+#### Scenario: Backend check fails — block until retry succeeds
+
+- **WHEN** the backend check fails with a non-404 error
+- **THEN** the system SHALL block navigation to both setup and unlock
+- **AND** display a "cannot verify encryption" error with a retry action
+- **AND** SHALL NOT allow setup until a successful check has confirmed the key is absent
+
+### Requirement: Cached key record skips backend check
+
+When a valid wrapped key record is already present in localStorage for the current user, the system SHALL skip the backend check and proceed directly to the unlock screen.
+
+#### Scenario: Cached record initializes unlock state directly
+
+- **WHEN** an authenticated user opens the app
+- **AND** a valid wrapped key record exists in localStorage for that user
+- **THEN** the system SHALL initialize directly in the locked state
+- **AND** SHALL NOT perform a backend check on load
+
 ### Requirement: Wrapped key cache supports offline unlock
 
 The system SHALL cache the active wrapped key and public parameters locally after successful setup or retrieval so unlock can proceed without fetching the backend record.
@@ -89,12 +128,19 @@ The system SHALL cache the active wrapped key and public parameters locally afte
 - **THEN** the system SHALL unwrap the cached wrapped master key locally
 - **AND** the system SHALL unlock for the current app session
 
+#### Scenario: Unlock refreshes cache from backend when no local record exists
+
+- **WHEN** the authenticated user initiates unlock
+- **AND** no record is cached in localStorage (e.g. cleared manually)
+- **THEN** the system SHALL fetch the active key record from the backend
+- **AND** cache it before unwrapping
+
 ### Requirement: Plaintext master key is session-memory only
 
-The system SHALL keep plaintext master key material only in process memory for the current unlocked app session.
+The system SHALL keep plaintext master key material only in process memory for the current unlocked app session. The master key is held in React component state and is cleared automatically when the component unmounts.
 
 #### Scenario: Logout clears plaintext key material
 
 - **WHEN** the user logs out or switches authenticated users
-- **THEN** the system SHALL clear in-memory plaintext master key material
+- **THEN** the system SHALL clear in-memory plaintext master key material by unmounting the encryption gate component for the previous user
 - **AND** a later app session SHALL require the encryption password again

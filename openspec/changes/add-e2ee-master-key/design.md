@@ -67,6 +67,17 @@ Do not update crypto material in place. If a wrapping changes later, insert a ne
 
 localStorage may cache the active key metadata and password wrapping so the user can unlock offline after a successful online setup/retrieval. The cache contains only wrapped encrypted material and public KDF/wrap parameters. The plaintext master key is held only in memory and cleared on logout/user switch/session cleanup.
 
+### Initial backend check before setup/unlock
+
+When no cached key record exists for the authenticated user, the gate fetches the active key from the backend before deciding whether to show setup or unlock UI. This prevents creating a duplicate key when one already exists on the backend but has not yet been cached locally.
+
+- Cached record present → skip backend check, go directly to `locked` state.
+- No cached record → fetch `/api/e2ee/key`. On success: cache record, go to `locked`. On 404: go to `uninitialized` (setup). On other error: show "cannot verify" UI with retry; block setup until a check succeeds.
+
+### Master key held in gate reducer state
+
+The plaintext master key is stored as `Uint8Array | null` inside the `EncryptionGateState` produced by `encryptionGateReducer`. It is never persisted. The outer `EncryptionGate` renders `EncryptionGateForUser` with `key={userId}`, so React unmounts the subtree when the user changes, clearing the in-memory master key automatically.
+
 ## Risks / Trade-offs
 
 - **Argon2id WASM adds bundle/performance cost** → Use `hash-wasm`, load it only through the KDF worker where encryption setup/unlock needs it, and keep parameters versioned so they can be tuned.

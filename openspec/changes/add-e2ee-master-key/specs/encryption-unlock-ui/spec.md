@@ -1,5 +1,22 @@
 ## MODIFIED Requirements
 
+### Requirement: Initial backend check runs before showing setup or unlock UI
+
+When no wrapped key is cached locally, the gate SHALL show a loading indicator while fetching the active key record from the backend. The loading indicator is delayed so it does not flash on fast connections.
+
+#### Scenario: Loading indicator appears while checking backend
+
+- **WHEN** the gate starts in the `checking` state (no local cache)
+- **THEN** the system SHALL render a spinner after a short delay (≥ 250 ms)
+- **AND** SHALL NOT show the setup or unlock screen until the check completes
+
+#### Scenario: Backend check network failure shows retry UI
+
+- **WHEN** the backend check returns a non-404 error
+- **THEN** the system SHALL display a "cannot verify encryption" error screen
+- **AND** provide a "try again" action that repeats the backend check
+- **AND** SHALL NOT navigate to setup or unlock until a check succeeds
+
 ### Requirement: First-time setup creates encryption password with acknowledgement
 
 The setup screen SHALL collect an encryption password and confirmation before setup can complete. The user SHALL acknowledge that Autokpo cannot recover the encryption password or encrypted data before proceeding. Successful setup SHALL create and store a real password-wrapped master key for the authenticated user before entering the signed-in app.

@@ -7,7 +7,6 @@ import { RouterProvider } from 'react-router';
 
 import { i18n } from './i18n/i18n';
 import { LocaleProvider } from './i18n/locale-provider';
-import { LeaderProvider } from './leader';
 import { OfflineIndicator } from './pwa/offline-indicator';
 import { PwaRegisterer } from './pwa/pwa-registerer';
 import { router } from './router';
@@ -23,12 +22,10 @@ createRoot(document.getElementById('root')!).render(
       <I18nProvider i18n={i18n}>
         <LocaleProvider>
           <ThemeProvider>
-            <LeaderProvider>
-              <Toast.Provider />
-              <RouterProvider router={router} />
-              <OfflineIndicator />
-              <PwaRegisterer />
-            </LeaderProvider>
+            <Toast.Provider />
+            <RouterProvider router={router} />
+            <OfflineIndicator />
+            <PwaRegisterer />
           </ThemeProvider>
         </LocaleProvider>
       </I18nProvider>

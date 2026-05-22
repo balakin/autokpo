@@ -1,11 +1,17 @@
+## Purpose
+
+Define local-first CRDT application state, persistence, cross-tab propagation, and server sync protocols.
+
+## Requirements
+
 ### Requirement: Single Yjs document for application state
 
-The system SHALL store all cross-device application state — books, entries, per-book entity profiles, per-book signatures, and the user's locale — in a single Yjs document persisted to IndexedDB via `y-indexeddb`. Theme preference SHALL remain in `localStorage` as a per-device setting and SHALL NOT be part of the Y.Doc.
+The system SHALL store all cross-device application state — books, entries, per-book entity profiles, per-book signatures, and the user's locale — in a single Yjs document persisted to IndexedDB through app-owned encrypted persistence. Theme preference SHALL remain in `localStorage` as a per-device setting and SHALL NOT be part of the Y.Doc.
 
 #### Scenario: Y.Doc structure on first start
 
 - **WHEN** the application boots for the first time on a device with no prior IndexedDB state
-- **THEN** the system creates a Y.Doc containing top-level Y.Maps named `meta`, `user`, and `books`, sets `meta.schemaVersion = 1` and `meta.createdAt` to the current ISO timestamp, and persists it to IndexedDB
+- **THEN** the system creates a Y.Doc containing top-level Y.Maps named `meta`, `user`, and `books`, sets `meta.schemaVersion = 1` and `meta.createdAt` to the current ISO timestamp, and persists it to IndexedDB as encrypted Yjs update data
 
 #### Scenario: Locale defaulted on first start
 
@@ -29,7 +35,7 @@ The system SHALL store all cross-device application state — books, entries, pe
 
 ### Requirement: IndexedDB persistence and bootstrap order
 
-The system SHALL await `y-indexeddb`'s `whenSynced` before mounting the React tree, so the first render reads from a fully hydrated Y.Doc and never flashes empty state. After `whenSynced` resolves, the system SHALL call `bootstrap(ydoc, initialLocale)` where `initialLocale` is the locale currently stored in `localStorage` (read by `CrdtProvider` before the doc is ready). `bootstrap()` SHALL seed `user.locale` with `initialLocale` only if the field is absent — existing accounts are unaffected.
+The system SHALL await encrypted IndexedDB persistence readiness before mounting the React tree, so the first render reads from a fully hydrated Y.Doc and never flashes empty state. After persistence readiness resolves, the system SHALL call `bootstrap(ydoc, initialLocale)` where `initialLocale` is the locale currently stored in `localStorage` (read by `CrdtProvider` before the doc is ready). `bootstrap()` SHALL seed `user.locale` with `initialLocale` only if the field is absent — existing accounts are unaffected.
 
 #### Scenario: Hydration completes before render
 
@@ -47,6 +53,13 @@ The system SHALL await `y-indexeddb`'s `whenSynced` before mounting the React tr
 - **WHEN** the Y.Doc already has a `user.locale` value after IndexedDB has finished syncing
 - **THEN** `bootstrap()` SHALL NOT modify `user.locale`
 - **AND** `LocaleSynchronizer` SHALL sync the existing CRDT locale to `localStorage` on mount
+
+#### Scenario: Invalid encrypted cache starts empty
+
+- **WHEN** encrypted IndexedDB persistence cannot open, read, parse, or decrypt the local cache
+- **THEN** the system SHALL treat the cache as absent
+- **AND** SHALL delete the cache if possible
+- **AND** SHALL continue startup with an empty local cache
 
 ### Requirement: Selector-based React hook for reading Y.Doc state
 
@@ -112,9 +125,31 @@ The system SHALL use the Web Locks API to elect exactly one tab per origin as th
 - **WHEN** `cancel()` is called on the leadership object
 - **THEN** `isLeader()` returns `false` and the lock is released, allowing a queued tab to acquire it
 
+### Requirement: IndexedDB cache contents are encrypted
+
+The system SHALL persist Yjs update bytes in IndexedDB only as AES-256-GCM encrypted envelopes. Each envelope SHALL include `schemaVersion: 1`, `encryptionAlgorithm: "aes-256-gcm"`, `encryptionVersion: 1`, `encryptionKeyId`, a random 12-byte `iv`, and `ciphertext`. AES-GCM AAD SHALL be the UTF-8 encoding of `autokpo:yjs-indexeddb:v1:<dbName>:updates:<keyId>`.
+
+#### Scenario: Yjs update is stored as ciphertext
+
+- **WHEN** the Y.Doc emits an update that did not originate from the IndexedDB persistence instance
+- **THEN** the system SHALL encrypt the update bytes using the unlocked session master key
+- **AND** SHALL append only the encrypted envelope to the IndexedDB `updates` store
+
+#### Scenario: Unsupported encrypted cache envelope is rejected
+
+- **WHEN** IndexedDB contains an update envelope with an unsupported `schemaVersion`, `encryptionAlgorithm`, or `encryptionVersion`
+- **THEN** the system SHALL NOT apply that row's ciphertext to the Y.Doc
+- **AND** SHALL treat the local cache as absent
+
+#### Scenario: AAD binds cache ciphertext to database and key
+
+- **WHEN** a cache ciphertext encrypted for one database name or encryption key id is decrypted using AAD for another database name or key id
+- **THEN** AES-GCM authentication SHALL fail
+- **AND** the system SHALL treat the local cache as absent
+
 ### Requirement: Cross-tab Y.Doc fan-out via BroadcastChannel and IndexedDB
 
-The system SHALL propagate Yjs update bytes between tabs of the same origin so that an edit made in one tab is reflected in all other open tabs. Propagation SHALL use both `BroadcastChannel` (for low-latency UI updates) and `y-indexeddb` cross-tab observers (for durability), accepting that idempotent `Y.applyUpdate` makes duplicate delivery safe.
+The system SHALL propagate Yjs update bytes between tabs of the same origin so that an edit made in one tab is reflected in all other open tabs. Live open-tab propagation SHALL use `BroadcastChannel` for low-latency UI updates, while encrypted IndexedDB persistence SHALL provide durable startup/reload recovery. The system SHALL accept that idempotent `Y.applyUpdate` makes duplicate delivery safe.
 
 #### Scenario: Edit in tab B appears in tab C
 
@@ -124,7 +159,30 @@ The system SHALL propagate Yjs update bytes between tabs of the same origin so t
 #### Scenario: Origin tag prevents echo loops
 
 - **WHEN** a tab receives Yjs update bytes from `BroadcastChannel` or from a server fetch and applies them
-- **THEN** the application calls `Y.applyUpdate(doc, bytes, REMOTE_ORIGIN)` where `REMOTE_ORIGIN` is a module-private `Symbol('autokpo:remote')` exported from `src/crdt/sync-logic.ts`, and its `update` event listener ignores updates whose origin is `REMOTE_ORIGIN`
+- **THEN** the application calls `Y.applyUpdate(doc, bytes, REMOTE_ORIGIN)` where `REMOTE_ORIGIN` is a module-private `Symbol('autokpo:remote')` exported from `src/crdt/sync-logic.ts`, and its update event listener ignores updates whose origin is `REMOTE_ORIGIN`
+
+#### Scenario: Persistence replays do not re-persist themselves
+
+- **WHEN** encrypted IndexedDB persistence decrypts and applies cached Yjs update bytes to the document during startup
+- **THEN** the persistence update listener SHALL ignore those replayed updates by origin
+- **AND** SHALL continue to persist later local and remote sync updates whose origin is not the persistence instance
+
+### Requirement: IndexedDB update log compaction
+
+The system SHALL compact the encrypted IndexedDB update log after 500 stored updates by writing an encrypted full Yjs snapshot and deleting older update rows. Compaction SHALL preserve the current Y.Doc state while reducing future startup replay work.
+
+#### Scenario: Update log reaches compaction threshold
+
+- **WHEN** encrypted IndexedDB persistence reaches 500 stored updates
+- **THEN** the system SHALL encode the current Y.Doc state as a full Yjs update
+- **AND** SHALL encrypt and append that snapshot to the `updates` store
+- **AND** SHALL delete older update rows that are covered by the snapshot
+
+#### Scenario: Compacted cache rehydrates equivalent document state
+
+- **WHEN** the application restarts after IndexedDB compaction
+- **THEN** encrypted persistence SHALL decrypt and apply the remaining update rows
+- **AND** the hydrated Y.Doc state SHALL match the state that existed when compaction completed plus any later persisted updates
 
 ### Requirement: Sync state side-channel in localStorage
 
@@ -224,11 +282,13 @@ The system SHALL use React Query (`@tanstack/react-query`) as the network layer.
 - **WHEN** a follower tab's pull query is enabled
 - **THEN** it posts `request-sync` on BroadcastChannel instead of making a network request, because only the leader talks to the server
 
-### Requirement: Pull protocol (GET with ETag and binary stream)
+### Requirement: Pull protocol (GET with ETag and JSON response)
 
 The system SHALL pull updates from the server using `GET /api/sync` with an `If-None-Match` header containing the current cursor and an `X-Local-User-Id` header containing the currently opened local user id. There is no `?since=` query parameter.
 
-- On `200`: apply all records to the Y.Doc using `applyRecordsToDoc()` (from `src/crdt/sync-logic.ts`, which wraps them in a single `ydoc.transact()` with `REMOTE_ORIGIN`), then post each record as `remote-update` on BroadcastChannel, write `syncState.write({ cursor: max(head, freshCursor), stateVector, dirty })` after the transact returns, and call `schedulePushIfPendingChanges()` to schedule a push if there are pending local edits.
+The server SHALL respond with `Content-Type: application/json`. On `200`, the response body SHALL be a JSON object `{ "records": [ { "seq": number, "kind": "update" | "snapshot", "encryptionKeyId": string, "encryptionAlgorithm": "aes-256-gcm", "encryptionVersion": number, "iv": string, "ciphertext": string } ] }` where `iv` and `ciphertext` are base64-encoded.
+
+- On `200`: decrypt each record, apply all records to the Y.Doc using `applyRecordsToDoc()` (from `src/crdt/sync-logic.ts`, which wraps them in a single `ydoc.transact()` with `REMOTE_ORIGIN`), then post each decrypted record as `remote-update` on BroadcastChannel, write `syncState.write({ cursor: max(head, freshCursor), stateVector, dirty })` after the transact returns, and call `schedulePushIfPendingChanges()` to schedule a push if there are pending local edits.
 - On `304`: nothing to do.
 - On `401`: run the logout-and-wipe flow because the local cache is no longer backed by a valid session.
 - On `409` with `local_user_mismatch`: run the logout-and-wipe flow because the local cache belongs to a different account than the current session.
@@ -238,6 +298,12 @@ The system SHALL pull updates from the server using `GET /api/sync` with an `If-
 
 - **WHEN** the leader issues `GET /api/sync` for local user `u1`
 - **THEN** the request includes `X-Local-User-Id: u1`
+
+#### Scenario: Pull response is JSON with base64 records
+
+- **WHEN** the server returns a 200 pull response
+- **THEN** the response body SHALL be `application/json` containing a `records` array
+- **AND** each record SHALL have `seq`, `kind`, `encryptionKeyId`, `encryptionAlgorithm`, `encryptionVersion`, `iv` (base64), and `ciphertext` (base64) fields
 
 #### Scenario: Unauthorized pull triggers logout cleanup
 
@@ -249,19 +315,25 @@ The system SHALL pull updates from the server using `GET /api/sync` with an `If-
 - **WHEN** the leader pull receives `409` with error code `local_user_mismatch`
 - **THEN** the app runs the logout-and-wipe flow instead of treating the error as a generic sync conflict
 
-### Requirement: Push protocol (POST with idempotency key and push-as-poll)
+### Requirement: Push protocol (POST with JSON body and push-as-poll)
 
-The system SHALL push local changes using `POST /api/sync` with an `Idempotency-Key` header (a UUID generated per logical push, reused across retries) and an `X-Local-User-Id` header containing the currently opened local user id.
+The system SHALL push local changes using `POST /api/sync` with `Content-Type: application/json` and an `X-Local-User-Id` header. The request body SHALL be a JSON object `{ "id": string, "encryptionKeyId": string, "encryptionAlgorithm": "aes-256-gcm", "encryptionVersion": number, "iv": string, "ciphertext": string }` where `id` is a UUID generated per logical push (reused across retries), `encryptionKeyId` is the active encryption key id, and `ciphertext` is the base64-encoded encrypted ciphertext. The `Idempotency-Key` header is removed — the idempotency id is in the body.
 
-**Delta computation:** `computeDelta(doc, stateVector)` (exported from `src/crdt/sync-logic.ts`) returns `Y.encodeStateAsUpdate(doc)` (full state) if `stateVector` is `null` (post-410 recovery), otherwise `Y.encodeStateAsUpdate(doc, stateVector)` (the diff since the last-acked state vector).
+**Delta computation:** `computeDelta(doc, stateVector)` (exported from `src/crdt/sync-logic.ts`) returns `Y.encodeStateAsUpdate(doc)` (full state) if `stateVector` is `null` (post-410 recovery), otherwise `Y.encodeStateAsUpdate(doc, stateVector)` (the diff since the last-acked state vector). The delta is encrypted before being base64-encoded into the body.
 
 **Dirty flag:** `hasPendingChanges(state)` (exported from `src/crdt/sync-logic.ts`) returns `true` if `stateVector === null || dirty === true`. The `dirty` flag is set by every local Y.Doc update and cleared after a contiguous push success. This handles delete-only edits that don't advance the state vector.
 
 **Push debounce:** local changes schedule a push after `PUSH_DEBOUNCE_MS = 2000`; rapid edits within the debounce window coalesce into a single delta.
 
-**Large delta fallback:** if `delta.byteLength > MAX_BLOB_BYTES` (1 MiB), the engine sends a compact (full snapshot) instead of a push.
+**Large delta fallback:** if the plaintext `delta.byteLength > MAX_PLAINTEXT_DELTA_BYTES` (1 MiB), the engine sends a compact (full snapshot) instead of a push.
 
-**Push-as-poll contiguity check:** after push success, the engine computes `prevHead = assignedSeq - 1` (dense monotonic sequence). If `prevHead === cursor`, the push is contiguous — advance cursor, update stateVector, clear dirty. If `prevHead > cursor`, other devices appended in the gap — do NOT write sync state, instead invalidate the pull query to reconcile. After the pull succeeds, pending changes are checked and pushed if needed.
+**Push-as-poll contiguity check:** after push success, the engine computes `prevHead = assignedSeq - 1` (dense monotonic sequence). If `prevHead === cursor`, the push is contiguous — advance cursor, update stateVector, clear dirty. If `prevHead > cursor`, other devices appended in the gap — do NOT write sync state, instead invalidate the pull query to reconcile.
+
+#### Scenario: Push sends JSON body with id and encrypted ciphertext
+
+- **WHEN** the leader issues `POST /api/sync`
+- **THEN** the request body SHALL be `application/json` with `id`, `encryptionKeyId`, `encryptionAlgorithm`, `encryptionVersion`, `iv` (base64), and `ciphertext` (base64) fields
+- **AND** no `Idempotency-Key` header SHALL be sent
 
 #### Scenario: Push sends the local-user header
 
@@ -278,16 +350,22 @@ The system SHALL push local changes using `POST /api/sync` with an `Idempotency-
 - **WHEN** a push receives `409` with error code `idempotency_conflict`
 - **THEN** the app treats it as a sync protocol error rather than as an auth/logout signal
 
-### Requirement: Compact protocol (POST /api/sync/compact with binary body)
+### Requirement: Compact protocol (POST /api/sync/compact with JSON body)
 
-The system SHALL produce a Yjs snapshot via `Y.encodeStateAsUpdate(doc)` and POST it to `/api/sync/compact` with `Content-Type: application/octet-stream`, `Idempotency-Key`, `X-Replaces-Up-To`, and `X-Local-User-Id` headers.
+The system SHALL produce a Yjs snapshot via `Y.encodeStateAsUpdate(doc)`, encrypt it, and POST to `/api/sync/compact` with `Content-Type: application/json` and `X-Local-User-Id` and `X-Replaces-Up-To` headers. The request body SHALL be a JSON object `{ "id": string, "encryptionKeyId": string, "encryptionAlgorithm": "aes-256-gcm", "encryptionVersion": number, "iv": string, "ciphertext": string }`. The `Idempotency-Key` header is removed — the idempotency id is in the body.
 
 **Triggers for compaction:**
 
 - The server includes `X-Compact-Hint: please` in a push response (only when the push was contiguous — `prevHead === cursor`).
-- A push delta exceeds `MAX_BLOB_BYTES` (fallback to compact).
+- A push delta exceeds `MAX_PLAINTEXT_DELTA_BYTES` (fallback to compact).
 
-**Post-compact contiguity check:** same as push — if `prevHead === cursor`, write sync state; if not, invalidate pull query. After a contiguous compact, `schedulePushIfPendingChanges()` (from `src/crdt/sync-logic.ts`) checks whether dirty edits arrived during the async compact cycle.
+**Post-compact contiguity check:** same as push — if `prevHead === cursor`, write sync state; if not, invalidate pull query.
+
+#### Scenario: Compact sends JSON body with id and encrypted snapshot
+
+- **WHEN** the leader issues `POST /api/sync/compact`
+- **THEN** the request body SHALL be `application/json` with `id`, `encryptionKeyId`, `encryptionAlgorithm`, `encryptionVersion`, `iv` (base64), and `ciphertext` (base64) fields
+- **AND** no `Idempotency-Key` header SHALL be sent
 
 #### Scenario: Compact sends the local-user header
 
@@ -298,6 +376,20 @@ The system SHALL produce a Yjs snapshot via `Y.encodeStateAsUpdate(doc)` and POS
 
 - **WHEN** a compact request receives `409` with error code `local_user_mismatch`
 - **THEN** the app runs the logout-and-wipe flow
+
+### Requirement: sync_record table stores encrypted blobs with key reference
+
+The D1 database SHALL store sync data in a `sync_record` table. Each row SHALL have a single-column UUID primary key `id`, a `user_id` FK to the `user` table, a monotonic `seq` integer, `encryption_algorithm TEXT NOT NULL`, `encryption_version INTEGER NOT NULL`, `iv BLOB NOT NULL`, `ciphertext BLOB NOT NULL`, a `kind` (`update` | `snapshot`), an `encryption_key_id` FK to `user_encryption_key`, and a `created` timestamp. A unique index on `(user_id, seq)` enforces ordering integrity.
+
+#### Scenario: Push inserts a sync_record row with encryption_key_id
+
+- **WHEN** a push request is accepted
+- **THEN** the server SHALL insert a row into `sync_record` with the provided `id`, assigned `seq`, encrypted ciphertext, `kind = 'update'`, and `encryption_key_id`
+
+#### Scenario: Compact inserts a sync_record snapshot row
+
+- **WHEN** a compact request is accepted
+- **THEN** the server SHALL insert a row into `sync_record` with `kind = 'snapshot'` and the provided `encryption_key_id`
 
 ### Requirement: Single-writer-to-network discipline
 

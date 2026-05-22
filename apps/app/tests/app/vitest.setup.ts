@@ -1,8 +1,30 @@
 import '@testing-library/jest-dom';
-import { beforeEach, vi } from 'vitest';
+import 'fake-indexeddb/auto';
+
+import { afterEach, beforeEach } from 'vitest';
 
 beforeEach(() => {
   localStorage.setItem('autokpo:locale', 'sr-Latn');
+});
+
+afterEach(async () => {
+  const databases = await indexedDB.databases();
+  await Promise.all(
+    databases.map(
+      ({ name }) =>
+        new Promise<void>((resolve, reject) => {
+          if (name === undefined) {
+            resolve();
+            return;
+          }
+          const request = indexedDB.deleteDatabase(name);
+          request.onsuccess = () => resolve();
+          request.onerror = () =>
+            reject(toError(request.error, 'IndexedDB delete failed'));
+          request.onblocked = () => resolve();
+        }),
+    ),
+  );
 });
 
 // Web Locks API not implemented in jsdom.
@@ -48,19 +70,6 @@ Element.prototype.getAnimations = () => [];
 // input-otp calls elementFromPoint in a timer; stub it to prevent uncaught errors in jsdom
 document.elementFromPoint = () => null;
 
-// Mock y-indexeddb for tests
-vi.mock('y-indexeddb', () => {
-  return {
-    IndexeddbPersistence: class IndexeddbPersistence {
-      whenSynced: Promise<this>;
-
-      constructor() {
-        this.whenSynced = Promise.resolve(this);
-      }
-
-      destroy(): Promise<void> {
-        return Promise.resolve();
-      }
-    },
-  };
-});
+function toError(value: unknown, fallbackMessage: string): Error {
+  return value instanceof Error ? value : new Error(fallbackMessage);
+}

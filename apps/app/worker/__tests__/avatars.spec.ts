@@ -51,7 +51,7 @@ beforeEach(async () => {
   (mockCtx.waitUntil as unknown as { mockClear(): void }).mockClear();
   await flushWaitUntil();
   await clearAuthData();
-  await workerTestEnv.DB.exec('DELETE FROM updates');
+  await workerTestEnv.DB.exec('DELETE FROM sync_record');
   const listed = await workerTestEnv.AVATARS.list();
   await Promise.all(
     listed.objects.map((o) => workerTestEnv.AVATARS.delete(o.key)),

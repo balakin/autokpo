@@ -1,9 +1,15 @@
+import { base64ToBytes, bytesToBase64 } from '../e2ee/base64';
+
 const SYNC_BASE = '/api/sync';
 
 export interface SyncRecord {
   seq: number;
-  kind: number;
-  bytes: Uint8Array;
+  kind: 'update' | 'snapshot';
+  encryptionKeyId: string;
+  encryptionAlgorithm: 'aes-256-gcm';
+  encryptionVersion: number;
+  iv: Uint8Array;
+  ciphertext: Uint8Array;
 }
 
 export class SyncGoneError extends Error {
@@ -57,31 +63,62 @@ export async function pull({
     throw await parseError(res, 'pull failed');
   }
   const head = parseETag(res.headers);
-  const buf = await res.arrayBuffer();
-  const records = parseRecordStream(buf);
+  const body = (await res.json()) as {
+    records: Array<{
+      seq: number;
+      kind: 'update' | 'snapshot';
+      encryptionKeyId: string;
+      encryptionAlgorithm: 'aes-256-gcm';
+      encryptionVersion: number;
+      iv: string;
+      ciphertext: string;
+    }>;
+  };
+  const records: SyncRecord[] = body.records.map((r) => ({
+    seq: r.seq,
+    kind: r.kind,
+    encryptionKeyId: r.encryptionKeyId,
+    encryptionAlgorithm: r.encryptionAlgorithm,
+    encryptionVersion: r.encryptionVersion,
+    iv: base64ToBytes(r.iv),
+    ciphertext: base64ToBytes(r.ciphertext),
+  }));
   return { records, head, status: 200 };
 }
 
 export async function push({
   delta,
-  idempotencyKey,
+  id,
+  encryptionKeyId,
+  encryptionAlgorithm,
+  encryptionVersion,
+  iv,
   localUserId,
 }: {
-  delta: Uint8Array<ArrayBuffer>;
-  idempotencyKey: string;
+  delta: Uint8Array;
+  id: string;
+  encryptionKeyId: string;
+  encryptionAlgorithm: 'aes-256-gcm';
+  encryptionVersion: number;
+  iv: Uint8Array;
   localUserId: string;
 }): Promise<{ assignedSeq: number; compactHint: boolean }> {
   const headers: Record<string, string> = {
-    'Content-Type': 'application/octet-stream',
-    'Content-Length': String(delta.byteLength),
-    'Idempotency-Key': idempotencyKey,
+    'Content-Type': 'application/json',
     'X-Local-User-Id': localUserId,
   };
 
   const res = await fetch(SYNC_BASE, {
     method: 'POST',
     headers,
-    body: delta,
+    body: JSON.stringify({
+      id,
+      encryptionKeyId,
+      encryptionAlgorithm,
+      encryptionVersion,
+      iv: bytesToBase64(iv),
+      ciphertext: bytesToBase64(delta),
+    }),
   });
   if (res.status === 413) {
     throw new SyncRequestError(413, null, 'hard cap exceeded');
@@ -97,18 +134,24 @@ export async function push({
 export async function compact({
   snapshot,
   replacesUpTo,
-  idempotencyKey,
+  id,
+  encryptionKeyId,
+  encryptionAlgorithm,
+  encryptionVersion,
+  iv,
   localUserId,
 }: {
-  snapshot: Uint8Array<ArrayBuffer>;
+  snapshot: Uint8Array;
   replacesUpTo: number;
-  idempotencyKey: string;
+  id: string;
+  encryptionKeyId: string;
+  encryptionAlgorithm: 'aes-256-gcm';
+  encryptionVersion: number;
+  iv: Uint8Array;
   localUserId: string;
 }): Promise<{ assignedSeq: number }> {
   const headers: Record<string, string> = {
-    'Content-Type': 'application/octet-stream',
-    'Content-Length': String(snapshot.byteLength),
-    'Idempotency-Key': idempotencyKey,
+    'Content-Type': 'application/json',
     'X-Replaces-Up-To': String(replacesUpTo),
     'X-Local-User-Id': localUserId,
   };
@@ -116,7 +159,14 @@ export async function compact({
   const res = await fetch(`${SYNC_BASE}/compact`, {
     method: 'POST',
     headers,
-    body: snapshot,
+    body: JSON.stringify({
+      id,
+      encryptionKeyId,
+      encryptionAlgorithm,
+      encryptionVersion,
+      iv: bytesToBase64(iv),
+      ciphertext: bytesToBase64(snapshot),
+    }),
   });
   if (!res.ok) {
     throw await parseError(res, 'compact failed');
@@ -126,20 +176,4 @@ export async function compact({
 
 function parseETag(headers: Headers): number {
   return parseInt(headers.get('ETag')?.replace(/"/g, '') ?? '0', 10);
-}
-
-export function parseRecordStream(buf: ArrayBuffer): SyncRecord[] {
-  const records: SyncRecord[] = [];
-  const view = new DataView(buf);
-  let offset = 0;
-  while (offset + 9 <= buf.byteLength) {
-    const seq = view.getUint32(offset);
-    const kind = view.getUint8(offset + 4);
-    const len = view.getUint32(offset + 5);
-    if (offset + 9 + len > buf.byteLength) break;
-    const bytes = new Uint8Array(buf.slice(offset + 9, offset + 9 + len));
-    records.push({ seq, kind, bytes });
-    offset += 9 + len;
-  }
-  return records;
 }

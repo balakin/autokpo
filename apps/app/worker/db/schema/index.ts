@@ -1,2 +1,3 @@
 export * from './auth';
-export * from './updates';
+export * from './encryption';
+export * from './sync-record';

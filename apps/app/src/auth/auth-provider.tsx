@@ -1,5 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 
+import { clearLocalEncryptionUnlockMaterial } from '../e2ee/cleanup';
+
 import { AuthContext } from './auth-context';
 import {
   SESSION_KEY,
@@ -35,7 +37,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (event.key !== SESSION_KEY) {
         return;
       }
-      setAuthState(authStateFromSession(readStoredSession()));
+      const nextAuthState = authStateFromSession(readStoredSession());
+      setAuthState((previousAuthState) => {
+        if (previousAuthState.user?.id !== nextAuthState.user?.id) {
+          if (previousAuthState.user?.id) {
+            clearLocalEncryptionUnlockMaterial(previousAuthState.user.id);
+          }
+        }
+        return nextAuthState;
+      });
     };
 
     window.addEventListener('storage', onStorage);

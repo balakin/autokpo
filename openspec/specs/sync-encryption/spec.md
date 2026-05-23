@@ -12,24 +12,26 @@ The sync engine SHALL encrypt every Yjs delta and snapshot blob using AES-256-GC
 
 - **WHEN** the sync engine prepares a push
 - **THEN** it SHALL generate a random 12-byte IV
-- **AND** encrypt the Yjs delta bytes using AES-256-GCM with the session master key
+- **AND** encrypt the Yjs delta bytes using AES-256-GCM with the active DEK from the unlocked key ring
 - **AND** send the request body `{ id, encryptionKeyId, encryptionAlgorithm: "aes-256-gcm", encryptionVersion: 1, iv: <base64>, ciphertext: <base64 ciphertext> }`
+- **AND** `encryptionKeyId` SHALL equal the active DEK id
 
 #### Scenario: Compact encrypts snapshot before upload
 
 - **WHEN** the sync engine prepares a compact
 - **THEN** it SHALL encrypt the full Yjs snapshot using the same split-envelope format
 - **AND** send `{ id, encryptionKeyId, encryptionAlgorithm: "aes-256-gcm", encryptionVersion: 1, iv: <base64>, ciphertext: <base64 ciphertext> }` in the compact request body
+- **AND** `encryptionKeyId` SHALL equal the active DEK id
 
 ### Requirement: Received sync blobs are decrypted before application
 
-The sync engine SHALL decrypt every received record before applying it to the Y.Doc. Each pull response record SHALL include `encryptionAlgorithm`, `encryptionVersion`, `iv` (base64), and `ciphertext` (base64 ciphertext) as separate fields; the client SHALL base64-decode `iv` and `ciphertext`, then decrypt using AES-256-GCM.
+The sync engine SHALL decrypt every received record before applying it to the Y.Doc. Each pull response record SHALL include `id`, `encryptionKeyId`, `encryptionAlgorithm`, `encryptionVersion`, `iv` (base64), and `ciphertext` (base64 ciphertext) as separate fields; the client SHALL base64-decode `iv` and `ciphertext`, then decrypt using AES-256-GCM and the DEK identified by `encryptionKeyId`.
 
 #### Scenario: Pull decrypts records before applying to Y.Doc
 
 - **WHEN** the sync engine receives records from a pull response
-- **THEN** for each record it SHALL read `encryptionAlgorithm` and `encryptionVersion`, decode `iv` and `ciphertext` from base64
-- **AND** decrypt the ciphertext using AES-256-GCM with the IV and session master key
+- **THEN** for each record it SHALL read `id`, `encryptionKeyId`, `encryptionAlgorithm`, and `encryptionVersion`, decode `iv` and `ciphertext` from base64
+- **AND** decrypt the ciphertext using AES-256-GCM with the IV and the active DEK
 - **AND** pass the resulting plaintext bytes to `applyRecordsToDoc`
 
 #### Scenario: Decryption failure aborts application
@@ -40,7 +42,7 @@ The sync engine SHALL decrypt every received record before applying it to the Y.
 
 ### Requirement: AAD binds ciphertext to its metadata
 
-Every AES-256-GCM operation SHALL use additional authenticated data (AAD) constructed as the UTF-8 encoding of `"autokpo:e2ee-update:v1:{userId}:{keyId}:{kind}"`, where `kind` is `"update"` or `"snapshot"`.
+Every AES-256-GCM operation SHALL use additional authenticated data (AAD) constructed as the UTF-8 encoding of `"autokpo:e2ee-update:v1:{userId}:{keyId}:{blockId}:{kind}"`, where `keyId` is the DEK id from `encryptionKeyId`, `blockId` is the sync record `id`, and `kind` is `"update"` or `"snapshot"`.
 
 #### Scenario: AAD prevents cross-user blob transfer
 
@@ -52,31 +54,38 @@ Every AES-256-GCM operation SHALL use additional authenticated data (AAD) constr
 - **WHEN** a ciphertext encrypted with `kind=update` is decrypted with `kind=snapshot`
 - **THEN** AES-GCM authentication SHALL fail and decryption SHALL be rejected
 
+#### Scenario: AAD prevents sync block id substitution
+
+- **WHEN** a ciphertext encrypted with AAD containing `blockId=b1` is decrypted with AAD containing `blockId=b2`
+- **THEN** AES-GCM authentication SHALL fail and decryption SHALL be rejected
+
 ### Requirement: Encryption key id is sent with every upload
 
-Every push and compact request body SHALL include the `encryptionKeyId` field identifying which master key was used to encrypt the blob.
+Every push and compact request body SHALL include the `encryptionKeyId` field identifying which DEK was used to encrypt the blob. The server SHALL reject writes where `encryptionKeyId` does not match the authenticated user's key-ring `activeDekId`.
 
-#### Scenario: Push body includes encryption key id
+#### Scenario: Push body includes active DEK id
 
 - **WHEN** the sync engine sends a push request
-- **THEN** the JSON body SHALL include `encryptionKeyId` matching the `id` of the active `user_encryption_key` record
+- **THEN** the JSON body SHALL include `encryptionKeyId` matching the active DEK id from the unlocked key ring
+- **AND** the server SHALL reject the push if `encryptionKeyId` does not match the authenticated user's stored `activeDekId`
 
-#### Scenario: Compact body includes encryption key id
+#### Scenario: Compact body includes active DEK id
 
 - **WHEN** the sync engine sends a compact request
-- **THEN** the JSON body SHALL include `encryptionKeyId` matching the `id` of the active `user_encryption_key` record
+- **THEN** the JSON body SHALL include `encryptionKeyId` matching the active DEK id from the unlocked key ring
+- **AND** the server SHALL reject the compact request if `encryptionKeyId` does not match the authenticated user's stored `activeDekId`
 
 ### Requirement: Encryption context provides key material to the sync engine
 
-The system SHALL expose a React context that provides `{ masterKey: Uint8Array; keyId: string }` to its subtree after the encryption session is unlocked. `useSyncEngine` SHALL read this context to obtain the key material needed for encrypt and decrypt operations.
+The system SHALL expose a React context that provides the active DEK and active DEK id to its subtree after the encryption session is unlocked. `useSyncEngine` SHALL read this context to obtain the key material needed for encrypt and decrypt operations.
 
 #### Scenario: Sync engine reads key material from context
 
 - **WHEN** `useSyncEngine` prepares a push or compact
-- **THEN** it SHALL read `masterKey` and `keyId` from `EncryptionContext`
+- **THEN** it SHALL read the active DEK and active DEK id from `EncryptionContext`
 - **AND** use them to encrypt the blob and populate `encryptionKeyId` in the request body
 
 #### Scenario: Sync engine reads key material for decryption
 
 - **WHEN** `useSyncEngine` processes records from a pull response
-- **THEN** it SHALL read `masterKey` from `EncryptionContext` to decrypt each blob
+- **THEN** it SHALL read the active DEK from `EncryptionContext` to decrypt each blob

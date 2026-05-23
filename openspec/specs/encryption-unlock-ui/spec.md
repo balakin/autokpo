@@ -44,7 +44,7 @@ The system SHALL provide a first-time setup screen that explains the encryption 
 
 ### Requirement: Initial backend check runs before showing setup or unlock UI
 
-When no wrapped key is cached locally, the gate SHALL show a loading indicator while fetching the active key record from the backend. The loading indicator is delayed so it does not flash on fast connections.
+When no encrypted key-ring profile is cached locally, the gate SHALL show a loading indicator while fetching the key-ring profile from the backend. The loading indicator is delayed so it does not flash on fast connections.
 
 #### Scenario: Loading indicator appears while checking backend
 
@@ -54,22 +54,22 @@ When no wrapped key is cached locally, the gate SHALL show a loading indicator w
 
 #### Scenario: Backend check network failure shows retry UI
 
-- **WHEN** the backend check returns a non-404 error
+- **WHEN** the backend check returns a non-404 error and no encrypted local key-ring cache is usable
 - **THEN** the system SHALL display a "cannot verify encryption" error screen
 - **AND** provide a "try again" action that repeats the backend check
-- **AND** SHALL NOT navigate to setup or unlock until a check succeeds
+- **AND** SHALL NOT navigate to setup or unlock until a check succeeds or a network-unavailable cached profile is used
 
 ### Requirement: First-time setup creates encryption password with acknowledgement
 
-The setup screen SHALL collect an encryption password and confirmation before setup can complete. The user SHALL acknowledge that Autokpo cannot recover the encryption password or encrypted data before proceeding. Successful setup SHALL create and store a real password-wrapped master key for the authenticated user before entering the signed-in app.
+The setup screen SHALL collect an encryption password and confirmation before setup can complete. The user SHALL acknowledge that Autokpo cannot recover the encryption password or encrypted data before proceeding. Successful setup SHALL create and store a real encrypted key ring and password-wrapped MEK for the authenticated user before entering the signed-in app.
 
 #### Scenario: Matching password and acknowledgement complete setup
 
 - **WHEN** the user enters matching encryption password values
 - **AND** acknowledges non-recoverability
 - **AND** submits the setup form
-- **THEN** the system SHALL initialize encryption for the current auth session by creating a browser-generated master key and password wrapping
-- **AND** the system SHALL persist the wrapped key record for the authenticated user
+- **THEN** the system SHALL initialize encryption for the current auth session by creating a browser-generated MEK, a browser-generated DEK, an encrypted key ring, and a password wrapper
+- **AND** the system SHALL persist the encrypted key-ring profile for the authenticated user
 - **AND** proceed to the signed-in app
 
 #### Scenario: Missing acknowledgement blocks setup
@@ -86,14 +86,15 @@ The setup screen SHALL collect an encryption password and confirmation before se
 
 ### Requirement: Returning user unlocks encrypted data for current session
 
-The system SHALL provide an unlock screen that asks for the encryption password after authentication when an encryption profile exists and encrypted data is locked. Successful unlock SHALL unwrap the persisted master key locally and unlock encrypted data for the current auth session.
+The system SHALL provide an unlock screen that asks for the encryption password after authentication when an encryption profile exists and encrypted data is locked. Successful unlock SHALL unwrap the persisted MEK locally, decrypt the key ring locally, and unlock encrypted data for the current auth session using the active DEK.
 
 #### Scenario: Correct password unlocks app
 
 - **WHEN** the user enters the correct encryption password
 - **AND** submits the unlock form
-- **THEN** the system SHALL unwrap the master key locally
-- **AND** the system SHALL unlock encrypted data for the current auth session
+- **THEN** the system SHALL unwrap the MEK locally
+- **AND** the system SHALL decrypt the key ring locally
+- **AND** the system SHALL unlock encrypted data for the current auth session with the active DEK
 - **AND** proceed to the signed-in app
 
 #### Scenario: Incorrect password stays locked
@@ -126,5 +127,5 @@ After setup or unlock succeeds, the system SHALL keep encrypted data unlocked fo
 #### Scenario: Logout clears encryption session
 
 - **WHEN** the user logs out
-- **THEN** the system SHALL clear session encryption material
+- **THEN** the system SHALL clear plaintext MEK, plaintext key-ring, and active DEK session material
 - **AND** a later authenticated session SHALL require encryption setup or unlock before entering the signed-in app

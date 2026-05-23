@@ -44,12 +44,10 @@ vi.mock('../e2ee/encryption-crypto', () => ({
   createKeyRingProfilePayload: vi.fn(),
   unwrapKeyRingProfile: unwrapKeyRingProfileMock,
   generateLdk: vi.fn().mockResolvedValue({}),
-  wrapMekWithLdk: vi
-    .fn()
-    .mockResolvedValue({
-      ciphertext: new Uint8Array(48),
-      iv: new Uint8Array(12),
-    }),
+  wrapMekWithLdk: vi.fn().mockResolvedValue({
+    ciphertext: new Uint8Array(48),
+    iv: new Uint8Array(12),
+  }),
   unwrapMekWithLdk: vi.fn(),
   decryptKeyRingWithMek: vi.fn(),
   wrappedMekAad: () => new Uint8Array(0),

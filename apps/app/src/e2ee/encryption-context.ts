@@ -1,8 +1,8 @@
 import { createContext, use } from 'react';
 
 export interface EncryptionContextValue {
-  masterKey: Uint8Array;
-  keyId: string;
+  activeDek: Uint8Array;
+  activeDekId: string;
 }
 
 export const EncryptionContext = createContext<EncryptionContextValue | null>(

@@ -1,6 +1,6 @@
 import { argon2id } from 'hash-wasm';
 
-import type { KdfParamsV1 } from './encryption-key-record';
+import type { KdfParamsV1 } from './key-ring-record';
 
 type KdfWorkerRequest = {
   id: string;

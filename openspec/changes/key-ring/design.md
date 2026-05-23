@@ -29,11 +29,25 @@ Before release, the app can replace this model without production migration. The
 
 ### 1. Key hierarchy is KEK → MEK → key ring → DEK
 
-The password-derived KEK wraps only the MEK. The MEK encrypts the key-ring JSON. The key ring contains the active DEK, and sync/app data is encrypted with the active DEK.
+The password-derived KEK wraps only the MEK. The MEK encrypts the key-ring JSON. The key ring contains a key-material-only DEK map, and sync/app data is encrypted with the active DEK.
 
 **Why:** The current master key is really a data-encryption key. Separating MEK and DEK makes future rotation additive: new DEKs can be added to the key ring without changing password wrapping.
 
 **Alternative considered:** Keep one master key and rename it. This avoids immediate work but preserves the coupling that makes rotation and multiple wrappers awkward.
+
+The plaintext key-ring JSON stores DEK material by id only:
+
+```json
+{
+  "version": 1,
+  "activeDekId": "dek-id",
+  "deks": {
+    "dek-id": "base64-raw-32-byte-dek"
+  }
+}
+```
+
+Algorithm, version, and IV metadata belong to each encrypted payload/envelope (`key_ring`, wrappers, and sync records), not to the raw DEK entry. This keeps algorithm migration independent from DEK rotation when re-encrypting blocks.
 
 ### 2. One `key_ring` row per user
 
@@ -136,7 +150,7 @@ The existing `/api/e2ee/key` contract is replaced. `POST` creates the key ring a
 ## Risks / Trade-offs
 
 - **Cached revoked wrapper may still unlock offline later** → Accepted for this iteration; backend-first behavior reduces normal exposure, and stale-cache invalidation can be addressed with future wrapper replacement/revocation work.
-- **No rotation despite multi-key ring shape** → The plaintext key ring supports a `deks` map, but this iteration creates exactly one DEK and requires writes to use the active DEK.
+- **No rotation despite multi-key ring shape** → The plaintext key ring supports a `deks` map of DEK id to raw base64 DEK bytes, but this iteration creates exactly one DEK and requires writes to use the active DEK.
 - **AAD depends on frontend-generated wrapper id** → Backend must validate wrapper id format and preserve the provided id exactly.
 - **Partial unique index requires SQLite/D1 support** → SQLite supports partial indexes; use raw SQL migration if Drizzle schema helpers are insufficient.
 - **Large internal rename touches many files/tests** → App is unreleased, so breaking internal names and initial schema is acceptable.

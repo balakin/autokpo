@@ -2,14 +2,14 @@
 
 ### Requirement: Browser creates encrypted key ring during setup
 
-The system SHALL create a browser-side E2EE key ring when an authenticated user completes first-time encryption setup. The browser SHALL generate a random MEK and a random DEK, store the DEK inside a plaintext key ring, encrypt the key ring with the MEK, and never send plaintext MEK or DEK bytes to the backend.
+The system SHALL create a browser-side E2EE key ring when an authenticated user completes first-time encryption setup. The browser SHALL generate a random MEK and a random DEK, store the raw DEK bytes as a base64 value inside a plaintext key-ring `deks` map keyed by DEK id, encrypt the key ring with the MEK, and never send plaintext MEK or DEK bytes to the backend. The plaintext DEK entry SHALL NOT duplicate encryption algorithm, version, or IV metadata because that metadata belongs to each encrypted payload/envelope.
 
 #### Scenario: Setup creates MEK, DEK, and encrypted key ring
 
 - **WHEN** an authenticated user submits a valid encryption setup password and acknowledgement
 - **THEN** the browser SHALL generate a random MEK
 - **AND** the browser SHALL generate a random DEK
-- **AND** the browser SHALL create a plaintext key ring containing exactly one DEK
+- **AND** the browser SHALL create a plaintext key ring containing exactly one DEK map entry whose value is the base64 raw DEK bytes
 - **AND** the browser SHALL set the key ring `activeDekId` to that DEK id
 - **AND** the browser SHALL encrypt the plaintext key ring with the MEK before persistence
 - **AND** the backend SHALL NOT receive plaintext MEK or DEK bytes
@@ -75,7 +75,7 @@ The system SHALL unlock encryption by deriving the KEK locally, unwrapping the M
 - **THEN** the system SHALL derive the KEK locally
 - **AND** the system SHALL decrypt the wrapped MEK locally using the wrapper id and method in AAD
 - **AND** the system SHALL decrypt the key ring locally using the MEK
-- **AND** the system SHALL read the active DEK from the decrypted key ring
+- **AND** the system SHALL read the active DEK's raw key bytes from the decrypted key ring by `activeDekId`
 - **AND** the system SHALL keep plaintext MEK, plaintext key ring, and active DEK material in memory only for the current unlocked app session
 
 #### Scenario: Incorrect password does not unlock key ring

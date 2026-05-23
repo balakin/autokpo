@@ -21,12 +21,12 @@ The sync engine SHALL encrypt every Yjs delta and snapshot blob using AES-256-GC
 
 ### Requirement: Received sync blobs are decrypted before application
 
-The sync engine SHALL decrypt every received record before applying it to the Y.Doc. Each pull response record SHALL include `encryptionKeyId`, `encryptionAlgorithm`, `encryptionVersion`, `iv` (base64), and `ciphertext` (base64 ciphertext) as separate fields; the client SHALL base64-decode `iv` and `ciphertext`, then decrypt using AES-256-GCM and the DEK identified by `encryptionKeyId`.
+The sync engine SHALL decrypt every received record before applying it to the Y.Doc. Each pull response record SHALL include `id`, `encryptionKeyId`, `encryptionAlgorithm`, `encryptionVersion`, `iv` (base64), and `ciphertext` (base64 ciphertext) as separate fields; the client SHALL base64-decode `iv` and `ciphertext`, then decrypt using AES-256-GCM and the DEK identified by `encryptionKeyId`.
 
 #### Scenario: Pull decrypts records before applying to Y.Doc
 
 - **WHEN** the sync engine receives records from a pull response
-- **THEN** for each record it SHALL read `encryptionKeyId`, `encryptionAlgorithm`, and `encryptionVersion`, decode `iv` and `ciphertext` from base64
+- **THEN** for each record it SHALL read `id`, `encryptionKeyId`, `encryptionAlgorithm`, and `encryptionVersion`, decode `iv` and `ciphertext` from base64
 - **AND** decrypt the ciphertext using AES-256-GCM with the IV and the active DEK
 - **AND** pass the resulting plaintext bytes to `applyRecordsToDoc`
 
@@ -38,7 +38,7 @@ The sync engine SHALL decrypt every received record before applying it to the Y.
 
 ### Requirement: AAD binds ciphertext to its metadata
 
-Every AES-256-GCM operation SHALL use additional authenticated data (AAD) constructed as the UTF-8 encoding of `"autokpo:e2ee-update:v1:{userId}:{keyId}:{kind}"`, where `keyId` is the DEK id from `encryptionKeyId` and `kind` is `"update"` or `"snapshot"`.
+Every AES-256-GCM operation SHALL use additional authenticated data (AAD) constructed as the UTF-8 encoding of `"autokpo:e2ee-update:v1:{userId}:{keyId}:{blockId}:{kind}"`, where `keyId` is the DEK id from `encryptionKeyId`, `blockId` is the sync record `id`, and `kind` is `"update"` or `"snapshot"`.
 
 #### Scenario: AAD prevents cross-user blob transfer
 
@@ -48,6 +48,11 @@ Every AES-256-GCM operation SHALL use additional authenticated data (AAD) constr
 #### Scenario: AAD prevents update/snapshot kind confusion
 
 - **WHEN** a ciphertext encrypted with `kind=update` is decrypted with `kind=snapshot`
+- **THEN** AES-GCM authentication SHALL fail and decryption SHALL be rejected
+
+#### Scenario: AAD prevents sync block id substitution
+
+- **WHEN** a ciphertext encrypted with AAD containing `blockId=b1` is decrypted with AAD containing `blockId=b2`
 - **THEN** AES-GCM authentication SHALL fail and decryption SHALL be rejected
 
 ### Requirement: Encryption key id is sent with every upload

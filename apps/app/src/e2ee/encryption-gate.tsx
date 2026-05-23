@@ -3,23 +3,26 @@ import { Trans } from '@lingui/react/macro';
 import { useEffect, useReducer, useState, type ReactNode } from 'react';
 
 import { EncryptionContext } from './encryption-context';
-import { createWrappedMasterKey, unwrapMasterKey } from './encryption-crypto';
+import {
+  createKeyRingProfilePayload,
+  unwrapKeyRingProfile,
+} from './encryption-crypto';
 import {
   createInitialEncryptionGateState,
   encryptionGateReducer,
 } from './encryption-gate-reducer';
-import {
-  createEncryptionKeyRecord,
-  EncryptionKeyNotFoundError,
-  fetchEncryptionKeyRecord,
-} from './encryption-key-api';
-import {
-  readCachedEncryptionKeyRecord,
-  writeCachedEncryptionKeyRecord,
-} from './encryption-key-cache';
 import { EncryptionSetupScreen } from './encryption-setup-screen';
 import { EncryptionShell } from './encryption-shell';
 import { EncryptionUnlockScreen } from './encryption-unlock-screen';
+import {
+  createKeyRingProfile,
+  fetchKeyRingProfile,
+  KeyRingNotFoundError,
+} from './key-ring-api';
+import {
+  readCachedKeyRingProfile,
+  writeCachedKeyRingProfile,
+} from './key-ring-cache';
 
 type EncryptionGateProps = {
   userId: string;
@@ -45,16 +48,20 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
   useEffect(() => {
     if (session.status !== 'checking') return;
     let cancelled = false;
-    void fetchEncryptionKeyRecord()
+    void fetchKeyRingProfile()
       .then((record) => {
         if (cancelled) return;
-        writeCachedEncryptionKeyRecord(userId, record);
+        writeCachedKeyRingProfile(userId, record);
         dispatch({ type: 'check-succeeded' });
       })
       .catch((error: unknown) => {
         if (cancelled) return;
-        if (isEncryptionKeyNotFoundError(error)) {
+        if (isKeyRingNotFoundError(error)) {
           dispatch({ type: 'check-missing' });
+          return;
+        }
+        if (isNetworkLikeError(error) && readCachedKeyRingProfile(userId)) {
+          dispatch({ type: 'check-succeeded' });
           return;
         }
         dispatch({ type: 'check-failed' });
@@ -67,13 +74,15 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
   async function setup(password: string) {
     dispatch({ type: 'setup-submitted' });
     try {
-      const { request, masterKey } = await createWrappedMasterKey(
-        userId,
-        password,
-      );
-      const record = await createEncryptionKeyRecord(request);
-      writeCachedEncryptionKeyRecord(userId, record);
-      dispatch({ type: 'unlocked', masterKey, keyId: record.key.id });
+      const { request, activeDek, activeDekId } =
+        await createKeyRingProfilePayload(userId, password);
+      const record = await createKeyRingProfile(request);
+      writeCachedKeyRingProfile(userId, record);
+      dispatch({
+        type: 'unlocked',
+        activeDek,
+        activeDekId,
+      });
     } catch {
       dispatch({ type: 'setup-failed' });
     }
@@ -82,22 +91,37 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
   async function unlock(password: string) {
     dispatch({ type: 'unlock-submitted' });
     try {
-      const record =
-        readCachedEncryptionKeyRecord(userId) ??
-        (await fetchEncryptionKeyRecord());
-      writeCachedEncryptionKeyRecord(userId, record);
-      const masterKey = await unwrapMasterKey(password, record);
-      dispatch({ type: 'unlocked', masterKey, keyId: record.key.id });
+      let record;
+      try {
+        record = await fetchKeyRingProfile();
+      } catch (error) {
+        if (!isNetworkLikeError(error)) throw error;
+        record = readCachedKeyRingProfile(userId);
+        if (!record) throw error;
+      }
+      writeCachedKeyRingProfile(userId, record);
+      const { activeDek, activeDekId } = await unwrapKeyRingProfile(
+        password,
+        record,
+      );
+      dispatch({ type: 'unlocked', activeDek, activeDekId });
       return;
     } catch {
       dispatch({ type: 'unlock-failed' });
     }
   }
 
-  if (session.status === 'unlocked' && gateState.masterKey && gateState.keyId) {
+  if (
+    session.status === 'unlocked' &&
+    gateState.activeDek &&
+    gateState.activeDekId
+  ) {
     return (
       <EncryptionContext
-        value={{ masterKey: gateState.masterKey, keyId: gateState.keyId }}
+        value={{
+          activeDek: gateState.activeDek,
+          activeDekId: gateState.activeDekId,
+        }}
       >
         {children}
       </EncryptionContext>
@@ -179,11 +203,13 @@ function EncryptionGateLoading() {
   );
 }
 
-function isEncryptionKeyNotFoundError(
-  error: unknown,
-): error is EncryptionKeyNotFoundError {
+function isKeyRingNotFoundError(error: unknown): error is KeyRingNotFoundError {
   return (
-    error instanceof EncryptionKeyNotFoundError ||
-    (error instanceof Error && error.name === 'EncryptionKeyNotFoundError')
+    error instanceof KeyRingNotFoundError ||
+    (error instanceof Error && error.name === 'KeyRingNotFoundError')
   );
+}
+
+function isNetworkLikeError(error: unknown): boolean {
+  return error instanceof TypeError || !navigator.onLine;
 }

@@ -391,7 +391,7 @@ msgstr "Back"
 msgid "Nazad na prijavu"
 msgstr "Back to sign in"
 
-#: src/e2ee/encryption-gate.tsx:117
+#: src/e2ee/encryption-gate.tsx:141
 msgid "Ne možemo da proverimo šifrovanje"
 msgstr "We can't check encryption"
 
@@ -757,7 +757,7 @@ msgstr "Book setup"
 msgid "Podesite šifru za šifrovanje"
 msgstr "Set up an encryption password"
 
-#: src/e2ee/encryption-gate.tsx:133
+#: src/e2ee/encryption-gate.tsx:157
 msgid "Pokušaj ponovo"
 msgstr "Try again"
 
@@ -933,7 +933,7 @@ msgstr "Change profile photo"
 msgid "Proverite internet vezu i pokušajte ponovo kasnije."
 msgstr "Check your internet connection and try again later."
 
-#: src/e2ee/encryption-gate.tsx:120
+#: src/e2ee/encryption-gate.tsx:144
 msgid "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
 msgstr "Check your internet connection and try again. We won't create a new key until we verify the account's existing setup."
 

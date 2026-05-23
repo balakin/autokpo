@@ -4,13 +4,13 @@ import { Outlet, RouterProvider, createMemoryRouter } from 'react-router';
 import { I18nWrapper } from 'tests/render-helpers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { SerializedEncryptionKeyRecord } from '../e2ee/encryption-key-record';
+import type { SerializedKeyRingProfile } from '../e2ee/key-ring-record';
 import { createAppRoutes } from '../router';
 
 const getSessionMock = vi.hoisted(() => vi.fn());
 const signedInAppRenderMock = vi.hoisted(() => vi.fn());
 const dashboardRenderMock = vi.hoisted(() => vi.fn());
-const unwrapMasterKeyMock = vi.hoisted(() => vi.fn());
+const unwrapKeyRingProfileMock = vi.hoisted(() => vi.fn());
 
 vi.mock('../auth/auth-client', () => ({
   authClient: {
@@ -41,8 +41,8 @@ vi.mock('../dashboard/dashboard-page', () => ({
 }));
 
 vi.mock('../e2ee/encryption-crypto', () => ({
-  createWrappedMasterKey: vi.fn(),
-  unwrapMasterKey: unwrapMasterKeyMock,
+  createKeyRingProfilePayload: vi.fn(),
+  unwrapKeyRingProfile: unwrapKeyRingProfileMock,
 }));
 
 function renderRouter(initialEntry: string) {
@@ -57,44 +57,49 @@ function renderRouter(initialEntry: string) {
   );
 }
 
-function makeRecord(userId = 'user-1'): SerializedEncryptionKeyRecord {
+function makeRecord(userId = 'user-1'): SerializedKeyRingProfile {
   return {
-    version: 1,
-    key: {
-      id: 'key-1',
+    keyRing: {
+      id: 'key-ring-1',
       userId,
-      createdAt: '2026-01-01T00:00:00.000Z',
-      revokedAt: null,
-    },
-    wrapping: {
-      id: 'wrapping-1',
-      keyId: 'key-1',
-      userId,
-      method: 'password',
-      kdfVersion: 1,
-      kdfAlgorithm: 'argon2id',
-      kdfParams: {
-        memorySize: 65536,
-        iterations: 3,
-        parallelism: 1,
-        hashLength: 32,
-      },
-      kdfSalt: 'AAAAAAAAAAAAAAAAAAAAAA==',
-      wrapVersion: 1,
-      wrapAlgorithm: 'aes-256-gcm',
-      wrapParams: { ivBytes: 12, tagBits: 128 },
-      wrapIv: 'AAAAAAAAAAAAAAAA',
-      wrappedMasterKey:
+      activeDekId: 'dek-1',
+      encryptionVersion: 1,
+      encryptionAlgorithm: 'aes-256-gcm',
+      iv: 'AAAAAAAAAAAAAAAA',
+      ciphertext:
         'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       createdAt: '2026-01-01T00:00:00.000Z',
-      revokedAt: null,
+      updatedAt: '2026-01-01T00:00:00.000Z',
     },
+    wrappers: [
+      {
+        id: 'wrapping-1',
+        userId,
+        method: 'password',
+        kdfVersion: 1,
+        kdfAlgorithm: 'argon2id',
+        kdfParams: {
+          memorySize: 65536,
+          iterations: 3,
+          parallelism: 1,
+          hashLength: 32,
+        },
+        kdfSalt: 'AAAAAAAAAAAAAAAAAAAAAA==',
+        wrappingVersion: 1,
+        wrappingAlgorithm: 'aes-256-gcm',
+        wrappingParams: { ivBytes: 12, tagBits: 128 },
+        wrappingIv: 'AAAAAAAAAAAAAAAA',
+        ciphertext:
+          'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        createdAt: '2026-01-01T00:00:00.000Z',
+      },
+    ],
   };
 }
 
 function cacheRecord(record = makeRecord()) {
   localStorage.setItem(
-    `autokpo:e2ee:wrapped-key:${record.key.userId}`,
+    `autokpo:e2ee:key-ring:${record.keyRing.userId}`,
     JSON.stringify(record),
   );
 }
@@ -107,8 +112,11 @@ describe('router bundle boundaries', () => {
     getSessionMock.mockImplementation(() => new Promise(() => {}));
     signedInAppRenderMock.mockClear();
     dashboardRenderMock.mockClear();
-    unwrapMasterKeyMock.mockReset();
-    unwrapMasterKeyMock.mockResolvedValue(new Uint8Array(32).fill(1));
+    unwrapKeyRingProfileMock.mockReset();
+    unwrapKeyRingProfileMock.mockResolvedValue({
+      activeDek: new Uint8Array(32).fill(1),
+      activeDekId: 'dek-1',
+    });
     vi.stubGlobal(
       'fetch',
       vi
@@ -157,6 +165,7 @@ describe('router bundle boundaries', () => {
       }),
     );
     cacheRecord();
+    vi.mocked(fetch).mockResolvedValue(Response.json(makeRecord()));
 
     renderRouter('/dashboard');
 

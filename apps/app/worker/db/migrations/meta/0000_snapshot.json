@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "cd4f6558-ba69-4c4e-a879-b5e12db6a119",
+  "id": "154db7bf-1ab4-4b4d-993a-073d5c53b33d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -397,11 +397,11 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "user_encryption_key": {
-      "name": "user_encryption_key",
+    "key_ring": {
+      "name": "key_ring",
       "columns": {
-        "key_id": {
-          "name": "key_id",
+        "id": {
+          "name": "id",
           "type": "text",
           "primaryKey": true,
           "notNull": true,
@@ -410,6 +410,41 @@
         "user_id": {
           "name": "user_id",
           "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "active_dek_id": {
+          "name": "active_dek_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encryption_version": {
+          "name": "encryption_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encryption_algorithm": {
+          "name": "encryption_algorithm",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "iv": {
+          "name": "iv",
+          "type": "blob",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ciphertext": {
+          "name": "ciphertext",
+          "type": "blob",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -422,25 +457,26 @@
           "autoincrement": false,
           "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
         },
-        "revoked_at": {
-          "name": "revoked_at",
+        "updated_at": {
+          "name": "updated_at",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
         }
       },
       "indexes": {
-        "user_encryption_key_user_id_idx": {
-          "name": "user_encryption_key_user_id_idx",
+        "key_ring_user_id_idx": {
+          "name": "key_ring_user_id_idx",
           "columns": ["user_id"],
-          "isUnique": false
+          "isUnique": true
         }
       },
       "foreignKeys": {
-        "user_encryption_key_user_id_user_id_fk": {
-          "name": "user_encryption_key_user_id_user_id_fk",
-          "tableFrom": "user_encryption_key",
+        "key_ring_user_id_user_id_fk": {
+          "name": "key_ring_user_id_user_id_fk",
+          "tableFrom": "key_ring",
           "tableTo": "user",
           "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
@@ -452,20 +488,13 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "user_encryption_key_wrapping": {
-      "name": "user_encryption_key_wrapping",
+    "key_ring_wrapping": {
+      "name": "key_ring_wrapping",
       "columns": {
-        "wrapping_id": {
-          "name": "wrapping_id",
+        "id": {
+          "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "key_id": {
-          "name": "key_id",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -478,6 +507,13 @@
         },
         "method": {
           "name": "method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -511,36 +547,36 @@
           "notNull": true,
           "autoincrement": false
         },
-        "wrap_version": {
-          "name": "wrap_version",
+        "wrapping_version": {
+          "name": "wrapping_version",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "wrap_algorithm": {
-          "name": "wrap_algorithm",
+        "wrapping_algorithm": {
+          "name": "wrapping_algorithm",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "wrap_params_json": {
-          "name": "wrap_params_json",
+        "wrapping_params_json": {
+          "name": "wrapping_params_json",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "wrap_iv": {
-          "name": "wrap_iv",
+        "wrapping_iv": {
+          "name": "wrapping_iv",
           "type": "blob",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "wrapped_master_key": {
-          "name": "wrapped_master_key",
+        "ciphertext": {
+          "name": "ciphertext",
           "type": "blob",
           "primaryKey": false,
           "notNull": true,
@@ -563,30 +599,22 @@
         }
       },
       "indexes": {
-        "user_encryption_key_wrapping_key_id_idx": {
-          "name": "user_encryption_key_wrapping_key_id_idx",
-          "columns": ["key_id"],
-          "isUnique": false
+        "key_ring_wrapping_active_user_method_unique": {
+          "name": "key_ring_wrapping_active_user_method_unique",
+          "columns": ["user_id", "method"],
+          "isUnique": true,
+          "where": "\"key_ring_wrapping\".\"status\" = 'active'"
         },
-        "user_encryption_key_wrapping_user_id_idx": {
-          "name": "user_encryption_key_wrapping_user_id_idx",
+        "key_ring_wrapping_user_id_idx": {
+          "name": "key_ring_wrapping_user_id_idx",
           "columns": ["user_id"],
           "isUnique": false
         }
       },
       "foreignKeys": {
-        "user_encryption_key_wrapping_key_id_user_encryption_key_key_id_fk": {
-          "name": "user_encryption_key_wrapping_key_id_user_encryption_key_key_id_fk",
-          "tableFrom": "user_encryption_key_wrapping",
-          "tableTo": "user_encryption_key",
-          "columnsFrom": ["key_id"],
-          "columnsTo": ["key_id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "user_encryption_key_wrapping_user_id_user_id_fk": {
-          "name": "user_encryption_key_wrapping_user_id_user_id_fk",
-          "tableFrom": "user_encryption_key_wrapping",
+        "key_ring_wrapping_user_id_user_id_fk": {
+          "name": "key_ring_wrapping_user_id_user_id_fk",
+          "tableFrom": "key_ring_wrapping",
           "tableTo": "user",
           "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
@@ -688,15 +716,6 @@
           "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "sync_record_encryption_key_id_user_encryption_key_key_id_fk": {
-          "name": "sync_record_encryption_key_id_user_encryption_key_key_id_fk",
-          "tableFrom": "sync_record",
-          "tableTo": "user_encryption_key",
-          "columnsFrom": ["encryption_key_id"],
-          "columnsTo": ["key_id"],
-          "onDelete": "restrict",
           "onUpdate": "no action"
         }
       },

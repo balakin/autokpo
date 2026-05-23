@@ -9,6 +9,7 @@ The current E2EE model stores a single user encryption key and password wrapping
   - password-derived KEK unwraps the MEK
   - MEK decrypts the encrypted key ring
   - active DEK encrypts sync/app data
+- Store plaintext key-ring DEKs as a key-material-only map from DEK id to base64 raw DEK bytes; encryption algorithm, version, and IV stay on each encrypted payload/envelope.
 - Store one `key_ring` per user with clear active DEK metadata, IV, encryption metadata, and encrypted key-ring ciphertext.
 - Store password wrappers in `key_ring_wrapping` with frontend-generated ids, method/status fields, wrapping IV, wrapped MEK ciphertext, and DB enforcement of one active wrapper per user+method.
 - Replace the E2EE endpoint with `/api/e2ee/key-ring` for creating/fetching the encrypted key ring and active wrappers.

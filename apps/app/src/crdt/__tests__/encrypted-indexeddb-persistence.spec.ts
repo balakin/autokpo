@@ -67,7 +67,7 @@ describe('EncryptedIndexeddbPersistence', () => {
 
     const target = new Y.Doc();
     const targetProvider = track(
-      newProvider(dbName, target, { masterKey: OTHER_MASTER_KEY }),
+      newProvider(dbName, target, { activeDek: OTHER_MASTER_KEY }),
     );
     await targetProvider.whenSynced;
 
@@ -85,7 +85,7 @@ describe('EncryptedIndexeddbPersistence', () => {
 
     const target = new Y.Doc();
     const targetProvider = track(
-      newProvider(dbName, target, { keyId: 'key-2' }),
+      newProvider(dbName, target, { activeDekId: 'key-2' }),
     );
     await targetProvider.whenSynced;
 
@@ -254,13 +254,13 @@ function newProvider(
   dbName: string,
   doc: Y.Doc,
   overrides: Partial<{
-    masterKey: Uint8Array;
-    keyId: string;
+    activeDek: Uint8Array;
+    activeDekId: string;
   }> = {},
 ): EncryptedIndexeddbPersistence {
   return new EncryptedIndexeddbPersistence(dbName, doc, {
-    masterKey: overrides.masterKey ?? MASTER_KEY,
-    keyId: overrides.keyId ?? KEY_ID,
+    activeDek: overrides.activeDek ?? MASTER_KEY,
+    activeDekId: overrides.activeDekId ?? KEY_ID,
   });
 }
 

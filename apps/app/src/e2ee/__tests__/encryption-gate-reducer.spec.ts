@@ -5,7 +5,7 @@ import {
   type EncryptionGateState,
 } from '../encryption-gate-reducer';
 
-const masterKey = new Uint8Array(32).fill(1);
+const activeDek = new Uint8Array(32).fill(1);
 
 function state(
   overrides: Partial<EncryptionGateState> = {},
@@ -13,8 +13,8 @@ function state(
   return {
     userId: 'user-1',
     session: { status: 'checking', hasProfile: false },
-    masterKey: null,
-    keyId: null,
+    activeDek: null,
+    activeDekId: null,
     ...overrides,
   };
 }
@@ -25,7 +25,7 @@ describe('encryptionGateReducer', () => {
       encryptionGateReducer(state(), { type: 'check-succeeded' }),
     ).toMatchObject({
       session: { status: 'locked', hasProfile: true },
-      masterKey: null,
+      activeDek: null,
     });
   });
 
@@ -34,7 +34,7 @@ describe('encryptionGateReducer', () => {
       encryptionGateReducer(state(), { type: 'check-missing' }),
     ).toMatchObject({
       session: { status: 'uninitialized', hasProfile: false },
-      masterKey: null,
+      activeDek: null,
     });
   });
 
@@ -43,7 +43,7 @@ describe('encryptionGateReducer', () => {
       encryptionGateReducer(state(), { type: 'check-failed' }),
     ).toMatchObject({
       session: { status: 'error', hasProfile: false, error: 'check' },
-      masterKey: null,
+      activeDek: null,
     });
   });
 
@@ -56,7 +56,7 @@ describe('encryptionGateReducer', () => {
       encryptionGateReducer(previous, { type: 'retry-check' }),
     ).toMatchObject({
       session: { status: 'checking', hasProfile: false },
-      masterKey: null,
+      activeDek: null,
     });
   });
 
@@ -91,18 +91,18 @@ describe('encryptionGateReducer', () => {
     });
   });
 
-  it('stores the master key and keyId only after unlock succeeds', () => {
+  it('stores the active dek only after unlock succeeds', () => {
     expect(
       encryptionGateReducer(state(), {
         type: 'unlocked',
-        masterKey,
-        keyId: 'key-1',
+        activeDek,
+        activeDekId: 'key-1',
       }),
     ).toEqual({
       userId: 'user-1',
       session: { status: 'unlocked', hasProfile: true },
-      masterKey,
-      keyId: 'key-1',
+      activeDek,
+      activeDekId: 'key-1',
     });
   });
 });

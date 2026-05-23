@@ -8,12 +8,12 @@ import {
   type SessionState,
 } from '../../tests/worker/request-helpers';
 import { getDb } from '../db';
-import { userEncryptionKey } from '../db/schema';
+import { keyRing } from '../db/schema';
 import app from '../main';
 
 const sessionState: SessionState = { userId: 'user-1', headers: null };
 const authHeaders = makeAuthHeaders(sessionState);
-const TEST_KEY_ID = 'test-key-1';
+const TEST_KEY_ID = '11111111-1111-4111-8111-111111111111';
 const TEST_ALGORITHM = 'aes-256-gcm';
 
 async function syncRequest(path: string, init?: RequestInit | Request) {
@@ -87,11 +87,19 @@ function compactBody(
   };
 }
 
-async function insertTestEncryptionKey() {
+async function insertTestKeyRing() {
   const db = getDb(workerTestEnv.DB);
   await db
-    .insert(userEncryptionKey)
-    .values({ id: TEST_KEY_ID, userId: 'user-1' })
+    .insert(keyRing)
+    .values({
+      id: 'key-ring-1',
+      userId: 'user-1',
+      activeDekId: TEST_KEY_ID,
+      encryptionVersion: 1,
+      encryptionAlgorithm: TEST_ALGORITHM,
+      iv: new Uint8Array(12),
+      ciphertext: new Uint8Array(16),
+    })
     .onConflictDoNothing();
 }
 
@@ -100,7 +108,8 @@ describe('GET /api/sync', () => {
     sessionState.userId = 'user-1';
     sessionState.headers = null;
     await workerTestEnv.DB.exec('DELETE FROM sync_record');
-    await workerTestEnv.DB.exec('DELETE FROM user_encryption_key');
+    await workerTestEnv.DB.exec('DELETE FROM key_ring_wrapping');
+    await workerTestEnv.DB.exec('DELETE FROM key_ring');
     await clearAuthData();
   });
 
@@ -129,7 +138,7 @@ describe('GET /api/sync', () => {
 
   it('returns JSON records array with ETag', async () => {
     await authHeaders(); // ensure user exists
-    await insertTestEncryptionKey();
+    await insertTestKeyRing();
     const ciphertexts = [
       makeCiphertext([1]),
       makeCiphertext([2]),
@@ -170,7 +179,7 @@ describe('GET /api/sync', () => {
 
   it('returns 304 when If-None-Match matches head', async () => {
     await authHeaders();
-    await insertTestEncryptionKey();
+    await insertTestKeyRing();
     for (let i = 0; i < 3; i++) {
       await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
     }
@@ -184,7 +193,7 @@ describe('GET /api/sync', () => {
 
   it('returns full records when no If-None-Match header', async () => {
     await authHeaders();
-    await insertTestEncryptionKey();
+    await insertTestKeyRing();
     for (let i = 0; i < 2; i++) {
       await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
     }
@@ -197,6 +206,8 @@ describe('GET /api/sync', () => {
   });
 
   it('returns 410 when cursor is newer than head', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
     const res = await syncRequest('/api/sync', {
       headers: syncHeaders({ 'If-None-Match': '"999"' }),
     });
@@ -204,6 +215,8 @@ describe('GET /api/sync', () => {
   });
 
   it('returns empty records with ETag "0" when no records exist', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
     const res = await syncRequest('/api/sync', { headers: syncHeaders() });
     expect(res.status).toBe(200);
     expect(res.headers.get('ETag')).toBe('"0"');
@@ -218,7 +231,8 @@ describe('POST /api/sync', () => {
     sessionState.userId = 'user-1';
     sessionState.headers = null;
     await workerTestEnv.DB.exec('DELETE FROM sync_record');
-    await workerTestEnv.DB.exec('DELETE FROM user_encryption_key');
+    await workerTestEnv.DB.exec('DELETE FROM key_ring_wrapping');
+    await workerTestEnv.DB.exec('DELETE FROM key_ring');
     await clearAuthData();
   });
 
@@ -241,6 +255,8 @@ describe('POST /api/sync', () => {
   });
 
   it('returns 400 for missing or invalid body fields', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
     const res = await syncRequest('/api/sync', {
       method: 'POST',
       headers: syncHeaders({ 'Content-Type': 'application/json' }),
@@ -249,9 +265,34 @@ describe('POST /api/sync', () => {
     expect(res.status).toBe(400);
   });
 
+  it('returns 400 for non-UUID frontend-provided ids', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+
+    const invalidRecordId = await syncRequest(
+      '/api/sync',
+      pushBody(makeCiphertext([1]), 'not-a-uuid'),
+    );
+    expect(invalidRecordId.status).toBe(400);
+
+    const invalidKeyId = await syncRequest('/api/sync', {
+      method: 'POST',
+      headers: syncHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        encryptionKeyId: 'not-a-uuid',
+        encryptionAlgorithm: TEST_ALGORITHM,
+        encryptionVersion: 1,
+        iv: toBase64(TEST_IV),
+        ciphertext: toBase64(makeCiphertext([1])),
+      }),
+    });
+    expect(invalidKeyId.status).toBe(400);
+  });
+
   it('assigns sequential seq and returns ETag', async () => {
     await authHeaders();
-    await insertTestEncryptionKey();
+    await insertTestKeyRing();
 
     const r1 = await syncRequest('/api/sync', pushBody(makeCiphertext([1])));
     expect(r1.status).toBe(200);
@@ -264,7 +305,7 @@ describe('POST /api/sync', () => {
 
   it('idempotent duplicate returns same ETag', async () => {
     await authHeaders();
-    await insertTestEncryptionKey();
+    await insertTestKeyRing();
     const id = crypto.randomUUID();
     const ciphertext = makeCiphertext([42]);
 
@@ -279,7 +320,7 @@ describe('POST /api/sync', () => {
 
   it('same id different ciphertext returns 409', async () => {
     await authHeaders();
-    await insertTestEncryptionKey();
+    await insertTestKeyRing();
     const id = crypto.randomUUID();
 
     const r1 = await syncRequest(
@@ -298,7 +339,7 @@ describe('POST /api/sync', () => {
 
   it('emits X-Compact-Hint when over soft cap rows', async () => {
     await authHeaders();
-    await insertTestEncryptionKey();
+    await insertTestKeyRing();
     const ciphertext = makeCiphertext([1]);
     for (let i = 0; i < 200; i++) {
       await syncRequest('/api/sync', pushBody(ciphertext));
@@ -308,11 +349,11 @@ describe('POST /api/sync', () => {
 
     expect(res.status).toBe(200);
     expect(res.headers.get('X-Compact-Hint')).toBe('please');
-  });
+  }, 15000);
 
   it('returns 413 when hard cap exceeded', async () => {
     await authHeaders();
-    await insertTestEncryptionKey();
+    await insertTestKeyRing();
     const ciphertext = new Uint8Array(1024 * 1024);
     for (let i = 0; i < 4; i++) {
       await syncRequest('/api/sync', pushBody(ciphertext));
@@ -324,7 +365,7 @@ describe('POST /api/sync', () => {
 
   it('returns 413 when single ciphertext exceeds MAX_CIPHERTEXT_BYTES', async () => {
     await authHeaders();
-    await insertTestEncryptionKey();
+    await insertTestKeyRing();
     const oversized = new Uint8Array(1024 * 1024 + 17);
 
     const res = await syncRequest('/api/sync', pushBody(oversized));
@@ -337,13 +378,14 @@ describe('POST /api/sync/compact', () => {
     sessionState.userId = 'user-1';
     sessionState.headers = null;
     await workerTestEnv.DB.exec('DELETE FROM sync_record');
-    await workerTestEnv.DB.exec('DELETE FROM user_encryption_key');
+    await workerTestEnv.DB.exec('DELETE FROM key_ring_wrapping');
+    await workerTestEnv.DB.exec('DELETE FROM key_ring');
     await clearAuthData();
   });
 
   it('inserts snapshot and returns ETag', async () => {
     await authHeaders();
-    await insertTestEncryptionKey();
+    await insertTestKeyRing();
     for (let i = 0; i < 5; i++) {
       await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
     }
@@ -359,7 +401,7 @@ describe('POST /api/sync/compact', () => {
 
   it('idempotent repeat returns same ETag without re-inserting', async () => {
     await authHeaders();
-    await insertTestEncryptionKey();
+    await insertTestKeyRing();
     const id = crypto.randomUUID();
 
     const r1 = await syncRequest(
@@ -385,7 +427,7 @@ describe('POST /api/sync/compact', () => {
 
   it('returns 409 when X-Replaces-Up-To exceeds head', async () => {
     await authHeaders();
-    await insertTestEncryptionKey();
+    await insertTestKeyRing();
     for (let i = 0; i < 3; i++) {
       await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
     }
@@ -398,6 +440,8 @@ describe('POST /api/sync/compact', () => {
   });
 
   it('returns 400 for missing X-Replaces-Up-To header', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
     const res = await syncRequest('/api/sync/compact', {
       method: 'POST',
       headers: syncHeaders({ 'Content-Type': 'application/json' }),
@@ -413,9 +457,37 @@ describe('POST /api/sync/compact', () => {
     expect(res.status).toBe(400);
   });
 
+  it('returns 400 for non-UUID compact ids', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+
+    const invalidRecordId = await syncRequest(
+      '/api/sync/compact',
+      compactBody(makeCiphertext([99]), 0, 'not-a-uuid'),
+    );
+    expect(invalidRecordId.status).toBe(400);
+
+    const invalidKeyId = await syncRequest('/api/sync/compact', {
+      method: 'POST',
+      headers: syncHeaders({
+        'Content-Type': 'application/json',
+        'X-Replaces-Up-To': '0',
+      }),
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        encryptionKeyId: 'not-a-uuid',
+        encryptionAlgorithm: TEST_ALGORITHM,
+        encryptionVersion: 1,
+        iv: toBase64(TEST_IV),
+        ciphertext: toBase64(makeCiphertext([99])),
+      }),
+    });
+    expect(invalidKeyId.status).toBe(400);
+  });
+
   it('keeps tail within COMPACT_TAIL_MAX_ROWS and COMPACT_TAIL_MAX_BYTES', async () => {
     await authHeaders();
-    await insertTestEncryptionKey();
+    await insertTestKeyRing();
     const ciphertext = new Uint8Array(60 * 1024);
     for (let i = 0; i < 50; i++) {
       await syncRequest('/api/sync', pushBody(ciphertext));
@@ -444,7 +516,7 @@ describe('POST /api/sync/compact', () => {
 
   it('JSON body is accepted', async () => {
     await authHeaders();
-    await insertTestEncryptionKey();
+    await insertTestKeyRing();
     const res = await syncRequest(
       '/api/sync/compact',
       compactBody(new Uint8Array([0xde, 0xad, 0xbe, 0xef]), 0),

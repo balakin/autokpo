@@ -18,8 +18,8 @@ type EncryptedIndexeddbEnvelope = {
 };
 
 export type EncryptedIndexeddbPersistenceOptions = {
-  masterKey: Uint8Array;
-  keyId: string;
+  activeDek: Uint8Array;
+  activeDekId: string;
 };
 
 export class EncryptedIndexeddbPersistence {
@@ -53,7 +53,7 @@ export class EncryptedIndexeddbPersistence {
     this.doc = doc;
     this.options = options;
     this.aad = new TextEncoder().encode(
-      `autokpo:yjs-indexeddb:v1:${dbName}:${UPDATES_STORE}:${options.keyId}`,
+      `autokpo:yjs-indexeddb:v1:${dbName}:${UPDATES_STORE}:${options.activeDekId}`,
     );
     this.whenSynced = this.init();
   }
@@ -189,7 +189,7 @@ export class EncryptedIndexeddbPersistence {
   ): Promise<EncryptedIndexeddbEnvelope> {
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const ciphertext = await aesGcmEncrypt({
-      keyBytes: this.options.masterKey,
+      keyBytes: this.options.activeDek,
       iv,
       plaintext,
       aad: this.aad,
@@ -199,16 +199,16 @@ export class EncryptedIndexeddbPersistence {
       schemaVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
       encryptionVersion: 1,
-      encryptionKeyId: this.options.keyId,
+      encryptionKeyId: this.options.activeDekId,
       iv,
       ciphertext,
     };
   }
 
   private async decryptEnvelope(value: unknown): Promise<Uint8Array> {
-    const envelope = parseEnvelope(value, this.options.keyId);
+    const envelope = parseEnvelope(value, this.options.activeDekId);
     return aesGcmDecrypt({
-      keyBytes: this.options.masterKey,
+      keyBytes: this.options.activeDek,
       iv: envelope.iv,
       ciphertext: envelope.ciphertext,
       aad: this.aad,

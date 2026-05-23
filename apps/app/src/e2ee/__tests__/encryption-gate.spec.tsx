@@ -15,6 +15,15 @@ const createKeyRingProfileMock = vi.hoisted(() => vi.fn());
 const fetchKeyRingProfileMock = vi.hoisted(() => vi.fn());
 const createKeyRingProfilePayloadMock = vi.hoisted(() => vi.fn());
 const unwrapKeyRingProfileMock = vi.hoisted(() => vi.fn());
+const generateLdkMock = vi.hoisted(() => vi.fn().mockResolvedValue({}));
+const wrapMekWithLdkMock = vi.hoisted(() =>
+  vi.fn().mockResolvedValue({
+    ciphertext: new Uint8Array(48),
+    iv: new Uint8Array(12),
+  }),
+);
+const unwrapMekWithLdkMock = vi.hoisted(() => vi.fn());
+const decryptKeyRingWithMekMock = vi.hoisted(() => vi.fn());
 
 vi.mock('../key-ring-api', () => {
   class KeyRingNotFoundError extends Error {
@@ -33,6 +42,20 @@ vi.mock('../key-ring-api', () => {
 vi.mock('../encryption-crypto', () => ({
   createKeyRingProfilePayload: createKeyRingProfilePayloadMock,
   unwrapKeyRingProfile: unwrapKeyRingProfileMock,
+  generateLdk: generateLdkMock,
+  wrapMekWithLdk: wrapMekWithLdkMock,
+  unwrapMekWithLdk: unwrapMekWithLdkMock,
+  decryptKeyRingWithMek: decryptKeyRingWithMekMock,
+  EncryptionUnlockError: class EncryptionUnlockError extends Error {
+    constructor() {
+      super('Failed to unlock key ring');
+      this.name = 'EncryptionUnlockError';
+    }
+  },
+  wrappedMekAad: (userId: string, wrapperId: string, method: string) =>
+    new TextEncoder().encode(
+      `autokpo:e2ee-wrapped-mek:v1:${userId}:${wrapperId}:${method}`,
+    ),
 }));
 
 const activeDek = new Uint8Array(32).fill(1);
@@ -77,13 +100,6 @@ function makeRecord(userId = 'user-1'): SerializedKeyRingProfile {
   };
 }
 
-function cacheRecord(record = makeRecord()) {
-  localStorage.setItem(
-    `autokpo:e2ee:key-ring:${record.keyRing.userId}`,
-    JSON.stringify(record),
-  );
-}
-
 function notFoundError(): Error {
   const error = new Error('not found');
   error.name = 'KeyRingNotFoundError';
@@ -116,14 +132,30 @@ beforeEach(() => {
   fetchKeyRingProfileMock.mockReset();
   createKeyRingProfilePayloadMock.mockReset();
   unwrapKeyRingProfileMock.mockReset();
+  generateLdkMock.mockResolvedValue({});
+  wrapMekWithLdkMock.mockResolvedValue({
+    ciphertext: new Uint8Array(48),
+    iv: new Uint8Array(12),
+  });
+  unwrapMekWithLdkMock.mockReset();
+  decryptKeyRingWithMekMock.mockResolvedValue({
+    activeDek,
+    activeDekId: 'dek-1',
+  });
   fetchKeyRingProfileMock.mockRejectedValue(notFoundError());
   createKeyRingProfilePayloadMock.mockResolvedValue({
     request: { keyRingId: 'key-ring-1' } as CreateKeyRingProfileRequest,
+    mek: new Uint8Array(32),
     activeDek,
     activeDekId: 'dek-1',
   });
   createKeyRingProfileMock.mockResolvedValue(makeRecord());
   unwrapKeyRingProfileMock.mockResolvedValue({
+    mek: new Uint8Array(32),
+    activeDek,
+    activeDekId: 'dek-1',
+  });
+  decryptKeyRingWithMekMock.mockResolvedValue({
     activeDek,
     activeDekId: 'dek-1',
   });
@@ -231,13 +263,9 @@ describe('EncryptionGate', () => {
     expect(createKeyRingProfileMock).toHaveBeenCalledWith({
       keyRingId: 'key-ring-1',
     });
-    expect(localStorage.getItem('autokpo:e2ee:key-ring:user-1')).toBe(
-      JSON.stringify(makeRecord()),
-    );
   });
 
   it('shows unlock screen for an existing profile after backend check', async () => {
-    cacheRecord();
     fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
 
     renderGate();
@@ -250,7 +278,6 @@ describe('EncryptionGate', () => {
   });
 
   it('does not use cache to skip a successful backend-first profile check', async () => {
-    cacheRecord();
     fetchKeyRingProfileMock.mockRejectedValue(notFoundError());
 
     renderGate();
@@ -268,7 +295,6 @@ describe('EncryptionGate', () => {
 
   it('keeps locked state and shows inline error on wrong password', async () => {
     const user = userEvent.setup();
-    cacheRecord();
     fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
     unwrapKeyRingProfileMock.mockRejectedValue(new Error('wrong password'));
 
@@ -282,13 +308,12 @@ describe('EncryptionGate', () => {
       screen.getByRole('button', { name: /Otključaj podatke/i }),
     );
 
-    expect(screen.getByText(/Šifra nije tačna/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Šifra nije tačna/i)).toBeInTheDocument();
     expect(screen.queryByText('protected content')).not.toBeInTheDocument();
   });
 
   it('renders children after correct unlock password', async () => {
     const user = userEvent.setup();
-    cacheRecord();
     fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
 
     renderGate();
@@ -310,7 +335,6 @@ describe('EncryptionGate', () => {
 
   it('resets gate state when user changes', async () => {
     const user = userEvent.setup();
-    cacheRecord();
     fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
 
     localStorage.setItem('autokpo:locale', 'sr-Latn');
@@ -368,7 +392,6 @@ describe('EncryptionGate', () => {
 
   it('shows non-recovery explanation without destructive reset action', async () => {
     const user = userEvent.setup();
-    cacheRecord();
     fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
 
     renderGate();
@@ -387,7 +410,6 @@ describe('EncryptionGate', () => {
 
   it('provides EncryptionContext with activeDek and activeDekId after unlock', async () => {
     const user = userEvent.setup();
-    cacheRecord();
     fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
 
     let capturedContext: { activeDek: Uint8Array; activeDekId: string } | null =
@@ -432,7 +454,6 @@ describe('EncryptionGate', () => {
   });
 
   it('does not render children (and thus context) when locked', async () => {
-    cacheRecord();
     fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
 
     renderGate();

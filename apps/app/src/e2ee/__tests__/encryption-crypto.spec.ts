@@ -4,10 +4,6 @@ import { aesGcmEncrypt } from '../aes-gcm';
 import { bytesToBase64 } from '../base64';
 import type { createKeyRingProfilePayload } from '../encryption-crypto';
 import {
-  readCachedKeyRingProfile,
-  writeCachedKeyRingProfile,
-} from '../key-ring-cache';
-import {
   KDF_PARAMS_V1,
   WRAPPING_PARAMS_V1,
   type SerializedKeyRingProfile,
@@ -193,17 +189,92 @@ describe('encryption crypto helpers', () => {
   });
 });
 
-describe('key ring cache', () => {
-  it('round-trips valid per-user wrapped key records', async () => {
-    const { createKeyRingProfilePayload } =
+describe('LDK crypto operations', () => {
+  it('generateLdk produces a non-extractable AES-GCM CryptoKey', async () => {
+    const { generateLdk } = await import('../encryption-crypto');
+    const ldk = await generateLdk();
+    expect(ldk).toBeInstanceOf(CryptoKey);
+    expect(ldk.type).toBe('secret');
+    expect(ldk.extractable).toBe(false);
+    expect(ldk.algorithm).toMatchObject({ name: 'AES-GCM', length: 256 });
+    expect(ldk.usages).toContain('encrypt');
+    expect(ldk.usages).toContain('decrypt');
+  });
+
+  it('wrapMekWithLdk and unwrapMekWithLdk round-trip the MEK', async () => {
+    const { generateLdk, wrapMekWithLdk, unwrapMekWithLdk } =
       await import('../encryption-crypto');
-    deriveKekMock.mockResolvedValue(new Uint8Array(32).fill(7));
-    const { request } = await createKeyRingProfilePayload('user-1', 'password');
-    const record = makeRecord(request);
+    const ldk = await generateLdk();
+    const mek = crypto.getRandomValues(new Uint8Array(32));
+    const userId = 'user-1';
+    const wrapperId = 'wrapper-1';
 
-    writeCachedKeyRingProfile('user-1', record);
+    const { ciphertext, iv } = await wrapMekWithLdk(
+      mek,
+      ldk,
+      userId,
+      wrapperId,
+    );
+    const recovered = await unwrapMekWithLdk(
+      ciphertext,
+      iv,
+      ldk,
+      userId,
+      wrapperId,
+    );
 
-    expect(readCachedKeyRingProfile('user-1')).toEqual(record);
-    expect(readCachedKeyRingProfile('user-2')).toBeNull();
+    expect(recovered).toEqual(mek);
+  });
+
+  it('unwrapMekWithLdk throws EncryptionUnlockError on wrong LDK', async () => {
+    const {
+      generateLdk,
+      wrapMekWithLdk,
+      unwrapMekWithLdk,
+      EncryptionUnlockError,
+    } = await import('../encryption-crypto');
+    const ldk = await generateLdk();
+    const wrongLdk = await generateLdk();
+    const mek = crypto.getRandomValues(new Uint8Array(32));
+
+    const { ciphertext, iv } = await wrapMekWithLdk(mek, ldk, 'user-1', 'w-1');
+
+    await expect(
+      unwrapMekWithLdk(ciphertext, iv, wrongLdk, 'user-1', 'w-1'),
+    ).rejects.toBeInstanceOf(EncryptionUnlockError);
+  });
+
+  it('unwrapMekWithLdk throws EncryptionUnlockError on AAD mismatch (different userId)', async () => {
+    const {
+      generateLdk,
+      wrapMekWithLdk,
+      unwrapMekWithLdk,
+      EncryptionUnlockError,
+    } = await import('../encryption-crypto');
+    const ldk = await generateLdk();
+    const mek = crypto.getRandomValues(new Uint8Array(32));
+
+    const { ciphertext, iv } = await wrapMekWithLdk(mek, ldk, 'user-1', 'w-1');
+
+    await expect(
+      unwrapMekWithLdk(ciphertext, iv, ldk, 'user-2', 'w-1'),
+    ).rejects.toBeInstanceOf(EncryptionUnlockError);
+  });
+
+  it('unwrapMekWithLdk throws EncryptionUnlockError on AAD mismatch (different wrapperId)', async () => {
+    const {
+      generateLdk,
+      wrapMekWithLdk,
+      unwrapMekWithLdk,
+      EncryptionUnlockError,
+    } = await import('../encryption-crypto');
+    const ldk = await generateLdk();
+    const mek = crypto.getRandomValues(new Uint8Array(32));
+
+    const { ciphertext, iv } = await wrapMekWithLdk(mek, ldk, 'user-1', 'w-1');
+
+    await expect(
+      unwrapMekWithLdk(ciphertext, iv, ldk, 'user-1', 'w-2'),
+    ).rejects.toBeInstanceOf(EncryptionUnlockError);
   });
 });

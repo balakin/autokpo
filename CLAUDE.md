@@ -54,7 +54,7 @@ cd apps/app && pnpm -s build 2>&1 | grep -E 'error TS|error:' | head -n 40
 
 ```bash
 pnpm -s eslint apps/app --fix --format=json | jq '[.[] | select(.errorCount > 0) | {file: .filePath, errors: [.messages[] | select(.severity == 2) | {line, col: .column, rule: .ruleId, msg: .message}]}]'
-pnpm -s prettier --cache --write --log-level=error apps/app
+pnpm -s prettier --write --log-level=error apps/app
 ```
 
 **Git** — overview first, then targeted:

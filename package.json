@@ -6,8 +6,8 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "test": "turbo run test",
-    "lint": "cross-env NODE_OPTIONS=--max-old-space-size=4096 eslint . && prettier --cache --check .",
-    "lint:fix": "cross-env NODE_OPTIONS=--max-old-space-size=4096 eslint . --fix && prettier --cache --write .",
+    "lint": "cross-env NODE_OPTIONS=--max-old-space-size=4096 eslint . && prettier --check .",
+    "lint:fix": "cross-env NODE_OPTIONS=--max-old-space-size=4096 eslint . --fix && prettier --write .",
     "i18n:extract": "pnpm --filter @autokpo/app i18n:extract",
     "generate:worker-types": "pnpm --filter @autokpo/app generate:worker-types",
     "check:worker-types": "pnpm --filter @autokpo/app check:worker-types",
@@ -20,7 +20,7 @@
   "lint-staged": {
     "*": [
       "pnpm eslint --fix --no-error-on-unmatched-pattern --no-warn-ignored",
-      "pnpm prettier --cache --write --ignore-unknown"
+      "pnpm prettier --write --ignore-unknown"
     ]
   },
   "devDependencies": {

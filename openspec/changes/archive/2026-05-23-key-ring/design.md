@@ -1,0 +1,167 @@
+## Context
+
+The current E2EE implementation is centered on one browser-generated master key per user. The backend stores a key identity row and a password wrapping row; the client unwraps the master key and passes `{ masterKey, keyId }` to sync encryption. Sync records store `encryption_key_id` as a foreign key to the current key table.
+
+Before release, the app can replace this model without production migration. The new model separates cryptographic roles: a password-derived KEK unwraps a MEK, the MEK decrypts an encrypted key ring, and the active DEK inside that key ring encrypts sync/app data. This preserves the current user experience while creating a cleaner base for future rotation and wrapper methods.
+
+## Goals / Non-Goals
+
+**Goals:**
+
+- Replace the single master-key storage model with one encrypted key ring per user.
+- Use singular table names: `key_ring` and `key_ring_wrapping`.
+- Keep one key ring per user and allow many immutable wrapper rows over time.
+- Use frontend-generated wrapper ids so wrapped-MEK AAD can bind to the wrapper id.
+- Store wrapper lifecycle state (`active`/`revoked`, `revoked_at`) and enforce one active wrapper per user+method at the database level.
+- Keep local cache encrypted-only and require the encryption password for every app session.
+- Keep sync writes using one active DEK id and reject writes that do not match the server's active DEK id.
+- Rename internal code/spec concepts from master key to active DEK / MEK / key ring.
+
+**Non-Goals:**
+
+- No key rotation.
+- No wrapper replacement/password-change flow.
+- No LDK/device-key cache.
+- No production migration or backward compatibility with existing unreleased local databases.
+- No user-facing copy rewrite to expose KEK/MEK/DEK terminology.
+
+## Decisions
+
+### 1. Key hierarchy is KEK → MEK → key ring → DEK
+
+The password-derived KEK wraps only the MEK. The MEK encrypts the key-ring JSON. The key ring contains a key-material-only DEK map, and sync/app data is encrypted with the active DEK.
+
+**Why:** The current master key is really a data-encryption key. Separating MEK and DEK makes future rotation additive: new DEKs can be added to the key ring without changing password wrapping.
+
+**Alternative considered:** Keep one master key and rename it. This avoids immediate work but preserves the coupling that makes rotation and multiple wrappers awkward.
+
+The plaintext key-ring JSON stores DEK material by id only:
+
+```json
+{
+  "version": 1,
+  "activeDekId": "dek-id",
+  "deks": {
+    "dek-id": "base64-raw-32-byte-dek"
+  }
+}
+```
+
+Algorithm, version, and IV metadata belong to each encrypted payload/envelope (`key_ring`, wrappers, and sync records), not to the raw DEK entry. This keeps algorithm migration independent from DEK rotation when re-encrypting blocks.
+
+### 2. One `key_ring` row per user
+
+The `key_ring` table stores clear metadata and encrypted key-ring ciphertext:
+
+```sql
+key_ring
+────────
+id                     text primary key
+user_id                text not null unique
+active_dek_id          text not null
+encryption_version     integer not null
+encryption_algorithm   text not null
+iv                     blob/text not null
+ciphertext             blob/text not null
+created_at             integer/text not null
+updated_at             integer/text not null
+```
+
+**Why:** `user_id unique` enforces the product invariant. A separate `id` keeps the cryptographic container identifiable without overloading user identity.
+
+**Alternative considered:** Use `user_id` as the primary key. This is smaller but makes account identity and key-ring identity the same thing.
+
+### 3. Wrapper rows are per user, not per key-ring id
+
+`key_ring_wrapping` rows reference the user and method, not `key_ring.id`:
+
+```sql
+key_ring_wrapping
+─────────────────
+id                     text primary key
+user_id                text not null
+method                 text not null
+status                 text not null
+kdf_algorithm          text not null
+kdf_params             text/json not null
+kdf_salt               blob/text not null
+wrapping_algorithm     text not null
+wrapping_version       integer not null
+wrapping_iv            blob/text not null
+ciphertext             blob/text not null
+created_at             integer/text not null
+revoked_at             integer/text null
+```
+
+**Why:** There is exactly one key ring per user, so `user_id` is sufficient and avoids redundant foreign keys. The rows are still independent immutable wrapper records.
+
+**Alternative considered:** Add `key_ring_id`. This better models wrappers for a specific cryptographic object, but is unnecessary while one user can have only one key ring.
+
+### 4. Enforce one active wrapper per user+method with a partial unique index
+
+Valid wrapper statuses are `active` and `revoked`. The DB enforces one active wrapper per method:
+
+```sql
+CREATE UNIQUE INDEX key_ring_wrapping_one_active_per_method
+ON key_ring_wrapping(user_id, method)
+WHERE status = 'active';
+```
+
+**Why:** Future password-change or method-replacement flows can keep revoked rows while preventing ambiguous active wrappers. This iteration only creates the initial active password wrapper, so no revoke logic is needed yet.
+
+**Alternative considered:** Enforce in route logic only. A DB constraint is safer and documents the invariant.
+
+### 5. Wrapper id is generated by the frontend and returned by the backend
+
+The client generates `wrapperId`, uses it in wrapped-MEK AAD, sends it to the backend, and the backend stores and returns the same id. The backend validates id format/uniqueness but does not generate a replacement id.
+
+Wrapped MEK AAD:
+
+```txt
+autokpo:e2ee-wrapped-mek:v1:{userId}:{wrapperId}:{method}
+```
+
+**Why:** AES-GCM AAD must be known before encryption. A backend-generated id would be unavailable when the client encrypts the MEK.
+
+**Alternative considered:** Omit wrapper id from AAD. This works but binds the ciphertext less tightly.
+
+### 6. Backend-first fetch with encrypted local fallback
+
+Unlock first attempts `GET /api/e2ee/key-ring`. On success, the encrypted response is cached in localStorage. If the browser is offline or the request fails due to network/unavailability, the client may use the cached encrypted response. It does not fallback on auth, 404, conflict, or validation/contract errors.
+
+**Why:** Backend-first keeps active wrapper state fresher. Encrypted cache preserves offline/unavailable unlock with the same password requirement.
+
+**Alternative considered:** Cache-first. This matches the previous behavior but makes future wrapper revocation less effective.
+
+### 7. Sync record key ids become plain DEK id strings
+
+`sync_record.encryption_key_id` is no longer a foreign key to a key table. It is the DEK id used to encrypt the ciphertext. On push/compact, the server loads the user's key ring and rejects the write unless `encryptionKeyId === keyRing.activeDekId`.
+
+**Why:** DEKs live inside encrypted key-ring ciphertext. The server can know only the active DEK id cleartext for write validation.
+
+**Alternative considered:** Store clear DEK metadata rows. This enables FK validation but leaks/duplicates DEK inventory and conflicts with the key-ring-as-source-of-truth model.
+
+### 8. API path becomes `/api/e2ee/key-ring`
+
+The existing `/api/e2ee/key` contract is replaced. `POST` creates the key ring and initial wrapper together. `GET` returns the key ring plus active wrappers, with wrapper `id` included for AAD and lifecycle fields like `status`/`revokedAt` hidden.
+
+**Why:** The route now represents a key-ring profile, not a single key.
+
+## Risks / Trade-offs
+
+- **Cached revoked wrapper may still unlock offline later** → Accepted for this iteration; backend-first behavior reduces normal exposure, and stale-cache invalidation can be addressed with future wrapper replacement/revocation work.
+- **No rotation despite multi-key ring shape** → The plaintext key ring supports a `deks` map of DEK id to raw base64 DEK bytes, but this iteration creates exactly one DEK and requires writes to use the active DEK.
+- **AAD depends on frontend-generated wrapper id** → Backend must validate wrapper id format and preserve the provided id exactly.
+- **Partial unique index requires SQLite/D1 support** → SQLite supports partial indexes; use raw SQL migration if Drizzle schema helpers are insufficient.
+- **Large internal rename touches many files/tests** → App is unreleased, so breaking internal names and initial schema is acceptable.
+
+## Migration Plan
+
+No production migration is required because the app is unreleased. Replace the initial schema/migration, specs, route contracts, tests, and local cache schema directly.
+
+Rollback before release is a code/spec revert to the previous master-key model. Once released, this would require a real migration and cache compatibility plan, but that is explicitly out of scope.
+
+## Open Questions
+
+- Exact wrapper id format/prefix, e.g. `krw_...` or generic id.
+- Whether `key_ring.id` is frontend- or backend-generated. The current design only requires frontend-generated wrapper ids.

@@ -46,7 +46,7 @@ export function useSyncEngine(): void {
   const ydoc = useDoc();
   const { isLeader } = useLeader();
   const syncState = useSyncMetadataStore();
-  const { masterKey, keyId } = useEncryptionContext();
+  const { activeDek, activeDekId } = useEncryptionContext();
   const isLeaderRef = useRef(isLeader);
   isLeaderRef.current = isLeader;
   const pushInFlightRef = useRef(false);
@@ -56,10 +56,10 @@ export function useSyncEngine(): void {
     async () => {},
   );
   const schedulePushRef = useRef<() => void>(() => {});
-  const masterKeyRef = useRef(masterKey);
-  masterKeyRef.current = masterKey;
-  const keyIdRef = useRef(keyId);
-  keyIdRef.current = keyId;
+  const activeDekRef = useRef(activeDek);
+  activeDekRef.current = activeDek;
+  const activeDekIdRef = useRef(activeDekId);
+  activeDekIdRef.current = activeDekId;
 
   const handleAuthFailureRef = useRef((error: unknown): boolean => {
     if (!(error instanceof SyncRequestError)) return false;
@@ -174,18 +174,19 @@ export function useSyncEngine(): void {
         // Decrypt each record ciphertext before applying to the Y.Doc.
         const plaintexts = await Promise.all(
           result.records.map((record) =>
-            decryptSyncPayload(
-              {
+            decryptSyncPayload({
+              payload: {
                 encryptionAlgorithm: record.encryptionAlgorithm,
                 encryptionVersion: record.encryptionVersion as 1,
                 iv: record.iv,
                 ciphertext: record.ciphertext,
               },
-              masterKeyRef.current,
+              activeDek: activeDekRef.current,
               userId,
-              record.encryptionKeyId,
-              record.kind,
-            ),
+              activeDekId: record.encryptionKeyId,
+              blockId: record.id,
+              kind: record.kind,
+            }),
           ),
         );
         // Apply all received records inside one Yjs transaction so
@@ -256,21 +257,22 @@ export function useSyncEngine(): void {
     };
 
     doCompactRef.current = async (replacesUpTo: number) => {
+      const id = crypto.randomUUID();
       const plainSnapshot = encodeStateAsUpdate(ydoc);
       const {
         encryptionVersion,
         encryptionAlgorithm,
         iv,
         ciphertext: encryptedSnapshot,
-      } = await encryptSyncPayload(
-        plainSnapshot,
-        masterKeyRef.current,
+      } = await encryptSyncPayload({
+        plaintext: plainSnapshot,
+        activeDek: activeDekRef.current,
         userId,
-        keyIdRef.current,
-        'snapshot',
-      );
-      const id = crypto.randomUUID();
-      const encryptionKeyId = keyIdRef.current;
+        activeDekId: activeDekIdRef.current,
+        blockId: id,
+        kind: 'snapshot',
+      });
+      const encryptionKeyId = activeDekIdRef.current;
       log(
         'compact: replacesUpTo=%d, snapshot=%d bytes',
         replacesUpTo,
@@ -344,6 +346,7 @@ export function useSyncEngine(): void {
       // Derive the delta since last acked state vector.
       // If stateVector is null (after 410 recovery), send full doc state.
       const { cursor } = syncState.read();
+      const id = crypto.randomUUID();
       const plainDelta = computeDelta(ydoc, syncState.read().stateVector);
       // Delta too large for a single POST — compact instead.
       // Compact may pull afterwards if a gap is detected.
@@ -360,15 +363,15 @@ export function useSyncEngine(): void {
         encryptionAlgorithm,
         iv,
         ciphertext: encryptedDelta,
-      } = await encryptSyncPayload(
-        plainDelta,
-        masterKeyRef.current,
+      } = await encryptSyncPayload({
+        plaintext: plainDelta,
+        activeDek: activeDekRef.current,
         userId,
-        keyIdRef.current,
-        'update',
-      );
-      const id = crypto.randomUUID();
-      const encryptionKeyId = keyIdRef.current;
+        activeDekId: activeDekIdRef.current,
+        blockId: id,
+        kind: 'update',
+      });
+      const encryptionKeyId = activeDekIdRef.current;
       log(
         'push: delta=%d bytes, cursor=%d, dirty=%s',
         plainDelta.byteLength,

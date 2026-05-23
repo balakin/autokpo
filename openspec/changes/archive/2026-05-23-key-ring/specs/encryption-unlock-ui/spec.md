@@ -1,46 +1,4 @@
-## Purpose
-
-Define the encryption setup and unlock UI shown after authentication and before signed-in app access.
-
-## Requirements
-
-### Requirement: Encryption shell presents setup and unlock fullscreen
-
-The system SHALL present encryption setup and unlock screens in a fullscreen shell after authentication and before the signed-in app shell. The shell SHALL include the app identity, account-level profile controls, a centered content card, and the app footer without rendering data-backed app navigation.
-
-#### Scenario: First-time setup uses encryption shell
-
-- **WHEN** an authenticated user has no encryption profile
-- **THEN** the system SHALL show the encryption setup screen inside the encryption shell
-- **AND** the signed-in app shell SHALL NOT be rendered
-
-#### Scenario: Returning unlock uses encryption shell
-
-- **WHEN** an authenticated user has an encryption profile but encrypted data is locked
-- **THEN** the system SHALL show the unlock screen inside the encryption shell
-- **AND** the signed-in app shell SHALL NOT be rendered
-
-#### Scenario: Shell exposes global preferences
-
-- **WHEN** the encryption shell is displayed
-- **THEN** the user SHALL be able to open account-level profile controls without unlocking encrypted data
-- **AND** the user SHALL be able to change language and theme from those controls
-
-#### Scenario: Shell exposes logout before unlock
-
-- **WHEN** the encryption shell is displayed
-- **THEN** the user SHALL be able to access logout from the account-level profile controls without unlocking encrypted data
-- **AND** logout SHALL follow the app's online-only sign-out behavior
-
-### Requirement: First-time setup explains encryption password purpose
-
-The system SHALL provide a first-time setup screen that explains the encryption password is separate from sign-in, unlocks encrypted app data after authentication, and cannot be seen, reset, or recovered by Autokpo.
-
-#### Scenario: Setup explains non-recoverability
-
-- **WHEN** the setup screen is displayed
-- **THEN** it SHALL explain that losing the encryption password means encrypted data cannot be restored
-- **AND** it SHALL avoid implying that the password can be reset by Autokpo
+## MODIFIED Requirements
 
 ### Requirement: Initial backend check runs before showing setup or unlock UI
 
@@ -103,16 +61,6 @@ The system SHALL provide an unlock screen that asks for the encryption password 
 - **AND** submits the unlock form
 - **THEN** the system SHALL keep encrypted data locked
 - **AND** display an inline error without clearing the authenticated session
-
-### Requirement: Forgot password path explains non-recovery
-
-The unlock screen SHALL provide a forgot-password path that explains Autokpo cannot recover the encryption password and that encrypted data cannot be restored without it. The MVP forgot-password path SHALL NOT perform destructive reset.
-
-#### Scenario: Forgot password shows explanation
-
-- **WHEN** the user opens the forgot-password path from the unlock screen
-- **THEN** the system SHALL explain that the encryption password cannot be recovered by Autokpo
-- **AND** it SHALL NOT offer a reset action that deletes encrypted data
 
 ### Requirement: Encryption remains unlocked until logout
 

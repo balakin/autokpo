@@ -9,7 +9,6 @@ import {
 } from 'drizzle-orm/sqlite-core';
 
 import { user } from './auth';
-import { userEncryptionKey } from './encryption';
 
 // D1 returns blobs as ArrayBuffer; Buffer is unavailable in workerd.
 const blobBytes = customType<{ data: Uint8Array; driverData: ArrayBuffer }>({
@@ -31,9 +30,7 @@ export const syncRecord = sqliteTable(
     iv: blobBytes('iv').notNull(),
     ciphertext: blobBytes('ciphertext').notNull(),
     kind: text('kind', { enum: ['update', 'snapshot'] }).notNull(),
-    encryptionKeyId: text('encryption_key_id')
-      .notNull()
-      .references(() => userEncryptionKey.id, { onDelete: 'restrict' }),
+    encryptionKeyId: text('encryption_key_id').notNull(),
     created: integer('created')
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),

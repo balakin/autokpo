@@ -1,5 +1,3 @@
-import { readCachedEncryptionKeyRecord } from './encryption-key-cache';
-
 export type EncryptionSessionStatus =
   | 'uninitialized'
   | 'checking'
@@ -15,16 +13,6 @@ export type EncryptionSessionState = {
   error?: 'check' | 'setup' | 'unlock';
 };
 
-export function hasEncryptionProfile(userId: string): boolean {
-  return readCachedEncryptionKeyRecord(userId) !== null;
-}
-
-export function getInitialEncryptionSessionState(
-  userId: string,
-): EncryptionSessionState {
-  const hasProfile = hasEncryptionProfile(userId);
-  if (!hasProfile) {
-    return { status: 'checking', hasProfile };
-  }
-  return { status: 'locked', hasProfile };
+export function getInitialEncryptionSessionState(): EncryptionSessionState {
+  return { status: 'checking', hasProfile: false };
 }

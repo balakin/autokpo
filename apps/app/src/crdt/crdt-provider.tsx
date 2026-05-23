@@ -16,12 +16,12 @@ export function CrdtProvider({
   userId: string;
   children: React.ReactNode;
 }) {
-  const { masterKey, keyId } = useEncryptionContext();
+  const { activeDek, activeDekId } = useEncryptionContext();
   const [runtime, setRuntime] = useState<CrdtRuntime | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    const nextRuntime = createRuntime(userId, { masterKey, keyId });
+    const nextRuntime = createRuntime(userId, { activeDek, activeDekId });
 
     async function init() {
       await nextRuntime.whenReady;
@@ -37,7 +37,7 @@ export function CrdtProvider({
       setRuntime(null);
       void nextRuntime.destroy();
     };
-  }, [keyId, masterKey, userId]);
+  }, [activeDek, activeDekId, userId]);
 
   if (runtime === null) return null;
 

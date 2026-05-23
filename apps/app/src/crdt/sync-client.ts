@@ -3,6 +3,7 @@ import { base64ToBytes, bytesToBase64 } from '../e2ee/base64';
 const SYNC_BASE = '/api/sync';
 
 export interface SyncRecord {
+  id: string;
   seq: number;
   kind: 'update' | 'snapshot';
   encryptionKeyId: string;
@@ -66,6 +67,7 @@ export async function pull({
   const body = (await res.json()) as {
     records: Array<{
       seq: number;
+      id: string;
       kind: 'update' | 'snapshot';
       encryptionKeyId: string;
       encryptionAlgorithm: 'aes-256-gcm';
@@ -75,6 +77,7 @@ export async function pull({
     }>;
   };
   const records: SyncRecord[] = body.records.map((r) => ({
+    id: r.id,
     seq: r.seq,
     kind: r.kind,
     encryptionKeyId: r.encryptionKeyId,

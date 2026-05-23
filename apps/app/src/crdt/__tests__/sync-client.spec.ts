@@ -49,6 +49,7 @@ const TEST_ALGORITHM = 'aes-256-gcm';
 
 function buildJsonRecords(
   records: Array<{
+    id?: string;
     seq: number;
     kind: 'update' | 'snapshot';
     encryptionKeyId: string;
@@ -59,6 +60,7 @@ function buildJsonRecords(
   }>,
 ) {
   return records.map((r) => ({
+    id: r.id ?? `record-${r.seq}`,
     seq: r.seq,
     kind: r.kind,
     encryptionKeyId: r.encryptionKeyId,
@@ -147,6 +149,7 @@ describe('pull', () => {
     expect(result.status).toBe(200);
     expect(result.records).toHaveLength(2);
     expect(result.records[0]).toMatchObject<SyncRecord>({
+      id: 'record-3',
       seq: 3,
       kind: 'update',
       encryptionKeyId: 'key-1',
@@ -156,6 +159,7 @@ describe('pull', () => {
       ciphertext: ciphertext1,
     });
     expect(result.records[1]).toMatchObject<SyncRecord>({
+      id: 'record-4',
       seq: 4,
       kind: 'snapshot',
       encryptionKeyId: 'key-1',

@@ -6,6 +6,7 @@ import {
   integer,
   sqliteTable,
   text,
+  uniqueIndex,
 } from 'drizzle-orm/sqlite-core';
 
 import { user } from './auth';
@@ -17,53 +18,58 @@ const blobBytes = customType<{ data: Uint8Array; driverData: ArrayBuffer }>({
   toDriver: (v) => v.buffer as ArrayBuffer,
 });
 
-export const userEncryptionKey = sqliteTable(
-  'user_encryption_key',
+export const keyRing = sqliteTable(
+  'key_ring',
   {
-    id: text('key_id').primaryKey(),
+    id: text('id').primaryKey(),
     userId: text('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
+    activeDekId: text('active_dek_id').notNull(),
+    encryptionVersion: integer('encryption_version').notNull(),
+    encryptionAlgorithm: text('encryption_algorithm').notNull(),
+    iv: blobBytes('iv').notNull(),
+    ciphertext: blobBytes('ciphertext').notNull(),
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),
-    revokedAt: integer('revoked_at', { mode: 'timestamp_ms' }),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .notNull(),
   },
-  (table) => [index('user_encryption_key_user_id_idx').on(table.userId)],
+  (table) => [uniqueIndex('key_ring_user_id_idx').on(table.userId)],
 );
 
-export const userEncryptionKeyWrapping = sqliteTable(
-  'user_encryption_key_wrapping',
+export const keyRingWrapping = sqliteTable(
+  'key_ring_wrapping',
   {
-    id: text('wrapping_id').primaryKey(),
-    keyId: text('key_id')
-      .notNull()
-      .references(() => userEncryptionKey.id, { onDelete: 'cascade' }),
+    id: text('id').primaryKey(),
     userId: text('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     method: text('method', { enum: ['password'] }).notNull(),
+    status: text('status', { enum: ['active', 'revoked'] }).notNull(),
     kdfVersion: integer('kdf_version').notNull(),
     kdfAlgorithm: text('kdf_algorithm').notNull(),
     kdfParamsJson: text('kdf_params_json').notNull(),
     kdfSalt: blobBytes('kdf_salt').notNull(),
-    wrapVersion: integer('wrap_version').notNull(),
-    wrapAlgorithm: text('wrap_algorithm').notNull(),
-    wrapParamsJson: text('wrap_params_json').notNull(),
-    wrapIv: blobBytes('wrap_iv').notNull(),
-    wrappedMasterKey: blobBytes('wrapped_master_key').notNull(),
+    wrappingVersion: integer('wrapping_version').notNull(),
+    wrappingAlgorithm: text('wrapping_algorithm').notNull(),
+    wrappingParamsJson: text('wrapping_params_json').notNull(),
+    wrappingIv: blobBytes('wrapping_iv').notNull(),
+    ciphertext: blobBytes('ciphertext').notNull(),
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),
     revokedAt: integer('revoked_at', { mode: 'timestamp_ms' }),
   },
   (table) => [
-    index('user_encryption_key_wrapping_key_id_idx').on(table.keyId),
-    index('user_encryption_key_wrapping_user_id_idx').on(table.userId),
+    uniqueIndex('key_ring_wrapping_active_user_method_unique')
+      .on(table.userId, table.method)
+      .where(sql`${table.status} = 'active'`),
+    index('key_ring_wrapping_user_id_idx').on(table.userId),
   ],
 );
 
-export type UserEncryptionKeyRow = InferSelectModel<typeof userEncryptionKey>;
-export type UserEncryptionKeyWrappingRow = InferSelectModel<
-  typeof userEncryptionKeyWrapping
->;
+export type KeyRingRow = InferSelectModel<typeof keyRing>;
+export type KeyRingWrappingRow = InferSelectModel<typeof keyRingWrapping>;

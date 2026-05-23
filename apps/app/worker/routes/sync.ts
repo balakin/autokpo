@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 import { requireSession } from '../auth';
 import { getDb } from '../db';
-import { syncRecord } from '../db/schema';
+import { keyRing, syncRecord } from '../db/schema';
 
 const MAX_PLAINTEXT_BYTES = 1 * 1024 * 1024;
 const MAX_CIPHERTEXT_BYTES = MAX_PLAINTEXT_BYTES + 16; // plaintext + GCM tag only
@@ -14,9 +14,11 @@ const HARD_CAP_BYTES = 4 * 1024 * 1024;
 const COMPACT_TAIL_MAX_ROWS = 50;
 const COMPACT_TAIL_MAX_BYTES = 256 * 1024;
 
+const uuidSchema = z.uuid();
+
 const encEnvelopeSchema = z.object({
-  id: z.string().min(1),
-  encryptionKeyId: z.string().min(1),
+  id: uuidSchema,
+  encryptionKeyId: uuidSchema,
   encryptionAlgorithm: z.literal('aes-256-gcm'),
   encryptionVersion: z.literal(1),
   iv: z.string().min(1),
@@ -52,6 +54,8 @@ router.get('/', async (c) => {
   }
   const userId = session.user.id;
   const db = getDb(c.env.DB);
+  const keyRingRow = await getActiveKeyRing(db, userId);
+  if (!keyRingRow) return codeResponse('encryption_key_not_found', 404);
 
   const ifNoneMatch = c.req.header('If-None-Match');
   const since =
@@ -73,6 +77,7 @@ router.get('/', async (c) => {
       .where(eq(syncRecord.userId, userId)),
     db
       .select({
+        id: syncRecord.id,
         seq: syncRecord.seq,
         kind: syncRecord.kind,
         encryptionKeyId: syncRecord.encryptionKeyId,
@@ -100,6 +105,7 @@ router.get('/', async (c) => {
   }
 
   const records = items.map((row) => ({
+    id: row.id,
     seq: row.seq,
     kind: row.kind,
     encryptionKeyId: row.encryptionKeyId,
@@ -121,6 +127,9 @@ router.post('/', async (c) => {
     return codeResponse('local_user_mismatch', 409);
   }
   const userId = session.user.id;
+  const db = getDb(c.env.DB);
+  const keyRingRow = await getActiveKeyRing(db, userId);
+  if (!keyRingRow) return codeResponse('encryption_key_not_found', 404);
 
   const rawBody: unknown = await c.req.json().catch(() => null);
   const parsed = pushBodySchema.safeParse(rawBody);
@@ -151,11 +160,12 @@ router.post('/', async (c) => {
   if (ivBytes.byteLength !== 12) {
     return c.json({ error: 'IV must be 12 bytes' }, 400);
   }
+  if (encryptionKeyId !== keyRingRow.activeDekId) {
+    return codeResponse('encryption_key_mismatch', 409);
+  }
   if (ciphertextBytes.byteLength > MAX_CIPHERTEXT_BYTES) {
     return c.json({ error: 'Payload too large' }, 413);
   }
-
-  const db = getDb(c.env.DB);
 
   const [[existing]] = await db.batch([
     db
@@ -242,6 +252,9 @@ router.post('/compact', async (c) => {
     return codeResponse('local_user_mismatch', 409);
   }
   const userId = session.user.id;
+  const db = getDb(c.env.DB);
+  const keyRingRow = await getActiveKeyRing(db, userId);
+  if (!keyRingRow) return codeResponse('encryption_key_not_found', 404);
 
   const replacesUpToStr = c.req.header('X-Replaces-Up-To');
   if (!replacesUpToStr) {
@@ -282,11 +295,12 @@ router.post('/compact', async (c) => {
   if (ivBytes.byteLength !== 12) {
     return c.json({ error: 'IV must be 12 bytes' }, 400);
   }
+  if (encryptionKeyId !== keyRingRow.activeDekId) {
+    return codeResponse('encryption_key_mismatch', 409);
+  }
   if (snapshotCiphertext.byteLength > MAX_CIPHERTEXT_BYTES) {
     return c.json({ error: 'Payload too large' }, 413);
   }
-
-  const db = getDb(c.env.DB);
 
   const [[existing]] = await db.batch([
     db
@@ -397,3 +411,12 @@ router.post('/compact', async (c) => {
 });
 
 export { router as syncRouter };
+
+async function getActiveKeyRing(db: ReturnType<typeof getDb>, userId: string) {
+  const [row] = await db
+    .select()
+    .from(keyRing)
+    .where(eq(keyRing.userId, userId))
+    .limit(1);
+  return row ?? null;
+}

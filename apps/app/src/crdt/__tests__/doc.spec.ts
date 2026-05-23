@@ -75,8 +75,8 @@ describe('createRuntime', () => {
   it('drains queued persistence writes before destroying the Y.Doc', async () => {
     const userId = `runtime-destroy:${crypto.randomUUID()}`;
     const runtime = createRuntime(userId, {
-      masterKey: new Uint8Array(32).fill(9),
-      keyId: 'key-1',
+      activeDek: new Uint8Array(32).fill(9),
+      activeDekId: 'dek-1',
     });
     await runtime.whenReady;
 
@@ -86,8 +86,8 @@ describe('createRuntime', () => {
     await runtime.destroy();
 
     const nextRuntime = createRuntime(userId, {
-      masterKey: new Uint8Array(32).fill(9),
-      keyId: 'key-1',
+      activeDek: new Uint8Array(32).fill(9),
+      activeDekId: 'dek-1',
     });
     await nextRuntime.whenReady;
 

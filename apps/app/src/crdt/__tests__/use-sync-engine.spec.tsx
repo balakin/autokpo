@@ -8,8 +8,8 @@ import { useSyncEngine } from '../use-sync-engine';
 
 vi.mock('../../e2ee/encryption-context', () => ({
   useEncryptionContext: () => ({
-    masterKey: new Uint8Array(32).fill(1),
-    keyId: 'key-1',
+    activeDek: new Uint8Array(32).fill(1),
+    activeDekId: 'dek-1',
   }),
 }));
 

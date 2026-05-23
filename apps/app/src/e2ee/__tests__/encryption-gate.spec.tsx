@@ -7,76 +7,86 @@ import { AuthContext } from '../../auth/auth-context';
 import { useEncryptionContext } from '../encryption-context';
 import { EncryptionGate } from '../encryption-gate';
 import type {
-  CreateEncryptionKeyRequest,
-  SerializedEncryptionKeyRecord,
-} from '../encryption-key-record';
+  CreateKeyRingProfileRequest,
+  SerializedKeyRingProfile,
+} from '../key-ring-record';
 
-const createEncryptionKeyRecordMock = vi.hoisted(() => vi.fn());
-const fetchEncryptionKeyRecordMock = vi.hoisted(() => vi.fn());
-const createWrappedMasterKeyMock = vi.hoisted(() => vi.fn());
-const unwrapMasterKeyMock = vi.hoisted(() => vi.fn());
+const createKeyRingProfileMock = vi.hoisted(() => vi.fn());
+const fetchKeyRingProfileMock = vi.hoisted(() => vi.fn());
+const createKeyRingProfilePayloadMock = vi.hoisted(() => vi.fn());
+const unwrapKeyRingProfileMock = vi.hoisted(() => vi.fn());
 
-vi.mock('../encryption-key-api', () => {
-  class EncryptionKeyNotFoundError extends Error {}
+vi.mock('../key-ring-api', () => {
+  class KeyRingNotFoundError extends Error {
+    constructor() {
+      super('not found');
+      this.name = 'KeyRingNotFoundError';
+    }
+  }
   return {
-    EncryptionKeyNotFoundError,
-    createEncryptionKeyRecord: createEncryptionKeyRecordMock,
-    fetchEncryptionKeyRecord: fetchEncryptionKeyRecordMock,
+    KeyRingNotFoundError,
+    createKeyRingProfile: createKeyRingProfileMock,
+    fetchKeyRingProfile: fetchKeyRingProfileMock,
   };
 });
 
 vi.mock('../encryption-crypto', () => ({
-  createWrappedMasterKey: createWrappedMasterKeyMock,
-  unwrapMasterKey: unwrapMasterKeyMock,
+  createKeyRingProfilePayload: createKeyRingProfilePayloadMock,
+  unwrapKeyRingProfile: unwrapKeyRingProfileMock,
 }));
 
-const masterKey = new Uint8Array(32).fill(1);
+const activeDek = new Uint8Array(32).fill(1);
 
-function makeRecord(userId = 'user-1'): SerializedEncryptionKeyRecord {
+function makeRecord(userId = 'user-1'): SerializedKeyRingProfile {
   return {
-    version: 1,
-    key: {
-      id: 'key-1',
+    keyRing: {
+      id: 'key-ring-1',
       userId,
-      createdAt: '2026-01-01T00:00:00.000Z',
-      revokedAt: null,
-    },
-    wrapping: {
-      id: 'wrapping-1',
-      keyId: 'key-1',
-      userId,
-      method: 'password',
-      kdfVersion: 1,
-      kdfAlgorithm: 'argon2id',
-      kdfParams: {
-        memorySize: 65536,
-        iterations: 3,
-        parallelism: 1,
-        hashLength: 32,
-      },
-      kdfSalt: 'AAAAAAAAAAAAAAAAAAAAAA==',
-      wrapVersion: 1,
-      wrapAlgorithm: 'aes-256-gcm',
-      wrapParams: { ivBytes: 12, tagBits: 128 },
-      wrapIv: 'AAAAAAAAAAAAAAAA',
-      wrappedMasterKey:
+      activeDekId: 'dek-1',
+      encryptionVersion: 1,
+      encryptionAlgorithm: 'aes-256-gcm',
+      iv: 'AAAAAAAAAAAAAAAA',
+      ciphertext:
         'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       createdAt: '2026-01-01T00:00:00.000Z',
-      revokedAt: null,
+      updatedAt: '2026-01-01T00:00:00.000Z',
     },
+    wrappers: [
+      {
+        id: 'wrapping-1',
+        userId,
+        method: 'password',
+        kdfVersion: 1,
+        kdfAlgorithm: 'argon2id',
+        kdfParams: {
+          memorySize: 65536,
+          iterations: 3,
+          parallelism: 1,
+          hashLength: 32,
+        },
+        kdfSalt: 'AAAAAAAAAAAAAAAAAAAAAA==',
+        wrappingVersion: 1,
+        wrappingAlgorithm: 'aes-256-gcm',
+        wrappingParams: { ivBytes: 12, tagBits: 128 },
+        wrappingIv: 'AAAAAAAAAAAAAAAA',
+        ciphertext:
+          'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        createdAt: '2026-01-01T00:00:00.000Z',
+      },
+    ],
   };
 }
 
 function cacheRecord(record = makeRecord()) {
   localStorage.setItem(
-    `autokpo:e2ee:wrapped-key:${record.key.userId}`,
+    `autokpo:e2ee:key-ring:${record.keyRing.userId}`,
     JSON.stringify(record),
   );
 }
 
 function notFoundError(): Error {
   const error = new Error('not found');
-  error.name = 'EncryptionKeyNotFoundError';
+  error.name = 'KeyRingNotFoundError';
   return error;
 }
 
@@ -102,17 +112,21 @@ function renderGate(userId = 'user-1') {
 beforeEach(() => {
   localStorage.clear();
   sessionStorage.clear();
-  createEncryptionKeyRecordMock.mockReset();
-  fetchEncryptionKeyRecordMock.mockReset();
-  createWrappedMasterKeyMock.mockReset();
-  unwrapMasterKeyMock.mockReset();
-  fetchEncryptionKeyRecordMock.mockRejectedValue(notFoundError());
-  createWrappedMasterKeyMock.mockResolvedValue({
-    request: { keyId: 'key-1' } as CreateEncryptionKeyRequest,
-    masterKey,
+  createKeyRingProfileMock.mockReset();
+  fetchKeyRingProfileMock.mockReset();
+  createKeyRingProfilePayloadMock.mockReset();
+  unwrapKeyRingProfileMock.mockReset();
+  fetchKeyRingProfileMock.mockRejectedValue(notFoundError());
+  createKeyRingProfilePayloadMock.mockResolvedValue({
+    request: { keyRingId: 'key-ring-1' } as CreateKeyRingProfileRequest,
+    activeDek,
+    activeDekId: 'dek-1',
   });
-  createEncryptionKeyRecordMock.mockResolvedValue(makeRecord());
-  unwrapMasterKeyMock.mockResolvedValue(masterKey);
+  createKeyRingProfileMock.mockResolvedValue(makeRecord());
+  unwrapKeyRingProfileMock.mockResolvedValue({
+    activeDek,
+    activeDekId: 'dek-1',
+  });
 });
 
 afterEach(() => {
@@ -145,7 +159,7 @@ describe('EncryptionGate', () => {
       screen.getByRole('button', { name: /Nastavi ka aplikaciji/i }),
     );
 
-    expect(createWrappedMasterKeyMock).not.toHaveBeenCalled();
+    expect(createKeyRingProfilePayloadMock).not.toHaveBeenCalled();
   });
 
   it('rejects short setup password', async () => {
@@ -169,7 +183,7 @@ describe('EncryptionGate', () => {
     expect(
       screen.getAllByText(/Šifra mora imati najmanje 8 znakova/i),
     ).toHaveLength(1);
-    expect(createWrappedMasterKeyMock).not.toHaveBeenCalled();
+    expect(createKeyRingProfilePayloadMock).not.toHaveBeenCalled();
   });
 
   it('rejects mismatched setup confirmation', async () => {
@@ -190,7 +204,7 @@ describe('EncryptionGate', () => {
       screen.getByRole('button', { name: /Nastavi ka aplikaciji/i }),
     );
 
-    expect(createWrappedMasterKeyMock).not.toHaveBeenCalled();
+    expect(createKeyRingProfilePayloadMock).not.toHaveBeenCalled();
   });
 
   it('creates wrapped key, unlocks in memory, and renders children', async () => {
@@ -210,37 +224,60 @@ describe('EncryptionGate', () => {
     );
 
     expect(await screen.findByText('protected content')).toBeInTheDocument();
-    expect(createWrappedMasterKeyMock).toHaveBeenCalledWith(
+    expect(createKeyRingProfilePayloadMock).toHaveBeenCalledWith(
       'user-1',
       'secret123',
     );
-    expect(createEncryptionKeyRecordMock).toHaveBeenCalledWith({
-      keyId: 'key-1',
+    expect(createKeyRingProfileMock).toHaveBeenCalledWith({
+      keyRingId: 'key-ring-1',
     });
-    expect(localStorage.getItem('autokpo:e2ee:wrapped-key:user-1')).toBe(
+    expect(localStorage.getItem('autokpo:e2ee:key-ring:user-1')).toBe(
       JSON.stringify(makeRecord()),
     );
   });
 
-  it('shows unlock screen for an existing profile', () => {
+  it('shows unlock screen for an existing profile after backend check', async () => {
     cacheRecord();
+    fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
 
     renderGate();
 
     expect(
-      screen.getByRole('heading', { name: /Otključajte podatke/i }),
+      await screen.findByRole('heading', { name: /Otključajte podatke/i }),
     ).toBeInTheDocument();
+    expect(fetchKeyRingProfileMock).toHaveBeenCalled();
     expect(screen.queryByText('protected content')).not.toBeInTheDocument();
+  });
+
+  it('does not use cache to skip a successful backend-first profile check', async () => {
+    cacheRecord();
+    fetchKeyRingProfileMock.mockRejectedValue(notFoundError());
+
+    renderGate();
+
+    expect(
+      await screen.findByRole('heading', {
+        name: /Podesite šifru za šifrovanje/i,
+      }),
+    ).toBeInTheDocument();
+    expect(fetchKeyRingProfileMock).toHaveBeenCalled();
+    expect(
+      screen.queryByRole('heading', { name: /Otključajte podatke/i }),
+    ).not.toBeInTheDocument();
   });
 
   it('keeps locked state and shows inline error on wrong password', async () => {
     const user = userEvent.setup();
     cacheRecord();
-    unwrapMasterKeyMock.mockRejectedValue(new Error('wrong password'));
+    fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
+    unwrapKeyRingProfileMock.mockRejectedValue(new Error('wrong password'));
 
     renderGate();
 
-    await user.type(screen.getByLabelText(/Šifra za šifrovanje/i), 'wrongpass');
+    await user.type(
+      await screen.findByLabelText(/Šifra za šifrovanje/i),
+      'wrongpass',
+    );
     await user.click(
       screen.getByRole('button', { name: /Otključaj podatke/i }),
     );
@@ -252,21 +289,29 @@ describe('EncryptionGate', () => {
   it('renders children after correct unlock password', async () => {
     const user = userEvent.setup();
     cacheRecord();
+    fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
 
     renderGate();
 
-    await user.type(screen.getByLabelText(/Šifra za šifrovanje/i), 'secret123');
+    await user.type(
+      await screen.findByLabelText(/Šifra za šifrovanje/i),
+      'secret123',
+    );
     await user.click(
       screen.getByRole('button', { name: /Otključaj podatke/i }),
     );
 
     expect(await screen.findByText('protected content')).toBeInTheDocument();
-    expect(unwrapMasterKeyMock).toHaveBeenCalledWith('secret123', makeRecord());
+    expect(unwrapKeyRingProfileMock).toHaveBeenCalledWith(
+      'secret123',
+      makeRecord(),
+    );
   });
 
   it('resets gate state when user changes', async () => {
     const user = userEvent.setup();
     cacheRecord();
+    fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
 
     localStorage.setItem('autokpo:locale', 'sr-Latn');
     const { rerender } = render(
@@ -285,12 +330,17 @@ describe('EncryptionGate', () => {
       </I18nWrapper>,
     );
 
-    await user.type(screen.getByLabelText(/Šifra za šifrovanje/i), 'secret123');
+    await user.type(
+      await screen.findByLabelText(/Šifra za šifrovanje/i),
+      'secret123',
+    );
     await user.click(
       screen.getByRole('button', { name: /Otključaj podatke/i }),
     );
 
     expect(await screen.findByText('protected content')).toBeInTheDocument();
+
+    fetchKeyRingProfileMock.mockRejectedValue(notFoundError());
 
     rerender(
       <I18nWrapper>
@@ -319,11 +369,12 @@ describe('EncryptionGate', () => {
   it('shows non-recovery explanation without destructive reset action', async () => {
     const user = userEvent.setup();
     cacheRecord();
+    fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
 
     renderGate();
 
     await user.click(
-      screen.getByRole('link', { name: /Zaboravili ste šifru/i }),
+      await screen.findByRole('link', { name: /Zaboravili ste šifru/i }),
     );
 
     expect(
@@ -334,11 +385,13 @@ describe('EncryptionGate', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('provides EncryptionContext with masterKey and keyId after unlock', async () => {
+  it('provides EncryptionContext with activeDek and activeDekId after unlock', async () => {
     const user = userEvent.setup();
     cacheRecord();
+    fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
 
-    let capturedContext: { masterKey: Uint8Array; keyId: string } | null = null;
+    let capturedContext: { activeDek: Uint8Array; activeDekId: string } | null =
+      null;
 
     function ContextCapture() {
       capturedContext = useEncryptionContext();
@@ -363,7 +416,10 @@ describe('EncryptionGate', () => {
       </I18nWrapper>,
     );
 
-    await user.type(screen.getByLabelText(/Šifra za šifrovanje/i), 'secret123');
+    await user.type(
+      await screen.findByLabelText(/Šifra za šifrovanje/i),
+      'secret123',
+    );
     await user.click(
       screen.getByRole('button', { name: /Otključaj podatke/i }),
     );
@@ -371,14 +427,19 @@ describe('EncryptionGate', () => {
     await screen.findByText('protected content');
 
     expect(capturedContext).not.toBeNull();
-    expect(capturedContext!.masterKey).toEqual(masterKey);
-    expect(capturedContext!.keyId).toBe('key-1');
+    expect(capturedContext!.activeDek).toEqual(activeDek);
+    expect(capturedContext!.activeDekId).toBe('dek-1');
   });
 
-  it('does not render children (and thus context) when locked', () => {
+  it('does not render children (and thus context) when locked', async () => {
     cacheRecord();
+    fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
 
     renderGate();
+
+    expect(
+      await screen.findByRole('heading', { name: /Otključajte podatke/i }),
+    ).toBeInTheDocument();
 
     // Children are not rendered when locked
     expect(screen.queryByText('protected content')).not.toBeInTheDocument();

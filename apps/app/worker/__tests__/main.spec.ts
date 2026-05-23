@@ -6,13 +6,14 @@ import {
   workerTestEnv,
 } from '../../tests/worker/auth-helpers';
 import { getDb } from '../db';
-import { userEncryptionKey } from '../db/schema';
+import { keyRing } from '../db/schema';
 import app from '../main';
 
 describe('worker', () => {
   afterEach(async () => {
     await workerTestEnv.DB.exec('DELETE FROM sync_record');
-    await workerTestEnv.DB.exec('DELETE FROM user_encryption_key');
+    await workerTestEnv.DB.exec('DELETE FROM key_ring_wrapping');
+    await workerTestEnv.DB.exec('DELETE FROM key_ring');
     await clearAuthData();
   });
 
@@ -28,8 +29,16 @@ describe('worker', () => {
     const db = getDb(workerTestEnv.DB);
     const keyId = 'cascade-test-key';
     await db
-      .insert(userEncryptionKey)
-      .values({ id: keyId, userId })
+      .insert(keyRing)
+      .values({
+        id: keyId,
+        userId,
+        activeDekId: 'dek-1',
+        encryptionVersion: 1,
+        encryptionAlgorithm: 'aes-256-gcm',
+        iv: new Uint8Array(12),
+        ciphertext: new Uint8Array(16),
+      })
       .onConflictDoNothing();
     await workerTestEnv.DB.prepare(
       'INSERT INTO sync_record (id, user_id, seq, encryption_algorithm, encryption_version, iv, ciphertext, kind, encryption_key_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',

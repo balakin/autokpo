@@ -1,8 +1,4 @@
-## Purpose
-
-Define end-to-end encryption for CRDT sync payloads before upload and after download.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Sync blobs are encrypted before upload
 

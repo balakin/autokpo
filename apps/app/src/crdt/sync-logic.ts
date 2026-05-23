@@ -41,16 +41,6 @@ export function schedulePushIfPendingChanges(
   }
 }
 
-function buildAad(
-  userId: string,
-  keyId: string,
-  kind: 'update' | 'snapshot',
-): Uint8Array {
-  return new TextEncoder().encode(
-    `autokpo:e2ee-update:v1:${userId}:${keyId}:${kind}`,
-  );
-}
-
 export interface EncryptedSyncPayload {
   encryptionAlgorithm: 'aes-256-gcm';
   encryptionVersion: 1;
@@ -58,17 +48,35 @@ export interface EncryptedSyncPayload {
   ciphertext: Uint8Array;
 }
 
-export async function encryptSyncPayload(
-  plaintext: Uint8Array,
-  masterKey: Uint8Array,
-  userId: string,
-  keyId: string,
-  kind: 'update' | 'snapshot',
-): Promise<EncryptedSyncPayload> {
+type SyncPayloadAadContext = {
+  userId: string;
+  activeDekId: string;
+  blockId: string;
+  kind: 'update' | 'snapshot';
+};
+
+type EncryptSyncPayloadInput = SyncPayloadAadContext & {
+  plaintext: Uint8Array;
+  activeDek: Uint8Array;
+};
+
+type DecryptSyncPayloadInput = SyncPayloadAadContext & {
+  payload: EncryptedSyncPayload;
+  activeDek: Uint8Array;
+};
+
+export async function encryptSyncPayload({
+  plaintext,
+  activeDek,
+  userId,
+  activeDekId,
+  blockId,
+  kind,
+}: EncryptSyncPayloadInput): Promise<EncryptedSyncPayload> {
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const aad = buildAad(userId, keyId, kind);
+  const aad = buildAad({ userId, activeDekId, blockId, kind });
   const ciphertext = await aesGcmEncrypt({
-    keyBytes: masterKey,
+    keyBytes: activeDek,
     iv,
     plaintext,
     aad,
@@ -81,18 +89,14 @@ export async function encryptSyncPayload(
   };
 }
 
-export async function decryptSyncPayload(
-  {
-    encryptionAlgorithm,
-    encryptionVersion,
-    iv,
-    ciphertext,
-  }: EncryptedSyncPayload,
-  masterKey: Uint8Array,
-  userId: string,
-  keyId: string,
-  kind: 'update' | 'snapshot',
-): Promise<Uint8Array> {
+export async function decryptSyncPayload({
+  payload: { encryptionAlgorithm, encryptionVersion, iv, ciphertext },
+  activeDek,
+  userId,
+  activeDekId,
+  blockId,
+  kind,
+}: DecryptSyncPayloadInput): Promise<Uint8Array> {
   if (encryptionAlgorithm !== 'aes-256-gcm') {
     throw new Error(
       `Unsupported encryption_algorithm: ${String(encryptionAlgorithm)}`,
@@ -103,6 +107,17 @@ export async function decryptSyncPayload(
       `Unsupported encryption_version: ${String(encryptionVersion)}`,
     );
   }
-  const aad = buildAad(userId, keyId, kind);
-  return aesGcmDecrypt({ keyBytes: masterKey, iv, ciphertext, aad });
+  const aad = buildAad({ userId, activeDekId, blockId, kind });
+  return aesGcmDecrypt({ keyBytes: activeDek, iv, ciphertext, aad });
+}
+
+function buildAad({
+  userId,
+  activeDekId,
+  blockId,
+  kind,
+}: SyncPayloadAadContext): Uint8Array {
+  return new TextEncoder().encode(
+    `autokpo:e2ee-update:v1:${userId}:${activeDekId}:${blockId}:${kind}`,
+  );
 }

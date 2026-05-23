@@ -43,6 +43,22 @@ vi.mock('../dashboard/dashboard-page', () => ({
 vi.mock('../e2ee/encryption-crypto', () => ({
   createKeyRingProfilePayload: vi.fn(),
   unwrapKeyRingProfile: unwrapKeyRingProfileMock,
+  generateLdk: vi.fn().mockResolvedValue({}),
+  wrapMekWithLdk: vi
+    .fn()
+    .mockResolvedValue({
+      ciphertext: new Uint8Array(48),
+      iv: new Uint8Array(12),
+    }),
+  unwrapMekWithLdk: vi.fn(),
+  decryptKeyRingWithMek: vi.fn(),
+  wrappedMekAad: () => new Uint8Array(0),
+  EncryptionUnlockError: class EncryptionUnlockError extends Error {
+    constructor() {
+      super('unlock failed');
+      this.name = 'EncryptionUnlockError';
+    }
+  },
 }));
 
 function renderRouter(initialEntry: string) {
@@ -114,6 +130,7 @@ describe('router bundle boundaries', () => {
     dashboardRenderMock.mockClear();
     unwrapKeyRingProfileMock.mockReset();
     unwrapKeyRingProfileMock.mockResolvedValue({
+      mek: new Uint8Array(32).fill(2),
       activeDek: new Uint8Array(32).fill(1),
       activeDekId: 'dek-1',
     });
@@ -165,7 +182,9 @@ describe('router bundle boundaries', () => {
       }),
     );
     cacheRecord();
-    vi.mocked(fetch).mockResolvedValue(Response.json(makeRecord()));
+    vi.mocked(fetch).mockImplementation(() =>
+      Promise.resolve(Response.json(makeRecord())),
+    );
 
     renderRouter('/dashboard');
 

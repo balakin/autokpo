@@ -24,6 +24,7 @@ export async function createKeyRingProfilePayload(
   password: string,
 ): Promise<{
   request: CreateKeyRingProfileRequest;
+  mek: Uint8Array;
   activeDek: Uint8Array;
   activeDekId: string;
 }> {
@@ -57,6 +58,7 @@ export async function createKeyRingProfilePayload(
   });
 
   return {
+    mek,
     activeDek: dek,
     activeDekId,
     request: {
@@ -83,7 +85,7 @@ export async function createKeyRingProfilePayload(
 export async function unwrapKeyRingProfile(
   password: string,
   record: SerializedKeyRingProfile,
-): Promise<{ activeDek: Uint8Array; activeDekId: string }> {
+): Promise<{ mek: Uint8Array; activeDek: Uint8Array; activeDekId: string }> {
   const wrapper = record.wrappers.find((item) => item.method === 'password');
   if (!wrapper) throw new EncryptionUnlockError();
   const salt = base64ToBytes(wrapper.kdfSalt);
@@ -100,37 +102,113 @@ export async function unwrapKeyRingProfile(
     if (mek.byteLength !== MEK_BYTES) {
       throw new EncryptionUnlockError();
     }
-    const keyRingBytes = await aesGcmDecrypt({
-      keyBytes: mek,
-      iv: base64ToBytes(record.keyRing.iv),
-      ciphertext: base64ToBytes(record.keyRing.ciphertext),
-      aad: keyRingAad(record.keyRing.userId, record.keyRing.activeDekId),
-    });
-    const keyRing = JSON.parse(new TextDecoder().decode(keyRingBytes)) as {
-      activeDekId?: unknown;
-      deks?: Record<string, unknown>;
-    };
-    const activeDekId = keyRing.activeDekId;
-    const deks = keyRing.deks;
-    const activeDekEncoded =
-      typeof activeDekId === 'string' ? deks?.[activeDekId] : undefined;
-    if (
-      typeof activeDekId !== 'string' ||
-      deks === undefined ||
-      Object.keys(deks).length !== 1 ||
-      !(activeDekId in deks) ||
-      typeof activeDekEncoded !== 'string'
-    ) {
-      throw new EncryptionUnlockError();
-    }
-    const activeDek = base64ToBytes(activeDekEncoded);
-    if (activeDek.byteLength !== DEK_BYTES) {
-      throw new EncryptionUnlockError();
-    }
-    return { activeDek, activeDekId };
+    const { activeDek, activeDekId } = await decryptKeyRingWithMek(
+      mek,
+      record.keyRing,
+    );
+    return { mek, activeDek, activeDekId };
   } catch {
     throw new EncryptionUnlockError();
   }
+}
+
+export async function decryptKeyRingWithMek(
+  mek: Uint8Array,
+  keyRing: {
+    userId: string;
+    activeDekId: string;
+    iv: string;
+    ciphertext: string;
+  },
+): Promise<{ activeDek: Uint8Array; activeDekId: string }> {
+  const keyRingBytes = await aesGcmDecrypt({
+    keyBytes: mek,
+    iv: base64ToBytes(keyRing.iv),
+    ciphertext: base64ToBytes(keyRing.ciphertext),
+    aad: keyRingAad(keyRing.userId, keyRing.activeDekId),
+  });
+  const parsed = JSON.parse(new TextDecoder().decode(keyRingBytes)) as {
+    activeDekId?: unknown;
+    deks?: Record<string, unknown>;
+  };
+  const activeDekId = parsed.activeDekId;
+  const deks = parsed.deks;
+  const activeDekEncoded =
+    typeof activeDekId === 'string' ? deks?.[activeDekId] : undefined;
+  if (
+    typeof activeDekId !== 'string' ||
+    deks === undefined ||
+    Object.keys(deks).length !== 1 ||
+    !(activeDekId in deks) ||
+    typeof activeDekEncoded !== 'string'
+  ) {
+    throw new EncryptionUnlockError();
+  }
+  const activeDek = base64ToBytes(activeDekEncoded);
+  if (activeDek.byteLength !== DEK_BYTES) {
+    throw new EncryptionUnlockError();
+  }
+  return { activeDek, activeDekId };
+}
+
+export function generateLdk(): Promise<CryptoKey> {
+  return crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, [
+    'encrypt',
+    'decrypt',
+  ]);
+}
+
+export async function wrapMekWithLdk(
+  mek: Uint8Array,
+  ldk: CryptoKey,
+  userId: string,
+  wrapperId: string,
+): Promise<{ ciphertext: Uint8Array; iv: Uint8Array }> {
+  const iv = randomBytes(12);
+  const aad = wrappedMekAad(userId, wrapperId, 'ldk');
+  const ciphertext = await crypto.subtle.encrypt(
+    {
+      name: 'AES-GCM',
+      iv: toBuffer(iv),
+      additionalData: toBuffer(aad),
+      tagLength: 128,
+    },
+    ldk,
+    toBuffer(mek),
+  );
+  return { ciphertext: new Uint8Array(ciphertext), iv };
+}
+
+export async function unwrapMekWithLdk(
+  ciphertext: Uint8Array,
+  iv: Uint8Array,
+  ldk: CryptoKey,
+  userId: string,
+  wrapperId: string,
+): Promise<Uint8Array> {
+  const aad = wrappedMekAad(userId, wrapperId, 'ldk');
+  try {
+    const mek = await crypto.subtle.decrypt(
+      {
+        name: 'AES-GCM',
+        iv: toBuffer(iv),
+        additionalData: toBuffer(aad),
+        tagLength: 128,
+      },
+      ldk,
+      toBuffer(ciphertext),
+    );
+    return new Uint8Array(mek);
+  } catch {
+    throw new EncryptionUnlockError();
+  }
+}
+
+function toBuffer(bytes: Uint8Array): ArrayBuffer {
+  return bytes.buffer.slice(
+    bytes.byteOffset,
+    bytes.byteOffset + bytes.byteLength,
+  ) as ArrayBuffer;
 }
 
 export function keyRingAad(userId: string, activeDekId: string): Uint8Array {

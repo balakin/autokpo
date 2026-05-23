@@ -1,6 +1,12 @@
 import type * as Y from 'yjs';
 
 import { aesGcmDecrypt, aesGcmEncrypt } from '../e2ee/aes-gcm';
+import {
+  deleteDatabase,
+  openDatabase,
+  requestToPromise,
+  withStore,
+} from '../indexeddb/idb';
 
 import { applyUpdate, encodeStateAsUpdate } from './y';
 
@@ -75,7 +81,11 @@ export class EncryptedIndexeddbPersistence {
 
   private async init(): Promise<this> {
     try {
-      this.db = await openDatabase(this.dbName);
+      this.db = await openDatabase(this.dbName, DB_VERSION, (db) => {
+        if (!db.objectStoreNames.contains(UPDATES_STORE)) {
+          db.createObjectStore(UPDATES_STORE, { autoIncrement: true });
+        }
+      });
       if (this.closing) {
         this.db.close();
         this.db = null;
@@ -125,7 +135,11 @@ export class EncryptedIndexeddbPersistence {
     }
 
     try {
-      this.db = await openDatabase(this.dbName);
+      this.db = await openDatabase(this.dbName, DB_VERSION, (db) => {
+        if (!db.objectStoreNames.contains(UPDATES_STORE)) {
+          db.createObjectStore(UPDATES_STORE, { autoIncrement: true });
+        }
+      });
       this.updateCount = 0;
     } catch {
       this.db = null;
@@ -274,39 +288,8 @@ type UpdateRecord = {
   value: unknown;
 };
 
-function openDatabase(name: string): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(name, DB_VERSION);
-
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(UPDATES_STORE)) {
-        db.createObjectStore(UPDATES_STORE, { autoIncrement: true });
-      }
-    };
-    request.onsuccess = () => {
-      const db = request.result;
-      db.onversionchange = () => db.close();
-      resolve(db);
-    };
-    request.onerror = () =>
-      reject(toError(request.error, 'IndexedDB open failed'));
-    request.onblocked = () => reject(request.error ?? new Error('Blocked'));
-  });
-}
-
-function deleteDatabase(name: string): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.deleteDatabase(name);
-    request.onsuccess = () => resolve(true);
-    request.onerror = () =>
-      reject(toError(request.error, 'IndexedDB delete failed'));
-    request.onblocked = () => resolve(false);
-  });
-}
-
 function getAllUpdateRecords(db: IDBDatabase): Promise<UpdateRecord[]> {
-  return withStore(db, 'readonly', (store) => {
+  return withStore(db, UPDATES_STORE, 'readonly', (store) => {
     const valuesRequest: IDBRequest<unknown[]> = store.getAll();
     const keysRequest: IDBRequest<IDBValidKey[]> = store.getAllKeys();
 
@@ -323,7 +306,7 @@ function addUpdate(
   db: IDBDatabase,
   envelope: EncryptedIndexeddbEnvelope,
 ): Promise<IDBValidKey> {
-  return withStore(db, 'readwrite', (store) =>
+  return withStore(db, UPDATES_STORE, 'readwrite', (store) =>
     requestToPromise(store.add(envelope)),
   );
 }
@@ -332,51 +315,7 @@ function deleteUpdatesThrough(
   db: IDBDatabase,
   key: IDBValidKey,
 ): Promise<void> {
-  return withStore(db, 'readwrite', async (store) => {
+  return withStore(db, UPDATES_STORE, 'readwrite', async (store) => {
     await requestToPromise(store.delete(IDBKeyRange.upperBound(key)));
   });
-}
-
-function withStore<T>(
-  db: IDBDatabase,
-  mode: IDBTransactionMode,
-  operation: (store: IDBObjectStore) => Promise<T>,
-): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(UPDATES_STORE, mode);
-    const store = transaction.objectStore(UPDATES_STORE);
-    let result: T;
-
-    transaction.oncomplete = () => resolve(result);
-    transaction.onerror = () =>
-      reject(toError(transaction.error, 'IndexedDB transaction failed'));
-    transaction.onabort = () =>
-      reject(toError(transaction.error, 'IndexedDB transaction aborted'));
-
-    operation(store).then(
-      (value) => {
-        result = value;
-      },
-      (error: unknown) => {
-        reject(toError(error, 'IndexedDB operation failed'));
-        try {
-          transaction.abort();
-        } catch {
-          // Transaction may already be completed or aborted.
-        }
-      },
-    );
-  });
-}
-
-function requestToPromise<T>(request: IDBRequest<T>): Promise<T> {
-  return new Promise((resolve, reject) => {
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () =>
-      reject(toError(request.error, 'IndexedDB request failed'));
-  });
-}
-
-function toError(value: unknown, fallbackMessage: string): Error {
-  return value instanceof Error ? value : new Error(fallbackMessage);
 }

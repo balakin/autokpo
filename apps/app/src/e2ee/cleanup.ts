@@ -1,9 +1,13 @@
+import { KeysIndexeddb } from './keys-indexeddb';
+
 /**
- * Clears temporary encryption material for the current browser process/session.
- *
- * This intentionally does not delete persistent encrypted key-ring cache or encrypted
- * app data. Future device/PIN unlock material should be cleared here.
+ * Clears session-scoped encryption material for the given user.
+ * Deletes the `local_wrapper` IndexedDB record so the next session requires
+ * the encryption password before auto-unlock is restored.
  */
 export function clearLocalEncryptionUnlockMaterial(userId: string): void {
-  console.log('cleanup encryption', userId);
+  const store = new KeysIndexeddb();
+  void store.whenReady
+    .then(() => store.clearSessionData(userId))
+    .finally(() => store.close());
 }

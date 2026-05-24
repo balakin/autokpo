@@ -103,7 +103,8 @@ describe('AuthEntry', () => {
     setup();
 
     expect(screen.getByText('ili')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Jezik/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Tema/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Podešavanja/i }),
+    ).toBeInTheDocument();
   });
 });

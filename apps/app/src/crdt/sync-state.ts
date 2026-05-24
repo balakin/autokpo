@@ -143,6 +143,15 @@ export function createSyncStateStore(userId: string): SyncStateStore {
   };
 }
 
+export function resetSyncState(userId: string): void {
+  const current = createSyncStateStore(userId);
+  try {
+    current.reset();
+  } finally {
+    current.destroy();
+  }
+}
+
 export function listSyncKeys(): string[] {
   return Object.keys(localStorage).filter((key) =>
     key.startsWith('autokpo:sync:'),

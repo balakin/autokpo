@@ -150,14 +150,14 @@ If the app crashes after persistence but before cursor advancement, the next pul
 - Holding the Web Lock during compaction preparation blocks local persistence appends → compaction already serializes update-log replacement; blocking preserves the one-key invariant.
 - Local DB reset can discard unsynced local-only changes → this is accepted for corruption/key mismatch recovery; normal local updates are explicitly persisted before sync cursor assumptions change.
 - IndexedDB and `localStorage` cannot commit atomically → persist-first ordering makes duplicate remote replay possible but avoids cursor-advanced/data-missing loss.
-- Existing cached rows use the old schema/remote DEK → migration may clear the local cache and refetch from remote rather than supporting old local cache formats.
+- Existing cached rows are out of scope before release → version 1 can define the final local persistence shape directly.
 
-## Migration Plan
+## Initialization Plan
 
-1. Bump the encrypted local persistence IndexedDB version and add the `local_key` store.
-2. On first open with missing or old local key/envelope schema, clear the encrypted local persistence cache, create a fresh MEK-wrapped local DEK, and reset sync cursor as needed to pull remote state.
+1. Keep the encrypted local persistence IndexedDB at version 1 and create both `updates` and `local_key` stores in the initial upgrade callback.
+2. On first open with missing local key/envelope state, create a fresh MEK-wrapped local DEK and reset sync cursor as needed to pull remote state.
 3. Keep remote key-ring and sync encryption records unchanged.
-4. Rollback strategy: reverting the code may require clearing the local persistence database because the new local envelopes are not readable by the old implementation.
+4. Rollback before release is a code/spec revert; no production cache migration is required.
 
 ## Open Questions
 

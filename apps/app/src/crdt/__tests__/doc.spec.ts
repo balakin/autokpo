@@ -75,19 +75,22 @@ describe('createRuntime', () => {
   it('drains queued persistence writes before destroying the Y.Doc', async () => {
     const userId = `runtime-destroy:${crypto.randomUUID()}`;
     const runtime = createRuntime(userId, {
-      activeDek: new Uint8Array(32).fill(9),
-      activeDekId: 'dek-1',
+      mek: new Uint8Array(32).fill(9),
     });
     await runtime.whenReady;
 
     for (let i = 0; i < 500; i += 1) {
+      let update: Uint8Array | null = null;
+      runtime.ydoc.once('update', (bytes: Uint8Array) => {
+        update = bytes;
+      });
       runtime.ydoc.getMap('meta').set('serverCursor', i);
+      await runtime.persistence.persistLocalUpdate(update!);
     }
     await runtime.destroy();
 
     const nextRuntime = createRuntime(userId, {
-      activeDek: new Uint8Array(32).fill(9),
-      activeDekId: 'dek-1',
+      mek: new Uint8Array(32).fill(9),
     });
     await nextRuntime.whenReady;
 

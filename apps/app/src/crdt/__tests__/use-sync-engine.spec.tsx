@@ -1,9 +1,12 @@
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import * as Y from 'yjs';
 
+import type { EncryptedIndexeddbPersistence } from '../encrypted-indexeddb-persistence';
 import type * as SyncClient from '../sync-client';
 import { SyncRequestError } from '../sync-client';
+import { encryptSyncPayload } from '../sync-logic';
 import { useSyncEngine } from '../use-sync-engine';
 
 vi.mock('../../e2ee/encryption-context', () => ({
@@ -15,6 +18,8 @@ vi.mock('../../e2ee/encryption-context', () => ({
 
 const logoutMock = vi.hoisted(() => vi.fn());
 const pullMock = vi.hoisted(() => vi.fn());
+const syncWriteMock = vi.hoisted(() => vi.fn());
+const docRef = vi.hoisted(() => ({ current: null as Y.Doc | null }));
 
 vi.mock('../../auth/use-auth', () => ({
   useAuth: () => ({
@@ -28,16 +33,21 @@ vi.mock('../../leader', () => ({
 }));
 
 vi.mock('../use-doc', () => ({
-  useDoc: () => ({ on: vi.fn(), off: vi.fn() }),
+  useDoc: () => docRef.current,
 }));
 
 vi.mock('../sync-metadata-context', () => ({
   useSyncMetadataStore: () => ({
     read: () => ({ cursor: 0, stateVector: null, dirty: false }),
-    write: vi.fn(),
+    write: syncWriteMock,
     reset: vi.fn(),
     markDirty: vi.fn(),
   }),
+}));
+
+vi.mock('../bus', () => ({
+  post: vi.fn(),
+  subscribe: vi.fn(() => () => {}),
 }));
 
 vi.mock('../sync-client', async (importOriginal) => {
@@ -59,13 +69,26 @@ vi.mock('@tanstack/react-query', () => ({
   useMutation: () => ({ mutateAsync: vi.fn() }),
 }));
 
-function Harness({ children }: { children?: ReactNode }) {
-  useSyncEngine();
+beforeEach(() => {
+  logoutMock.mockClear();
+  pullMock.mockReset();
+  syncWriteMock.mockClear();
+});
+
+function Harness({
+  children,
+  persistence,
+}: {
+  children?: ReactNode;
+  persistence?: EncryptedIndexeddbPersistence;
+}) {
+  useSyncEngine(persistence);
   return <>{children}</>;
 }
 
 describe('useSyncEngine auth rejection handling', () => {
   it('publishes logout request on unauthorized pull', async () => {
+    docRef.current = new Y.Doc();
     pullMock.mockRejectedValueOnce(
       new SyncRequestError(401, 'unauthorized', 'pull failed: 401'),
     );
@@ -74,5 +97,50 @@ describe('useSyncEngine auth rejection handling', () => {
 
     await Promise.resolve();
     expect(logoutMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('persists pulled records before advancing the cursor', async () => {
+    docRef.current = new Y.Doc();
+    const plaintext = Y.encodeStateAsUpdate(new Y.Doc());
+    const payload = await encryptSyncPayload({
+      plaintext,
+      activeDek: new Uint8Array(32).fill(1),
+      userId: 'user-1',
+      activeDekId: 'dek-1',
+      blockId: 'block-1',
+      kind: 'update',
+    });
+    const persistRemoteUpdates = vi.fn(() => {
+      expect(syncWriteMock).not.toHaveBeenCalled();
+      return Promise.resolve();
+    });
+    pullMock.mockResolvedValueOnce({
+      records: [
+        {
+          id: 'block-1',
+          kind: 'update',
+          encryptionKeyId: 'dek-1',
+          encryptionAlgorithm: payload.encryptionAlgorithm,
+          encryptionVersion: payload.encryptionVersion,
+          iv: payload.iv,
+          ciphertext: payload.ciphertext,
+        },
+      ],
+      head: 1,
+      status: 200,
+    });
+
+    render(
+      <Harness
+        persistence={
+          {
+            persistRemoteUpdates,
+          } as unknown as EncryptedIndexeddbPersistence
+        }
+      />,
+    );
+
+    await waitFor(() => expect(syncWriteMock).toHaveBeenCalled());
+    expect(persistRemoteUpdates).toHaveBeenCalledWith([plaintext]);
   });
 });

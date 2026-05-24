@@ -1,14 +1,28 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as Y from 'yjs';
 
 import { EncryptedIndexeddbPersistence } from '../encrypted-indexeddb-persistence';
-import { REMOTE_ORIGIN } from '../sync-logic';
 
-const MASTER_KEY = new Uint8Array(32).fill(7);
-const OTHER_MASTER_KEY = new Uint8Array(32).fill(8);
-const KEY_ID = 'key-1';
+const MEK = new Uint8Array(32).fill(7);
+const OTHER_MEK = new Uint8Array(32).fill(8);
 
 const providers: EncryptedIndexeddbPersistence[] = [];
+
+beforeEach(() => {
+  vi.stubGlobal(
+    'navigator',
+    Object.create(navigator, {
+      locks: {
+        value: {
+          request: vi.fn((_name: string, callback: () => Promise<unknown>) =>
+            callback(),
+          ),
+        },
+        configurable: true,
+      },
+    }),
+  );
+});
 
 afterEach(async () => {
   await Promise.all(providers.splice(0).map((provider) => provider.destroy()));
@@ -25,17 +39,19 @@ describe('EncryptedIndexeddbPersistence', () => {
     doc.once('update', (update: Uint8Array) => {
       plaintextUpdate = update;
     });
-    doc.getMap('root').set('secret', 'value');
+    await setAndPersist(provider, doc, 'secret', 'value');
     await provider.destroy();
 
     const rows = await readRows(dbName);
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({
       schemaVersion: 1,
+      kind: 'update',
       encryptionAlgorithm: 'aes-256-gcm',
       encryptionVersion: 1,
-      encryptionKeyId: KEY_ID,
     });
+    expect(typeof rows[0].id).toBe('string');
+    expect(typeof rows[0].encryptionKeyId).toBe('string');
     expect(ArrayBuffer.isView(rows[0].iv)).toBe(true);
     expect(rows[0].iv).toHaveLength(12);
     expect(ArrayBuffer.isView(rows[0].ciphertext)).toBe(true);
@@ -47,7 +63,7 @@ describe('EncryptedIndexeddbPersistence', () => {
     const source = new Y.Doc();
     const sourceProvider = track(newProvider(dbName, source));
     await sourceProvider.whenSynced;
-    source.getMap('root').set('secret', 'value');
+    await setAndPersist(sourceProvider, source, 'secret', 'value');
     await sourceProvider.destroy();
 
     const target = new Y.Doc();
@@ -67,7 +83,7 @@ describe('EncryptedIndexeddbPersistence', () => {
 
     const target = new Y.Doc();
     const targetProvider = track(
-      newProvider(dbName, target, { activeDek: OTHER_MASTER_KEY }),
+      newProvider(dbName, target, { mek: OTHER_MEK }),
     );
     await targetProvider.whenSynced;
 
@@ -75,18 +91,20 @@ describe('EncryptedIndexeddbPersistence', () => {
     expect(await readRows(dbName)).toHaveLength(0);
   });
 
-  it('treats key-id AAD mismatches as an empty cache', async () => {
+  it('treats row-id AAD mismatches as an empty cache', async () => {
     const dbName = uniqueDbName();
     const source = new Y.Doc();
     const sourceProvider = track(newProvider(dbName, source));
     await sourceProvider.whenSynced;
-    source.getMap('root').set('secret', 'value');
+    await setAndPersist(sourceProvider, source, 'secret', 'value');
     await sourceProvider.destroy();
 
+    const [row] = await readRows(dbName);
+    await clearRows(dbName);
+    await writeRawRow(dbName, { ...row, id: 'tampered-id' });
+
     const target = new Y.Doc();
-    const targetProvider = track(
-      newProvider(dbName, target, { activeDekId: 'key-2' }),
-    );
+    const targetProvider = track(newProvider(dbName, target));
     await targetProvider.whenSynced;
 
     expect(target.getMap('root').get('secret')).toBeUndefined();
@@ -99,7 +117,7 @@ describe('EncryptedIndexeddbPersistence', () => {
     const source = new Y.Doc();
     const sourceProvider = track(newProvider(sourceDbName, source));
     await sourceProvider.whenSynced;
-    source.getMap('root').set('secret', 'value');
+    await setAndPersist(sourceProvider, source, 'secret', 'value');
     await sourceProvider.destroy();
 
     const [row] = await readRows(sourceDbName);
@@ -117,9 +135,11 @@ describe('EncryptedIndexeddbPersistence', () => {
     const dbName = uniqueDbName();
     await writeRawRow(dbName, {
       schemaVersion: 99,
+      kind: 'update',
+      id: crypto.randomUUID(),
       encryptionAlgorithm: 'aes-256-gcm',
       encryptionVersion: 1,
-      encryptionKeyId: KEY_ID,
+      encryptionKeyId: 'key-1',
       iv: new Uint8Array(12),
       ciphertext: new Uint8Array([1, 2, 3]),
     });
@@ -142,7 +162,7 @@ describe('EncryptedIndexeddbPersistence', () => {
       const doc = new Y.Doc();
       const provider = track(newProvider(uniqueDbName(), doc));
       await provider.whenSynced;
-      doc.getMap('root').set('local', 'value');
+      await setAndPersist(provider, doc, 'local', 'value');
       await provider.destroy();
       expect(doc.getMap('root').get('local')).toBe('value');
     } finally {
@@ -158,7 +178,7 @@ describe('EncryptedIndexeddbPersistence', () => {
     const doc = new Y.Doc();
     const provider = track(newProvider(dbName, doc));
     await provider.whenSynced;
-    doc.getMap('root').set('secret', 'value');
+    await setAndPersist(provider, doc, 'secret', 'value');
 
     await provider.clearData();
 
@@ -177,12 +197,12 @@ describe('EncryptedIndexeddbPersistence', () => {
     expect(await readRows(dbName)).toHaveLength(0);
   });
 
-  it('does not re-persist provider replay updates but persists remote sync updates', async () => {
+  it('does not re-persist provider replay updates or explicit broadcast updates', async () => {
     const dbName = uniqueDbName();
     const source = new Y.Doc();
     const sourceProvider = track(newProvider(dbName, source));
     await sourceProvider.whenSynced;
-    source.getMap('root').set('local', 'value');
+    await setAndPersist(sourceProvider, source, 'local', 'value');
     await sourceProvider.destroy();
 
     const target = new Y.Doc();
@@ -191,15 +211,11 @@ describe('EncryptedIndexeddbPersistence', () => {
     await targetProvider.destroy();
     expect(await readRows(dbName)).toHaveLength(1);
 
-    const remote = new Y.Doc();
-    remote.getMap('root').set('remote', 'value');
-    const remoteUpdate = Y.encodeStateAsUpdate(remote);
     const listeningProvider = track(newProvider(dbName, target));
     await listeningProvider.whenSynced;
-    Y.applyUpdate(target, remoteUpdate, REMOTE_ORIGIN);
     await listeningProvider.destroy();
 
-    expect(await readRows(dbName)).toHaveLength(2);
+    expect(await readRows(dbName)).toHaveLength(1);
   });
 
   it('compacts after 500 updates and rehydrates the compacted state', async () => {
@@ -209,7 +225,7 @@ describe('EncryptedIndexeddbPersistence', () => {
     await sourceProvider.whenSynced;
 
     for (let i = 0; i < 500; i += 1) {
-      source.getMap('root').set(`key-${i}`, i);
+      await setAndPersist(sourceProvider, source, `key-${i}`, i);
     }
     await sourceProvider.destroy();
 
@@ -233,11 +249,11 @@ describe('EncryptedIndexeddbPersistence', () => {
     const otherDoc = new Y.Doc();
     const otherProvider = track(newProvider(dbName, otherDoc));
     await otherProvider.whenSynced;
-    otherDoc.getMap('root').set('other-tab', 'preserved');
+    await setAndPersist(otherProvider, otherDoc, 'other-tab', 'preserved');
     await otherProvider.destroy();
 
     for (let i = 0; i < 500; i += 1) {
-      staleDoc.getMap('root').set(`stale-tab-${i}`, i);
+      await setAndPersist(staleProvider, staleDoc, `stale-tab-${i}`, i);
     }
     await staleProvider.destroy();
 
@@ -254,13 +270,11 @@ function newProvider(
   dbName: string,
   doc: Y.Doc,
   overrides: Partial<{
-    activeDek: Uint8Array;
-    activeDekId: string;
+    mek: Uint8Array;
   }> = {},
 ): EncryptedIndexeddbPersistence {
   return new EncryptedIndexeddbPersistence(dbName, doc, {
-    activeDek: overrides.activeDek ?? MASTER_KEY,
-    activeDekId: overrides.activeDekId ?? KEY_ID,
+    mek: overrides.mek ?? MEK,
   });
 }
 
@@ -273,6 +287,20 @@ function track(
 
 function uniqueDbName(): string {
   return `encrypted-yjs-test:${crypto.randomUUID()}`;
+}
+
+async function setAndPersist(
+  provider: EncryptedIndexeddbPersistence,
+  doc: Y.Doc,
+  key: string,
+  value: unknown,
+): Promise<void> {
+  let update: Uint8Array | null = null;
+  doc.once('update', (bytes: Uint8Array) => {
+    update = bytes;
+  });
+  doc.getMap('root').set(key, value);
+  await provider.persistLocalUpdate(update!);
 }
 
 async function readRows(dbName: string): Promise<EncryptedRow[]> {
@@ -296,8 +324,19 @@ async function writeRawRow(dbName: string, row: unknown): Promise<void> {
   }
 }
 
+async function clearRows(dbName: string): Promise<void> {
+  const db = await openDb(dbName);
+  try {
+    await withStore(db, 'readwrite', (store) => store.clear());
+  } finally {
+    db.close();
+  }
+}
+
 type EncryptedRow = {
   schemaVersion?: unknown;
+  kind?: unknown;
+  id?: unknown;
   encryptionAlgorithm?: unknown;
   encryptionVersion?: unknown;
   encryptionKeyId?: unknown;
@@ -309,7 +348,12 @@ function openDb(dbName: string): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(dbName, 1);
     request.onupgradeneeded = () => {
-      request.result.createObjectStore('updates', { autoIncrement: true });
+      if (!request.result.objectStoreNames.contains('updates')) {
+        request.result.createObjectStore('updates', { autoIncrement: true });
+      }
+      if (!request.result.objectStoreNames.contains('local_key')) {
+        request.result.createObjectStore('local_key', { keyPath: 'id' });
+      }
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () =>

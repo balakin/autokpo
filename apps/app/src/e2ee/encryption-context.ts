@@ -1,6 +1,7 @@
 import { createContext, use } from 'react';
 
 export interface EncryptionContextValue {
+  mek: Uint8Array;
   activeDek: Uint8Array;
   activeDekId: string;
 }

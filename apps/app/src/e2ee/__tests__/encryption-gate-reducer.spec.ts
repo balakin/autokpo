@@ -6,6 +6,7 @@ import {
 } from '../encryption-gate-reducer';
 
 const activeDek = new Uint8Array(32).fill(1);
+const mek = new Uint8Array(32).fill(2);
 
 function state(
   overrides: Partial<EncryptionGateState> = {},
@@ -13,6 +14,7 @@ function state(
   return {
     userId: 'user-1',
     session: { status: 'checking', hasProfile: false },
+    mek: null,
     activeDek: null,
     activeDekId: null,
     ...overrides,
@@ -95,12 +97,14 @@ describe('encryptionGateReducer', () => {
     expect(
       encryptionGateReducer(state(), {
         type: 'unlocked',
+        mek,
         activeDek,
         activeDekId: 'key-1',
       }),
     ).toEqual({
       userId: 'user-1',
       session: { status: 'unlocked', hasProfile: true },
+      mek,
       activeDek,
       activeDekId: 'key-1',
     });

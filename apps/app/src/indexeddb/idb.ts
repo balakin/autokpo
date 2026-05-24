@@ -63,6 +63,44 @@ export function withStore<T>(
   });
 }
 
+export function withStores<T>(
+  db: IDBDatabase,
+  storeNames: string[],
+  mode: IDBTransactionMode,
+  operation: (stores: Map<string, IDBObjectStore>) => Promise<T>,
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(storeNames, mode);
+    const stores = new Map(
+      storeNames.map((storeName) => [
+        storeName,
+        transaction.objectStore(storeName),
+      ]),
+    );
+    let result: T;
+
+    transaction.oncomplete = () => resolve(result);
+    transaction.onerror = () =>
+      reject(toError(transaction.error, 'IndexedDB transaction failed'));
+    transaction.onabort = () =>
+      reject(toError(transaction.error, 'IndexedDB transaction aborted'));
+
+    operation(stores).then(
+      (value) => {
+        result = value;
+      },
+      (error: unknown) => {
+        reject(toError(error, 'IndexedDB operation failed'));
+        try {
+          transaction.abort();
+        } catch {
+          // Transaction may already be completed or aborted.
+        }
+      },
+    );
+  });
+}
+
 export function requestToPromise<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise((resolve, reject) => {
     request.onsuccess = () => resolve(request.result);

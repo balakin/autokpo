@@ -123,7 +123,7 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
             keyRingRecord,
           );
           if (cancelled) return;
-          dispatch({ type: 'unlocked', activeDek, activeDekId });
+          dispatch({ type: 'unlocked', mek, activeDek, activeDekId });
           return;
         } catch {
           await s.deleteLocalWrapper(userId);
@@ -151,7 +151,7 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
       const wr = wrapperRecordFromProfile(profile, userId);
       if (wr) await store.writeWrapper(wr);
       await storeLdkWrapper(store, mek, userId);
-      dispatch({ type: 'unlocked', activeDek, activeDekId });
+      dispatch({ type: 'unlocked', mek, activeDek, activeDekId });
     } catch {
       dispatch({ type: 'setup-failed' });
     }
@@ -195,7 +195,7 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
       }
 
       await storeLdkWrapper(store, mek, userId);
-      dispatch({ type: 'unlocked', activeDek, activeDekId });
+      dispatch({ type: 'unlocked', mek, activeDek, activeDekId });
     } catch {
       dispatch({ type: 'unlock-failed' });
     }
@@ -203,12 +203,14 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
 
   if (
     session.status === 'unlocked' &&
+    gateState.mek &&
     gateState.activeDek &&
     gateState.activeDekId
   ) {
     return (
       <EncryptionContext
         value={{
+          mek: gateState.mek,
           activeDek: gateState.activeDek,
           activeDekId: gateState.activeDekId,
         }}

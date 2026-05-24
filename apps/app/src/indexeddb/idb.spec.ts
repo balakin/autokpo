@@ -6,10 +6,12 @@ import {
   requestToPromise,
   toError,
   withStore,
+  withStores,
 } from './idb';
 
 const DB_NAME = 'test-idb';
 const STORE_NAME = 'items';
+const META_STORE_NAME = 'meta';
 
 const dbs: IDBDatabase[] = [];
 
@@ -20,6 +22,7 @@ afterEach(() => {
 function openTestDb(): Promise<IDBDatabase> {
   return openDatabase(DB_NAME, 1, (db) => {
     db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+    db.createObjectStore(META_STORE_NAME, { keyPath: 'id' });
   }).then((db) => {
     dbs.push(db);
     return db;
@@ -75,6 +78,82 @@ describe('withStore', () => {
         Promise.reject(new Error('boom')),
       ),
     ).rejects.toThrow('boom');
+  });
+});
+
+describe('withStores', () => {
+  it('writes and reads records across multiple stores in one transaction', async () => {
+    const db = await openTestDb();
+
+    await withStores(
+      db,
+      [STORE_NAME, META_STORE_NAME],
+      'readwrite',
+      async (stores) => {
+        await Promise.all([
+          requestToPromise(
+            stores.get(STORE_NAME)!.put({ id: 'k1', value: 'hello' }),
+          ),
+          requestToPromise(
+            stores.get(META_STORE_NAME)!.put({ id: 'active', value: 'meta' }),
+          ),
+        ]);
+      },
+    );
+
+    const records = await withStores(
+      db,
+      [STORE_NAME, META_STORE_NAME],
+      'readonly',
+      async (stores) => {
+        const [item, meta] = await Promise.all([
+          requestToPromise<unknown>(stores.get(STORE_NAME)!.get('k1')),
+          requestToPromise<unknown>(stores.get(META_STORE_NAME)!.get('active')),
+        ]);
+        return { item, meta };
+      },
+    );
+
+    expect(records).toEqual({
+      item: { id: 'k1', value: 'hello' },
+      meta: { id: 'active', value: 'meta' },
+    });
+  });
+
+  it('aborts all store writes when the operation rejects', async () => {
+    const db = await openTestDb();
+
+    await expect(
+      withStores(
+        db,
+        [STORE_NAME, META_STORE_NAME],
+        'readwrite',
+        async (stores) => {
+          await requestToPromise(
+            stores.get(STORE_NAME)!.put({ id: 'k1', value: 'hello' }),
+          );
+          await requestToPromise(
+            stores.get(META_STORE_NAME)!.put({ id: 'active', value: 'meta' }),
+          );
+          throw new Error('boom');
+        },
+      ),
+    ).rejects.toThrow('boom');
+
+    const records = await withStores(
+      db,
+      [STORE_NAME, META_STORE_NAME],
+      'readonly',
+      async (stores) => {
+        const [item, meta] = await Promise.all([
+          requestToPromise<unknown>(stores.get(STORE_NAME)!.get('k1')),
+          requestToPromise<unknown>(stores.get(META_STORE_NAME)!.get('active')),
+        ]);
+        return { item, meta };
+      },
+    );
+
+    expect(records).toEqual({ item: undefined, meta: undefined });
   });
 });
 

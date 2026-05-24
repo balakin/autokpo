@@ -10,6 +10,7 @@ import { createLogger } from '../utils/create-logger';
 
 import { post, subscribe } from './bus';
 import type { BusMessage } from './bus';
+import type { EncryptedIndexeddbPersistence } from './encrypted-indexeddb-persistence';
 import {
   SyncGoneError,
   SyncRequestError,
@@ -37,7 +38,9 @@ const MAX_PLAINTEXT_DELTA_BYTES = 1 * 1024 * 1024;
 
 const log = createLogger('sync');
 
-export function useSyncEngine(): void {
+export function useSyncEngine(
+  persistence?: EncryptedIndexeddbPersistence,
+): void {
   const userId = useRequiredUserId();
   const auth = useAuth();
   const authRef = useRef(auth);
@@ -56,6 +59,9 @@ export function useSyncEngine(): void {
     async () => {},
   );
   const schedulePushRef = useRef<() => void>(() => {});
+  const localUpdateQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const persistenceRef = useRef(persistence);
+  persistenceRef.current = persistence;
   const activeDekRef = useRef(activeDek);
   activeDekRef.current = activeDek;
   const activeDekIdRef = useRef(activeDekId);
@@ -189,6 +195,7 @@ export function useSyncEngine(): void {
             }),
           ),
         );
+        await persistenceRef.current?.persistRemoteUpdates(plaintexts);
         // Apply all received records inside one Yjs transaction so
         // partial application is impossible.
         applyRecordsToDoc(ydoc, plaintexts);
@@ -463,11 +470,22 @@ export function useSyncEngine(): void {
     function onYDocUpdate(update: Uint8Array, origin: unknown): void {
       if (origin === REMOTE_ORIGIN) return;
       log('ydoc: local update (%d bytes), dirty triggered', update.byteLength);
-      syncState.markDirty();
-      post({ type: 'local-update', bytes: update });
-      if (isLeaderRef.current) {
-        schedulePushRef.current();
-      }
+      localUpdateQueueRef.current = localUpdateQueueRef.current
+        .then(async () => {
+          await persistenceRef.current?.persistLocalUpdate(update);
+          syncState.markDirty();
+          post({ type: 'local-update', bytes: update });
+          if (isLeaderRef.current) {
+            schedulePushRef.current();
+          }
+        })
+        .catch((error: unknown) => {
+          log('ydoc: local persistence failed');
+          if (!handleAuthFailureRef.current(error)) {
+            // Keep the side-effect queue usable; local persistence performs
+            // its own cache reset/recovery on write failures.
+          }
+        });
     }
     ydoc.on('update', onYDocUpdate);
     return () => {

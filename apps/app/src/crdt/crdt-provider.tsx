@@ -7,6 +7,7 @@ import { CrdtLocaleProvider } from './crdt-locale-provider';
 import { bootstrap, createRuntime, type CrdtRuntime } from './doc';
 import { DocContext } from './doc-context';
 import { SyncMetadataProvider } from './sync-metadata-provider';
+import { resetSyncState } from './sync-state';
 import { useSyncEngine } from './use-sync-engine';
 
 export function CrdtProvider({
@@ -16,17 +17,23 @@ export function CrdtProvider({
   userId: string;
   children: React.ReactNode;
 }) {
-  const { activeDek, activeDekId } = useEncryptionContext();
+  const { mek, activeDek, activeDekId } = useEncryptionContext();
   const [runtime, setRuntime] = useState<CrdtRuntime | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    const nextRuntime = createRuntime(userId, { activeDek, activeDekId });
+    const nextRuntime = createRuntime(userId, {
+      mek,
+      onReset: () => resetSyncState(userId),
+    });
 
     async function init() {
       await nextRuntime.whenReady;
       if (cancelled) return;
-      bootstrap(nextRuntime.ydoc, getStoredLocale());
+      if (bootstrap(nextRuntime.ydoc, getStoredLocale())) {
+        await nextRuntime.persistSnapshot();
+      }
+      if (cancelled) return;
       setRuntime(nextRuntime);
     }
 
@@ -37,21 +44,25 @@ export function CrdtProvider({
       setRuntime(null);
       void nextRuntime.destroy();
     };
-  }, [activeDek, activeDekId, userId]);
+  }, [activeDek, activeDekId, mek, userId]);
 
   if (runtime === null) return null;
 
   return (
     <DocContext value={runtime.ydoc}>
       <SyncMetadataProvider userId={userId}>
-        <SyncEngine />
+        <SyncEngine persistence={runtime.persistence} />
         <CrdtLocaleProvider>{children}</CrdtLocaleProvider>
       </SyncMetadataProvider>
     </DocContext>
   );
 }
 
-function SyncEngine() {
-  useSyncEngine();
+function SyncEngine({
+  persistence,
+}: {
+  persistence: CrdtRuntime['persistence'];
+}) {
+  useSyncEngine(persistence);
   return null;
 }

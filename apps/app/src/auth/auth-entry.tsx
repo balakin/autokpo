@@ -32,7 +32,7 @@ export function AuthEntry() {
         </Card.Header>
         <Card.Content className="gap-6 pt-1">
           <div>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Button
                 fullWidth
                 variant="secondary"

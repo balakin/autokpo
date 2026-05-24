@@ -40,4 +40,11 @@ describe('AuthShell AGPL notice', () => {
     expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
     expect(link).toHaveAttribute('rel', expect.stringContaining('noreferrer'));
   });
+
+  it('renders the preferences gear button', () => {
+    renderAuthShell();
+    expect(
+      screen.getByRole('button', { name: /Podešavanja/i }),
+    ).toBeInTheDocument();
+  });
 });

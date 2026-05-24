@@ -255,7 +255,7 @@ msgstr "Export data"
 msgid "Izvezi podatke naloga"
 msgstr "Export account data"
 
-#: src/auth/auth-shell.tsx:112
+#: src/auth/auth-shell.tsx:47
 #: src/e2ee/encryption-shell.tsx:47
 msgid "Izvorni kod"
 msgstr "Source code"
@@ -269,8 +269,8 @@ msgstr "Source code on GitHub"
 msgid "Jednokratni kod"
 msgstr "One-time code"
 
-#: src/auth/auth-shell.tsx:40
-#: src/auth/auth-shell.tsx:46
+#: src/auth/auth-preferences-popover.tsx:31
+#: src/auth/auth-preferences-popover.tsx:37
 #: src/e2ee/encryption-profile-popover.tsx:75
 #: src/e2ee/encryption-profile-popover.tsx:81
 #: src/settings/general-settings-page.tsx:74
@@ -732,6 +732,9 @@ msgstr "Taxpayer data"
 
 #: src/app-shell/sidebar.tsx:40
 #: src/app-shell/top-bar.tsx:37
+#: src/auth/auth-preferences-popover.tsx:21
+#: src/auth/auth-preferences-popover.tsx:98
+#: src/auth/auth-preferences-popover.tsx:103
 #: src/settings/settings-page.tsx:25
 #: src/settings/settings-page.tsx:30
 msgid "Podešavanja"
@@ -1044,8 +1047,8 @@ msgstr "Synced"
 msgid "Sinhronizuj sada"
 msgstr "Sync now"
 
-#: src/auth/auth-shell.tsx:88
-#: src/auth/auth-shell.tsx:89
+#: src/auth/auth-preferences-popover.tsx:79
+#: src/auth/auth-preferences-popover.tsx:80
 #: src/e2ee/encryption-profile-popover.tsx:123
 #: src/e2ee/encryption-profile-popover.tsx:124
 #: src/settings/general-settings-page.tsx:57
@@ -1065,8 +1068,8 @@ msgstr "You can change all data later in settings."
 msgid "Svega (RSD)"
 msgstr "Total (RSD)"
 
-#: src/auth/auth-shell.tsx:80
-#: src/auth/auth-shell.tsx:81
+#: src/auth/auth-preferences-popover.tsx:71
+#: src/auth/auth-preferences-popover.tsx:72
 #: src/e2ee/encryption-profile-popover.tsx:115
 #: src/e2ee/encryption-profile-popover.tsx:116
 #: src/settings/general-settings-page.tsx:49
@@ -1078,8 +1081,8 @@ msgstr "Light"
 msgid "Svi doprinosioci"
 msgstr "All contributors"
 
-#: src/auth/auth-shell.tsx:84
-#: src/auth/auth-shell.tsx:85
+#: src/auth/auth-preferences-popover.tsx:75
+#: src/auth/auth-preferences-popover.tsx:76
 #: src/e2ee/encryption-profile-popover.tsx:119
 #: src/e2ee/encryption-profile-popover.tsx:120
 #: src/settings/general-settings-page.tsx:53
@@ -1087,8 +1090,8 @@ msgstr "All contributors"
 msgid "Tamna"
 msgstr "Dark"
 
-#: src/auth/auth-shell.tsx:69
-#: src/auth/auth-shell.tsx:73
+#: src/auth/auth-preferences-popover.tsx:60
+#: src/auth/auth-preferences-popover.tsx:64
 #: src/e2ee/encryption-profile-popover.tsx:104
 #: src/e2ee/encryption-profile-popover.tsx:108
 #: src/settings/general-settings-page.tsx:30
@@ -1251,6 +1254,7 @@ msgid "Zakonski propisi"
 msgstr "Legal references"
 
 #: src/app-shell/mobile-drawer.tsx:47
+#: src/auth/auth-preferences-popover.tsx:110
 #: src/auth/profile-popover.tsx:170
 #: src/e2ee/encryption-profile-popover.tsx:178
 msgid "Zatvori"

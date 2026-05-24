@@ -255,7 +255,7 @@ msgstr "Экспорт данных"
 msgid "Izvezi podatke naloga"
 msgstr "Экспорт данных аккаунта"
 
-#: src/auth/auth-shell.tsx:112
+#: src/auth/auth-shell.tsx:47
 #: src/e2ee/encryption-shell.tsx:47
 msgid "Izvorni kod"
 msgstr "Исходный код"
@@ -269,8 +269,8 @@ msgstr "Исходный код на GitHub"
 msgid "Jednokratni kod"
 msgstr "Одноразовый код"
 
-#: src/auth/auth-shell.tsx:40
-#: src/auth/auth-shell.tsx:46
+#: src/auth/auth-preferences-popover.tsx:31
+#: src/auth/auth-preferences-popover.tsx:37
 #: src/e2ee/encryption-profile-popover.tsx:75
 #: src/e2ee/encryption-profile-popover.tsx:81
 #: src/settings/general-settings-page.tsx:74
@@ -732,6 +732,9 @@ msgstr "Данные налогоплательщика"
 
 #: src/app-shell/sidebar.tsx:40
 #: src/app-shell/top-bar.tsx:37
+#: src/auth/auth-preferences-popover.tsx:21
+#: src/auth/auth-preferences-popover.tsx:98
+#: src/auth/auth-preferences-popover.tsx:103
 #: src/settings/settings-page.tsx:25
 #: src/settings/settings-page.tsx:30
 msgid "Podešavanja"
@@ -1044,8 +1047,8 @@ msgstr "Синхронизировано"
 msgid "Sinhronizuj sada"
 msgstr "Синхронизировать сейчас"
 
-#: src/auth/auth-shell.tsx:88
-#: src/auth/auth-shell.tsx:89
+#: src/auth/auth-preferences-popover.tsx:79
+#: src/auth/auth-preferences-popover.tsx:80
 #: src/e2ee/encryption-profile-popover.tsx:123
 #: src/e2ee/encryption-profile-popover.tsx:124
 #: src/settings/general-settings-page.tsx:57
@@ -1065,8 +1068,8 @@ msgstr "Все данные можно изменить позже в настр
 msgid "Svega (RSD)"
 msgstr "Итого (RSD)"
 
-#: src/auth/auth-shell.tsx:80
-#: src/auth/auth-shell.tsx:81
+#: src/auth/auth-preferences-popover.tsx:71
+#: src/auth/auth-preferences-popover.tsx:72
 #: src/e2ee/encryption-profile-popover.tsx:115
 #: src/e2ee/encryption-profile-popover.tsx:116
 #: src/settings/general-settings-page.tsx:49
@@ -1078,8 +1081,8 @@ msgstr "Светлая"
 msgid "Svi doprinosioci"
 msgstr "Все участники"
 
-#: src/auth/auth-shell.tsx:84
-#: src/auth/auth-shell.tsx:85
+#: src/auth/auth-preferences-popover.tsx:75
+#: src/auth/auth-preferences-popover.tsx:76
 #: src/e2ee/encryption-profile-popover.tsx:119
 #: src/e2ee/encryption-profile-popover.tsx:120
 #: src/settings/general-settings-page.tsx:53
@@ -1087,8 +1090,8 @@ msgstr "Все участники"
 msgid "Tamna"
 msgstr "Тёмная"
 
-#: src/auth/auth-shell.tsx:69
-#: src/auth/auth-shell.tsx:73
+#: src/auth/auth-preferences-popover.tsx:60
+#: src/auth/auth-preferences-popover.tsx:64
 #: src/e2ee/encryption-profile-popover.tsx:104
 #: src/e2ee/encryption-profile-popover.tsx:108
 #: src/settings/general-settings-page.tsx:30
@@ -1251,6 +1254,7 @@ msgid "Zakonski propisi"
 msgstr "Нормативные акты"
 
 #: src/app-shell/mobile-drawer.tsx:47
+#: src/auth/auth-preferences-popover.tsx:110
 #: src/auth/profile-popover.tsx:170
 #: src/e2ee/encryption-profile-popover.tsx:178
 msgid "Zatvori"

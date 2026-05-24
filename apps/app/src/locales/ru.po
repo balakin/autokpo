@@ -692,7 +692,7 @@ msgstr "Отметьте книгу звёздочкой в <0>Книгах</0>,
 msgid "Panel"
 msgstr "Панель"
 
-#: src/stats/income-chart.tsx:100
+#: src/stats/income-chart.tsx:102
 msgid "Paušalni limit"
 msgstr "Лимит на упрощёнке"
 

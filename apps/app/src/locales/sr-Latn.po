@@ -692,7 +692,7 @@ msgstr "Označite knjigu zvezdicom u <0>Knjigama</0> da biste je dodali ovde."
 msgid "Panel"
 msgstr "Panel"
 
-#: src/stats/income-chart.tsx:100
+#: src/stats/income-chart.tsx:102
 msgid "Paušalni limit"
 msgstr "Paušalni limit"
 

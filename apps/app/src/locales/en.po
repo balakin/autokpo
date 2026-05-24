@@ -692,7 +692,7 @@ msgstr "Star a book in <0>Books</0> to add it here."
 msgid "Panel"
 msgstr "Dashboard"
 
-#: src/stats/income-chart.tsx:100
+#: src/stats/income-chart.tsx:102
 msgid "Paušalni limit"
 msgstr "Flat-rate limit"
 

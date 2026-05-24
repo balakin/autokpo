@@ -12,7 +12,7 @@ import {
 
 import type { StatsBookProjection } from '../books/book-selectors';
 import { ANNUAL_LIMIT } from '../constants';
-import { formatFullCurrency } from '../formatters';
+import { formatFullCurrency, yAxisTickFormatter } from '../formatters';
 
 function readChartColors() {
   const style = getComputedStyle(document.documentElement);
@@ -62,6 +62,8 @@ export default function IncomeChart({ books }: IncomeChartProps) {
     .sort((a, b) => a.year - b.year)
     .map((b) => ({ year: b.year, income: bookIncome(b) }));
 
+  const maxIncome = data.reduce((max, d) => Math.max(max, d.income), 0);
+
   return (
     <ResponsiveContainer width="100%" height={220}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
@@ -77,7 +79,7 @@ export default function IncomeChart({ books }: IncomeChartProps) {
           tickLine={false}
         />
         <YAxis
-          tickFormatter={(v: number) => `${(v / 1_000_000).toFixed(0)}M`}
+          tickFormatter={yAxisTickFormatter(maxIncome)}
           tick={{ fontSize: 11, fill: colors.textFill }}
           axisLine={false}
           tickLine={false}

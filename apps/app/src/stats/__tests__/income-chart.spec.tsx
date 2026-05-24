@@ -1,4 +1,5 @@
 import type { Book } from 'src/books/book-schema';
+import { yAxisTickFormatter } from 'src/formatters';
 import { renderWithProviders } from 'tests/render-helpers';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -41,5 +42,34 @@ describe('IncomeChart', () => {
       <IncomeChart books={books} />,
     );
     expect(() => unmount()).not.toThrow();
+  });
+});
+
+describe('yAxisTickFormatter', () => {
+  it('returns raw integer formatter for max < 10K', () => {
+    const fmt = yAxisTickFormatter(5_000);
+    expect(fmt(0)).toBe('0');
+    expect(fmt(2_500)).toBe('2500');
+    expect(fmt(5_000)).toBe('5000');
+  });
+
+  it('returns K-suffix formatter for max between 10K and 1M', () => {
+    const fmt = yAxisTickFormatter(500_000);
+    expect(fmt(0)).toBe('0K');
+    expect(fmt(100_000)).toBe('100K');
+    expect(fmt(500_000)).toBe('500K');
+  });
+
+  it('returns M-suffix formatter for max >= 1M', () => {
+    const fmt = yAxisTickFormatter(6_000_000);
+    expect(fmt(0)).toBe('0.0M');
+    expect(fmt(1_500_000)).toBe('1.5M');
+    expect(fmt(6_000_000)).toBe('6.0M');
+  });
+
+  it('returns raw integer formatter for max of 0 (no data)', () => {
+    const fmt = yAxisTickFormatter(0);
+    expect(fmt(0)).toBe('0');
+    expect(fmt(1)).toBe('1');
   });
 });

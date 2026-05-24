@@ -37,3 +37,13 @@ export function formatDateLong(date: Date): string {
     year: 'numeric',
   }).format(date);
 }
+
+export function yAxisTickFormatter(maxIncome: number): (v: number) => string {
+  if (maxIncome < 10_000) {
+    return (v: number) => v.toString();
+  }
+  if (maxIncome < 1_000_000) {
+    return (v: number) => `${(v / 1_000).toFixed(0)}K`;
+  }
+  return (v: number) => `${(v / 1_000_000).toFixed(1)}M`;
+}

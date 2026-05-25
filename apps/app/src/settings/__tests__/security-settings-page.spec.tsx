@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from 'tests/render-helpers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -260,7 +260,13 @@ describe('SecuritySettingsPage master password change', () => {
     await user.click(screen.getByRole('button', { name: 'Potvrdi' }));
     await user.type(await screen.findByLabelText('Nova šifra'), 'short');
     await user.type(screen.getByLabelText('Potvrdite novu šifru'), 'short');
-    await user.click(screen.getByRole('button', { name: 'Promeni šifru' }));
+    await user.click(
+      within(
+        screen.getByRole('dialog', {
+          name: 'Promenite šifru za šifrovanje',
+        }),
+      ).getByRole('button', { name: 'Promeni šifru' }),
+    );
 
     expect(
       await screen.findByText('Šifra mora imati najmanje 8 znakova.'),

@@ -15,6 +15,7 @@ import {
   toast,
 } from '@heroui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { t } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -52,13 +53,17 @@ type VerificationResult =
   | { ok: true }
   | { ok: false; message: string; lockout?: boolean };
 
-function createChangePasswordSchema(t: ReturnType<typeof useLingui>['t']) {
+function createChangePasswordSchema() {
   return z
     .object({
       password: z
         .string()
-        .min(1, t`Unesite šifru za šifrovanje.`)
-        .min(8, t`Šifra mora imati najmanje 8 znakova.`),
+        .refine((value) => value.length > 0, {
+          message: t`Unesite šifru za šifrovanje.`,
+        })
+        .refine((value) => value.length >= 8, {
+          message: t`Šifra mora imati najmanje 8 znakova.`,
+        }),
       confirmation: z.string(),
     })
     .refine((values) => values.password === values.confirmation, {
@@ -425,7 +430,7 @@ function ConfirmRemovePinModal({
   const { t } = useLingui();
   const [inputKey, setInputKey] = useState(0);
   const { control, handleSubmit, setValue, setError, reset, formState } =
-    useForm<PinFormData>({ defaultValues: { pin: '' } });
+    useForm({ defaultValues: { pin: '' } });
 
   function handleOpenChange(open: boolean) {
     if (!open) reset({ pin: '' });
@@ -529,11 +534,10 @@ function ChangeMasterPasswordModal({
 }) {
   const { t } = useLingui();
   const formId = useId();
-  const { control, handleSubmit, reset, formState } =
-    useForm<ChangePasswordFormData>({
-      resolver: zodResolver(createChangePasswordSchema(t)),
-      defaultValues: { password: '', confirmation: '' },
-    });
+  const { control, handleSubmit, reset, formState } = useForm({
+    resolver: zodResolver(createChangePasswordSchema()),
+    defaultValues: { password: '', confirmation: '' },
+  });
 
   function handleOpenChange(open: boolean) {
     if (!open) reset({ password: '', confirmation: '' });
@@ -680,8 +684,8 @@ function ChangePasswordVerificationDialog({
   const { t } = useLingui();
   const formId = useId();
   const [pinInputKey, setPinInputKey] = useState(0);
-  const pinForm = useForm<PinFormData>({ defaultValues: { pin: '' } });
-  const passwordForm = useForm<VerifyPasswordFormData>({
+  const pinForm = useForm({ defaultValues: { pin: '' } });
+  const passwordForm = useForm({
     defaultValues: { password: '' },
   });
 

@@ -1,5 +1,7 @@
+import { and, eq } from 'drizzle-orm';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import type { SerializedKeyRingProfile } from '../../src/e2ee/key-ring-record';
 import { clearAuthData, workerTestEnv } from '../../tests/worker/auth-helpers';
 import {
   makeAuthHeaders,
@@ -7,6 +9,8 @@ import {
   mockCtx,
   type SessionState,
 } from '../../tests/worker/request-helpers';
+import { getDb } from '../db';
+import { keyRing, keyRingWrapping } from '../db/schema';
 import app from '../main';
 
 const sessionState: SessionState = { userId: 'e2ee-user-1', headers: null };
@@ -25,6 +29,27 @@ function validPayload() {
     encryptionAlgorithm: 'aes-256-gcm',
     keyRingIv: bytesBase64(12),
     keyRingCiphertext: bytesBase64(48),
+    kdfVersion: 1,
+    kdfAlgorithm: 'argon2id',
+    kdfParams: {
+      memorySize: 65536,
+      iterations: 3,
+      parallelism: 1,
+      hashLength: 32,
+    },
+    kdfSalt: bytesBase64(16),
+    wrappingVersion: 1,
+    wrappingAlgorithm: 'aes-256-gcm',
+    wrappingParams: { ivBytes: 12, tagBits: 128 },
+    wrappingIv: bytesBase64(12),
+    ciphertext: bytesBase64(48),
+  };
+}
+
+function validChangePayload(currentWrappingId: string) {
+  return {
+    currentWrappingId,
+    wrappingId: '44444444-4444-4444-8444-444444444444',
     kdfVersion: 1,
     kdfAlgorithm: 'argon2id',
     kdfParams: {
@@ -141,5 +166,101 @@ describe('/api/e2ee/key-ring', () => {
 
       expect(res.status).toBe(400);
     }
+  });
+
+  it('changes the active password wrapper without changing the key ring', async () => {
+    const payload = validPayload();
+    await req('/api/e2ee/key-ring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const changePayload = validChangePayload(payload.wrappingId);
+    const res = await req('/api/e2ee/key-ring/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(changePayload),
+    });
+
+    expect(res.status).toBe(204);
+
+    const get = await req('/api/e2ee/key-ring');
+    expect(get.status).toBe(200);
+    const profile: SerializedKeyRingProfile = await get.json();
+    expect(profile.keyRing).toMatchObject({
+      id: payload.keyRingId,
+      activeDekId: payload.activeDekId,
+      ciphertext: payload.keyRingCiphertext,
+    });
+    expect(profile.wrappers).toEqual([
+      expect.objectContaining({ id: changePayload.wrappingId }),
+    ]);
+
+    const db = getDb(workerTestEnv.DB);
+    const wrappers = await db
+      .select()
+      .from(keyRingWrapping)
+      .where(eq(keyRingWrapping.userId, 'e2ee-user-1'));
+    expect(wrappers).toHaveLength(2);
+    expect(wrappers.filter((w) => w.status === 'active')).toHaveLength(1);
+    expect(wrappers.filter((w) => w.status === 'revoked')).toHaveLength(1);
+
+    const rows = await db
+      .select()
+      .from(keyRing)
+      .where(eq(keyRing.userId, 'e2ee-user-1'));
+    expect(rows).toHaveLength(1);
+    expect(rows[0].id).toBe(payload.keyRingId);
+  });
+
+  it('rejects stale password wrapper changes without replacing the active wrapper', async () => {
+    const payload = validPayload();
+    await req('/api/e2ee/key-ring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const staleId = '55555555-5555-4555-8555-555555555555';
+    const res = await req('/api/e2ee/key-ring/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(validChangePayload(staleId)),
+    });
+
+    expect(res.status).toBe(409);
+
+    const db = getDb(workerTestEnv.DB);
+    const [active] = await db
+      .select()
+      .from(keyRingWrapping)
+      .where(
+        and(
+          eq(keyRingWrapping.userId, 'e2ee-user-1'),
+          eq(keyRingWrapping.status, 'active'),
+        ),
+      );
+    expect(active.id).toBe(payload.wrappingId);
+  });
+
+  it('rejects invalid password change payloads', async () => {
+    const payload = validPayload();
+    await req('/api/e2ee/key-ring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const res = await req('/api/e2ee/key-ring/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...validChangePayload(payload.wrappingId),
+        wrappingIv: bytesBase64(8),
+      }),
+    });
+
+    expect(res.status).toBe(400);
   });
 });

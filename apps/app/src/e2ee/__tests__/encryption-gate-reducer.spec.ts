@@ -109,4 +109,24 @@ describe('encryptionGateReducer', () => {
       activeDekId: 'key-1',
     });
   });
+
+  it('clears in-memory key material without signing out', () => {
+    expect(
+      encryptionGateReducer(
+        state({
+          session: { status: 'unlocked', hasProfile: true },
+          mek,
+          activeDek,
+          activeDekId: 'key-1',
+        }),
+        { type: 'clear-session' },
+      ),
+    ).toEqual({
+      userId: 'user-1',
+      session: { status: 'locked', hasProfile: true },
+      mek: null,
+      activeDek: null,
+      activeDekId: null,
+    });
+  });
 });

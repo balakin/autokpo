@@ -4,6 +4,7 @@ import { deriveKek } from './kdf';
 import {
   KDF_PARAMS_V1,
   WRAPPING_PARAMS_V1,
+  type ChangeMasterPasswordRequest,
   type CreateKeyRingProfileRequest,
   type KdfParamsV1,
   type SerializedKeyRingProfile,
@@ -80,6 +81,38 @@ export async function createKeyRingProfilePayload(
       wrappingIv: bytesToBase64(wrappingIv),
       ciphertext: bytesToBase64(wrappedMek),
     },
+  };
+}
+
+export async function createPasswordWrapperPayload(
+  userId: string,
+  currentWrappingId: string,
+  mek: Uint8Array,
+  password: string,
+): Promise<ChangeMasterPasswordRequest> {
+  const wrappingId = crypto.randomUUID();
+  const salt = randomBytes(KDF_SALT_BYTES);
+  const wrappingIv = randomBytes(WRAPPING_PARAMS_V1.ivBytes);
+  const kek = await deriveKek(password, salt, KDF_PARAMS_V1);
+  const wrappedMek = await aesGcmEncrypt({
+    keyBytes: kek,
+    iv: wrappingIv,
+    plaintext: mek,
+    aad: wrappedMekAad(userId, wrappingId, 'password'),
+  });
+
+  return {
+    currentWrappingId,
+    wrappingId,
+    kdfVersion: 1,
+    kdfAlgorithm: 'argon2id',
+    kdfParams: KDF_PARAMS_V1,
+    kdfSalt: bytesToBase64(salt),
+    wrappingVersion: 1,
+    wrappingAlgorithm: 'aes-256-gcm',
+    wrappingParams: WRAPPING_PARAMS_V1,
+    wrappingIv: bytesToBase64(wrappingIv),
+    ciphertext: bytesToBase64(wrappedMek),
   };
 }
 

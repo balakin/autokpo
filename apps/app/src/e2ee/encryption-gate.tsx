@@ -242,6 +242,14 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
     }
   }
 
+  async function refreshKeyRingProfileCache() {
+    if (!store) return;
+    const profile = await fetchKeyRingProfile();
+    await store.writeKeyRing(keyRingRecordFromProfile(profile, userId));
+    const wr = wrapperRecordFromProfile(profile, userId);
+    if (wr) await store.writeWrapper(wr);
+  }
+
   if (
     session.status === 'unlocked' &&
     gateState.mek &&
@@ -254,6 +262,8 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
           mek: gateState.mek,
           activeDek: gateState.activeDek,
           activeDekId: gateState.activeDekId,
+          clearEncryptionSession: () => dispatch({ type: 'clear-session' }),
+          refreshKeyRingProfile: refreshKeyRingProfileCache,
         }}
       >
         {children}

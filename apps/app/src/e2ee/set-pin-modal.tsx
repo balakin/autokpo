@@ -109,6 +109,11 @@ export function SetPinModal({
               <Modal.Heading>
                 <Trans>Potvrdite PIN kod</Trans>
               </Modal.Heading>
+              <p className="mt-1.5 text-sm/5 text-muted">
+                <Trans>
+                  Ponovo unesite isti PIN kod da biste ga potvrdili.
+                </Trans>
+              </p>
             </Modal.Header>
             <Modal.Body className="overflow-x-hidden p-6">
               <div className="flex flex-col gap-1.5">

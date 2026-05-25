@@ -20,6 +20,7 @@ export type EncryptionGateAction =
   | { type: 'setup-failed' }
   | { type: 'unlock-submitted' }
   | { type: 'unlock-failed' }
+  | { type: 'clear-session' }
   | {
       type: 'unlocked';
       mek: Uint8Array;
@@ -83,6 +84,14 @@ export function encryptionGateReducer(
       return {
         ...state,
         session: { status: 'error', hasProfile: true, error: 'unlock' },
+      };
+    case 'clear-session':
+      return {
+        ...state,
+        session: { status: 'locked', hasProfile: true },
+        mek: null,
+        activeDek: null,
+        activeDekId: null,
       };
     case 'unlocked':
       return {

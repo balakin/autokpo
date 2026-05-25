@@ -91,6 +91,62 @@ e2eeRouter.post('/key-ring', async (c) => {
   return c.json(serializeRecord(record.keyRing, record.wrapping), 201);
 });
 
+e2eeRouter.post('/key-ring/change-password', async (c) => {
+  const session = await requireSession(c);
+  if (session instanceof Response) return session;
+
+  if (c.req.header('Content-Type') !== 'application/json') {
+    return c.json({ code: 'unsupported_content_type' }, 415);
+  }
+
+  const body: unknown = await c.req.json().catch(() => null);
+  const parsed = parseChangePasswordBody(body);
+  if (parsed instanceof Response) return parsed;
+
+  const db = getDb(c.env.DB);
+  const record = await getActivePasswordWrapping(c.env.DB, session.user.id);
+  if (!record) return c.json({ code: 'encryption_key_not_found' }, 404);
+
+  if (record.wrapping.id !== parsed.currentWrappingId) {
+    return c.json({ code: 'password_wrapper_conflict' }, 409);
+  }
+
+  try {
+    await db.batch([
+      db
+        .update(keyRingWrapping)
+        .set({ status: 'revoked', revokedAt: new Date() })
+        .where(
+          and(
+            eq(keyRingWrapping.id, parsed.currentWrappingId),
+            eq(keyRingWrapping.userId, session.user.id),
+            eq(keyRingWrapping.method, 'password'),
+            eq(keyRingWrapping.status, 'active'),
+          ),
+        ),
+      db.insert(keyRingWrapping).values({
+        id: parsed.wrappingId,
+        userId: session.user.id,
+        method: 'password',
+        status: 'active',
+        kdfVersion: 1,
+        kdfAlgorithm: 'argon2id',
+        kdfParamsJson: JSON.stringify(KDF_PARAMS_V1),
+        kdfSalt: parsed.kdfSalt,
+        wrappingVersion: 1,
+        wrappingAlgorithm: 'aes-256-gcm',
+        wrappingParamsJson: JSON.stringify(WRAPPING_PARAMS_V1),
+        wrappingIv: parsed.wrappingIv,
+        ciphertext: parsed.wrappedMek,
+      }),
+    ]);
+  } catch {
+    return c.json({ code: 'password_wrapper_conflict' }, 409);
+  }
+
+  return c.body(null, 204);
+});
+
 async function getActivePasswordWrapping(
   dbBinding: D1Database,
   userId: string,
@@ -190,6 +246,63 @@ function parseCreateBody(body: unknown) {
     wrappedMek,
     keyRingIv,
     keyRingCiphertext,
+  };
+}
+
+function parseChangePasswordBody(body: unknown) {
+  if (!body || typeof body !== 'object') {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+  const value = body as Record<string, unknown>;
+  if (
+    typeof value.currentWrappingId !== 'string' ||
+    typeof value.wrappingId !== 'string' ||
+    value.kdfVersion !== 1 ||
+    value.kdfAlgorithm !== 'argon2id' ||
+    !sameJson(value.kdfParams, KDF_PARAMS_V1) ||
+    value.wrappingVersion !== 1 ||
+    value.wrappingAlgorithm !== 'aes-256-gcm' ||
+    !sameJson(value.wrappingParams, WRAPPING_PARAMS_V1)
+  ) {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+  if (!isSafeId(value.currentWrappingId) || !isSafeId(value.wrappingId)) {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+
+  if (
+    typeof value.kdfSalt !== 'string' ||
+    typeof value.wrappingIv !== 'string' ||
+    typeof value.ciphertext !== 'string'
+  ) {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+
+  let kdfSalt: Uint8Array;
+  let wrappingIv: Uint8Array;
+  let wrappedMek: Uint8Array;
+  try {
+    kdfSalt = Uint8Array.fromBase64(value.kdfSalt);
+    wrappingIv = Uint8Array.fromBase64(value.wrappingIv);
+    wrappedMek = Uint8Array.fromBase64(value.ciphertext);
+  } catch {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+
+  if (
+    kdfSalt.byteLength !== KDF_SALT_BYTES ||
+    wrappingIv.byteLength !== WRAPPING_IV_BYTES ||
+    wrappedMek.byteLength !== CIPHERTEXT_BYTES
+  ) {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+
+  return {
+    currentWrappingId: value.currentWrappingId,
+    wrappingId: value.wrappingId,
+    kdfSalt,
+    wrappingIv,
+    wrappedMek,
   };
 }
 

@@ -60,7 +60,7 @@ msgstr "If you've encountered a bug or have a suggestion, open an issue on GitHu
 msgid "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
 msgstr "If you'd like to improve AutoKPO, your pull requests are welcome."
 
-#: src/settings/security-settings-page.tsx:286
+#: src/settings/security-settings-page.tsx:364
 msgid "Aplikacija se otključava bez interakcije pri svakom pokretanju."
 msgstr "The app unlocks automatically on every launch without any interaction."
 
@@ -227,7 +227,7 @@ msgstr "Select a year for the new book."
 msgid "Izaberite JPEG, PNG ili WebP sliku."
 msgstr "Choose a JPEG, PNG, or WebP image."
 
-#: src/settings/security-settings-page.tsx:257
+#: src/settings/security-settings-page.tsx:339
 msgid "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju aplikacije."
 msgstr "Choose how you unlock encrypted data on every app launch."
 
@@ -326,6 +326,10 @@ msgstr "Currency conversion"
 msgid "Korisnički avatar"
 msgstr "User avatar"
 
+#: src/settings/security-settings-page.tsx:249
+msgid "Korisnik nije prijavljen."
+msgstr "User is not signed in."
+
 #: src/entries/entries-table.tsx:29
 #: src/working-layout/working-layout.tsx:171
 msgid "KPO unosi"
@@ -355,7 +359,7 @@ msgstr "Limit: {limitFormatted} (<0>Art. 42 ZPDGa</0>)"
 msgid "Limit: {rollingLimitFormatted} (<0>čl. 33 ZPDV</0>)"
 msgstr "Limit: {rollingLimitFormatted} (<0>Art. 33 ZPDV</0>)"
 
-#: src/settings/security-settings-page.tsx:254
+#: src/settings/security-settings-page.tsx:336
 msgid "Lokalno otključavanje"
 msgstr "Local unlock"
 
@@ -407,7 +411,7 @@ msgstr "Back"
 msgid "Nazad na prijavu"
 msgstr "Back to sign in"
 
-#: src/e2ee/encryption-gate.tsx:274
+#: src/e2ee/encryption-gate.tsx:284
 msgid "Ne možemo da proverimo šifrovanje"
 msgstr "We can't check encryption"
 
@@ -470,6 +474,10 @@ msgstr "Could not download account data. Check your internet connection and try 
 msgid "Nije moguće pripremiti profilnu sliku za slanje."
 msgstr "Unable to prepare the profile image for upload."
 
+#: src/settings/security-settings-page.tsx:305
+msgid "Nije moguće promeniti šifru. Pokušajte ponovo."
+msgstr "Unable to change the password. Please try again."
+
 #: src/settings/account-settings-page.tsx:733
 msgid "Nije moguće sačuvati profilnu sliku. Pokušajte ponovo."
 msgstr "Unable to save the profile image. Please try again."
@@ -491,7 +499,7 @@ msgstr "Unable to remove the profile image. Please try again."
 msgid "Nismo uspeli da pošaljemo kod. Pokušajte ponovo."
 msgstr "We couldn't send the code. Please try again."
 
-#: src/settings/security-settings-page.tsx:284
+#: src/settings/security-settings-page.tsx:362
 msgid "Ništa"
 msgstr "None"
 
@@ -503,6 +511,10 @@ msgstr "Didn't receive a code?"
 #: src/books/book-library.tsx:34
 msgid "Nova knjiga"
 msgstr "New book"
+
+#: src/settings/security-settings-page.tsx:581
+msgid "Nova šifra"
+msgstr "New password"
 
 #: src/entries/entry-modal.tsx:45
 msgid "Novi unos"
@@ -649,13 +661,15 @@ msgstr "You cancelled the sign-in. Please try again."
 #: src/books/book-library.tsx:201
 #: src/currency/currency-convert-modal.tsx:281
 #: src/e2ee/set-pin-modal.tsx:92
-#: src/e2ee/set-pin-modal.tsx:143
+#: src/e2ee/set-pin-modal.tsx:148
 #: src/entity-profiles/entity-profile-preview.tsx:59
 #: src/entries/entries-table.tsx:145
 #: src/entries/entry-modal.tsx:66
 #: src/settings/account-settings-page.tsx:680
 #: src/settings/account-settings-page.tsx:937
-#: src/settings/security-settings-page.tsx:243
+#: src/settings/security-settings-page.tsx:517
+#: src/settings/security-settings-page.tsx:625
+#: src/settings/security-settings-page.tsx:833
 #: src/signatures/signature-preview.tsx:61
 msgid "Otkaži"
 msgstr "Cancel"
@@ -735,8 +749,9 @@ msgstr "TIN must contain digits only"
 
 #: src/e2ee/pin-unlock-screen.tsx:63
 #: src/e2ee/set-pin-modal.tsx:82
-#: src/settings/security-settings-page.tsx:218
-#: src/settings/security-settings-page.tsx:295
+#: src/settings/security-settings-page.tsx:373
+#: src/settings/security-settings-page.tsx:482
+#: src/settings/security-settings-page.tsx:758
 msgid "PIN kod"
 msgstr "PIN code"
 
@@ -800,7 +815,8 @@ msgid "Podesite šifru za šifrovanje"
 msgstr "Set up an encryption password"
 
 #: src/e2ee/pin-unlock-screen.tsx:80
-#: src/settings/security-settings-page.tsx:155
+#: src/settings/security-settings-page.tsx:206
+#: src/settings/security-settings-page.tsx:274
 msgid "Pogrešan PIN. Pokušajte ponovo."
 msgstr "Wrong PIN. Try again."
 
@@ -808,7 +824,11 @@ msgstr "Wrong PIN. Try again."
 msgid "Pogrešan PIN. Preostalo pokušaja: {remaining}."
 msgstr "Wrong PIN. Attempts remaining: {remaining}."
 
-#: src/e2ee/encryption-gate.tsx:290
+#: src/settings/security-settings-page.tsx:275
+msgid "Pogrešna šifra. Pokušajte ponovo."
+msgstr "Wrong password. Try again."
+
+#: src/e2ee/encryption-gate.tsx:300
 msgid "Pokušaj ponovo"
 msgstr "Try again"
 
@@ -838,6 +858,10 @@ msgstr "Move and zoom the image to choose the part that will appear as your prof
 #: src/app-shell/top-bar.tsx:39
 msgid "Pomoć"
 msgstr "Help"
+
+#: src/e2ee/set-pin-modal.tsx:113
+msgid "Ponovo unesite isti PIN kod da biste ga potvrdili."
+msgstr "Enter the same PIN code again to confirm it."
 
 #: src/auth/email-form.tsx:98
 msgid "Pošalji kod"
@@ -876,18 +900,30 @@ msgstr "Signature"
 msgid "Potpis je sačuvan"
 msgstr "Signature saved"
 
+#: src/settings/security-settings-page.tsx:841
+msgid "Potvrdi"
+msgstr "Confirm"
+
 #: src/e2ee/encryption-setup-screen.tsx:33
 msgid "Potvrdite da razumete da šifra ne može biti vraćena."
 msgstr "Confirm that you understand the password cannot be recovered."
 
+#: src/settings/security-settings-page.tsx:602
+msgid "Potvrdite novu šifru"
+msgstr "Confirm new password"
+
 #: src/e2ee/set-pin-modal.tsx:110
-#: src/e2ee/set-pin-modal.tsx:118
+#: src/e2ee/set-pin-modal.tsx:123
 msgid "Potvrdite PIN kod"
 msgstr "Confirm PIN code"
 
 #: src/auth/email-auth-page.tsx:53
 msgid "Potvrdite prijavu"
 msgstr "Confirm sign-in"
+
+#: src/settings/security-settings-page.tsx:729
+msgid "Potvrdite promenu šifre"
+msgstr "Confirm password change"
 
 #: src/e2ee/encryption-setup-screen.tsx:114
 #: src/e2ee/encryption-setup-screen.tsx:118
@@ -918,7 +954,7 @@ msgstr "Download a copy of your account data."
 msgid "Preuzmite kopiju svih podataka knjiga i stavki."
 msgstr "Download a copy of all your book and entry data."
 
-#: src/settings/security-settings-page.tsx:297
+#: src/settings/security-settings-page.tsx:375
 msgid "Pri svakom pokretanju unosite 6-cifreni PIN kod."
 msgstr "Enter your 6-digit PIN code on every launch."
 
@@ -987,17 +1023,34 @@ msgstr "Profile image removed."
 msgid "Profilna slika mora biti manja od 256 KB."
 msgstr "Profile image must be smaller than 256 KB."
 
+#: src/settings/security-settings-page.tsx:561
+msgid "Promena utiče samo na šifru kojom se otključavaju podaci sa servera. Lokalni PIN ili automatsko otključavanje ostaju isti."
+msgstr "The change affects only the password used to unlock data from the server. Your local PIN or automatic unlock stays the same."
+
 #: src/settings/account-settings-page.tsx:833
 #: src/settings/account-settings-page.tsx:836
 msgid "Promeni profilnu sliku"
 msgstr "Change profile photo"
+
+#: src/settings/security-settings-page.tsx:404
+#: src/settings/security-settings-page.tsx:632
+msgid "Promeni šifru"
+msgstr "Change password"
+
+#: src/settings/security-settings-page.tsx:392
+msgid "Promenite glavnu šifru. Podaci neće biti ponovo šifrovani."
+msgstr "Change your master password. Data will not be re-encrypted."
+
+#: src/settings/security-settings-page.tsx:558
+msgid "Promenite šifru za šifrovanje"
+msgstr "Change encryption password"
 
 #: src/settings/account-settings-page.tsx:224
 #: src/settings/account-settings-page.tsx:375
 msgid "Proverite internet vezu i pokušajte ponovo kasnije."
 msgstr "Check your internet connection and try again later."
 
-#: src/e2ee/encryption-gate.tsx:277
+#: src/e2ee/encryption-gate.tsx:287
 msgid "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
 msgstr "Check your internet connection and try again. We won't create a new key until we verify the account's existing setup."
 
@@ -1068,10 +1121,12 @@ msgid "Šifra delatnosti mora imati tačno 4 cifre"
 msgstr "Activity code must have exactly 4 digits"
 
 #: src/e2ee/encryption-setup-screen.tsx:38
+#: src/settings/security-settings-page.tsx:71
 msgid "Šifra i potvrda se ne poklapaju."
 msgstr "The password and confirmation do not match."
 
 #: src/e2ee/encryption-setup-screen.tsx:30
+#: src/settings/security-settings-page.tsx:65
 msgid "Šifra mora imati najmanje 8 znakova."
 msgstr "The password must be at least 8 characters."
 
@@ -1092,8 +1147,13 @@ msgstr "Taxpayer code must have exactly 8 digits"
 #: src/e2ee/encryption-setup-screen.tsx:92
 #: src/e2ee/encryption-unlock-screen.tsx:71
 #: src/e2ee/encryption-unlock-screen.tsx:75
+#: src/settings/security-settings-page.tsx:389
 msgid "Šifra za šifrovanje"
 msgstr "Encryption password"
+
+#: src/settings/security-settings-page.tsx:297
+msgid "Šifra za šifrovanje je promenjena."
+msgstr "Encryption password changed."
 
 #: src/help/help-page.tsx:212
 msgid "Šifrovanje"
@@ -1165,6 +1225,10 @@ msgstr "Theme"
 msgid "Trenutna sesija"
 msgstr "Current session"
 
+#: src/settings/security-settings-page.tsx:800
+msgid "Trenutna šifra"
+msgstr "Current password"
+
 #: src/settings/general-settings-page.tsx:77
 msgid "Trenutni jezik: {localeName}"
 msgstr "Current language: {localeName}"
@@ -1181,7 +1245,7 @@ msgstr "Loading sessions…"
 msgid "Ukloni iz omiljenih za {year}"
 msgstr "Remove {year} from favorites"
 
-#: src/settings/security-settings-page.tsx:205
+#: src/settings/security-settings-page.tsx:459
 msgid "Ukloni PIN kod"
 msgstr "Remove PIN code"
 
@@ -1211,20 +1275,30 @@ msgid "Unesite jednokratni kod koji smo poslali na:"
 msgstr "Enter the one-time code we sent to:"
 
 #: src/e2ee/pin-unlock-screen.tsx:52
+#: src/settings/security-settings-page.tsx:752
 msgid "Unesite PIN kod"
 msgstr "Enter PIN code"
+
+#: src/settings/security-settings-page.tsx:733
+msgid "Unesite PIN kod da biste nastavili."
+msgstr "Enter your PIN code to continue."
 
 #: src/entries/entry-modal.tsx:52
 msgid "Unesite podatke novog unosa."
 msgstr "Enter new entry details."
 
 #: src/e2ee/encryption-setup-screen.tsx:29
+#: src/settings/security-settings-page.tsx:62
 msgid "Unesite šifru za šifrovanje."
 msgstr "Enter the encryption password."
 
-#: src/settings/security-settings-page.tsx:208
+#: src/settings/security-settings-page.tsx:462
 msgid "Unesite trenutni PIN kod da biste potvrdili."
 msgstr "Enter your current PIN code to confirm."
+
+#: src/settings/security-settings-page.tsx:735
+msgid "Unesite trenutnu šifru da biste nastavili."
+msgstr "Enter your current password to continue."
 
 #: src/working-layout/working-layout.tsx:151
 msgid "Unosi"

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { aesGcmEncrypt } from '../aes-gcm';
-import { bytesToBase64 } from '../base64';
+import { base64ToBytes, bytesToBase64 } from '../base64';
 import type { createKeyRingProfilePayload } from '../encryption-crypto';
 import {
   KDF_PARAMS_V1,
@@ -186,6 +186,56 @@ describe('encryption crypto helpers', () => {
     await expect(unwrapKeyRingProfile('password', record)).rejects.toThrow(
       'Failed to unlock key ring',
     );
+  });
+
+  it('creates a replacement password wrapper for the existing MEK', async () => {
+    deriveKekMock.mockResolvedValue(new Uint8Array(32).fill(7));
+    const { createPasswordWrapperPayload, wrappedMekAad } =
+      await import('../encryption-crypto');
+    const { aesGcmDecrypt } = await import('../aes-gcm');
+    const mek = new Uint8Array(32).fill(9);
+
+    const request = await createPasswordWrapperPayload(
+      'user-1',
+      'old-wrapper-id',
+      mek,
+      'same-or-new-password',
+    );
+
+    expect(request.currentWrappingId).toBe('old-wrapper-id');
+    expect(request.kdfParams).toEqual(KDF_PARAMS_V1);
+    expect(request.wrappingParams).toEqual(WRAPPING_PARAMS_V1);
+    expect(base64ToBytes(request.kdfSalt)).toHaveLength(16);
+    expect(base64ToBytes(request.wrappingIv)).toHaveLength(12);
+    const unwrapped = await aesGcmDecrypt({
+      keyBytes: new Uint8Array(32).fill(7),
+      iv: base64ToBytes(request.wrappingIv),
+      ciphertext: base64ToBytes(request.ciphertext),
+      aad: wrappedMekAad('user-1', request.wrappingId, 'password'),
+    });
+    expect(unwrapped).toEqual(mek);
+  });
+
+  it('replacement password wrapper is bound to the new wrapper id', async () => {
+    deriveKekMock.mockResolvedValue(new Uint8Array(32).fill(7));
+    const { createPasswordWrapperPayload, wrappedMekAad } =
+      await import('../encryption-crypto');
+    const { aesGcmDecrypt } = await import('../aes-gcm');
+    const request = await createPasswordWrapperPayload(
+      'user-1',
+      'old-wrapper-id',
+      new Uint8Array(32).fill(9),
+      'password',
+    );
+
+    await expect(
+      aesGcmDecrypt({
+        keyBytes: new Uint8Array(32).fill(7),
+        iv: base64ToBytes(request.wrappingIv),
+        ciphertext: base64ToBytes(request.ciphertext),
+        aad: wrappedMekAad('user-1', 'different-wrapper-id', 'password'),
+      }),
+    ).rejects.toThrow();
   });
 });
 

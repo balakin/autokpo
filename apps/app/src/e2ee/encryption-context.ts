@@ -4,6 +4,8 @@ export interface EncryptionContextValue {
   mek: Uint8Array;
   activeDek: Uint8Array;
   activeDekId: string;
+  clearEncryptionSession: () => void;
+  refreshKeyRingProfile: () => Promise<void>;
 }
 
 export const EncryptionContext = createContext<EncryptionContextValue | null>(

@@ -14,12 +14,14 @@ import { Controller, useForm } from 'react-hook-form';
 type EncryptionUnlockScreenProps = {
   isSubmitting: boolean;
   hasUnlockError: boolean;
+  pinWiped?: boolean;
   onSubmit: (password: string) => void;
 };
 
 export function EncryptionUnlockScreen({
   isSubmitting,
   hasUnlockError,
+  pinWiped = false,
   onSubmit,
 }: EncryptionUnlockScreenProps) {
   const { t } = useLingui();
@@ -48,6 +50,14 @@ export function EncryptionUnlockScreen({
         </Card.Description>
       </Card.Header>
       <Card.Content className="gap-4 pt-1">
+        {pinWiped && (
+          <div className="rounded-2xl border border-border bg-surface-secondary p-3 text-sm text-muted">
+            <Trans>
+              PIN kod je uklonjen zbog previše neuspelih pokušaja. Unesite šifru
+              za šifrovanje.
+            </Trans>
+          </div>
+        )}
         <form
           className="flex flex-col gap-4"
           noValidate

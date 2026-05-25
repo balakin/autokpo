@@ -72,7 +72,7 @@ export function EmailOtpSignIn({
   }, [otp, email, onVerifyOtp, t]);
 
   return (
-    <div>
+    <div className="flex flex-col gap-1.5">
       <InputOTP
         autoFocus
         aria-describedby={emailError ? 'otp-error' : undefined}

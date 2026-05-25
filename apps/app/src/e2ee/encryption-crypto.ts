@@ -5,6 +5,7 @@ import {
   KDF_PARAMS_V1,
   WRAPPING_PARAMS_V1,
   type CreateKeyRingProfileRequest,
+  type KdfParamsV1,
   type SerializedKeyRingProfile,
 } from './key-ring-record';
 
@@ -225,6 +226,100 @@ export function wrappedMekAad(
   return new TextEncoder().encode(
     `autokpo:e2ee-wrapped-mek:v1:${userId}:${wrapperId}:${method}`,
   );
+}
+
+export function pinSaltAad(userId: string, wrapperId: string): Uint8Array {
+  return new TextEncoder().encode(
+    `autokpo:e2ee-pin-salt:v1:${userId}:${wrapperId}`,
+  );
+}
+
+const PIN_SALT_BYTES = 16;
+
+export async function wrapMekWithPin(
+  mek: Uint8Array,
+  pin: string,
+  userId: string,
+  wrapperId: string,
+): Promise<{
+  pinLdk: CryptoKey;
+  pinSaltCiphertext: Uint8Array;
+  pinSaltIv: Uint8Array;
+  kdfParams: KdfParamsV1;
+  ciphertext: Uint8Array;
+  wrappingIv: Uint8Array;
+}> {
+  const pinLdk = await crypto.subtle.generateKey(
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt'],
+  );
+  const salt = randomBytes(PIN_SALT_BYTES);
+  const pinSaltIv = randomBytes(WRAPPING_PARAMS_V1.ivBytes);
+  const pinSaltCiphertextBuffer = await crypto.subtle.encrypt(
+    {
+      name: 'AES-GCM',
+      iv: toBuffer(pinSaltIv),
+      additionalData: toBuffer(pinSaltAad(userId, wrapperId)),
+      tagLength: WRAPPING_PARAMS_V1.tagBits,
+    },
+    pinLdk,
+    toBuffer(salt),
+  );
+  const kek = await deriveKek(pin, salt, KDF_PARAMS_V1);
+  const wrappingIv = randomBytes(WRAPPING_PARAMS_V1.ivBytes);
+  const ciphertext = await aesGcmEncrypt({
+    keyBytes: kek,
+    iv: wrappingIv,
+    plaintext: mek,
+    aad: wrappedMekAad(userId, wrapperId, 'pin'),
+  });
+  return {
+    pinLdk,
+    pinSaltCiphertext: new Uint8Array(pinSaltCiphertextBuffer),
+    pinSaltIv,
+    kdfParams: KDF_PARAMS_V1,
+    ciphertext,
+    wrappingIv,
+  };
+}
+
+export async function unwrapMekWithPin(
+  record: {
+    pinLdk: CryptoKey;
+    pinSaltCiphertext: Uint8Array;
+    pinSaltIv: Uint8Array;
+    kdfParams: KdfParamsV1;
+    ciphertext: Uint8Array;
+    wrappingIv: Uint8Array;
+    userId: string;
+    wrapperId: string;
+  },
+  pin: string,
+): Promise<Uint8Array> {
+  try {
+    const saltBuffer = await crypto.subtle.decrypt(
+      {
+        name: 'AES-GCM',
+        iv: toBuffer(record.pinSaltIv),
+        additionalData: toBuffer(pinSaltAad(record.userId, record.wrapperId)),
+        tagLength: WRAPPING_PARAMS_V1.tagBits,
+      },
+      record.pinLdk,
+      toBuffer(record.pinSaltCiphertext),
+    );
+    const salt = new Uint8Array(saltBuffer);
+    const kek = await deriveKek(pin, salt, record.kdfParams);
+    const mek = await aesGcmDecrypt({
+      keyBytes: kek,
+      iv: record.wrappingIv,
+      ciphertext: record.ciphertext,
+      aad: wrappedMekAad(record.userId, record.wrapperId, 'pin'),
+    });
+    return mek;
+  } catch {
+    throw new EncryptionUnlockError();
+  }
 }
 
 function randomBytes(length: number): Uint8Array {

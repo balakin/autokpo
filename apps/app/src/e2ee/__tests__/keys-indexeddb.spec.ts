@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { KDF_PARAMS_V1 } from '../key-ring-record';
+import { KDF_PARAMS_V1, WRAPPING_PARAMS_V1 } from '../key-ring-record';
 import {
   KeysIndexeddb,
   type KeyRingRecord,
   type LocalWrapperRecord,
+  type LocalWrapperRecordPin,
   type WrapperRecord,
 } from '../keys-indexeddb';
 
@@ -67,6 +68,35 @@ async function makeLdkRecord(userId = USER_ID): Promise<LocalWrapperRecord> {
     ldk,
     ciphertext: new Uint8Array(48).fill(4),
     wrappingIv: new Uint8Array(12).fill(5),
+  };
+}
+
+async function makePinRecord(userId = USER_ID): Promise<LocalWrapperRecordPin> {
+  const pinLdk = await crypto.subtle.generateKey(
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt'],
+  );
+  return {
+    userId,
+    method: 'pin',
+    wrapperId: 'wr-pin-1',
+    pinLdk,
+    pinSaltCiphertext: new Uint8Array(32).fill(6),
+    pinSaltIv: new Uint8Array(12).fill(7),
+    pinEncryptionVersion: 1,
+    pinEncryptionAlgorithm: 'aes-256-gcm',
+    pinEncryptionParams: WRAPPING_PARAMS_V1,
+    kdfAlgorithm: 'argon2id',
+    kdfVersion: 1,
+    kdfParams: KDF_PARAMS_V1,
+    wrappingAlgorithm: 'aes-256-gcm',
+    wrappingVersion: 1,
+    wrappingParams: WRAPPING_PARAMS_V1,
+    ciphertext: new Uint8Array(48).fill(8),
+    wrappingIv: new Uint8Array(12).fill(9),
+    createdAt: '2026-01-01T00:00:00.000Z',
+    failedAttempts: 0,
   };
 }
 
@@ -138,9 +168,11 @@ describe('KeysIndexeddb — local_wrapper store', () => {
     const stored = await store.readLocalWrapper(USER_ID);
     expect(stored).not.toBeNull();
     expect(stored?.method).toBe('ldk');
-    expect(stored?.ldk).toBeInstanceOf(CryptoKey);
-    expect(stored?.ciphertext).toBeInstanceOf(Uint8Array);
-    expect(stored?.wrappingIv).toBeInstanceOf(Uint8Array);
+    if (!stored || stored.method !== 'ldk')
+      throw new Error('expected ldk record');
+    expect(stored.ldk).toBeInstanceOf(CryptoKey);
+    expect(stored.ciphertext).toBeInstanceOf(Uint8Array);
+    expect(stored.wrappingIv).toBeInstanceOf(Uint8Array);
   });
 
   it('deleteLocalWrapper removes the record', async () => {
@@ -154,6 +186,49 @@ describe('KeysIndexeddb — local_wrapper store', () => {
     const store = makeStore();
     await store.whenReady;
     await expect(store.deleteLocalWrapper(USER_ID)).resolves.toBeUndefined();
+  });
+
+  it('round-trips a PIN record and CryptoKey survives the round-trip', async () => {
+    const store = makeStore();
+    const record = await makePinRecord();
+    await store.writeLocalWrapper(record);
+    const stored = await store.readLocalWrapper(USER_ID);
+    expect(stored).not.toBeNull();
+    expect(stored?.method).toBe('pin');
+    if (stored?.method !== 'pin') return;
+    expect(stored.pinLdk).toBeInstanceOf(CryptoKey);
+    expect(stored.pinSaltCiphertext).toBeInstanceOf(Uint8Array);
+    expect(stored.pinSaltIv).toBeInstanceOf(Uint8Array);
+    expect(stored.ciphertext).toBeInstanceOf(Uint8Array);
+    expect(stored.wrappingIv).toBeInstanceOf(Uint8Array);
+    expect(stored.failedAttempts).toBe(0);
+    expect(stored.createdAt).toBe('2026-01-01T00:00:00.000Z');
+  });
+
+  it('writing a PIN record overwrites an existing LDK record', async () => {
+    const store = makeStore();
+    await store.writeLocalWrapper(await makeLdkRecord());
+    await store.writeLocalWrapper(await makePinRecord());
+    const stored = await store.readLocalWrapper(USER_ID);
+    expect(stored?.method).toBe('pin');
+  });
+
+  it('updatePinFailedAttempts increments the counter on an existing PIN record', async () => {
+    const store = makeStore();
+    await store.writeLocalWrapper(await makePinRecord());
+    await store.updatePinFailedAttempts(USER_ID, 3);
+    const stored = await store.readLocalWrapper(USER_ID);
+    if (stored?.method !== 'pin') throw new Error('expected pin');
+    expect(stored.failedAttempts).toBe(3);
+  });
+
+  it('updatePinFailedAttempts is a no-op for a non-pin record', async () => {
+    const store = makeStore();
+    await store.writeLocalWrapper(await makeLdkRecord());
+    await expect(
+      store.updatePinFailedAttempts(USER_ID, 3),
+    ).resolves.toBeUndefined();
+    expect((await store.readLocalWrapper(USER_ID))?.method).toBe('ldk');
   });
 });
 

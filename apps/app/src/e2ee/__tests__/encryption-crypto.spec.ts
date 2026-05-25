@@ -189,6 +189,77 @@ describe('encryption crypto helpers', () => {
   });
 });
 
+describe('PIN crypto operations', () => {
+  it('pinSaltAad returns a deterministic AAD bound to userId and wrapperId', async () => {
+    const { pinSaltAad } = await import('../encryption-crypto');
+    const aad = pinSaltAad('user-1', 'wrapper-1');
+    expect(new TextDecoder().decode(aad)).toBe(
+      'autokpo:e2ee-pin-salt:v1:user-1:wrapper-1',
+    );
+  });
+
+  it('pinSaltAad differs for different userId or wrapperId', async () => {
+    const { pinSaltAad } = await import('../encryption-crypto');
+    const a = pinSaltAad('user-1', 'w-1');
+    const b = pinSaltAad('user-2', 'w-1');
+    const c = pinSaltAad('user-1', 'w-2');
+    expect(a).not.toEqual(b);
+    expect(a).not.toEqual(c);
+  });
+
+  it('wrapMekWithPin and unwrapMekWithPin round-trip the MEK', async () => {
+    deriveKekMock.mockImplementation((_pin: string, salt: Uint8Array) =>
+      Promise.resolve(new Uint8Array(32).fill(salt[0])),
+    );
+    const { wrapMekWithPin, unwrapMekWithPin } =
+      await import('../encryption-crypto');
+    const mek = crypto.getRandomValues(new Uint8Array(32));
+    const userId = 'user-1';
+    const wrapperId = crypto.randomUUID();
+
+    const fields = await wrapMekWithPin(mek, '123456', userId, wrapperId);
+    expect(fields.pinLdk).toBeInstanceOf(CryptoKey);
+    expect(fields.pinLdk.extractable).toBe(false);
+
+    const recovered = await unwrapMekWithPin(
+      { ...fields, userId, wrapperId },
+      '123456',
+    );
+    expect(recovered).toEqual(mek);
+  });
+
+  it('unwrapMekWithPin throws EncryptionUnlockError on wrong PIN', async () => {
+    deriveKekMock
+      .mockResolvedValueOnce(new Uint8Array(32).fill(1))
+      .mockResolvedValueOnce(new Uint8Array(32).fill(2));
+    const { wrapMekWithPin, unwrapMekWithPin, EncryptionUnlockError } =
+      await import('../encryption-crypto');
+    const mek = crypto.getRandomValues(new Uint8Array(32));
+    const userId = 'user-1';
+    const wrapperId = crypto.randomUUID();
+
+    const fields = await wrapMekWithPin(mek, '123456', userId, wrapperId);
+
+    await expect(
+      unwrapMekWithPin({ ...fields, userId, wrapperId }, '000000'),
+    ).rejects.toBeInstanceOf(EncryptionUnlockError);
+  });
+
+  it('unwrapMekWithPin throws EncryptionUnlockError on wrong userId (AAD mismatch)', async () => {
+    deriveKekMock.mockResolvedValue(new Uint8Array(32).fill(5));
+    const { wrapMekWithPin, unwrapMekWithPin, EncryptionUnlockError } =
+      await import('../encryption-crypto');
+    const mek = crypto.getRandomValues(new Uint8Array(32));
+    const wrapperId = crypto.randomUUID();
+
+    const fields = await wrapMekWithPin(mek, '123456', 'user-1', wrapperId);
+
+    await expect(
+      unwrapMekWithPin({ ...fields, userId: 'user-2', wrapperId }, '123456'),
+    ).rejects.toBeInstanceOf(EncryptionUnlockError);
+  });
+});
+
 describe('LDK crypto operations', () => {
   it('generateLdk produces a non-extractable AES-GCM CryptoKey', async () => {
     const { generateLdk } = await import('../encryption-crypto');

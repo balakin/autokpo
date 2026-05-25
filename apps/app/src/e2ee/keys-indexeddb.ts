@@ -54,26 +54,54 @@ const wrapperRecordSchema = z.object({
   createdAt: z.string(),
 });
 
+const cryptoKeySchema = z.custom<CryptoKey>((v) =>
+  typeof CryptoKey !== 'undefined'
+    ? v instanceof CryptoKey
+    : typeof v === 'object' && v !== null && 'type' in v && 'extractable' in v,
+);
+
 const localWrapperRecordLdkSchema = z.object({
   userId: z.string(),
   method: z.literal('ldk'),
   wrapperId: z.string(),
-  ldk: z.custom<CryptoKey>((v) =>
-    typeof CryptoKey !== 'undefined'
-      ? v instanceof CryptoKey
-      : typeof v === 'object' &&
-        v !== null &&
-        'type' in v &&
-        'extractable' in v,
-  ),
+  ldk: cryptoKeySchema,
   ciphertext: uint8ArraySchema,
   wrappingIv: uint8ArraySchema,
+});
+
+const localWrapperRecordPinSchema = z.object({
+  userId: z.string(),
+  method: z.literal('pin'),
+  wrapperId: z.string(),
+  pinLdk: cryptoKeySchema,
+  pinSaltCiphertext: uint8ArraySchema,
+  pinSaltIv: uint8ArraySchema,
+  pinEncryptionVersion: z.literal(1),
+  pinEncryptionAlgorithm: z.literal('aes-256-gcm'),
+  pinEncryptionParams: z.object({
+    ivBytes: z.number().int(),
+    tagBits: z.number().int(),
+  }),
+  kdfAlgorithm: z.literal('argon2id'),
+  kdfVersion: z.literal(1),
+  kdfParams: kdfParamsV1Schema,
+  wrappingAlgorithm: z.literal('aes-256-gcm'),
+  wrappingVersion: z.literal(1),
+  wrappingParams: z.object({
+    ivBytes: z.number().int(),
+    tagBits: z.number().int(),
+  }),
+  ciphertext: uint8ArraySchema,
+  wrappingIv: uint8ArraySchema,
+  createdAt: z.string(),
+  failedAttempts: z.number().int(),
 });
 
 export type KeyRingRecord = z.infer<typeof keyRingRecordSchema>;
 export type WrapperRecord = z.infer<typeof wrapperRecordSchema>;
 export type LocalWrapperRecordLdk = z.infer<typeof localWrapperRecordLdkSchema>;
-export type LocalWrapperRecord = LocalWrapperRecordLdk;
+export type LocalWrapperRecordPin = z.infer<typeof localWrapperRecordPinSchema>;
+export type LocalWrapperRecord = LocalWrapperRecordLdk | LocalWrapperRecordPin;
 
 // ---------------------------------------------------------------------------
 // KeysIndexeddb class
@@ -148,16 +176,34 @@ export class KeysIndexeddb {
       requestToPromise<unknown>(store.get(userId)),
     );
     if (raw === undefined) return null;
+    if (raw !== null && typeof raw === 'object' && 'method' in raw) {
+      if (raw.method === 'ldk') {
+        const result = localWrapperRecordLdkSchema.safeParse(raw);
+        return result.success ? result.data : null;
+      }
+      if (raw.method === 'pin') {
+        const result = localWrapperRecordPinSchema.safeParse(raw);
+        return result.success ? result.data : null;
+      }
+    }
+    return null;
+  }
+
+  async updatePinFailedAttempts(userId: string, count: number): Promise<void> {
+    const db = await this.requireDb();
+    const raw = await withStore(db, STORE_LOCAL_WRAPPER, 'readonly', (store) =>
+      requestToPromise<unknown>(store.get(userId)),
+    );
     if (
       raw !== null &&
       typeof raw === 'object' &&
       'method' in raw &&
-      raw.method === 'ldk'
+      raw.method === 'pin'
     ) {
-      const result = localWrapperRecordLdkSchema.safeParse(raw);
-      return result.success ? result.data : null;
+      await withStore(db, STORE_LOCAL_WRAPPER, 'readwrite', (store) =>
+        requestToPromise(store.put({ ...raw, failedAttempts: count })),
+      );
     }
-    return null;
   }
 
   async writeLocalWrapper(record: LocalWrapperRecord): Promise<void> {

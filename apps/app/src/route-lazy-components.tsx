@@ -33,6 +33,11 @@ const AccountSettingsPageChunk = lazyRouteComponent(() =>
     ({ AccountSettingsPage }) => AccountSettingsPage,
   ),
 );
+const SecuritySettingsPageChunk = lazyRouteComponent(() =>
+  import('./settings/security-settings-page').then(
+    ({ SecuritySettingsPage }) => SecuritySettingsPage,
+  ),
+);
 const HelpPageChunk = lazyRouteComponent(() =>
   import('./help/help-page').then(({ HelpPage }) => HelpPage),
 );
@@ -63,6 +68,10 @@ export function GeneralSettingsPage() {
 
 export function AccountSettingsPage() {
   return <AccountSettingsPageChunk />;
+}
+
+export function SecuritySettingsPage() {
+  return <SecuritySettingsPageChunk />;
 }
 
 export function HelpPage() {

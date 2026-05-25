@@ -60,6 +60,10 @@ msgstr "Ako ste naišli na grešku ili imate predlog za poboljšanje, otvorite t
 msgid "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
 msgstr "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
 
+#: src/settings/security-settings-page.tsx:286
+msgid "Aplikacija se otključava bez interakcije pri svakom pokretanju."
+msgstr "Aplikacija se otključava bez interakcije pri svakom pokretanju."
+
 #: src/help/help-page.tsx:58
 msgid "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između vaših uređaja."
 msgstr "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između vaših uređaja."
@@ -68,7 +72,7 @@ msgstr "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o o
 msgid "AutoKPO ne može da vidi, resetuje ili vrati ovu šifru. Ako je izgubite, šifrovani podaci ne mogu biti vraćeni."
 msgstr "AutoKPO ne može da vidi, resetuje ili vrati ovu šifru. Ako je izgubite, šifrovani podaci ne mogu biti vraćeni."
 
-#: src/e2ee/encryption-unlock-screen.tsx:106
+#: src/e2ee/encryption-unlock-screen.tsx:116
 msgid "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju nedostupni."
 msgstr "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju nedostupni."
 
@@ -79,6 +83,10 @@ msgstr "Autori"
 #: src/currency/currency-convert-modal.tsx:253
 msgid "Beta funkcija. Kursevi se preuzimaju sa <0>kurs.resenje.org<1/></0>. Molimo vas da proverite zvanični kurs na sajtu <2>NBS<3/></2> pre primene."
 msgstr "Beta funkcija. Kursevi se preuzimaju sa <0>kurs.resenje.org<1/></0>. Molimo vas da proverite zvanični kurs na sajtu <2>NBS<3/></2> pre primene."
+
+#: src/settings/settings-page.tsx:57
+msgid "Bezbednost"
+msgstr "Bezbednost"
 
 #: src/help/help-page.tsx:118
 msgid "čl. 33 — rolling 12 meseci"
@@ -219,6 +227,10 @@ msgstr "Izaberite godinu za novu knjigu."
 msgid "Izaberite JPEG, PNG ili WebP sliku."
 msgstr "Izaberite JPEG, PNG ili WebP sliku."
 
+#: src/settings/security-settings-page.tsx:257
+msgid "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju aplikacije."
+msgstr "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju aplikacije."
+
 #: src/auth/auth-entry.tsx:30
 msgid "Izaberite način prijave."
 msgstr "Izaberite način prijave."
@@ -343,6 +355,10 @@ msgstr "Limit: {limitFormatted} (<0>čl. 42 ZPDGa</0>)"
 msgid "Limit: {rollingLimitFormatted} (<0>čl. 33 ZPDV</0>)"
 msgstr "Limit: {rollingLimitFormatted} (<0>čl. 33 ZPDV</0>)"
 
+#: src/settings/security-settings-page.tsx:254
+msgid "Lokalno otključavanje"
+msgstr "Lokalno otključavanje"
+
 #: src/auth/email-form.tsx:78
 msgid "mail@example.com"
 msgstr "mail@example.com"
@@ -354,7 +370,7 @@ msgstr "Možete poslati kod ponovo za {resendSecondsLeft}s"
 #: src/auth/profile-popover.tsx:68
 #: src/e2ee/encryption-profile-popover.tsx:63
 #: src/settings/account-settings-page.tsx:856
-#: src/settings/settings-page.tsx:47
+#: src/settings/settings-page.tsx:49
 msgid "Nalog"
 msgstr "Nalog"
 
@@ -391,7 +407,7 @@ msgstr "Nazad"
 msgid "Nazad na prijavu"
 msgstr "Nazad na prijavu"
 
-#: src/e2ee/encryption-gate.tsx:233
+#: src/e2ee/encryption-gate.tsx:274
 msgid "Ne možemo da proverimo šifrovanje"
 msgstr "Ne možemo da proverimo šifrovanje"
 
@@ -474,6 +490,10 @@ msgstr "Nije moguće ukloniti profilnu sliku. Pokušajte ponovo."
 #: src/auth/email-otp-sign-in.tsx:54
 msgid "Nismo uspeli da pošaljemo kod. Pokušajte ponovo."
 msgstr "Nismo uspeli da pošaljemo kod. Pokušajte ponovo."
+
+#: src/settings/security-settings-page.tsx:284
+msgid "Ništa"
+msgstr "Ništa"
 
 #: src/auth/email-otp-sign-in.tsx:110
 msgid "Niste dobili kod?"
@@ -596,7 +616,7 @@ msgstr "Online"
 msgid "Opis prometa"
 msgstr "Opis prometa"
 
-#: src/settings/settings-page.tsx:39
+#: src/settings/settings-page.tsx:41
 msgid "Opšte"
 msgstr "Opšte"
 
@@ -628,24 +648,28 @@ msgstr "Otkazali ste prijavu. Pokušajte ponovo."
 #: src/books/add-book-modal.tsx:163
 #: src/books/book-library.tsx:201
 #: src/currency/currency-convert-modal.tsx:281
+#: src/e2ee/set-pin-modal.tsx:92
+#: src/e2ee/set-pin-modal.tsx:143
 #: src/entity-profiles/entity-profile-preview.tsx:59
 #: src/entries/entries-table.tsx:145
 #: src/entries/entry-modal.tsx:66
 #: src/settings/account-settings-page.tsx:680
 #: src/settings/account-settings-page.tsx:937
+#: src/settings/security-settings-page.tsx:243
 #: src/signatures/signature-preview.tsx:61
 msgid "Otkaži"
 msgstr "Otkaži"
 
-#: src/e2ee/encryption-unlock-screen.tsx:91
+#: src/e2ee/encryption-unlock-screen.tsx:101
 msgid "Otključaj podatke"
 msgstr "Otključaj podatke"
 
-#: src/e2ee/encryption-unlock-screen.tsx:44
+#: src/e2ee/encryption-unlock-screen.tsx:46
 msgid "Otključajte podatke"
 msgstr "Otključajte podatke"
 
-#: src/e2ee/encryption-unlock-screen.tsx:47
+#: src/e2ee/encryption-unlock-screen.tsx:49
+#: src/e2ee/pin-unlock-screen.tsx:55
 msgid "Otključajte podatke za ovu sesiju."
 msgstr "Otključajte podatke za ovu sesiju."
 
@@ -709,6 +733,21 @@ msgstr "PIB mora imati tačno 9 cifara"
 msgid "PIB mora sadržati samo cifre"
 msgstr "PIB mora sadržati samo cifre"
 
+#: src/e2ee/pin-unlock-screen.tsx:63
+#: src/e2ee/set-pin-modal.tsx:82
+#: src/settings/security-settings-page.tsx:218
+#: src/settings/security-settings-page.tsx:295
+msgid "PIN kod"
+msgstr "PIN kod"
+
+#: src/e2ee/encryption-unlock-screen.tsx:55
+msgid "PIN kod je uklonjen zbog previše neuspelih pokušaja. Unesite šifru za šifrovanje."
+msgstr "PIN kod je uklonjen zbog previše neuspelih pokušaja. Unesite šifru za šifrovanje."
+
+#: src/e2ee/set-pin-modal.tsx:51
+msgid "PIN kodovi se ne poklapaju."
+msgstr "PIN kodovi se ne poklapaju."
+
 #: src/setup-wizard/wizard-stepper.tsx:20
 msgid "Početak"
 msgstr "Početak"
@@ -735,8 +774,8 @@ msgstr "Podaci o obvezniku"
 #: src/auth/auth-preferences-popover.tsx:21
 #: src/auth/auth-preferences-popover.tsx:98
 #: src/auth/auth-preferences-popover.tsx:103
-#: src/settings/settings-page.tsx:25
-#: src/settings/settings-page.tsx:30
+#: src/settings/settings-page.tsx:27
+#: src/settings/settings-page.tsx:32
 msgid "Podešavanja"
 msgstr "Podešavanja"
 
@@ -760,7 +799,16 @@ msgstr "Podešavanje knjige"
 msgid "Podesite šifru za šifrovanje"
 msgstr "Podesite šifru za šifrovanje"
 
-#: src/e2ee/encryption-gate.tsx:249
+#: src/e2ee/pin-unlock-screen.tsx:80
+#: src/settings/security-settings-page.tsx:155
+msgid "Pogrešan PIN. Pokušajte ponovo."
+msgstr "Pogrešan PIN. Pokušajte ponovo."
+
+#: src/e2ee/pin-unlock-screen.tsx:78
+msgid "Pogrešan PIN. Preostalo pokušaja: {remaining}."
+msgstr "Pogrešan PIN. Preostalo pokušaja: {remaining}."
+
+#: src/e2ee/encryption-gate.tsx:290
 msgid "Pokušaj ponovo"
 msgstr "Pokušaj ponovo"
 
@@ -812,6 +860,10 @@ msgstr "Poslednja uspešna sinhronizacija:"
 msgid "Poslednjih 12 meseci"
 msgstr "Poslednjih 12 meseci"
 
+#: src/e2ee/set-pin-modal.tsx:73
+msgid "Postavite PIN kod"
+msgstr "Postavite PIN kod"
+
 #: src/setup-wizard/signature-step.tsx:25
 #: src/setup-wizard/start-step.tsx:43
 #: src/setup-wizard/wizard-stepper.tsx:34
@@ -827,6 +879,11 @@ msgstr "Potpis je sačuvan"
 #: src/e2ee/encryption-setup-screen.tsx:33
 msgid "Potvrdite da razumete da šifra ne može biti vraćena."
 msgstr "Potvrdite da razumete da šifra ne može biti vraćena."
+
+#: src/e2ee/set-pin-modal.tsx:110
+#: src/e2ee/set-pin-modal.tsx:118
+msgid "Potvrdite PIN kod"
+msgstr "Potvrdite PIN kod"
 
 #: src/auth/email-auth-page.tsx:53
 msgid "Potvrdite prijavu"
@@ -860,6 +917,10 @@ msgstr "Preuzmite kopiju podataka vašeg naloga."
 #: src/settings/general-settings-page.tsx:121
 msgid "Preuzmite kopiju svih podataka knjiga i stavki."
 msgstr "Preuzmite kopiju svih podataka knjiga i stavki."
+
+#: src/settings/security-settings-page.tsx:297
+msgid "Pri svakom pokretanju unosite 6-cifreni PIN kod."
+msgstr "Pri svakom pokretanju unosite 6-cifreni PIN kod."
 
 #: src/stats/income-chart.tsx:52
 msgid "Prihod"
@@ -936,7 +997,7 @@ msgstr "Promeni profilnu sliku"
 msgid "Proverite internet vezu i pokušajte ponovo kasnije."
 msgstr "Proverite internet vezu i pokušajte ponovo kasnije."
 
-#: src/e2ee/encryption-gate.tsx:236
+#: src/e2ee/encryption-gate.tsx:277
 msgid "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
 msgstr "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
 
@@ -1014,7 +1075,7 @@ msgstr "Šifra i potvrda se ne poklapaju."
 msgid "Šifra mora imati najmanje 8 znakova."
 msgstr "Šifra mora imati najmanje 8 znakova."
 
-#: src/e2ee/encryption-unlock-screen.tsx:78
+#: src/e2ee/encryption-unlock-screen.tsx:88
 msgid "Šifra nije tačna. Pokušajte ponovo."
 msgstr "Šifra nije tačna. Pokušajte ponovo."
 
@@ -1029,8 +1090,8 @@ msgstr "Šifra poreskog obveznika mora imati tačno 8 cifara"
 
 #: src/e2ee/encryption-setup-screen.tsx:88
 #: src/e2ee/encryption-setup-screen.tsx:92
-#: src/e2ee/encryption-unlock-screen.tsx:61
-#: src/e2ee/encryption-unlock-screen.tsx:65
+#: src/e2ee/encryption-unlock-screen.tsx:71
+#: src/e2ee/encryption-unlock-screen.tsx:75
 msgid "Šifra za šifrovanje"
 msgstr "Šifra za šifrovanje"
 
@@ -1120,6 +1181,10 @@ msgstr "Učitavanje sesija…"
 msgid "Ukloni iz omiljenih za {year}"
 msgstr "Ukloni iz omiljenih za {year}"
 
+#: src/settings/security-settings-page.tsx:205
+msgid "Ukloni PIN kod"
+msgstr "Ukloni PIN kod"
+
 #: src/settings/account-settings-page.tsx:843
 #: src/settings/account-settings-page.tsx:846
 msgid "Ukloni profilnu sliku"
@@ -1128,6 +1193,10 @@ msgstr "Ukloni profilnu sliku"
 #: src/stats/stat-card.tsx:71
 msgid "Ukupno"
 msgstr "Ukupno"
+
+#: src/e2ee/set-pin-modal.tsx:76
+msgid "Unesite 6-cifreni PIN kod."
+msgstr "Unesite 6-cifreni PIN kod."
 
 #: src/entries/entry-form.tsx:88
 msgid "Unesite ispravan datum pre konverzije"
@@ -1141,6 +1210,10 @@ msgstr "Unesite ispravnu email adresu."
 msgid "Unesite jednokratni kod koji smo poslali na:"
 msgstr "Unesite jednokratni kod koji smo poslali na:"
 
+#: src/e2ee/pin-unlock-screen.tsx:52
+msgid "Unesite PIN kod"
+msgstr "Unesite PIN kod"
+
 #: src/entries/entry-modal.tsx:52
 msgid "Unesite podatke novog unosa."
 msgstr "Unesite podatke novog unosa."
@@ -1148,6 +1221,10 @@ msgstr "Unesite podatke novog unosa."
 #: src/e2ee/encryption-setup-screen.tsx:29
 msgid "Unesite šifru za šifrovanje."
 msgstr "Unesite šifru za šifrovanje."
+
+#: src/settings/security-settings-page.tsx:208
+msgid "Unesite trenutni PIN kod da biste potvrdili."
+msgstr "Unesite trenutni PIN kod da biste potvrdili."
 
 #: src/working-layout/working-layout.tsx:151
 msgid "Unosi"
@@ -1237,7 +1314,7 @@ msgstr "Za pregled i izmenu naloga potrebna je internet veza. Opšta podešavanj
 msgid "Za svaku godinu zadržite jednu knjigu, a ostale obrišite."
 msgstr "Za svaku godinu zadržite jednu knjigu, a ostale obrišite."
 
-#: src/e2ee/encryption-unlock-screen.tsx:101
+#: src/e2ee/encryption-unlock-screen.tsx:111
 msgid "Zaboravili ste šifru?"
 msgstr "Zaboravili ste šifru?"
 

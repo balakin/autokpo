@@ -12,6 +12,7 @@ import {
   generateLdk,
   unwrapKeyRingProfile,
   unwrapMekWithLdk,
+  unwrapMekWithPin,
   wrapMekWithLdk,
   wrappedMekAad,
 } from './encryption-crypto';
@@ -32,8 +33,10 @@ import type { SerializedKeyRingProfile } from './key-ring-record';
 import {
   KeysIndexeddb,
   type KeyRingRecord,
+  type LocalWrapperRecordPin,
   type WrapperRecord,
 } from './keys-indexeddb';
+import { PinUnlockScreen } from './pin-unlock-screen';
 
 type EncryptionGateProps = {
   userId: string;
@@ -50,6 +53,10 @@ export function EncryptionGate({ userId, children }: EncryptionGateProps) {
 
 function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
   const [store, setStore] = useState<KeysIndexeddb | null>(null);
+  const [pinWrapper, setPinWrapper] = useState<LocalWrapperRecordPin | null>(
+    null,
+  );
+  const [pinWiped, setPinWiped] = useState(false);
 
   const [gateState, dispatch] = useReducer(
     encryptionGateReducer,
@@ -130,6 +137,13 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
         }
       }
 
+      if (localWrapper?.method === 'pin') {
+        if (cancelled) return;
+        setPinWrapper(localWrapper);
+        dispatch({ type: 'check-succeeded' });
+        return;
+      }
+
       if (cancelled) return;
       dispatch({ type: 'check-succeeded' });
     }
@@ -201,6 +215,33 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
     }
   }
 
+  async function unlockWithPin(pin: string) {
+    if (!store || !pinWrapper) return;
+    dispatch({ type: 'unlock-submitted' });
+    try {
+      const mek = await unwrapMekWithPin(pinWrapper, pin);
+      const keyRingRecord = await store.readKeyRing(userId);
+      if (!keyRingRecord) throw new EncryptionUnlockError();
+      const { activeDek, activeDekId } = await decryptKeyRingWithMek(
+        mek,
+        keyRingRecord,
+      );
+      await store.updatePinFailedAttempts(userId, 0);
+      dispatch({ type: 'unlocked', mek, activeDek, activeDekId });
+    } catch {
+      const nextCount = pinWrapper.failedAttempts + 1;
+      if (nextCount >= 10) {
+        await store.deleteLocalWrapper(userId);
+        setPinWrapper(null);
+        setPinWiped(true);
+      } else {
+        await store.updatePinFailedAttempts(userId, nextCount);
+        setPinWrapper({ ...pinWrapper, failedAttempts: nextCount });
+      }
+      dispatch({ type: 'unlock-failed' });
+    }
+  }
+
   if (
     session.status === 'unlocked' &&
     gateState.mek &&
@@ -265,6 +306,21 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
     );
   }
 
+  if (pinWrapper && !pinWiped) {
+    return (
+      <EncryptionShell>
+        <PinUnlockScreen
+          failedAttempts={pinWrapper.failedAttempts}
+          hasUnlockError={
+            session.status === 'error' && session.error === 'unlock'
+          }
+          isSubmitting={session.status === 'unlock-submitting'}
+          onSubmit={(pin) => void unlockWithPin(pin)}
+        />
+      </EncryptionShell>
+    );
+  }
+
   return (
     <EncryptionShell>
       <EncryptionUnlockScreen
@@ -272,6 +328,7 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
           session.status === 'error' && session.error === 'unlock'
         }
         isSubmitting={session.status === 'unlock-submitting'}
+        pinWiped={pinWiped}
         onSubmit={(password) => void unlock(password)}
       />
     </EncryptionShell>

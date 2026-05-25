@@ -6,10 +6,12 @@ import { I18nWrapper } from '../../../tests/app/render-helpers';
 import { AuthContext } from '../../auth/auth-context';
 import { useEncryptionContext } from '../encryption-context';
 import { EncryptionGate } from '../encryption-gate';
+import { KDF_PARAMS_V1, WRAPPING_PARAMS_V1 } from '../key-ring-record';
 import type {
   CreateKeyRingProfileRequest,
   SerializedKeyRingProfile,
 } from '../key-ring-record';
+import { KeysIndexeddb } from '../keys-indexeddb';
 
 const createKeyRingProfileMock = vi.hoisted(() => vi.fn());
 const fetchKeyRingProfileMock = vi.hoisted(() => vi.fn());
@@ -23,6 +25,7 @@ const wrapMekWithLdkMock = vi.hoisted(() =>
   }),
 );
 const unwrapMekWithLdkMock = vi.hoisted(() => vi.fn());
+const unwrapMekWithPinMock = vi.hoisted(() => vi.fn());
 const decryptKeyRingWithMekMock = vi.hoisted(() => vi.fn());
 
 vi.mock('../key-ring-api', () => {
@@ -45,6 +48,7 @@ vi.mock('../encryption-crypto', () => ({
   generateLdk: generateLdkMock,
   wrapMekWithLdk: wrapMekWithLdkMock,
   unwrapMekWithLdk: unwrapMekWithLdkMock,
+  unwrapMekWithPin: unwrapMekWithPinMock,
   decryptKeyRingWithMek: decryptKeyRingWithMekMock,
   EncryptionUnlockError: class EncryptionUnlockError extends Error {
     constructor() {
@@ -56,6 +60,8 @@ vi.mock('../encryption-crypto', () => ({
     new TextEncoder().encode(
       `autokpo:e2ee-wrapped-mek:v1:${userId}:${wrapperId}:${method}`,
     ),
+  pinSaltAad: (userId: string, wrapperId: string) =>
+    new TextEncoder().encode(`autokpo:e2ee-pin-salt:v1:${userId}:${wrapperId}`),
 }));
 
 const activeDek = new Uint8Array(32).fill(1);
@@ -138,6 +144,7 @@ beforeEach(() => {
     iv: new Uint8Array(12),
   });
   unwrapMekWithLdkMock.mockReset();
+  unwrapMekWithPinMock.mockReset();
   decryptKeyRingWithMekMock.mockResolvedValue({
     activeDek,
     activeDekId: 'dek-1',
@@ -464,6 +471,122 @@ describe('EncryptionGate', () => {
 
     // Children are not rendered when locked
     expect(screen.queryByText('protected content')).not.toBeInTheDocument();
+  });
+});
+
+describe('EncryptionGate — PIN unlock path', () => {
+  async function writePinRecord(userId = 'user-1', failedAttempts = 0) {
+    const pinLdk = await crypto.subtle.generateKey(
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt'],
+    );
+    const store = new KeysIndexeddb();
+    await store.whenReady;
+    await store.writeLocalWrapper({
+      userId,
+      method: 'pin',
+      wrapperId: 'wr-pin-1',
+      pinLdk,
+      pinSaltCiphertext: new Uint8Array(32).fill(1),
+      pinSaltIv: new Uint8Array(12).fill(2),
+      pinEncryptionVersion: 1,
+      pinEncryptionAlgorithm: 'aes-256-gcm',
+      pinEncryptionParams: WRAPPING_PARAMS_V1,
+      kdfAlgorithm: 'argon2id',
+      kdfVersion: 1,
+      kdfParams: KDF_PARAMS_V1,
+      wrappingAlgorithm: 'aes-256-gcm',
+      wrappingVersion: 1,
+      wrappingParams: WRAPPING_PARAMS_V1,
+      ciphertext: new Uint8Array(48).fill(3),
+      wrappingIv: new Uint8Array(12).fill(4),
+      createdAt: '2026-01-01T00:00:00.000Z',
+      failedAttempts,
+    });
+    store.close();
+  }
+
+  it('shows PIN screen when a PIN local wrapper is present', async () => {
+    fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
+    await writePinRecord();
+
+    renderGate();
+
+    expect(await screen.findByText(/Unesite PIN kod/i)).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: /Otključajte podatke/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('unlocks with correct PIN and renders children', async () => {
+    const user = userEvent.setup();
+    fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
+    await writePinRecord();
+
+    const mek = new Uint8Array(32).fill(9);
+    unwrapMekWithPinMock.mockResolvedValue(mek);
+    decryptKeyRingWithMekMock.mockResolvedValue({
+      activeDek,
+      activeDekId: 'dek-1',
+    });
+
+    renderGate();
+
+    await screen.findByText(/Unesite PIN kod/i);
+
+    for (const digit of ['1', '2', '3', '4', '5', '6']) {
+      await user.keyboard(digit);
+    }
+
+    await screen.findByText('protected content');
+  });
+
+  it('shows error and increments counter on wrong PIN', async () => {
+    const user = userEvent.setup();
+    fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
+    await writePinRecord();
+
+    unwrapMekWithPinMock.mockRejectedValue(
+      Object.assign(new Error('Failed to unlock key ring'), {
+        name: 'EncryptionUnlockError',
+      }),
+    );
+
+    renderGate();
+
+    await screen.findByText(/Unesite PIN kod/i);
+
+    for (const digit of ['0', '0', '0', '0', '0', '0']) {
+      await user.keyboard(digit);
+    }
+
+    expect(await screen.findByText(/Pogrešan PIN/i)).toBeInTheDocument();
+  });
+
+  it('falls back to password screen after 10 failed attempts', async () => {
+    const user = userEvent.setup();
+    fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
+    await writePinRecord('user-1', 9);
+
+    unwrapMekWithPinMock.mockRejectedValue(
+      Object.assign(new Error('Failed to unlock key ring'), {
+        name: 'EncryptionUnlockError',
+      }),
+    );
+
+    renderGate();
+
+    await screen.findByText(/Unesite PIN kod/i);
+
+    for (const digit of ['0', '0', '0', '0', '0', '0']) {
+      await user.keyboard(digit);
+    }
+
+    expect(await screen.findByText(/PIN kod je uklonjen/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /Otključajte podatke/i }),
+    ).toBeInTheDocument();
   });
 });
 

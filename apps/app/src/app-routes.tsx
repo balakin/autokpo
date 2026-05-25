@@ -18,6 +18,7 @@ import {
   HelpPage,
   LazySignedInApp,
   LazySignedInBoundary,
+  SecuritySettingsPage,
   SettingsPage,
 } from './route-lazy-components';
 import { SignedInEncryptionBoundary } from './signed-in-encryption-boundary';
@@ -60,6 +61,7 @@ export function createAppRoutes(): RouteObject[] {
                 },
                 { path: 'general', element: <GeneralSettingsPage /> },
                 { path: 'account', element: <AccountSettingsPage /> },
+                { path: 'security', element: <SecuritySettingsPage /> },
               ],
             },
           ],

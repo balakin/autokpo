@@ -17,7 +17,9 @@ export function SettingsPage() {
   const { pathname } = useLocation();
   const selectedTab = pathname.startsWith('/settings/account')
     ? 'account'
-    : 'general';
+    : pathname.startsWith('/settings/security')
+      ? 'security'
+      : 'general';
 
   return (
     <div className="flex flex-col gap-6 p-4 lg:p-6">
@@ -45,6 +47,14 @@ export function SettingsPage() {
           className={tabLink({ selected: selectedTab === 'account' })}
         >
           <Trans>Nalog</Trans>
+        </Link>
+        <Link
+          to="/settings/security"
+          role="tab"
+          aria-selected={selectedTab === 'security'}
+          className={tabLink({ selected: selectedTab === 'security' })}
+        >
+          <Trans>Bezbednost</Trans>
         </Link>
       </nav>
 

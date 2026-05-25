@@ -1,0 +1,12 @@
+.pinInput :global(.input-otp__slot-value) {
+  display: none;
+}
+
+.pinInput :global(.input-otp__slot[data-filled='true'])::after {
+  content: '●';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

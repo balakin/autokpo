@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "154db7bf-1ab4-4b4d-993a-073d5c53b33d",
+  "id": "5f5bf5fd-cedf-4a48-9d92-a8c498f2f785",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -698,7 +698,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
         }
       },
       "indexes": {
@@ -722,6 +722,28 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
+    },
+    "tx_assert": {
+      "name": "tx_assert",
+      "columns": {
+        "ok": {
+          "name": "ok",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "tx_assert_ok_check": {
+          "name": "tx_assert_ok_check",
+          "value": "\"tx_assert\".\"ok\" = 1"
+        }
+      }
     }
   },
   "views": {},

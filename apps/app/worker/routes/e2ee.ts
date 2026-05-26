@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 
 import { requireSession } from '../auth';
 import { getDb } from '../db';
+import { assertExists } from '../db/assert';
 import {
   keyRing,
   keyRingWrapping,
@@ -32,10 +33,31 @@ e2eeRouter.get('/key-ring', async (c) => {
   const session = await requireSession(c);
   if (session instanceof Response) return session;
 
-  const record = await getActivePasswordWrapping(c.env.DB, session.user.id);
-  if (!record) return c.json({ code: 'encryption_key_not_found' }, 404);
+  const db = getDb(c.env.DB);
+  const [[keyRingRow], [wrapping]] = await db.batch([
+    db
+      .select()
+      .from(keyRing)
+      .where(eq(keyRing.userId, session.user.id))
+      .limit(1),
+    db
+      .select()
+      .from(keyRingWrapping)
+      .where(
+        and(
+          eq(keyRingWrapping.userId, session.user.id),
+          eq(keyRingWrapping.method, 'password'),
+          eq(keyRingWrapping.status, 'active'),
+          isNull(keyRingWrapping.revokedAt),
+        ),
+      )
+      .limit(1),
+  ]);
+  if (keyRingRow && wrapping) {
+    return c.json(serializeRecord(keyRingRow, wrapping));
+  }
 
-  return c.json(serializeRecord(record.keyRing, record.wrapping));
+  return c.json({ code: 'encryption_key_not_found' }, 404);
 });
 
 e2eeRouter.post('/key-ring', async (c) => {
@@ -51,44 +73,43 @@ e2eeRouter.post('/key-ring', async (c) => {
   if (parsed instanceof Response) return parsed;
 
   const db = getDb(c.env.DB);
-  const [existing] = await db
-    .select({ id: keyRing.id })
-    .from(keyRing)
-    .where(eq(keyRing.userId, session.user.id))
-    .limit(1);
-
-  if (existing) return c.json({ code: 'encryption_key_already_exists' }, 409);
-
-  await db.batch([
-    db.insert(keyRing).values({
-      id: parsed.keyRingId,
-      userId: session.user.id,
-      activeDekId: parsed.activeDekId,
-      encryptionVersion: 1,
-      encryptionAlgorithm: 'aes-256-gcm',
-      iv: parsed.keyRingIv,
-      ciphertext: parsed.keyRingCiphertext,
-    }),
-    db.insert(keyRingWrapping).values({
-      id: parsed.wrappingId,
-      userId: session.user.id,
-      method: 'password',
-      status: 'active',
-      kdfVersion: 1,
-      kdfAlgorithm: 'argon2id',
-      kdfParamsJson: JSON.stringify(KDF_PARAMS_V1),
-      kdfSalt: parsed.kdfSalt,
-      wrappingVersion: 1,
-      wrappingAlgorithm: 'aes-256-gcm',
-      wrappingParamsJson: JSON.stringify(WRAPPING_PARAMS_V1),
-      wrappingIv: parsed.wrappingIv,
-      ciphertext: parsed.wrappedMek,
-    }),
-  ]);
-
-  const record = await getActivePasswordWrapping(c.env.DB, session.user.id);
-  if (!record) return c.json({ code: 'encryption_key_not_found' }, 500);
-  return c.json(serializeRecord(record.keyRing, record.wrapping), 201);
+  try {
+    const [[keyRingRow], [wrapping]] = await db.batch([
+      db
+        .insert(keyRing)
+        .values({
+          id: parsed.keyRingId,
+          userId: session.user.id,
+          activeDekId: parsed.activeDekId,
+          encryptionVersion: 1,
+          encryptionAlgorithm: 'aes-256-gcm',
+          iv: parsed.keyRingIv,
+          ciphertext: parsed.keyRingCiphertext,
+        })
+        .returning(),
+      db
+        .insert(keyRingWrapping)
+        .values({
+          id: parsed.wrappingId,
+          userId: session.user.id,
+          method: 'password',
+          status: 'active',
+          kdfVersion: 1,
+          kdfAlgorithm: 'argon2id',
+          kdfParamsJson: JSON.stringify(KDF_PARAMS_V1),
+          kdfSalt: parsed.kdfSalt,
+          wrappingVersion: 1,
+          wrappingAlgorithm: 'aes-256-gcm',
+          wrappingParamsJson: JSON.stringify(WRAPPING_PARAMS_V1),
+          wrappingIv: parsed.wrappingIv,
+          ciphertext: parsed.wrappedMek,
+        })
+        .returning(),
+    ]);
+    return c.json(serializeRecord(keyRingRow, wrapping), 201);
+  } catch {
+    return c.json({ code: 'encryption_key_already_exists' }, 409);
+  }
 });
 
 e2eeRouter.post('/key-ring/change-password', async (c) => {
@@ -104,15 +125,22 @@ e2eeRouter.post('/key-ring/change-password', async (c) => {
   if (parsed instanceof Response) return parsed;
 
   const db = getDb(c.env.DB);
-  const record = await getActivePasswordWrapping(c.env.DB, session.user.id);
-  if (!record) return c.json({ code: 'encryption_key_not_found' }, 404);
-
-  if (record.wrapping.id !== parsed.currentWrappingId) {
-    return c.json({ code: 'password_wrapper_conflict' }, 409);
-  }
-
   try {
     await db.batch([
+      // guard: abort if the current wrapping is not active (already revoked or missing)
+      assertExists(db, (q) =>
+        q
+          .from(keyRingWrapping)
+          .where(
+            and(
+              eq(keyRingWrapping.id, parsed.currentWrappingId),
+              eq(keyRingWrapping.userId, session.user.id),
+              eq(keyRingWrapping.method, 'password'),
+              eq(keyRingWrapping.status, 'active'),
+            ),
+          ),
+      ),
+      // revoke the current wrapping
       db
         .update(keyRingWrapping)
         .set({ status: 'revoked', revokedAt: new Date() })
@@ -124,6 +152,7 @@ e2eeRouter.post('/key-ring/change-password', async (c) => {
             eq(keyRingWrapping.status, 'active'),
           ),
         ),
+      // insert the new wrapping with the re-encrypted key
       db.insert(keyRingWrapping).values({
         id: parsed.wrappingId,
         userId: session.user.id,
@@ -146,34 +175,6 @@ e2eeRouter.post('/key-ring/change-password', async (c) => {
 
   return c.body(null, 204);
 });
-
-async function getActivePasswordWrapping(
-  dbBinding: D1Database,
-  userId: string,
-) {
-  const db = getDb(dbBinding);
-  const [keyRingRow] = await db
-    .select()
-    .from(keyRing)
-    .where(eq(keyRing.userId, userId))
-    .limit(1);
-  if (!keyRingRow) return null;
-
-  const [wrapping] = await db
-    .select()
-    .from(keyRingWrapping)
-    .where(
-      and(
-        eq(keyRingWrapping.userId, userId),
-        eq(keyRingWrapping.method, 'password'),
-        eq(keyRingWrapping.status, 'active'),
-        isNull(keyRingWrapping.revokedAt),
-      ),
-    )
-    .limit(1);
-  if (!wrapping) return null;
-  return { keyRing: keyRingRow, wrapping };
-}
 
 function parseCreateBody(body: unknown) {
   if (!body || typeof body !== 'object') {

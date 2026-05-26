@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { clearAuthData, workerTestEnv } from '../../tests/worker/auth-helpers';
@@ -8,7 +9,7 @@ import {
   type SessionState,
 } from '../../tests/worker/request-helpers';
 import { getDb } from '../db';
-import { keyRing } from '../db/schema';
+import { keyRing, syncRecord } from '../db/schema';
 import app from '../main';
 
 const sessionState: SessionState = { userId: 'user-1', headers: null };
@@ -371,6 +372,34 @@ describe('POST /api/sync', () => {
     const res = await syncRequest('/api/sync', pushBody(oversized));
     expect(res.status).toBe(413);
   });
+
+  it('returns 409 write_conflict when encryptionKeyId does not match active DEK at write time', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+
+    const wrongKeyId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    const res = await syncRequest('/api/sync', {
+      method: 'POST',
+      headers: syncHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        encryptionKeyId: wrongKeyId,
+        encryptionAlgorithm: TEST_ALGORITHM,
+        encryptionVersion: 1,
+        iv: toBase64(TEST_IV),
+        ciphertext: toBase64(makeCiphertext([1])),
+      }),
+    });
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ code: 'write_conflict' });
+
+    const db = getDb(workerTestEnv.DB);
+    const rows = await db
+      .select()
+      .from(syncRecord)
+      .where(eq(syncRecord.userId, 'user-1'));
+    expect(rows).toHaveLength(0);
+  });
 });
 
 describe('POST /api/sync/compact', () => {
@@ -522,5 +551,40 @@ describe('POST /api/sync/compact', () => {
       compactBody(new Uint8Array([0xde, 0xad, 0xbe, 0xef]), 0),
     );
     expect(res.status).toBe(200);
+  });
+
+  it('returns 409 write_conflict when encryptionKeyId does not match active DEK at write time', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    for (let i = 0; i < 3; i++) {
+      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+    }
+
+    const wrongKeyId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    const res = await syncRequest('/api/sync/compact', {
+      method: 'POST',
+      headers: syncHeaders({
+        'Content-Type': 'application/json',
+        'X-Replaces-Up-To': '3',
+      }),
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        encryptionKeyId: wrongKeyId,
+        encryptionAlgorithm: TEST_ALGORITHM,
+        encryptionVersion: 1,
+        iv: toBase64(TEST_IV),
+        ciphertext: toBase64(makeCiphertext([99])),
+      }),
+    });
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ code: 'write_conflict' });
+
+    const db = getDb(workerTestEnv.DB);
+    const rows = await db
+      .select()
+      .from(syncRecord)
+      .where(eq(syncRecord.userId, 'user-1'));
+    expect(rows.filter((r) => r.kind === 'snapshot')).toHaveLength(0);
+    expect(rows.filter((r) => r.kind === 'update')).toHaveLength(3);
   });
 });

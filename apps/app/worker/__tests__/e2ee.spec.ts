@@ -147,6 +147,37 @@ describe('/api/e2ee/key-ring', () => {
     expect(duplicate.status).toBe(409);
   });
 
+  it('atomic setup: duplicate setup leaves only original key ring and wrapper', async () => {
+    const first = validPayload();
+    await req('/api/e2ee/key-ring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(first),
+    });
+
+    const second = { ...validPayload(), keyRingId: crypto.randomUUID() };
+    await req('/api/e2ee/key-ring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(second),
+    });
+
+    const db = getDb(workerTestEnv.DB);
+    const keyRings = await db
+      .select()
+      .from(keyRing)
+      .where(eq(keyRing.userId, 'e2ee-user-1'));
+    expect(keyRings).toHaveLength(1);
+    expect(keyRings[0].id).toBe(first.keyRingId);
+
+    const wrappers = await db
+      .select()
+      .from(keyRingWrapping)
+      .where(eq(keyRingWrapping.userId, 'e2ee-user-1'));
+    expect(wrappers).toHaveLength(1);
+    expect(wrappers[0].id).toBe(first.wrappingId);
+  });
+
   it('rejects invalid payloads', async () => {
     const res = await req('/api/e2ee/key-ring', {
       method: 'POST',

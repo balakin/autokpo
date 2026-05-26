@@ -1,9 +1,10 @@
-import { and, eq, gt, sql } from 'drizzle-orm';
+import { and, eq, exists, gt, gte, lte, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
 import { requireSession } from '../auth';
 import { getDb } from '../db';
+import { assertCondition, assertExists } from '../db/assert';
 import { keyRing, syncRecord } from '../db/schema';
 
 const MAX_PLAINTEXT_BYTES = 1 * 1024 * 1024;
@@ -54,8 +55,6 @@ router.get('/', async (c) => {
   }
   const userId = session.user.id;
   const db = getDb(c.env.DB);
-  const keyRingRow = await getActiveKeyRing(db, userId);
-  if (!keyRingRow) return codeResponse('encryption_key_not_found', 404);
 
   const ifNoneMatch = c.req.header('If-None-Match');
   const since =
@@ -67,7 +66,8 @@ router.get('/', async (c) => {
     return c.json({ error: 'Invalid If-None-Match header' }, 400);
   }
 
-  const [[meta], items] = await db.batch([
+  const [[keyRingRow], [meta], items] = await db.batch([
+    db.select().from(keyRing).where(eq(keyRing.userId, userId)).limit(1),
     db
       .select({
         head: sql<number>`COALESCE(MAX(${syncRecord.seq}), 0)`,
@@ -90,6 +90,8 @@ router.get('/', async (c) => {
       .where(and(eq(syncRecord.userId, userId), gt(syncRecord.seq, since)))
       .orderBy(syncRecord.seq),
   ]);
+
+  if (!keyRingRow) return codeResponse('encryption_key_not_found', 404);
 
   if (since > 0 && meta.minSeq > 0 && since < meta.minSeq) {
     return c.json({ error: 'Cursor is stale; refetch from scratch' }, 410);
@@ -127,9 +129,6 @@ router.post('/', async (c) => {
     return codeResponse('local_user_mismatch', 409);
   }
   const userId = session.user.id;
-  const db = getDb(c.env.DB);
-  const keyRingRow = await getActiveKeyRing(db, userId);
-  if (!keyRingRow) return codeResponse('encryption_key_not_found', 404);
 
   const rawBody: unknown = await c.req.json().catch(() => null);
   const parsed = pushBodySchema.safeParse(rawBody);
@@ -160,15 +159,78 @@ router.post('/', async (c) => {
   if (ivBytes.byteLength !== 12) {
     return c.json({ error: 'IV must be 12 bytes' }, 400);
   }
-  if (encryptionKeyId !== keyRingRow.activeDekId) {
-    return codeResponse('encryption_key_mismatch', 409);
-  }
   if (ciphertextBytes.byteLength > MAX_CIPHERTEXT_BYTES) {
     return c.json({ error: 'Payload too large' }, 413);
   }
 
-  const [[existing]] = await db.batch([
-    db
+  const db = getDb(c.env.DB);
+
+  try {
+    const [, [row]] = await db.batch([
+      // guard: abort if encryptionKeyId doesn't match the user's active DEK
+      assertExists(db, (q) =>
+        q
+          .from(keyRing)
+          .where(
+            and(
+              eq(keyRing.userId, userId),
+              eq(keyRing.activeDekId, encryptionKeyId),
+            ),
+          ),
+      ),
+      // atomically assign the next seq and insert the record;
+      // HAVING aborts the insert (returns no rows) when the hard storage cap would be exceeded
+      db
+        .insert(syncRecord)
+        .select(
+          db
+            .select({
+              id: sql`${id}`.as('id'),
+              userId: sql`${userId}`.as('user_id'),
+              seq: sql`COALESCE(MAX(${syncRecord.seq}), 0) + 1`.as('seq'),
+              encryptionAlgorithm: sql`${encryptionAlgorithm}`.as(
+                'encryption_algorithm',
+              ),
+              encryptionVersion: sql`${encryptionVersion}`.as(
+                'encryption_version',
+              ),
+              iv: sql`${ivBytes}`.as('iv'),
+              ciphertext: sql`${ciphertextBytes}`.as('ciphertext'),
+              kind: sql`'update'`.as('kind'),
+              encryptionKeyId: sql`${encryptionKeyId}`.as('encryption_key_id'),
+              created: sql`(cast(unixepoch('subsecond') * 1000 as integer))`.as(
+                'created',
+              ),
+            })
+            .from(syncRecord)
+            .where(eq(syncRecord.userId, userId))
+            .having(
+              sql`COALESCE(SUM(LENGTH(${syncRecord.ciphertext})), 0) + ${ciphertextBytes.byteLength} <= ${HARD_CAP_BYTES}`,
+            ),
+        )
+        // return post-insert stats to decide whether to hint the client to compact
+        .returning({
+          seq: syncRecord.seq,
+          rowCount:
+            sql<number>`(SELECT COUNT(*) FROM ${syncRecord} WHERE ${syncRecord.userId} = ${userId})`.as(
+              'rowCount',
+            ),
+          totalBytes:
+            sql<number>`(SELECT COALESCE(SUM(LENGTH(${syncRecord.ciphertext})), 0) FROM ${syncRecord} WHERE ${syncRecord.userId} = ${userId})`.as(
+              'totalBytes',
+            ),
+        }),
+    ]);
+
+    if (row) {
+      const compactHint =
+        row.rowCount >= SOFT_CAP_ROWS || row.totalBytes >= SOFT_CAP_BYTES;
+      const headers: Record<string, string> = { ETag: `"${row.seq}"` };
+      if (compactHint) headers['X-Compact-Hint'] = 'please';
+      return c.body(null, 200, headers);
+    }
+  } catch {
+    const [existing] = await db
       .select({
         existingSeq: syncRecord.seq,
         existingEncryptionAlgorithm: syncRecord.encryptionAlgorithm,
@@ -177,70 +239,28 @@ router.post('/', async (c) => {
         existingCiphertext: syncRecord.ciphertext,
       })
       .from(syncRecord)
-      .where(and(eq(syncRecord.userId, userId), eq(syncRecord.id, id))),
-  ]);
+      .where(and(eq(syncRecord.userId, userId), eq(syncRecord.id, id)));
 
-  if (existing) {
-    if (
-      existing.existingEncryptionAlgorithm === encryptionAlgorithm &&
-      existing.existingEncryptionVersion === encryptionVersion &&
-      existing.existingIv.byteLength === ivBytes.byteLength &&
-      new Uint8Array(existing.existingIv).every((v, i) => v === ivBytes[i]) &&
-      existing.existingCiphertext.byteLength === ciphertextBytes.byteLength &&
-      new Uint8Array(existing.existingCiphertext).every(
-        (v, i) => v === ciphertextBytes[i],
-      )
-    ) {
-      return c.body(null, 200, { ETag: `"${existing.existingSeq}"` });
+    if (existing) {
+      if (
+        existing.existingEncryptionAlgorithm === encryptionAlgorithm &&
+        existing.existingEncryptionVersion === encryptionVersion &&
+        existing.existingIv.byteLength === ivBytes.byteLength &&
+        new Uint8Array(existing.existingIv).every((v, i) => v === ivBytes[i]) &&
+        existing.existingCiphertext.byteLength === ciphertextBytes.byteLength &&
+        new Uint8Array(existing.existingCiphertext).every(
+          (v, i) => v === ciphertextBytes[i],
+        )
+      ) {
+        return c.body(null, 200, { ETag: `"${existing.existingSeq}"` });
+      }
+      return codeResponse('idempotency_conflict', 409);
     }
-    return codeResponse('idempotency_conflict', 409);
+
+    return codeResponse('write_conflict', 409);
   }
 
-  const [row] = await db
-    .insert(syncRecord)
-    .select(
-      db
-        .select({
-          id: sql`${id}`.as('id'),
-          userId: sql`${userId}`.as('user_id'),
-          seq: sql`COALESCE(MAX(${syncRecord.seq}), 0) + 1`.as('seq'),
-          encryptionAlgorithm: sql`${encryptionAlgorithm}`.as(
-            'encryption_algorithm',
-          ),
-          encryptionVersion: sql`${encryptionVersion}`.as('encryption_version'),
-          iv: sql`${ivBytes}`.as('iv'),
-          ciphertext: sql`${ciphertextBytes}`.as('ciphertext'),
-          kind: sql`'update'`.as('kind'),
-          encryptionKeyId: sql`${encryptionKeyId}`.as('encryption_key_id'),
-          created: sql`CURRENT_TIMESTAMP`.as('created'),
-        })
-        .from(syncRecord)
-        .where(eq(syncRecord.userId, userId))
-        .having(
-          sql`COALESCE(SUM(LENGTH(${syncRecord.ciphertext})), 0) + ${ciphertextBytes.byteLength} <= ${HARD_CAP_BYTES}`,
-        ),
-    )
-    .returning({
-      seq: syncRecord.seq,
-      rowCount:
-        sql<number>`(SELECT COUNT(*) FROM sync_record WHERE user_id = ${userId})`.as(
-          'rowCount',
-        ),
-      totalBytes:
-        sql<number>`(SELECT COALESCE(SUM(LENGTH(ciphertext)), 0) FROM sync_record WHERE user_id = ${userId})`.as(
-          'totalBytes',
-        ),
-    });
-
-  if (!row) {
-    return c.json({ error: 'Storage limit exceeded' }, 413);
-  }
-
-  const compactHint =
-    row.rowCount >= SOFT_CAP_ROWS || row.totalBytes >= SOFT_CAP_BYTES;
-  const headers: Record<string, string> = { ETag: `"${row.seq}"` };
-  if (compactHint) headers['X-Compact-Hint'] = 'please';
-  return c.body(null, 200, headers);
+  return c.json({ error: 'Storage limit exceeded' }, 413);
 });
 
 router.post('/compact', async (c) => {
@@ -252,9 +272,6 @@ router.post('/compact', async (c) => {
     return codeResponse('local_user_mismatch', 409);
   }
   const userId = session.user.id;
-  const db = getDb(c.env.DB);
-  const keyRingRow = await getActiveKeyRing(db, userId);
-  if (!keyRingRow) return codeResponse('encryption_key_not_found', 404);
 
   const replacesUpToStr = c.req.header('X-Replaces-Up-To');
   if (!replacesUpToStr) {
@@ -295,15 +312,154 @@ router.post('/compact', async (c) => {
   if (ivBytes.byteLength !== 12) {
     return c.json({ error: 'IV must be 12 bytes' }, 400);
   }
-  if (encryptionKeyId !== keyRingRow.activeDekId) {
-    return codeResponse('encryption_key_mismatch', 409);
-  }
   if (snapshotCiphertext.byteLength > MAX_CIPHERTEXT_BYTES) {
     return c.json({ error: 'Payload too large' }, 413);
   }
 
-  const [[existing]] = await db.batch([
-    db
+  const db = getDb(c.env.DB);
+
+  const insertResult = await insertCompactSnapshot(db, userId, replacesUpTo, {
+    id,
+    encryptionKeyId,
+    encryptionAlgorithm,
+    encryptionVersion,
+    ivBytes,
+    ciphertext: snapshotCiphertext,
+  });
+  if (insertResult instanceof Response) return insertResult;
+
+  const { nextSeq, meta, tailRows } = insertResult;
+  const effectiveCutoff = computeEffectiveCutoff(
+    tailRows,
+    meta?.head ?? 0,
+    replacesUpTo,
+  );
+
+  await deleteCompactedRecords(db, userId, effectiveCutoff);
+
+  const headers: Record<string, string> = { ETag: `"${nextSeq}"` };
+  return c.body(null, 200, headers);
+});
+
+export { router as syncRouter };
+
+type SnapshotPayload = {
+  id: string;
+  encryptionKeyId: string;
+  encryptionAlgorithm: string;
+  encryptionVersion: number;
+  ivBytes: Uint8Array;
+  ciphertext: Uint8Array;
+};
+
+type InsertCompactSnapshotResult = {
+  nextSeq: number;
+  meta: { head: number; rowCount: number; totalBytes: number } | undefined;
+  tailRows: Array<{ seq: number; ciphertextSize: number }>;
+};
+
+async function insertCompactSnapshot(
+  db: ReturnType<typeof getDb>,
+  userId: string,
+  replacesUpTo: number,
+  {
+    id,
+    encryptionKeyId,
+    encryptionAlgorithm,
+    encryptionVersion,
+    ivBytes,
+    ciphertext,
+  }: SnapshotPayload,
+): Promise<Response | InsertCompactSnapshotResult> {
+  try {
+    const [, , , [meta], tailRows, [insertResult]] = await db.batch([
+      // guard: abort if encryptionKeyId doesn't match the user's active DEK
+      assertExists(db, (q) =>
+        q
+          .from(keyRing)
+          .where(
+            and(
+              eq(keyRing.userId, userId),
+              eq(keyRing.activeDekId, encryptionKeyId),
+            ),
+          ),
+      ),
+      // guard: abort if replacesUpTo exceeds the current head
+      assertCondition(
+        db,
+        exists(
+          db
+            .select({ head: sql<number>`COALESCE(MAX(${syncRecord.seq}), 0)` })
+            .from(syncRecord)
+            .where(eq(syncRecord.userId, userId))
+            .having(
+              gte(sql`COALESCE(MAX(${syncRecord.seq}), 0)`, replacesUpTo),
+            ),
+        ),
+      ),
+      // guard: abort if the snapshot would exceed the storage cap after compaction;
+      // only count records that survive (seq > replacesUpTo), since the rest will be deleted
+      assertCondition(
+        db,
+        exists(
+          db
+            .select({
+              total: sql<number>`COALESCE(SUM(LENGTH(${syncRecord.ciphertext})), 0) + ${ciphertext.byteLength}`,
+            })
+            .from(syncRecord)
+            .where(
+              and(
+                eq(syncRecord.userId, userId),
+                gt(syncRecord.seq, replacesUpTo),
+              ),
+            )
+            .having(
+              lte(
+                sql`COALESCE(SUM(LENGTH(${syncRecord.ciphertext})), 0) + ${ciphertext.byteLength}`,
+                HARD_CAP_BYTES,
+              ),
+            ),
+        ),
+      ),
+      // aggregate stats needed for the compact hint
+      db
+        .select({
+          head: sql<number>`COALESCE(MAX(${syncRecord.seq}), 0)`,
+          rowCount: sql<number>`COUNT(*)`,
+          totalBytes: sql<number>`COALESCE(SUM(LENGTH(${syncRecord.ciphertext})), 0)`,
+        })
+        .from(syncRecord)
+        .where(eq(syncRecord.userId, userId)),
+      // tail rows needed to compute the safe deletion cutoff; only size is needed, not the bytes
+      db
+        .select({
+          seq: syncRecord.seq,
+          ciphertextSize: sql<number>`LENGTH(${syncRecord.ciphertext})`,
+        })
+        .from(syncRecord)
+        .where(eq(syncRecord.userId, userId))
+        .orderBy(sql`${syncRecord.seq} DESC`)
+        .limit(COMPACT_TAIL_MAX_ROWS * 2),
+      // insert the snapshot; throws on duplicate id so the catch can handle idempotency
+      db
+        .insert(syncRecord)
+        .values({
+          id,
+          userId,
+          seq: sql`(select coalesce(max(${syncRecord.seq}), 0) + 1 from ${syncRecord} where ${syncRecord.userId} = ${userId})`,
+          encryptionAlgorithm,
+          encryptionVersion,
+          iv: ivBytes,
+          ciphertext,
+          kind: 'snapshot',
+          encryptionKeyId,
+        })
+        .returning({ seq: syncRecord.seq }),
+    ]);
+
+    return { nextSeq: insertResult.seq, meta, tailRows };
+  } catch {
+    const [existing] = await db
       .select({
         seq: syncRecord.seq,
         encryptionAlgorithm: syncRecord.encryptionAlgorithm,
@@ -312,111 +468,63 @@ router.post('/compact', async (c) => {
         ciphertext: syncRecord.ciphertext,
       })
       .from(syncRecord)
-      .where(and(eq(syncRecord.userId, userId), eq(syncRecord.id, id))),
-  ]);
+      .where(and(eq(syncRecord.userId, userId), eq(syncRecord.id, id)));
 
-  if (existing) {
-    if (
-      existing.encryptionAlgorithm === encryptionAlgorithm &&
-      existing.encryptionVersion === encryptionVersion &&
-      existing.iv.byteLength === ivBytes.byteLength &&
-      new Uint8Array(existing.iv).every((v, i) => v === ivBytes[i]) &&
-      existing.ciphertext.byteLength === snapshotCiphertext.byteLength &&
-      new Uint8Array(existing.ciphertext).every(
-        (v, i) => v === snapshotCiphertext[i],
-      )
-    ) {
-      return c.body(null, 200, { ETag: `"${existing.seq}"` });
+    if (existing) {
+      if (
+        existing.encryptionAlgorithm === encryptionAlgorithm &&
+        existing.encryptionVersion === encryptionVersion &&
+        existing.iv.byteLength === ivBytes.byteLength &&
+        new Uint8Array(existing.iv).every((v, i) => v === ivBytes[i]) &&
+        existing.ciphertext.byteLength === ciphertext.byteLength &&
+        new Uint8Array(existing.ciphertext).every((v, i) => v === ciphertext[i])
+      ) {
+        return new Response(null, {
+          status: 200,
+          headers: { ETag: `"${existing.seq}"` },
+        });
+      }
+      return codeResponse('idempotency_conflict', 409);
     }
-    return codeResponse('idempotency_conflict', 409);
+
+    return codeResponse('write_conflict', 409);
   }
+}
 
-  const [[meta]] = await db.batch([
-    db
-      .select({
-        head: sql<number>`COALESCE(MAX(${syncRecord.seq}), 0)`,
-        rowCount: sql<number>`COUNT(*)`,
-        totalBytes: sql<number>`COALESCE(SUM(LENGTH(${syncRecord.ciphertext})), 0)`,
-      })
-      .from(syncRecord)
-      .where(eq(syncRecord.userId, userId)),
-  ]);
-
-  const head = meta?.head ?? 0;
-  if (replacesUpTo > head) {
-    return c.json({ code: 'head_conflict' }, 409);
-  }
-  if (
-    (meta?.totalBytes ?? 0) + snapshotCiphertext.byteLength >
-    HARD_CAP_BYTES
-  ) {
-    return c.json({ error: 'Storage limit exceeded' }, 413);
-  }
-
-  const nextSeq = head + 1;
-  const [tailRowsResult] = await db.batch([
-    db
-      .select({ seq: syncRecord.seq, ciphertext: syncRecord.ciphertext })
-      .from(syncRecord)
-      .where(and(eq(syncRecord.userId, userId), gt(syncRecord.seq, 0)))
-      .orderBy(sql`${syncRecord.seq} DESC`)
-      .limit(COMPACT_TAIL_MAX_ROWS * 2),
-  ]);
-
-  let keepCutoff = head;
+function computeEffectiveCutoff(
+  tailRows: Array<{ seq: number; ciphertextSize: number }>,
+  head: number,
+  replacesUpTo: number,
+): number {
+  // Walk the tail (newest → oldest) to find the oldest seq we must keep.
+  // We preserve a minimum tail so a client that just compacted isn't immediately
+  // told to compact again and has enough records to catch up from a stale cursor.
+  let keepCutoff = head; // conservative default: keep everything
   let rowsAccum = 0;
   let bytesAccum = 0;
-  for (const row of tailRowsResult) {
-    if (rowsAccum >= COMPACT_TAIL_MAX_ROWS) break;
-    if (bytesAccum + row.ciphertext.byteLength > COMPACT_TAIL_MAX_BYTES) break;
-    keepCutoff = row.seq - 1;
+  for (const row of tailRows) {
+    if (rowsAccum >= COMPACT_TAIL_MAX_ROWS) break; // tail row budget exhausted
+    if (bytesAccum + row.ciphertextSize > COMPACT_TAIL_MAX_BYTES) break; // tail byte budget exhausted
+    keepCutoff = row.seq - 1; // this row must be kept, so the cutoff is just before it
     rowsAccum += 1;
-    bytesAccum += row.ciphertext.byteLength;
+    bytesAccum += row.ciphertextSize;
   }
+  return Math.min(replacesUpTo, keepCutoff);
+}
 
-  const effectiveCutoff = Math.min(replacesUpTo, keepCutoff);
-  await db.batch([
-    db.insert(syncRecord).values({
-      id,
-      userId,
-      seq: nextSeq,
-      encryptionAlgorithm,
-      encryptionVersion,
-      iv: ivBytes,
-      ciphertext: snapshotCiphertext,
-      kind: 'snapshot',
-      encryptionKeyId,
-      created: sql`CURRENT_TIMESTAMP`,
-    }),
-    ...(effectiveCutoff > 0
-      ? [
-          db
-            .delete(syncRecord)
-            .where(
-              and(
-                eq(syncRecord.userId, userId),
-                sql`${syncRecord.seq} <= ${effectiveCutoff}`,
-              ),
-            ),
-        ]
-      : []),
-  ]);
-
-  const compactHint =
-    (meta?.rowCount ?? 0) >= SOFT_CAP_ROWS ||
-    (meta?.totalBytes ?? 0) >= SOFT_CAP_BYTES;
-  const headers: Record<string, string> = { ETag: `"${nextSeq}"` };
-  if (compactHint) headers['X-Compact-Hint'] = 'please';
-  return c.body(null, 200, headers);
-});
-
-export { router as syncRouter };
-
-async function getActiveKeyRing(db: ReturnType<typeof getDb>, userId: string) {
-  const [row] = await db
-    .select()
-    .from(keyRing)
-    .where(eq(keyRing.userId, userId))
-    .limit(1);
-  return row ?? null;
+async function deleteCompactedRecords(
+  db: ReturnType<typeof getDb>,
+  userId: string,
+  effectiveCutoff: number,
+): Promise<void> {
+  if (effectiveCutoff > 0) {
+    await db
+      .delete(syncRecord)
+      .where(
+        and(
+          eq(syncRecord.userId, userId),
+          sql`${syncRecord.seq} <= ${effectiveCutoff}`,
+        ),
+      );
+  }
 }

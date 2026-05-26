@@ -31,8 +31,8 @@ export const syncRecord = sqliteTable(
     ciphertext: blobBytes('ciphertext').notNull(),
     kind: text('kind', { enum: ['update', 'snapshot'] }).notNull(),
     encryptionKeyId: text('encryption_key_id').notNull(),
-    created: integer('created')
-      .default(sql`CURRENT_TIMESTAMP`)
+    created: integer('created', { mode: 'timestamp_ms' })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),
   },
   (table) => [

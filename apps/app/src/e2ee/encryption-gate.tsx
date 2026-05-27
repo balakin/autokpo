@@ -27,9 +27,14 @@ import { deriveKek } from './kdf';
 import {
   createKeyRingProfile,
   fetchKeyRingProfile,
+  KeyRingConflictError,
   KeyRingNotFoundError,
+  updateKeyRingProfile,
 } from './key-ring-api';
-import type { SerializedKeyRingProfile } from './key-ring-record';
+import type {
+  SerializedKeyRingProfile,
+  UpdateKeyRingRequest,
+} from './key-ring-record';
 import {
   KeysIndexeddb,
   type KeyRingRecord,
@@ -245,9 +250,34 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
   async function refreshKeyRingProfileCache() {
     if (!store) return;
     const profile = await fetchKeyRingProfile();
-    await store.writeKeyRing(keyRingRecordFromProfile(profile, userId));
-    const wr = wrapperRecordFromProfile(profile, userId);
-    if (wr) await store.writeWrapper(wr);
+    await writeProfileToCache(store, profile, userId);
+  }
+
+  async function updateKeyRingProfileCache(request: UpdateKeyRingRequest) {
+    if (!store) throw new Error('Key ring store is not ready');
+    try {
+      const profile = await updateKeyRingProfile(request);
+      await writeProfileToCache(store, profile, userId);
+      return profile;
+    } catch (error) {
+      if (isKeyRingConflictError(error)) {
+        const profile = await fetchKeyRingProfile();
+        await writeProfileToCache(store, profile, userId);
+      }
+      throw error;
+    }
+  }
+
+  async function writeProfileToCache(
+    targetStore: KeysIndexeddb,
+    profile: SerializedKeyRingProfile,
+    targetUserId: string,
+  ) {
+    await targetStore.writeKeyRing(
+      keyRingRecordFromProfile(profile, targetUserId),
+    );
+    const wr = wrapperRecordFromProfile(profile, targetUserId);
+    if (wr) await targetStore.writeWrapper(wr);
   }
 
   if (
@@ -264,6 +294,7 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
           activeDekId: gateState.activeDekId,
           clearEncryptionSession: () => dispatch({ type: 'clear-session' }),
           refreshKeyRingProfile: refreshKeyRingProfileCache,
+          updateKeyRingProfile: updateKeyRingProfileCache,
         }}
       >
         {children}
@@ -370,6 +401,7 @@ function keyRingRecordFromProfile(
     userId,
     keyRingId: profile.keyRing.id,
     activeDekId: profile.keyRing.activeDekId,
+    revision: profile.keyRing.revision,
     encryptionVersion: profile.keyRing.encryptionVersion,
     encryptionAlgorithm: profile.keyRing.encryptionAlgorithm,
     iv: profile.keyRing.iv,
@@ -460,6 +492,13 @@ function isKeyRingNotFoundError(error: unknown): error is KeyRingNotFoundError {
   return (
     error instanceof KeyRingNotFoundError ||
     (error instanceof Error && error.name === 'KeyRingNotFoundError')
+  );
+}
+
+function isKeyRingConflictError(error: unknown): error is KeyRingConflictError {
+  return (
+    error instanceof KeyRingConflictError ||
+    (error instanceof Error && error.name === 'KeyRingConflictError')
   );
 }
 

@@ -31,6 +31,7 @@ const keyRingRecordSchema = z.object({
   userId: z.string(),
   keyRingId: z.string(),
   activeDekId: z.string(),
+  revision: z.number().int().positive(),
   encryptionVersion: z.literal(1),
   encryptionAlgorithm: z.literal('aes-256-gcm'),
   iv: z.string(),

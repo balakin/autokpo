@@ -65,6 +65,7 @@ CREATE TABLE `key_ring` (
 	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
 	`active_dek_id` text NOT NULL,
+	`revision` integer DEFAULT 1 NOT NULL,
 	`encryption_version` integer NOT NULL,
 	`encryption_algorithm` text NOT NULL,
 	`iv` blob NOT NULL,

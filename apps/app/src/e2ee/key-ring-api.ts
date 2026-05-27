@@ -2,6 +2,7 @@ import type {
   ChangeMasterPasswordRequest,
   CreateKeyRingProfileRequest,
   SerializedKeyRingProfile,
+  UpdateKeyRingRequest,
 } from './key-ring-record';
 import { isSerializedKeyRingProfile } from './key-ring-record';
 
@@ -49,6 +50,20 @@ export async function changeMasterPassword(
   if (!response.ok) {
     throw new Error(`Key ring request failed: ${response.status}`);
   }
+}
+
+export async function updateKeyRingProfile(
+  request: UpdateKeyRingRequest,
+): Promise<SerializedKeyRingProfile> {
+  const response = await fetch('/api/e2ee/key-ring', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  });
+  if (response.status === 409) {
+    throw new KeyRingConflictError();
+  }
+  return decodeKeyRingResponse(response);
 }
 
 async function decodeKeyRingResponse(

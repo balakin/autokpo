@@ -15,6 +15,7 @@ import { KeysIndexeddb } from '../keys-indexeddb';
 
 const createKeyRingProfileMock = vi.hoisted(() => vi.fn());
 const fetchKeyRingProfileMock = vi.hoisted(() => vi.fn());
+const updateKeyRingProfileMock = vi.hoisted(() => vi.fn());
 const createKeyRingProfilePayloadMock = vi.hoisted(() => vi.fn());
 const unwrapKeyRingProfileMock = vi.hoisted(() => vi.fn());
 const generateLdkMock = vi.hoisted(() => vi.fn().mockResolvedValue({}));
@@ -35,10 +36,18 @@ vi.mock('../key-ring-api', () => {
       this.name = 'KeyRingNotFoundError';
     }
   }
+  class KeyRingConflictError extends Error {
+    constructor() {
+      super('conflict');
+      this.name = 'KeyRingConflictError';
+    }
+  }
   return {
+    KeyRingConflictError,
     KeyRingNotFoundError,
     createKeyRingProfile: createKeyRingProfileMock,
     fetchKeyRingProfile: fetchKeyRingProfileMock,
+    updateKeyRingProfile: updateKeyRingProfileMock,
   };
 });
 
@@ -72,6 +81,7 @@ function makeRecord(userId = 'user-1'): SerializedKeyRingProfile {
       id: 'key-ring-1',
       userId,
       activeDekId: 'dek-1',
+      revision: 1,
       encryptionVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
       iv: 'AAAAAAAAAAAAAAAA',
@@ -136,6 +146,7 @@ beforeEach(() => {
   sessionStorage.clear();
   createKeyRingProfileMock.mockReset();
   fetchKeyRingProfileMock.mockReset();
+  updateKeyRingProfileMock.mockReset();
   createKeyRingProfilePayloadMock.mockReset();
   unwrapKeyRingProfileMock.mockReset();
   generateLdkMock.mockResolvedValue({});
@@ -419,8 +430,7 @@ describe('EncryptionGate', () => {
     const user = userEvent.setup();
     fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
 
-    let capturedContext: { activeDek: Uint8Array; activeDekId: string } | null =
-      null;
+    let capturedContext: ReturnType<typeof useEncryptionContext> | null = null;
 
     function ContextCapture() {
       capturedContext = useEncryptionContext();
@@ -458,6 +468,124 @@ describe('EncryptionGate', () => {
     expect(capturedContext).not.toBeNull();
     expect(capturedContext!.activeDek).toEqual(activeDek);
     expect(capturedContext!.activeDekId).toBe('dek-1');
+  });
+
+  it('updates encrypted key ring cache from successful context update', async () => {
+    const user = userEvent.setup();
+    fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
+    const updated = makeRecord();
+    updated.keyRing.revision = 2;
+    updated.keyRing.ciphertext = 'updated-ciphertext';
+    updateKeyRingProfileMock.mockResolvedValue(updated);
+    let capturedContext: ReturnType<typeof useEncryptionContext> | null = null;
+
+    function ContextCapture() {
+      capturedContext = useEncryptionContext();
+      return null;
+    }
+
+    localStorage.setItem('autokpo:locale', 'sr-Latn');
+    render(
+      <I18nWrapper>
+        <AuthContext
+          value={{
+            user: { id: 'user-1', email: 'user@example.com', image: null },
+            refresh: () => Promise.resolve('user-1'),
+            logout: () => Promise.resolve(),
+          }}
+        >
+          <EncryptionGate userId="user-1">
+            <ContextCapture />
+            <div>protected content</div>
+          </EncryptionGate>
+        </AuthContext>
+      </I18nWrapper>,
+    );
+    await user.type(
+      await screen.findByLabelText(/Šifra za šifrovanje/i),
+      'secret123',
+    );
+    await user.click(
+      screen.getByRole('button', { name: /Otključaj podatke/i }),
+    );
+    await screen.findByText('protected content');
+
+    await capturedContext!.updateKeyRingProfile({
+      currentRevision: 1,
+      activeDekId: 'dek-1',
+      encryptionVersion: 1,
+      encryptionAlgorithm: 'aes-256-gcm',
+      keyRingIv: 'iv',
+      keyRingCiphertext: 'updated-ciphertext',
+    });
+
+    const store = new KeysIndexeddb();
+    const cached = await store.readKeyRing('user-1');
+    store.close();
+    expect(cached?.revision).toBe(2);
+    expect(cached?.ciphertext).toBe('updated-ciphertext');
+  });
+
+  it('refetches encrypted key ring cache on context update conflict', async () => {
+    const user = userEvent.setup();
+    fetchKeyRingProfileMock.mockResolvedValueOnce(makeRecord());
+    fetchKeyRingProfileMock.mockResolvedValueOnce(makeRecord());
+    const latest = makeRecord();
+    latest.keyRing.revision = 3;
+    latest.keyRing.ciphertext = 'latest-ciphertext';
+    fetchKeyRingProfileMock.mockResolvedValueOnce(latest);
+    const conflict = new Error('conflict');
+    conflict.name = 'KeyRingConflictError';
+    updateKeyRingProfileMock.mockRejectedValue(conflict);
+    let capturedContext: ReturnType<typeof useEncryptionContext> | null = null;
+
+    function ContextCapture() {
+      capturedContext = useEncryptionContext();
+      return null;
+    }
+
+    localStorage.setItem('autokpo:locale', 'sr-Latn');
+    render(
+      <I18nWrapper>
+        <AuthContext
+          value={{
+            user: { id: 'user-1', email: 'user@example.com', image: null },
+            refresh: () => Promise.resolve('user-1'),
+            logout: () => Promise.resolve(),
+          }}
+        >
+          <EncryptionGate userId="user-1">
+            <ContextCapture />
+            <div>protected content</div>
+          </EncryptionGate>
+        </AuthContext>
+      </I18nWrapper>,
+    );
+    await user.type(
+      await screen.findByLabelText(/Šifra za šifrovanje/i),
+      'secret123',
+    );
+    await user.click(
+      screen.getByRole('button', { name: /Otključaj podatke/i }),
+    );
+    await screen.findByText('protected content');
+
+    await expect(
+      capturedContext!.updateKeyRingProfile({
+        currentRevision: 1,
+        activeDekId: 'dek-1',
+        encryptionVersion: 1,
+        encryptionAlgorithm: 'aes-256-gcm',
+        keyRingIv: 'iv',
+        keyRingCiphertext: 'stale-ciphertext',
+      }),
+    ).rejects.toThrow('conflict');
+
+    const store = new KeysIndexeddb();
+    const cached = await store.readKeyRing('user-1');
+    store.close();
+    expect(cached?.revision).toBe(3);
+    expect(cached?.ciphertext).toBe('latest-ciphertext');
   });
 
   it('does not render children (and thus context) when locked', async () => {

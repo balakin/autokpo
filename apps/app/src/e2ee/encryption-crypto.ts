@@ -41,6 +41,7 @@ export async function createKeyRingProfilePayload(
   const kek = await deriveKek(password, salt, KDF_PARAMS_V1);
   const keyRingPlaintext = JSON.stringify({
     version: 1,
+    revision: 1,
     activeDekId,
     deks: {
       [activeDekId]: bytesToBase64(dek),
@@ -50,7 +51,7 @@ export async function createKeyRingProfilePayload(
     keyBytes: mek,
     iv: keyRingIv,
     plaintext: new TextEncoder().encode(keyRingPlaintext),
-    aad: keyRingAad(userId, activeDekId),
+    aad: keyRingAad(userId, activeDekId, 1),
   });
   const wrappedMek = await aesGcmEncrypt({
     keyBytes: kek,
@@ -151,6 +152,7 @@ export async function decryptKeyRingWithMek(
   keyRing: {
     userId: string;
     activeDekId: string;
+    revision: number;
     iv: string;
     ciphertext: string;
   },
@@ -159,20 +161,22 @@ export async function decryptKeyRingWithMek(
     keyBytes: mek,
     iv: base64ToBytes(keyRing.iv),
     ciphertext: base64ToBytes(keyRing.ciphertext),
-    aad: keyRingAad(keyRing.userId, keyRing.activeDekId),
+    aad: keyRingAad(keyRing.userId, keyRing.activeDekId, keyRing.revision),
   });
   const parsed = JSON.parse(new TextDecoder().decode(keyRingBytes)) as {
+    revision?: unknown;
     activeDekId?: unknown;
     deks?: Record<string, unknown>;
   };
+  const revision = parsed.revision;
   const activeDekId = parsed.activeDekId;
   const deks = parsed.deks;
   const activeDekEncoded =
     typeof activeDekId === 'string' ? deks?.[activeDekId] : undefined;
   if (
-    typeof activeDekId !== 'string' ||
+    revision !== keyRing.revision ||
+    activeDekId !== keyRing.activeDekId ||
     deks === undefined ||
-    Object.keys(deks).length !== 1 ||
     !(activeDekId in deks) ||
     typeof activeDekEncoded !== 'string'
   ) {
@@ -245,9 +249,13 @@ function toBuffer(bytes: Uint8Array): ArrayBuffer {
   ) as ArrayBuffer;
 }
 
-export function keyRingAad(userId: string, activeDekId: string): Uint8Array {
+export function keyRingAad(
+  userId: string,
+  activeDekId: string,
+  revision: number,
+): Uint8Array {
   return new TextEncoder().encode(
-    `autokpo:e2ee-key-ring:v1:${userId}:${activeDekId}`,
+    `autokpo:e2ee-key-ring:v1:${userId}:${activeDekId}:${revision}`,
   );
 }
 

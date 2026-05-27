@@ -22,6 +22,7 @@ type Profile = {
     id: string;
     userId: string;
     activeDekId: string;
+    revision: number;
     encryptionVersion: 1;
     encryptionAlgorithm: 'aes-256-gcm';
     iv: string;
@@ -60,8 +61,10 @@ vi.mock('../../e2ee/encryption-context', () => ({
     mek: new Uint8Array(32).fill(1),
     activeDek: new Uint8Array(32).fill(2),
     activeDekId: 'dek-1',
+    revision: 1,
     clearEncryptionSession: mockClearEncryptionSession,
     refreshKeyRingProfile: mockRefreshKeyRingProfile,
+    updateKeyRingProfile: vi.fn(),
   }),
 }));
 
@@ -119,6 +122,7 @@ function profile(): Profile {
       id: 'key-ring-1',
       userId: 'test-user',
       activeDekId: 'dek-1',
+      revision: 1,
       encryptionVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
       iv: 'iv',

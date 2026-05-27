@@ -22,6 +22,7 @@ function makeRecord(
       id: request.keyRingId,
       userId,
       activeDekId: request.activeDekId,
+      revision: 1,
       encryptionVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
       iv: request.keyRingIv,
@@ -55,6 +56,7 @@ async function makeRecordWithPlaintextKeyRing(
   const { keyRingAad, wrappedMekAad } = await import('../encryption-crypto');
   const userId = 'user-1';
   const activeDekId = 'dek-1';
+  const revision = 1;
   const wrappingId = 'wrapping-1';
   const mek = new Uint8Array(32).fill(9);
   const kek = new Uint8Array(32).fill(7);
@@ -65,7 +67,7 @@ async function makeRecordWithPlaintextKeyRing(
     keyBytes: mek,
     iv: keyRingIv,
     plaintext: new TextEncoder().encode(JSON.stringify(keyRingPlaintext)),
-    aad: keyRingAad(userId, activeDekId),
+    aad: keyRingAad(userId, activeDekId, revision),
   });
   const wrappedMek = await aesGcmEncrypt({
     keyBytes: kek,
@@ -79,6 +81,7 @@ async function makeRecordWithPlaintextKeyRing(
       id: 'key-ring-1',
       userId,
       activeDekId,
+      revision,
       encryptionVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
       iv: bytesToBase64(keyRingIv),
@@ -125,6 +128,19 @@ describe('encryption crypto helpers', () => {
     expect(unwrapped.activeDek).toHaveLength(32);
   });
 
+  it('binds key ring ciphertext to revision through AAD', async () => {
+    const { createKeyRingProfilePayload, unwrapKeyRingProfile } =
+      await import('../encryption-crypto');
+    deriveKekMock.mockResolvedValue(new Uint8Array(32).fill(7));
+    const { request } = await createKeyRingProfilePayload('user-1', 'password');
+    const record = makeRecord(request);
+    record.keyRing.revision = 2;
+
+    await expect(unwrapKeyRingProfile('password', record)).rejects.toThrow(
+      'Failed to unlock key ring',
+    );
+  });
+
   it('rejects wrong password-derived keys', async () => {
     const { createKeyRingProfilePayload, unwrapKeyRingProfile } =
       await import('../encryption-crypto');
@@ -158,6 +174,7 @@ describe('encryption crypto helpers', () => {
     deriveKekMock.mockResolvedValue(new Uint8Array(32).fill(7));
     const record = await makeRecordWithPlaintextKeyRing({
       version: 1,
+      revision: 1,
       activeDekId: 'dek-1',
       deks: {
         'dek-1': {
@@ -177,9 +194,44 @@ describe('encryption crypto helpers', () => {
     deriveKekMock.mockResolvedValue(new Uint8Array(32).fill(7));
     const record = await makeRecordWithPlaintextKeyRing({
       version: 1,
+      revision: 1,
       activeDekId: 'dek-1',
       deks: {
         'dek-1': bytesToBase64(new Uint8Array(16).fill(4)),
+      },
+    });
+
+    await expect(unwrapKeyRingProfile('password', record)).rejects.toThrow(
+      'Failed to unlock key ring',
+    );
+  });
+
+  it('rejects plaintext revision mismatch after decrypting key rings', async () => {
+    const { unwrapKeyRingProfile } = await import('../encryption-crypto');
+    deriveKekMock.mockResolvedValue(new Uint8Array(32).fill(7));
+    const record = await makeRecordWithPlaintextKeyRing({
+      version: 1,
+      revision: 2,
+      activeDekId: 'dek-1',
+      deks: {
+        'dek-1': bytesToBase64(new Uint8Array(32).fill(4)),
+      },
+    });
+
+    await expect(unwrapKeyRingProfile('password', record)).rejects.toThrow(
+      'Failed to unlock key ring',
+    );
+  });
+
+  it('rejects plaintext active DEK mismatch after decrypting key rings', async () => {
+    const { unwrapKeyRingProfile } = await import('../encryption-crypto');
+    deriveKekMock.mockResolvedValue(new Uint8Array(32).fill(7));
+    const record = await makeRecordWithPlaintextKeyRing({
+      version: 1,
+      revision: 1,
+      activeDekId: 'other-dek',
+      deks: {
+        'other-dek': bytesToBase64(new Uint8Array(32).fill(4)),
       },
     });
 

@@ -29,6 +29,7 @@ function makeKeyRingRecord(userId = USER_ID): KeyRingRecord {
     userId,
     keyRingId: 'kr-1',
     activeDekId: 'dek-1',
+    revision: 1,
     encryptionVersion: 1,
     encryptionAlgorithm: 'aes-256-gcm',
     iv: 'base64iv==',

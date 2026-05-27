@@ -67,6 +67,17 @@ function validChangePayload(currentWrappingId: string) {
   };
 }
 
+function validUpdatePayload(currentRevision: number) {
+  return {
+    currentRevision,
+    activeDekId: '66666666-6666-4666-8666-666666666666',
+    encryptionVersion: 1,
+    encryptionAlgorithm: 'aes-256-gcm',
+    keyRingIv: bytesBase64(12),
+    keyRingCiphertext: bytesBase64(64),
+  };
+}
+
 async function req(path: string, init?: RequestInit) {
   return app.request(
     `http://localhost${path}`,
@@ -112,6 +123,7 @@ describe('/api/e2ee/key-ring', () => {
         id: payload.keyRingId,
         userId: 'e2ee-user-1',
         activeDekId: payload.activeDekId,
+        revision: 1,
       },
       wrappers: [
         expect.objectContaining({
@@ -222,6 +234,7 @@ describe('/api/e2ee/key-ring', () => {
     expect(profile.keyRing).toMatchObject({
       id: payload.keyRingId,
       activeDekId: payload.activeDekId,
+      revision: 1,
       ciphertext: payload.keyRingCiphertext,
     });
     expect(profile.wrappers).toEqual([
@@ -243,6 +256,99 @@ describe('/api/e2ee/key-ring', () => {
       .where(eq(keyRing.userId, 'e2ee-user-1'));
     expect(rows).toHaveLength(1);
     expect(rows[0].id).toBe(payload.keyRingId);
+    expect(rows[0].revision).toBe(1);
+  });
+
+  it('updates the encrypted key ring when revision matches', async () => {
+    const payload = validPayload();
+    await req('/api/e2ee/key-ring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const updatePayload = validUpdatePayload(1);
+    const res = await req('/api/e2ee/key-ring', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatePayload),
+    });
+
+    expect(res.status).toBe(200);
+    const profile: SerializedKeyRingProfile = await res.json();
+    expect(profile.keyRing).toMatchObject({
+      id: payload.keyRingId,
+      activeDekId: updatePayload.activeDekId,
+      revision: 2,
+      encryptionVersion: updatePayload.encryptionVersion,
+      encryptionAlgorithm: updatePayload.encryptionAlgorithm,
+      iv: updatePayload.keyRingIv,
+      ciphertext: updatePayload.keyRingCiphertext,
+    });
+    expect(profile.wrappers).toEqual([
+      expect.objectContaining({ id: payload.wrappingId }),
+    ]);
+  });
+
+  it('rejects stale key ring revision without changing ciphertext', async () => {
+    const payload = validPayload();
+    await req('/api/e2ee/key-ring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const firstUpdate = validUpdatePayload(1);
+    await req('/api/e2ee/key-ring', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(firstUpdate),
+    });
+
+    const staleUpdate = {
+      ...validUpdatePayload(1),
+      activeDekId: '77777777-7777-4777-8777-777777777777',
+      keyRingCiphertext: bytesBase64(72),
+    };
+    const res = await req('/api/e2ee/key-ring', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(staleUpdate),
+    });
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ code: 'key_ring_revision_conflict' });
+
+    const get = await req('/api/e2ee/key-ring');
+    const profile: SerializedKeyRingProfile = await get.json();
+    expect(profile.keyRing).toMatchObject({
+      activeDekId: firstUpdate.activeDekId,
+      revision: 2,
+      ciphertext: firstUpdate.keyRingCiphertext,
+    });
+  });
+
+  it('rejects invalid key ring update payloads', async () => {
+    const payload = validPayload();
+    await req('/api/e2ee/key-ring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const res = await req('/api/e2ee/key-ring', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...validUpdatePayload(1),
+        keyRingIv: bytesBase64(8),
+      }),
+    });
+
+    expect(res.status).toBe(400);
+    const get = await req('/api/e2ee/key-ring');
+    const profile: SerializedKeyRingProfile = await get.json();
+    expect(profile.keyRing.revision).toBe(1);
+    expect(profile.keyRing.ciphertext).toBe(payload.keyRingCiphertext);
   });
 
   it('rejects stale password wrapper changes without replacing the active wrapper', async () => {

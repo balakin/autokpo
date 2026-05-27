@@ -81,6 +81,7 @@ e2eeRouter.post('/key-ring', async (c) => {
           id: parsed.keyRingId,
           userId: session.user.id,
           activeDekId: parsed.activeDekId,
+          revision: 1,
           encryptionVersion: 1,
           encryptionAlgorithm: 'aes-256-gcm',
           iv: parsed.keyRingIv,
@@ -109,6 +110,73 @@ e2eeRouter.post('/key-ring', async (c) => {
     return c.json(serializeRecord(keyRingRow, wrapping), 201);
   } catch {
     return c.json({ code: 'encryption_key_already_exists' }, 409);
+  }
+});
+
+e2eeRouter.put('/key-ring', async (c) => {
+  const session = await requireSession(c);
+  if (session instanceof Response) return session;
+
+  if (c.req.header('Content-Type') !== 'application/json') {
+    return c.json({ code: 'unsupported_content_type' }, 415);
+  }
+
+  const body: unknown = await c.req.json().catch(() => null);
+  const parsed = parseUpdateBody(body);
+  if (parsed instanceof Response) return parsed;
+
+  const db = getDb(c.env.DB);
+  try {
+    const [[keyRingRow], , [wrapping]] = await db.batch([
+      db
+        .update(keyRing)
+        .set({
+          activeDekId: parsed.activeDekId,
+          revision: parsed.currentRevision + 1,
+          encryptionVersion: parsed.encryptionVersion,
+          encryptionAlgorithm: parsed.encryptionAlgorithm,
+          iv: parsed.keyRingIv,
+          ciphertext: parsed.keyRingCiphertext,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(keyRing.userId, session.user.id),
+            eq(keyRing.revision, parsed.currentRevision),
+          ),
+        )
+        .returning(),
+      assertExists(db, (q) =>
+        q
+          .from(keyRing)
+          .where(
+            and(
+              eq(keyRing.userId, session.user.id),
+              eq(keyRing.revision, parsed.currentRevision + 1),
+              eq(keyRing.activeDekId, parsed.activeDekId),
+            ),
+          ),
+      ),
+      db
+        .select()
+        .from(keyRingWrapping)
+        .where(
+          and(
+            eq(keyRingWrapping.userId, session.user.id),
+            eq(keyRingWrapping.method, 'password'),
+            eq(keyRingWrapping.status, 'active'),
+            isNull(keyRingWrapping.revokedAt),
+          ),
+        )
+        .limit(1),
+    ]);
+
+    if (!keyRingRow || !wrapping) {
+      return c.json({ code: 'encryption_key_not_found' }, 404);
+    }
+    return c.json(serializeRecord(keyRingRow, wrapping));
+  } catch {
+    return c.json({ code: 'key_ring_revision_conflict' }, 409);
   }
 });
 
@@ -307,12 +375,61 @@ function parseChangePasswordBody(body: unknown) {
   };
 }
 
+function parseUpdateBody(body: unknown) {
+  if (!body || typeof body !== 'object') {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+  const value = body as Record<string, unknown>;
+  if (
+    !Number.isInteger(value.currentRevision) ||
+    (value.currentRevision as number) < 1 ||
+    typeof value.activeDekId !== 'string' ||
+    value.encryptionVersion !== 1 ||
+    value.encryptionAlgorithm !== 'aes-256-gcm'
+  ) {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+  if (!isSafeId(value.activeDekId)) {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+
+  if (
+    typeof value.keyRingIv !== 'string' ||
+    typeof value.keyRingCiphertext !== 'string'
+  ) {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+
+  let keyRingIv: Uint8Array;
+  let keyRingCiphertext: Uint8Array;
+  try {
+    keyRingIv = Uint8Array.fromBase64(value.keyRingIv);
+    keyRingCiphertext = Uint8Array.fromBase64(value.keyRingCiphertext);
+  } catch {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+
+  if (keyRingIv.byteLength !== WRAPPING_IV_BYTES) {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+
+  return {
+    currentRevision: value.currentRevision as number,
+    activeDekId: value.activeDekId,
+    encryptionVersion: value.encryptionVersion,
+    encryptionAlgorithm: value.encryptionAlgorithm,
+    keyRingIv,
+    keyRingCiphertext,
+  };
+}
+
 function serializeRecord(keyRingRow: KeyRingRow, wrapping: KeyRingWrappingRow) {
   return {
     keyRing: {
       id: keyRingRow.id,
       userId: keyRingRow.userId,
       activeDekId: keyRingRow.activeDekId,
+      revision: keyRingRow.revision,
       encryptionVersion: keyRingRow.encryptionVersion,
       encryptionAlgorithm: keyRingRow.encryptionAlgorithm,
       iv: keyRingRow.iv?.toBase64(),

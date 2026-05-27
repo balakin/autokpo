@@ -16,6 +16,7 @@ const keyRingSchema = z.object({
   id: z.string(),
   userId: z.string(),
   activeDekId: z.string(),
+  revision: z.number().int().positive(),
   encryptionVersion: z.literal(1),
   encryptionAlgorithm: z.literal('aes-256-gcm'),
   iv: z.string(),
@@ -78,6 +79,15 @@ export const changeMasterPasswordRequestSchema = z.object({
   ciphertext: z.string(),
 });
 
+export const updateKeyRingRequestSchema = z.object({
+  currentRevision: z.number().int().positive(),
+  activeDekId: z.string(),
+  encryptionVersion: z.literal(1),
+  encryptionAlgorithm: z.literal('aes-256-gcm'),
+  keyRingIv: z.string(),
+  keyRingCiphertext: z.string(),
+});
+
 export type KdfParamsV1 = z.infer<typeof kdfParamsV1Schema>;
 export type WrappingParamsV1 = z.infer<typeof wrappingParamsV1Schema>;
 export type SerializedKeyRingProfile = z.infer<
@@ -89,6 +99,7 @@ export type CreateKeyRingProfileRequest = z.infer<
 export type ChangeMasterPasswordRequest = z.infer<
   typeof changeMasterPasswordRequestSchema
 >;
+export type UpdateKeyRingRequest = z.infer<typeof updateKeyRingRequestSchema>;
 export type WrapParamsV1 = WrappingParamsV1;
 
 export const KDF_PARAMS_V1 = {

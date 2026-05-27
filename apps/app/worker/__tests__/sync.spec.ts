@@ -15,6 +15,7 @@ import app from '../main';
 const sessionState: SessionState = { userId: 'user-1', headers: null };
 const authHeaders = makeAuthHeaders(sessionState);
 const TEST_KEY_ID = '11111111-1111-4111-8111-111111111111';
+const NEXT_KEY_ID = '22222222-2222-4222-8222-222222222222';
 const TEST_ALGORITHM = 'aes-256-gcm';
 
 async function syncRequest(path: string, init?: RequestInit | Request) {
@@ -400,6 +401,26 @@ describe('POST /api/sync', () => {
       .where(eq(syncRecord.userId, 'user-1'));
     expect(rows).toHaveLength(0);
   });
+
+  it('rejects old-DEK push after key ring active DEK changes', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    const db = getDb(workerTestEnv.DB);
+    await db
+      .update(keyRing)
+      .set({ activeDekId: NEXT_KEY_ID, revision: 2 })
+      .where(eq(keyRing.userId, 'user-1'));
+
+    const res = await syncRequest('/api/sync', pushBody(makeCiphertext([1])));
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ code: 'write_conflict' });
+    const rows = await db
+      .select()
+      .from(syncRecord)
+      .where(eq(syncRecord.userId, 'user-1'));
+    expect(rows).toHaveLength(0);
+  });
 });
 
 describe('POST /api/sync/compact', () => {
@@ -580,6 +601,33 @@ describe('POST /api/sync/compact', () => {
     expect(await res.json()).toEqual({ code: 'write_conflict' });
 
     const db = getDb(workerTestEnv.DB);
+    const rows = await db
+      .select()
+      .from(syncRecord)
+      .where(eq(syncRecord.userId, 'user-1'));
+    expect(rows.filter((r) => r.kind === 'snapshot')).toHaveLength(0);
+    expect(rows.filter((r) => r.kind === 'update')).toHaveLength(3);
+  });
+
+  it('rejects old-DEK compact after key ring active DEK changes', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    for (let i = 0; i < 3; i++) {
+      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+    }
+    const db = getDb(workerTestEnv.DB);
+    await db
+      .update(keyRing)
+      .set({ activeDekId: NEXT_KEY_ID, revision: 2 })
+      .where(eq(keyRing.userId, 'user-1'));
+
+    const res = await syncRequest(
+      '/api/sync/compact',
+      compactBody(makeCiphertext([99]), 3),
+    );
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ code: 'write_conflict' });
     const rows = await db
       .select()
       .from(syncRecord)

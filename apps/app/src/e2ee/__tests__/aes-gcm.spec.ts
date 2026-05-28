@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { aesGcmDecrypt, aesGcmEncrypt } from '../aes-gcm';
 
+const TAG_BITS = 128;
+
 describe('aes-gcm helpers', () => {
   it('encrypts and decrypts bytes with matching key, iv, and aad', async () => {
     const keyBytes = new Uint8Array(32).fill(1);
@@ -9,10 +11,15 @@ describe('aes-gcm helpers', () => {
     const aad = new TextEncoder().encode('autokpo:test:aad');
     const plaintext = new TextEncoder().encode('secret payload');
 
-    const ciphertext = await aesGcmEncrypt({ keyBytes, iv, aad, plaintext });
+    const ciphertext = await aesGcmEncrypt({
+      keyBytes,
+      params: { iv, tagBits: TAG_BITS },
+      aad,
+      plaintext,
+    });
     const decrypted = await aesGcmDecrypt({
       keyBytes,
-      iv,
+      params: { iv, tagBits: TAG_BITS },
       aad,
       ciphertext,
     });
@@ -27,7 +34,7 @@ describe('aes-gcm helpers', () => {
     const plaintext = new TextEncoder().encode('secret payload');
     const ciphertext = await aesGcmEncrypt({
       keyBytes,
-      iv,
+      params: { iv, tagBits: TAG_BITS },
       plaintext,
       aad: new TextEncoder().encode('aad:one'),
     });
@@ -35,7 +42,7 @@ describe('aes-gcm helpers', () => {
     await expect(
       aesGcmDecrypt({
         keyBytes,
-        iv,
+        params: { iv, tagBits: TAG_BITS },
         ciphertext,
         aad: new TextEncoder().encode('aad:two'),
       }),

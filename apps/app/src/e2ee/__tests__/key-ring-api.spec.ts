@@ -5,7 +5,7 @@ import {
   KeyRingConflictError,
   updateKeyRingProfile,
 } from '../key-ring-api';
-import { KDF_PARAMS_V1, WRAPPING_PARAMS_V1 } from '../key-ring-record';
+import { KDF_PARAMS_V1 } from '../key-ring-record';
 
 describe('key ring api', () => {
   afterEach(() => {
@@ -19,14 +19,11 @@ describe('key ring api', () => {
     const request = {
       currentWrappingId: 'old-wrapper',
       wrappingId: 'new-wrapper',
-      kdfVersion: 1 as const,
       kdfAlgorithm: 'argon2id' as const,
       kdfParams: KDF_PARAMS_V1,
       kdfSalt: 'salt',
-      wrappingVersion: 1 as const,
       wrappingAlgorithm: 'aes-256-gcm' as const,
-      wrappingParams: WRAPPING_PARAMS_V1,
-      wrappingIv: 'iv',
+      wrappingParams: { iv: 'iv', tagBits: 128 },
       ciphertext: 'ciphertext',
     };
 
@@ -51,14 +48,11 @@ describe('key ring api', () => {
       changeMasterPassword({
         currentWrappingId: 'old-wrapper',
         wrappingId: 'new-wrapper',
-        kdfVersion: 1,
         kdfAlgorithm: 'argon2id',
         kdfParams: KDF_PARAMS_V1,
         kdfSalt: 'salt',
-        wrappingVersion: 1,
         wrappingAlgorithm: 'aes-256-gcm',
-        wrappingParams: WRAPPING_PARAMS_V1,
-        wrappingIv: 'iv',
+        wrappingParams: { iv: 'iv', tagBits: 128 },
         ciphertext: 'ciphertext',
       }),
     ).rejects.toBeInstanceOf(KeyRingConflictError);
@@ -71,9 +65,8 @@ describe('key ring api', () => {
         userId: 'user-1',
         activeDekId: 'dek-1',
         revision: 2,
-        encryptionVersion: 1,
         encryptionAlgorithm: 'aes-256-gcm',
-        iv: 'iv',
+        encryptionParams: { iv: 'iv', tagBits: 128 },
         ciphertext: 'ciphertext',
         createdAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z',
@@ -83,14 +76,11 @@ describe('key ring api', () => {
           id: 'wrapper-1',
           userId: 'user-1',
           method: 'password',
-          kdfVersion: 1,
           kdfAlgorithm: 'argon2id',
           kdfParams: KDF_PARAMS_V1,
           kdfSalt: 'salt',
-          wrappingVersion: 1,
           wrappingAlgorithm: 'aes-256-gcm',
-          wrappingParams: WRAPPING_PARAMS_V1,
-          wrappingIv: 'iv',
+          wrappingParams: { iv: 'iv', tagBits: 128 },
           ciphertext: 'ciphertext',
           createdAt: '2026-01-01T00:00:00.000Z',
         },
@@ -102,9 +92,8 @@ describe('key ring api', () => {
     const request = {
       currentRevision: 1,
       activeDekId: 'dek-1',
-      encryptionVersion: 1 as const,
       encryptionAlgorithm: 'aes-256-gcm' as const,
-      keyRingIv: 'iv',
+      encryptionParams: { iv: 'iv', tagBits: 128 },
       keyRingCiphertext: 'ciphertext',
     };
 
@@ -126,9 +115,8 @@ describe('key ring api', () => {
       updateKeyRingProfile({
         currentRevision: 1,
         activeDekId: 'dek-1',
-        encryptionVersion: 1,
         encryptionAlgorithm: 'aes-256-gcm',
-        keyRingIv: 'iv',
+        encryptionParams: { iv: 'iv', tagBits: 128 },
         keyRingCiphertext: 'ciphertext',
       }),
     ).rejects.toBeInstanceOf(KeyRingConflictError);

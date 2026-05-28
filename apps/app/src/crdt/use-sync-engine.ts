@@ -130,8 +130,7 @@ export function useSyncEngine(
       encryptionKeyId,
       keyRingRevision,
       encryptionAlgorithm,
-      encryptionVersion,
-      iv,
+      encryptionParams,
       localUserId,
     }: {
       delta: Uint8Array;
@@ -139,8 +138,7 @@ export function useSyncEngine(
       encryptionKeyId: string;
       keyRingRevision: number;
       encryptionAlgorithm: 'aes-256-gcm';
-      encryptionVersion: number;
-      iv: Uint8Array;
+      encryptionParams: { iv: Uint8Array; tagBits: number };
       localUserId: string;
     }) =>
       pushHttp({
@@ -149,8 +147,7 @@ export function useSyncEngine(
         encryptionKeyId,
         keyRingRevision,
         encryptionAlgorithm,
-        encryptionVersion,
-        iv,
+        encryptionParams,
         localUserId,
       }),
     retry: (count, err) => {
@@ -168,8 +165,7 @@ export function useSyncEngine(
       encryptionKeyId,
       keyRingRevision,
       encryptionAlgorithm,
-      encryptionVersion,
-      iv,
+      encryptionParams,
       localUserId,
     }: {
       snapshot: Uint8Array;
@@ -178,8 +174,7 @@ export function useSyncEngine(
       encryptionKeyId: string;
       keyRingRevision: number;
       encryptionAlgorithm: 'aes-256-gcm';
-      encryptionVersion: number;
-      iv: Uint8Array;
+      encryptionParams: { iv: Uint8Array; tagBits: number };
       localUserId: string;
     }) =>
       compactHttp({
@@ -189,8 +184,7 @@ export function useSyncEngine(
         encryptionKeyId,
         keyRingRevision,
         encryptionAlgorithm,
-        encryptionVersion,
-        iv,
+        encryptionParams,
         localUserId,
       }),
     retry: (count, err) => {
@@ -329,9 +323,8 @@ export function useSyncEngine(
       try {
         pushInFlightRef.current = true;
         const {
-          encryptionVersion,
           encryptionAlgorithm,
-          iv,
+          encryptionParams,
           ciphertext: encryptedDelta,
         } = await encryptSyncPayload({
           plaintext: plainDelta,
@@ -354,8 +347,7 @@ export function useSyncEngine(
           encryptionKeyId,
           keyRingRevision: preparedKeyRingRevision,
           encryptionAlgorithm,
-          encryptionVersion,
-          iv,
+          encryptionParams,
           localUserId: userId,
         });
         // "Push as poll": compute prevHead from the assigned seq.
@@ -427,9 +419,8 @@ export function useSyncEngine(
       const compactKey = await resolveCompactKey(keyRingRevisionRef.current);
       const id = crypto.randomUUID();
       const {
-        encryptionVersion,
         encryptionAlgorithm,
-        iv,
+        encryptionParams,
         ciphertext: encryptedSnapshot,
       } = await encryptSyncPayload({
         plaintext: plainSnapshot,
@@ -455,8 +446,7 @@ export function useSyncEngine(
           encryptionKeyId,
           keyRingRevision: preparedKeyRingRevision,
           encryptionAlgorithm,
-          encryptionVersion,
-          iv,
+          encryptionParams,
           localUserId: userId,
         });
         // "Push as poll": the server assigns a dense monotonic seq,
@@ -669,8 +659,7 @@ async function decryptPulledRecords({
       return decryptSyncPayload({
         payload: {
           encryptionAlgorithm: record.encryptionAlgorithm,
-          encryptionVersion: record.encryptionVersion as 1,
-          iv: record.iv,
+          encryptionParams: record.encryptionParams,
           ciphertext: record.ciphertext,
         },
         activeDek: dek,

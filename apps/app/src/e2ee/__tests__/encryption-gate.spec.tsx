@@ -6,7 +6,7 @@ import { I18nWrapper } from '../../../tests/app/render-helpers';
 import { AuthContext } from '../../auth/auth-context';
 import { useEncryptionContext } from '../encryption-context';
 import { EncryptionGate } from '../encryption-gate';
-import { KDF_PARAMS_V1, WRAPPING_PARAMS_V1 } from '../key-ring-record';
+import { KDF_PARAMS_V1 } from '../key-ring-record';
 import type {
   CreateKeyRingProfileRequest,
   SerializedKeyRingProfile,
@@ -82,9 +82,8 @@ function makeRecord(userId = 'user-1'): SerializedKeyRingProfile {
       userId,
       activeDekId: 'dek-1',
       revision: 1,
-      encryptionVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
-      iv: 'AAAAAAAAAAAAAAAA',
+      encryptionParams: { iv: 'AAAAAAAAAAAAAAAA', tagBits: 128 },
       ciphertext:
         'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       createdAt: '2026-01-01T00:00:00.000Z',
@@ -95,7 +94,6 @@ function makeRecord(userId = 'user-1'): SerializedKeyRingProfile {
         id: 'wrapping-1',
         userId,
         method: 'password',
-        kdfVersion: 1,
         kdfAlgorithm: 'argon2id',
         kdfParams: {
           memorySize: 65536,
@@ -104,10 +102,8 @@ function makeRecord(userId = 'user-1'): SerializedKeyRingProfile {
           hashLength: 32,
         },
         kdfSalt: 'AAAAAAAAAAAAAAAAAAAAAA==',
-        wrappingVersion: 1,
         wrappingAlgorithm: 'aes-256-gcm',
-        wrappingParams: { ivBytes: 12, tagBits: 128 },
-        wrappingIv: 'AAAAAAAAAAAAAAAA',
+        wrappingParams: { iv: 'AAAAAAAAAAAAAAAA', tagBits: 128 },
         ciphertext:
           'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
         createdAt: '2026-01-01T00:00:00.000Z',
@@ -521,9 +517,8 @@ describe('EncryptionGate', () => {
     await capturedContext!.updateKeyRingProfile({
       currentRevision: 1,
       activeDekId: 'dek-1',
-      encryptionVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
-      keyRingIv: 'iv',
+      encryptionParams: { iv: 'iv', tagBits: 128 },
       keyRingCiphertext: 'updated-ciphertext',
     });
 
@@ -582,9 +577,8 @@ describe('EncryptionGate', () => {
       capturedContext!.updateKeyRingProfile({
         currentRevision: 1,
         activeDekId: 'dek-1',
-        encryptionVersion: 1,
         encryptionAlgorithm: 'aes-256-gcm',
-        keyRingIv: 'iv',
+        encryptionParams: { iv: 'iv', tagBits: 128 },
         keyRingCiphertext: 'stale-ciphertext',
       }),
     ).rejects.toThrow('conflict');
@@ -625,18 +619,13 @@ describe('EncryptionGate — PIN unlock path', () => {
       wrapperId: 'wr-pin-1',
       pinLdk,
       pinSaltCiphertext: new Uint8Array(32).fill(1),
-      pinSaltIv: new Uint8Array(12).fill(2),
-      pinEncryptionVersion: 1,
       pinEncryptionAlgorithm: 'aes-256-gcm',
-      pinEncryptionParams: WRAPPING_PARAMS_V1,
+      pinEncryptionParams: { iv: new Uint8Array(12).fill(2), tagBits: 128 },
       kdfAlgorithm: 'argon2id',
-      kdfVersion: 1,
       kdfParams: KDF_PARAMS_V1,
       wrappingAlgorithm: 'aes-256-gcm',
-      wrappingVersion: 1,
-      wrappingParams: WRAPPING_PARAMS_V1,
+      wrappingParams: { iv: new Uint8Array(12).fill(4), tagBits: 128 },
       ciphertext: new Uint8Array(48).fill(3),
-      wrappingIv: new Uint8Array(12).fill(4),
       createdAt: '2026-01-01T00:00:00.000Z',
       failedAttempts,
     });

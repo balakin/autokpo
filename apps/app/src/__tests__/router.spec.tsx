@@ -78,9 +78,8 @@ function makeRecord(userId = 'user-1'): SerializedKeyRingProfile {
       userId,
       activeDekId: 'dek-1',
       revision: 1,
-      encryptionVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
-      iv: 'AAAAAAAAAAAAAAAA',
+      encryptionParams: { iv: 'AAAAAAAAAAAAAAAA', tagBits: 128 },
       ciphertext:
         'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       createdAt: '2026-01-01T00:00:00.000Z',
@@ -91,7 +90,6 @@ function makeRecord(userId = 'user-1'): SerializedKeyRingProfile {
         id: 'wrapping-1',
         userId,
         method: 'password',
-        kdfVersion: 1,
         kdfAlgorithm: 'argon2id',
         kdfParams: {
           memorySize: 65536,
@@ -100,10 +98,8 @@ function makeRecord(userId = 'user-1'): SerializedKeyRingProfile {
           hashLength: 32,
         },
         kdfSalt: 'AAAAAAAAAAAAAAAAAAAAAA==',
-        wrappingVersion: 1,
         wrappingAlgorithm: 'aes-256-gcm',
-        wrappingParams: { ivBytes: 12, tagBits: 128 },
-        wrappingIv: 'AAAAAAAAAAAAAAAA',
+        wrappingParams: { iv: 'AAAAAAAAAAAAAAAA', tagBits: 128 },
         ciphertext:
           'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
         createdAt: '2026-01-01T00:00:00.000Z',

@@ -13,6 +13,8 @@ import { createLogger } from '../utils/create-logger';
 import { applyUpdate, encodeStateAsUpdate } from './y';
 
 const DB_VERSION = 1;
+const IV_BYTES = 12;
+const TAG_BITS = 128;
 const UPDATES_STORE = 'updates';
 const LOCAL_KEY_STORE = 'local_key';
 const ACTIVE_LOCAL_KEY_ID = 'active';
@@ -34,9 +36,8 @@ type EncryptedIndexeddbEnvelope = {
   kind: 'update' | 'snapshot';
   id: string;
   encryptionAlgorithm: 'aes-256-gcm';
-  encryptionVersion: 1;
   encryptionKeyId: string;
-  iv: Uint8Array;
+  encryptionParams: { iv: Uint8Array; tagBits: number };
   ciphertext: Uint8Array;
 };
 
@@ -45,8 +46,7 @@ type LocalKeyRecord = {
   schemaVersion: 1;
   localDekId: string;
   wrappingAlgorithm: 'aes-256-gcm';
-  wrappingVersion: 1;
-  wrappingIv: Uint8Array;
+  wrappingParams: { iv: Uint8Array; tagBits: number };
   wrappedDek: Uint8Array;
   createdAt: string;
 };
@@ -369,10 +369,10 @@ export class EncryptedIndexeddbPersistence {
   private async createLocalKeyRecord(): Promise<ActiveLocalKey> {
     const keyBytes = crypto.getRandomValues(new Uint8Array(LOCAL_DEK_BYTES));
     const localDekId = crypto.randomUUID();
-    const wrappingIv = crypto.getRandomValues(new Uint8Array(12));
+    const wrappingIv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
     const wrappedDek = await aesGcmEncrypt({
       keyBytes: this.options.mek,
-      iv: wrappingIv,
+      params: { iv: wrappingIv, tagBits: TAG_BITS },
       plaintext: keyBytes,
       aad: this.localKeyAad(localDekId),
     });
@@ -383,8 +383,7 @@ export class EncryptedIndexeddbPersistence {
         schemaVersion: 1,
         localDekId,
         wrappingAlgorithm: 'aes-256-gcm',
-        wrappingVersion: 1,
-        wrappingIv,
+        wrappingParams: { iv: wrappingIv, tagBits: TAG_BITS },
         wrappedDek,
         createdAt: new Date().toISOString(),
       },
@@ -396,7 +395,7 @@ export class EncryptedIndexeddbPersistence {
   ): Promise<ActiveLocalKey> {
     const keyBytes = await aesGcmDecrypt({
       keyBytes: this.options.mek,
-      iv: record.wrappingIv,
+      params: record.wrappingParams,
       ciphertext: record.wrappedDek,
       aad: this.localKeyAad(record.localDekId),
     });
@@ -412,10 +411,10 @@ export class EncryptedIndexeddbPersistence {
     kind: 'update' | 'snapshot',
   ): Promise<EncryptedIndexeddbEnvelope> {
     const id = crypto.randomUUID();
-    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
     const ciphertext = await aesGcmEncrypt({
       keyBytes: activeKey.keyBytes,
-      iv,
+      params: { iv, tagBits: TAG_BITS },
       plaintext,
       aad: this.envelopeAad(kind, id, activeKey.record.localDekId),
     });
@@ -425,9 +424,8 @@ export class EncryptedIndexeddbPersistence {
       kind,
       id,
       encryptionAlgorithm: 'aes-256-gcm',
-      encryptionVersion: 1,
       encryptionKeyId: activeKey.record.localDekId,
-      iv,
+      encryptionParams: { iv, tagBits: TAG_BITS },
       ciphertext,
     };
   }
@@ -442,7 +440,7 @@ export class EncryptedIndexeddbPersistence {
     }
     return aesGcmDecrypt({
       keyBytes: activeKey.keyBytes,
-      iv: envelope.iv,
+      params: envelope.encryptionParams,
       ciphertext: envelope.ciphertext,
       aad: this.envelopeAad(
         envelope.kind,
@@ -506,17 +504,25 @@ function parseEnvelope(value: unknown): EncryptedIndexeddbEnvelope {
   if (envelope.encryptionAlgorithm !== 'aes-256-gcm') {
     throw new Error('Unsupported encrypted IndexedDB algorithm');
   }
-  if (envelope.encryptionVersion !== 1) {
-    throw new Error('Unsupported encrypted IndexedDB encryption version');
-  }
   if (
     typeof envelope.encryptionKeyId !== 'string' ||
     envelope.encryptionKeyId.length === 0
   ) {
     throw new Error('Invalid encrypted IndexedDB key id');
   }
-  if (!isUint8ArrayLike(envelope.iv)) {
+  if (
+    !envelope.encryptionParams ||
+    typeof envelope.encryptionParams !== 'object' ||
+    'iv' in envelope.encryptionParams === false
+  ) {
+    throw new Error('Invalid encrypted IndexedDB encryption params');
+  }
+  const rawParams = envelope.encryptionParams as Record<string, unknown>;
+  if (!isUint8ArrayLike(rawParams.iv)) {
     throw new Error('Invalid encrypted IndexedDB IV');
+  }
+  if (typeof rawParams.tagBits !== 'number') {
+    throw new Error('Invalid encrypted IndexedDB tagBits');
   }
   if (!isUint8ArrayLike(envelope.ciphertext)) {
     throw new Error('Invalid encrypted IndexedDB ciphertext');
@@ -527,9 +533,11 @@ function parseEnvelope(value: unknown): EncryptedIndexeddbEnvelope {
     kind: envelope.kind,
     id: envelope.id,
     encryptionAlgorithm: 'aes-256-gcm',
-    encryptionVersion: 1,
     encryptionKeyId: envelope.encryptionKeyId,
-    iv: toUint8Array(envelope.iv),
+    encryptionParams: {
+      iv: toUint8Array(envelope.encryptionParams.iv),
+      tagBits: rawParams.tagBits,
+    },
     ciphertext: toUint8Array(envelope.ciphertext),
   };
 }
@@ -551,10 +559,15 @@ function parseLocalKeyRecord(value: unknown): LocalKeyRecord {
   if (record.wrappingAlgorithm !== 'aes-256-gcm') {
     throw new Error('Unsupported local persistence key wrapping algorithm');
   }
-  if (record.wrappingVersion !== 1) {
-    throw new Error('Unsupported local persistence key wrapping version');
+  if (
+    !record.wrappingParams ||
+    typeof record.wrappingParams !== 'object' ||
+    'iv' in record.wrappingParams === false
+  ) {
+    throw new Error('Invalid local persistence key wrapping params');
   }
-  if (!isUint8ArrayLike(record.wrappingIv)) {
+  const rawParams = record.wrappingParams as Record<string, unknown>;
+  if (!isUint8ArrayLike(rawParams.iv)) {
     throw new Error('Invalid local persistence key wrapping IV');
   }
   if (!isUint8ArrayLike(record.wrappedDek)) {
@@ -568,8 +581,10 @@ function parseLocalKeyRecord(value: unknown): LocalKeyRecord {
     schemaVersion: 1,
     localDekId: record.localDekId,
     wrappingAlgorithm: 'aes-256-gcm',
-    wrappingVersion: 1,
-    wrappingIv: toUint8Array(record.wrappingIv),
+    wrappingParams: {
+      iv: toUint8Array(record.wrappingParams.iv),
+      tagBits: (rawParams.tagBits as number) ?? TAG_BITS,
+    },
     wrappedDek: toUint8Array(record.wrappedDek),
     createdAt: record.createdAt,
   };

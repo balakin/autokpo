@@ -2,8 +2,8 @@ import { aesGcmDecrypt, aesGcmEncrypt } from './aes-gcm';
 import { base64ToBytes, bytesToBase64 } from './base64';
 import { deriveKek } from './kdf';
 import {
+  AES_GCM_PARAMS_V1,
   KDF_PARAMS_V1,
-  WRAPPING_PARAMS_V1,
   type ChangeMasterPasswordRequest,
   type CreateKeyRingProfileRequest,
   type KdfParamsV1,
@@ -14,6 +14,7 @@ import {
 const MEK_BYTES = 32;
 const DEK_BYTES = 32;
 const KDF_SALT_BYTES = 16;
+const IV_BYTES = 12;
 
 export class EncryptionUnlockError extends Error {
   constructor() {
@@ -46,8 +47,8 @@ export async function createKeyRingProfilePayload(
   const mek = randomBytes(MEK_BYTES);
   const dek = randomBytes(DEK_BYTES);
   const salt = randomBytes(KDF_SALT_BYTES);
-  const keyRingIv = randomBytes(WRAPPING_PARAMS_V1.ivBytes);
-  const wrappingIv = randomBytes(WRAPPING_PARAMS_V1.ivBytes);
+  const keyRingIv = randomBytes(IV_BYTES);
+  const wrappingIv = randomBytes(IV_BYTES);
   const kek = await deriveKek(password, salt, KDF_PARAMS_V1);
   const keyRingPlaintext = JSON.stringify({
     version: 1,
@@ -59,13 +60,13 @@ export async function createKeyRingProfilePayload(
   });
   const keyRingCiphertext = await aesGcmEncrypt({
     keyBytes: mek,
-    iv: keyRingIv,
+    params: { iv: keyRingIv, tagBits: AES_GCM_PARAMS_V1.tagBits },
     plaintext: new TextEncoder().encode(keyRingPlaintext),
     aad: keyRingAad(userId, activeDekId, 1),
   });
   const wrappedMek = await aesGcmEncrypt({
     keyBytes: kek,
-    iv: wrappingIv,
+    params: { iv: wrappingIv, tagBits: AES_GCM_PARAMS_V1.tagBits },
     plaintext: mek,
     aad: wrappedMekAad(userId, wrappingId, 'password'),
   });
@@ -80,18 +81,20 @@ export async function createKeyRingProfilePayload(
       keyRingId,
       wrappingId,
       activeDekId,
-      kdfVersion: 1,
+      encryptionAlgorithm: 'aes-256-gcm',
+      encryptionParams: {
+        iv: bytesToBase64(keyRingIv),
+        tagBits: AES_GCM_PARAMS_V1.tagBits,
+      },
+      keyRingCiphertext: bytesToBase64(keyRingCiphertext),
       kdfAlgorithm: 'argon2id',
       kdfParams: KDF_PARAMS_V1,
       kdfSalt: bytesToBase64(salt),
-      encryptionVersion: 1,
-      encryptionAlgorithm: 'aes-256-gcm',
-      keyRingIv: bytesToBase64(keyRingIv),
-      keyRingCiphertext: bytesToBase64(keyRingCiphertext),
-      wrappingVersion: 1,
       wrappingAlgorithm: 'aes-256-gcm',
-      wrappingParams: WRAPPING_PARAMS_V1,
-      wrappingIv: bytesToBase64(wrappingIv),
+      wrappingParams: {
+        iv: bytesToBase64(wrappingIv),
+        tagBits: AES_GCM_PARAMS_V1.tagBits,
+      },
       ciphertext: bytesToBase64(wrappedMek),
     },
   };
@@ -105,11 +108,11 @@ export async function createPasswordWrapperPayload(
 ): Promise<ChangeMasterPasswordRequest> {
   const wrappingId = crypto.randomUUID();
   const salt = randomBytes(KDF_SALT_BYTES);
-  const wrappingIv = randomBytes(WRAPPING_PARAMS_V1.ivBytes);
+  const wrappingIv = randomBytes(IV_BYTES);
   const kek = await deriveKek(password, salt, KDF_PARAMS_V1);
   const wrappedMek = await aesGcmEncrypt({
     keyBytes: kek,
-    iv: wrappingIv,
+    params: { iv: wrappingIv, tagBits: AES_GCM_PARAMS_V1.tagBits },
     plaintext: mek,
     aad: wrappedMekAad(userId, wrappingId, 'password'),
   });
@@ -117,14 +120,14 @@ export async function createPasswordWrapperPayload(
   return {
     currentWrappingId,
     wrappingId,
-    kdfVersion: 1,
     kdfAlgorithm: 'argon2id',
     kdfParams: KDF_PARAMS_V1,
     kdfSalt: bytesToBase64(salt),
-    wrappingVersion: 1,
     wrappingAlgorithm: 'aes-256-gcm',
-    wrappingParams: WRAPPING_PARAMS_V1,
-    wrappingIv: bytesToBase64(wrappingIv),
+    wrappingParams: {
+      iv: bytesToBase64(wrappingIv),
+      tagBits: AES_GCM_PARAMS_V1.tagBits,
+    },
     ciphertext: bytesToBase64(wrappedMek),
   };
 }
@@ -136,13 +139,14 @@ export async function unwrapKeyRingProfile(
   const wrapper = record.wrappers.find((item) => item.method === 'password');
   if (!wrapper) throw new EncryptionUnlockError();
   const salt = base64ToBytes(wrapper.kdfSalt);
-  const wrappingIv = base64ToBytes(wrapper.wrappingIv);
+  const wrappingIv = base64ToBytes(wrapper.wrappingParams.iv);
   const wrappedMek = base64ToBytes(wrapper.ciphertext);
   const kek = await deriveKek(password, salt, wrapper.kdfParams);
   try {
+    const tagBits = wrapper.wrappingParams.tagBits;
     const mek = await aesGcmDecrypt({
       keyBytes: kek,
-      iv: wrappingIv,
+      params: { iv: wrappingIv, tagBits },
       ciphertext: wrappedMek,
       aad: wrappedMekAad(record.keyRing.userId, wrapper.id, wrapper.method),
     });
@@ -162,13 +166,20 @@ export async function decryptKeyRingWithMek(
     userId: string;
     activeDekId: string;
     revision: number;
-    iv: string;
+    encryptionParams: { iv: string | Uint8Array; tagBits: number };
     ciphertext: string;
   },
 ): Promise<DecryptedKeyRing> {
+  const iv =
+    typeof keyRing.encryptionParams.iv === 'string'
+      ? base64ToBytes(keyRing.encryptionParams.iv)
+      : keyRing.encryptionParams.iv;
   const keyRingBytes = await aesGcmDecrypt({
     keyBytes: mek,
-    iv: base64ToBytes(keyRing.iv),
+    params: {
+      iv,
+      tagBits: keyRing.encryptionParams.tagBits,
+    },
     ciphertext: base64ToBytes(keyRing.ciphertext),
     aad: keyRingAad(keyRing.userId, keyRing.activeDekId, keyRing.revision),
   });
@@ -226,7 +237,7 @@ export async function createRotatedKeyRingPayload({
   const activeDek = randomBytes(DEK_BYTES);
   const revision = currentRevision + 1;
   const nextDeks = { ...deks, [activeDekId]: activeDek };
-  const keyRingIv = randomBytes(WRAPPING_PARAMS_V1.ivBytes);
+  const keyRingIv = randomBytes(IV_BYTES);
   const encodedDeks = Object.fromEntries(
     Object.entries(nextDeks).map(([dekId, dek]) => [dekId, bytesToBase64(dek)]),
   );
@@ -238,7 +249,7 @@ export async function createRotatedKeyRingPayload({
   });
   const keyRingCiphertext = await aesGcmEncrypt({
     keyBytes: mek,
-    iv: keyRingIv,
+    params: { iv: keyRingIv, tagBits: AES_GCM_PARAMS_V1.tagBits },
     plaintext: new TextEncoder().encode(keyRingPlaintext),
     aad: keyRingAad(userId, activeDekId, revision),
   });
@@ -251,9 +262,11 @@ export async function createRotatedKeyRingPayload({
     request: {
       currentRevision,
       activeDekId,
-      encryptionVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
-      keyRingIv: bytesToBase64(keyRingIv),
+      encryptionParams: {
+        iv: bytesToBase64(keyRingIv),
+        tagBits: AES_GCM_PARAMS_V1.tagBits,
+      },
       keyRingCiphertext: bytesToBase64(keyRingCiphertext),
     },
   };
@@ -271,25 +284,31 @@ export async function wrapMekWithLdk(
   ldk: CryptoKey,
   userId: string,
   wrapperId: string,
-): Promise<{ ciphertext: Uint8Array; iv: Uint8Array }> {
-  const iv = randomBytes(12);
+): Promise<{
+  ciphertext: Uint8Array;
+  wrappingParams: { iv: Uint8Array; tagBits: number };
+}> {
+  const iv = randomBytes(IV_BYTES);
   const aad = wrappedMekAad(userId, wrapperId, 'ldk');
   const ciphertext = await crypto.subtle.encrypt(
     {
       name: 'AES-GCM',
       iv: toBuffer(iv),
       additionalData: toBuffer(aad),
-      tagLength: 128,
+      tagLength: AES_GCM_PARAMS_V1.tagBits,
     },
     ldk,
     toBuffer(mek),
   );
-  return { ciphertext: new Uint8Array(ciphertext), iv };
+  return {
+    ciphertext: new Uint8Array(ciphertext),
+    wrappingParams: { iv, tagBits: AES_GCM_PARAMS_V1.tagBits },
+  };
 }
 
 export async function unwrapMekWithLdk(
   ciphertext: Uint8Array,
-  iv: Uint8Array,
+  wrappingParams: { iv: Uint8Array; tagBits: number },
   ldk: CryptoKey,
   userId: string,
   wrapperId: string,
@@ -299,9 +318,9 @@ export async function unwrapMekWithLdk(
     const mek = await crypto.subtle.decrypt(
       {
         name: 'AES-GCM',
-        iv: toBuffer(iv),
+        iv: toBuffer(wrappingParams.iv),
         additionalData: toBuffer(aad),
-        tagLength: 128,
+        tagLength: wrappingParams.tagBits,
       },
       ldk,
       toBuffer(ciphertext),
@@ -355,10 +374,10 @@ export async function wrapMekWithPin(
 ): Promise<{
   pinLdk: CryptoKey;
   pinSaltCiphertext: Uint8Array;
-  pinSaltIv: Uint8Array;
+  pinEncryptionParams: { iv: Uint8Array; tagBits: number };
   kdfParams: KdfParamsV1;
   ciphertext: Uint8Array;
-  wrappingIv: Uint8Array;
+  wrappingParams: { iv: Uint8Array; tagBits: number };
 }> {
   const pinLdk = await crypto.subtle.generateKey(
     { name: 'AES-GCM', length: 256 },
@@ -366,32 +385,32 @@ export async function wrapMekWithPin(
     ['encrypt', 'decrypt'],
   );
   const salt = randomBytes(PIN_SALT_BYTES);
-  const pinSaltIv = randomBytes(WRAPPING_PARAMS_V1.ivBytes);
+  const pinSaltIv = randomBytes(IV_BYTES);
   const pinSaltCiphertextBuffer = await crypto.subtle.encrypt(
     {
       name: 'AES-GCM',
       iv: toBuffer(pinSaltIv),
       additionalData: toBuffer(pinSaltAad(userId, wrapperId)),
-      tagLength: WRAPPING_PARAMS_V1.tagBits,
+      tagLength: AES_GCM_PARAMS_V1.tagBits,
     },
     pinLdk,
     toBuffer(salt),
   );
   const kek = await deriveKek(pin, salt, KDF_PARAMS_V1);
-  const wrappingIv = randomBytes(WRAPPING_PARAMS_V1.ivBytes);
+  const wrappingIv = randomBytes(IV_BYTES);
   const ciphertext = await aesGcmEncrypt({
     keyBytes: kek,
-    iv: wrappingIv,
+    params: { iv: wrappingIv, tagBits: AES_GCM_PARAMS_V1.tagBits },
     plaintext: mek,
     aad: wrappedMekAad(userId, wrapperId, 'pin'),
   });
   return {
     pinLdk,
     pinSaltCiphertext: new Uint8Array(pinSaltCiphertextBuffer),
-    pinSaltIv,
+    pinEncryptionParams: { iv: pinSaltIv, tagBits: AES_GCM_PARAMS_V1.tagBits },
     kdfParams: KDF_PARAMS_V1,
     ciphertext,
-    wrappingIv,
+    wrappingParams: { iv: wrappingIv, tagBits: AES_GCM_PARAMS_V1.tagBits },
   };
 }
 
@@ -399,10 +418,10 @@ export async function unwrapMekWithPin(
   record: {
     pinLdk: CryptoKey;
     pinSaltCiphertext: Uint8Array;
-    pinSaltIv: Uint8Array;
+    pinEncryptionParams: { iv: Uint8Array; tagBits: number };
     kdfParams: KdfParamsV1;
     ciphertext: Uint8Array;
-    wrappingIv: Uint8Array;
+    wrappingParams: { iv: Uint8Array; tagBits: number };
     userId: string;
     wrapperId: string;
   },
@@ -412,9 +431,9 @@ export async function unwrapMekWithPin(
     const saltBuffer = await crypto.subtle.decrypt(
       {
         name: 'AES-GCM',
-        iv: toBuffer(record.pinSaltIv),
+        iv: toBuffer(record.pinEncryptionParams.iv),
         additionalData: toBuffer(pinSaltAad(record.userId, record.wrapperId)),
-        tagLength: WRAPPING_PARAMS_V1.tagBits,
+        tagLength: record.pinEncryptionParams.tagBits,
       },
       record.pinLdk,
       toBuffer(record.pinSaltCiphertext),
@@ -423,7 +442,10 @@ export async function unwrapMekWithPin(
     const kek = await deriveKek(pin, salt, record.kdfParams);
     const mek = await aesGcmDecrypt({
       keyBytes: kek,
-      iv: record.wrappingIv,
+      params: {
+        iv: record.wrappingParams.iv,
+        tagBits: record.wrappingParams.tagBits,
+      },
       ciphertext: record.ciphertext,
       aad: wrappedMekAad(record.userId, record.wrapperId, 'pin'),
     });

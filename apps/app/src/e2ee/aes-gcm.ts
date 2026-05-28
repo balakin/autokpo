@@ -2,12 +2,12 @@ const AES_GCM = 'AES-GCM';
 
 export function aesGcmEncrypt({
   keyBytes,
-  iv,
+  params,
   plaintext,
   aad,
 }: {
   keyBytes: Uint8Array;
-  iv: Uint8Array;
+  params: { iv: Uint8Array; tagBits: number };
   plaintext: Uint8Array;
   aad: Uint8Array;
 }): Promise<Uint8Array> {
@@ -15,9 +15,9 @@ export function aesGcmEncrypt({
     const ciphertext = await crypto.subtle.encrypt(
       {
         name: AES_GCM,
-        iv: toArrayBuffer(iv),
+        iv: toArrayBuffer(params.iv),
         additionalData: toArrayBuffer(aad),
-        tagLength: 128,
+        tagLength: params.tagBits,
       },
       key,
       toArrayBuffer(plaintext),
@@ -28,12 +28,12 @@ export function aesGcmEncrypt({
 
 export function aesGcmDecrypt({
   keyBytes,
-  iv,
+  params,
   ciphertext,
   aad,
 }: {
   keyBytes: Uint8Array;
-  iv: Uint8Array;
+  params: { iv: Uint8Array; tagBits: number };
   ciphertext: Uint8Array;
   aad: Uint8Array;
 }): Promise<Uint8Array> {
@@ -41,9 +41,9 @@ export function aesGcmDecrypt({
     const plaintext = await crypto.subtle.decrypt(
       {
         name: AES_GCM,
-        iv: toArrayBuffer(iv),
+        iv: toArrayBuffer(params.iv),
         additionalData: toArrayBuffer(aad),
-        tagLength: 128,
+        tagLength: params.tagBits,
       },
       key,
       toArrayBuffer(ciphertext),

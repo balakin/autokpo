@@ -126,7 +126,7 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
         try {
           const mek = await unwrapMekWithLdk(
             localWrapper.ciphertext,
-            localWrapper.wrappingIv,
+            localWrapper.wrappingParams,
             localWrapper.ldk,
             userId,
             localWrapper.wrapperId,
@@ -457,9 +457,11 @@ function keyRingRecordFromProfile(
     keyRingId: profile.keyRing.id,
     activeDekId: profile.keyRing.activeDekId,
     revision: profile.keyRing.revision,
-    encryptionVersion: profile.keyRing.encryptionVersion,
     encryptionAlgorithm: profile.keyRing.encryptionAlgorithm,
-    iv: profile.keyRing.iv,
+    encryptionParams: {
+      iv: base64ToBytes(profile.keyRing.encryptionParams.iv),
+      tagBits: profile.keyRing.encryptionParams.tagBits,
+    },
     ciphertext: profile.keyRing.ciphertext,
     createdAt: profile.keyRing.createdAt,
     updatedAt: profile.keyRing.updatedAt,
@@ -477,11 +479,12 @@ function wrapperRecordFromProfile(
     method: 'password',
     wrappingId: wrapper.id,
     ciphertext: base64ToBytes(wrapper.ciphertext),
-    wrappingIv: base64ToBytes(wrapper.wrappingIv),
     wrappingAlgorithm: 'aes-256-gcm',
-    wrappingVersion: 1,
+    wrappingParams: {
+      iv: base64ToBytes(wrapper.wrappingParams.iv),
+      tagBits: wrapper.wrappingParams.tagBits,
+    },
     kdfAlgorithm: 'argon2id',
-    kdfVersion: 1,
     kdfParams: wrapper.kdfParams,
     kdfSalt: base64ToBytes(wrapper.kdfSalt),
     createdAt: wrapper.createdAt,
@@ -502,7 +505,7 @@ async function unlockWithLocalRecords(
     );
     const mek = await aesGcmDecrypt({
       keyBytes: kek,
-      iv: wrapperRecord.wrappingIv,
+      params: wrapperRecord.wrappingParams,
       ciphertext: wrapperRecord.ciphertext,
       aad: wrappedMekAad(userId, wrapperRecord.wrappingId, 'password'),
     });
@@ -535,7 +538,7 @@ async function storeLdkWrapper(
   try {
     const ldk = await generateLdk();
     const wrapperId = crypto.randomUUID();
-    const { ciphertext, iv } = await wrapMekWithLdk(
+    const { ciphertext, wrappingParams } = await wrapMekWithLdk(
       mek,
       ldk,
       userId,
@@ -547,7 +550,7 @@ async function storeLdkWrapper(
       wrapperId,
       ldk,
       ciphertext,
-      wrappingIv: iv,
+      wrappingParams,
     });
   } catch {
     // LDK storage failure is non-fatal — user will be prompted on next session.

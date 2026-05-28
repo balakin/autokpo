@@ -1,4 +1,5 @@
 import { aesGcmDecrypt, aesGcmEncrypt } from '../e2ee/aes-gcm';
+import { AES_GCM_PARAMS_V1 } from '../e2ee/key-ring-record';
 
 import type { ParsedSyncState } from './sync-state';
 import type { TypedDoc } from './typed-doc';
@@ -43,8 +44,7 @@ export function schedulePushIfPendingChanges(
 
 export interface EncryptedSyncPayload {
   encryptionAlgorithm: 'aes-256-gcm';
-  encryptionVersion: 1;
-  iv: Uint8Array;
+  encryptionParams: { iv: Uint8Array; tagBits: number };
   ciphertext: Uint8Array;
 }
 
@@ -83,22 +83,22 @@ export async function encryptSyncPayload({
     blockId,
     kind,
   });
+  const tagBits = AES_GCM_PARAMS_V1.tagBits;
   const ciphertext = await aesGcmEncrypt({
     keyBytes: activeDek,
-    iv,
+    params: { iv, tagBits },
     plaintext,
     aad,
   });
   return {
     encryptionAlgorithm: 'aes-256-gcm',
-    encryptionVersion: 1,
-    iv,
+    encryptionParams: { iv, tagBits },
     ciphertext,
   };
 }
 
 export async function decryptSyncPayload({
-  payload: { encryptionAlgorithm, encryptionVersion, iv, ciphertext },
+  payload: { encryptionAlgorithm, encryptionParams, ciphertext },
   activeDek,
   userId,
   activeDekId,
@@ -111,11 +111,6 @@ export async function decryptSyncPayload({
       `Unsupported encryption_algorithm: ${String(encryptionAlgorithm)}`,
     );
   }
-  if (encryptionVersion !== 1) {
-    throw new Error(
-      `Unsupported encryption_version: ${String(encryptionVersion)}`,
-    );
-  }
   const aad = buildAad({
     userId,
     activeDekId,
@@ -123,7 +118,12 @@ export async function decryptSyncPayload({
     blockId,
     kind,
   });
-  return aesGcmDecrypt({ keyBytes: activeDek, iv, ciphertext, aad });
+  return aesGcmDecrypt({
+    keyBytes: activeDek,
+    params: encryptionParams,
+    ciphertext,
+    aad,
+  });
 }
 
 function buildAad({

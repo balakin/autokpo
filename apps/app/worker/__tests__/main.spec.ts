@@ -34,9 +34,11 @@ describe('worker', () => {
         id: keyId,
         userId,
         activeDekId: 'dek-1',
-        encryptionVersion: 1,
         encryptionAlgorithm: 'aes-256-gcm',
-        iv: new Uint8Array(12),
+        encryptionParamsJson: JSON.stringify({
+          iv: 'AAAAAAAAAAAAAAAA',
+          tagBits: 128,
+        }),
         ciphertext: new Uint8Array(16),
       })
       .onConflictDoNothing();

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "d1c0f087-2584-4169-946c-8c79da1aec11",
+  "id": "91f3882b-67cd-4857-8ed0-eff66d90272c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -429,13 +429,6 @@
           "autoincrement": false,
           "default": 1
         },
-        "encryption_version": {
-          "name": "encryption_version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "encryption_algorithm": {
           "name": "encryption_algorithm",
           "type": "text",
@@ -443,9 +436,9 @@
           "notNull": true,
           "autoincrement": false
         },
-        "iv": {
-          "name": "iv",
-          "type": "blob",
+        "encryption_params_json": {
+          "name": "encryption_params_json",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -527,13 +520,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "kdf_version": {
-          "name": "kdf_version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "kdf_algorithm": {
           "name": "kdf_algorithm",
           "type": "text",
@@ -555,13 +541,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "wrapping_version": {
-          "name": "wrapping_version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "wrapping_algorithm": {
           "name": "wrapping_algorithm",
           "type": "text",
@@ -572,13 +551,6 @@
         "wrapping_params_json": {
           "name": "wrapping_params_json",
           "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "wrapping_iv": {
-          "name": "wrapping_iv",
-          "type": "blob",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false

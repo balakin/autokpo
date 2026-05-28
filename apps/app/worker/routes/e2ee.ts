@@ -18,13 +18,8 @@ const KDF_PARAMS_V1 = {
   hashLength: 32,
 } as const;
 
-const WRAPPING_PARAMS_V1 = {
-  ivBytes: 12,
-  tagBits: 128,
-} as const;
-
 const KDF_SALT_BYTES = 16;
-const WRAPPING_IV_BYTES = 12;
+const IV_BYTES = 12;
 const CIPHERTEXT_BYTES = 48;
 const MAX_KEY_RING_CIPHERTEXT_BYTES = 64 * 1024;
 
@@ -83,9 +78,8 @@ e2eeRouter.post('/key-ring', async (c) => {
           userId: session.user.id,
           activeDekId: parsed.activeDekId,
           revision: 1,
-          encryptionVersion: 1,
           encryptionAlgorithm: 'aes-256-gcm',
-          iv: parsed.keyRingIv,
+          encryptionParamsJson: JSON.stringify(parsed.encryptionParams),
           ciphertext: parsed.keyRingCiphertext,
         })
         .returning(),
@@ -96,14 +90,11 @@ e2eeRouter.post('/key-ring', async (c) => {
           userId: session.user.id,
           method: 'password',
           status: 'active',
-          kdfVersion: 1,
           kdfAlgorithm: 'argon2id',
           kdfParamsJson: JSON.stringify(KDF_PARAMS_V1),
           kdfSalt: parsed.kdfSalt,
-          wrappingVersion: 1,
           wrappingAlgorithm: 'aes-256-gcm',
-          wrappingParamsJson: JSON.stringify(WRAPPING_PARAMS_V1),
-          wrappingIv: parsed.wrappingIv,
+          wrappingParamsJson: JSON.stringify(parsed.wrappingParams),
           ciphertext: parsed.wrappedMek,
         })
         .returning(),
@@ -134,9 +125,8 @@ e2eeRouter.put('/key-ring', async (c) => {
         .set({
           activeDekId: parsed.activeDekId,
           revision: parsed.currentRevision + 1,
-          encryptionVersion: parsed.encryptionVersion,
           encryptionAlgorithm: parsed.encryptionAlgorithm,
-          iv: parsed.keyRingIv,
+          encryptionParamsJson: JSON.stringify(parsed.encryptionParams),
           ciphertext: parsed.keyRingCiphertext,
           updatedAt: new Date(),
         })
@@ -196,7 +186,6 @@ e2eeRouter.post('/key-ring/change-password', async (c) => {
   const db = getDb(c.env.DB);
   try {
     await db.batch([
-      // guard: abort if the current wrapping is not active (already revoked or missing)
       assertExists(db, (q) =>
         q
           .from(keyRingWrapping)
@@ -209,7 +198,6 @@ e2eeRouter.post('/key-ring/change-password', async (c) => {
             ),
           ),
       ),
-      // revoke the current wrapping
       db
         .update(keyRingWrapping)
         .set({ status: 'revoked', revokedAt: new Date() })
@@ -221,20 +209,16 @@ e2eeRouter.post('/key-ring/change-password', async (c) => {
             eq(keyRingWrapping.status, 'active'),
           ),
         ),
-      // insert the new wrapping with the re-encrypted key
       db.insert(keyRingWrapping).values({
         id: parsed.wrappingId,
         userId: session.user.id,
         method: 'password',
         status: 'active',
-        kdfVersion: 1,
         kdfAlgorithm: 'argon2id',
         kdfParamsJson: JSON.stringify(KDF_PARAMS_V1),
         kdfSalt: parsed.kdfSalt,
-        wrappingVersion: 1,
         wrappingAlgorithm: 'aes-256-gcm',
-        wrappingParamsJson: JSON.stringify(WRAPPING_PARAMS_V1),
-        wrappingIv: parsed.wrappingIv,
+        wrappingParamsJson: JSON.stringify(parsed.wrappingParams),
         ciphertext: parsed.wrappedMek,
       }),
     ]);
@@ -254,13 +238,9 @@ function parseCreateBody(body: unknown) {
     typeof value.keyRingId !== 'string' ||
     typeof value.wrappingId !== 'string' ||
     typeof value.activeDekId !== 'string' ||
-    value.encryptionVersion !== 1 ||
     value.encryptionAlgorithm !== 'aes-256-gcm' ||
-    value.kdfVersion !== 1 ||
     value.kdfAlgorithm !== 'argon2id' ||
     !sameJson(value.kdfParams, KDF_PARAMS_V1) ||
-    !sameJson(value.wrappingParams, WRAPPING_PARAMS_V1) ||
-    value.wrappingVersion !== 1 ||
     value.wrappingAlgorithm !== 'aes-256-gcm'
   ) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
@@ -273,26 +253,30 @@ function parseCreateBody(body: unknown) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
+  const encryptionParams = parseAesGcmParams(value.encryptionParams);
+  if (!encryptionParams) {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+
+  const wrappingParams = parseAesGcmParams(value.wrappingParams);
+  if (!wrappingParams) {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+
   if (
     typeof value.kdfSalt !== 'string' ||
-    typeof value.wrappingIv !== 'string' ||
     typeof value.ciphertext !== 'string' ||
-    typeof value.keyRingIv !== 'string' ||
     typeof value.keyRingCiphertext !== 'string'
   ) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
   let kdfSalt: Uint8Array;
-  let wrappingIv: Uint8Array;
   let wrappedMek: Uint8Array;
-  let keyRingIv: Uint8Array;
   let keyRingCiphertext: Uint8Array;
   try {
     kdfSalt = Uint8Array.fromBase64(value.kdfSalt);
-    wrappingIv = Uint8Array.fromBase64(value.wrappingIv);
     wrappedMek = Uint8Array.fromBase64(value.ciphertext);
-    keyRingIv = Uint8Array.fromBase64(value.keyRingIv);
     keyRingCiphertext = Uint8Array.fromBase64(value.keyRingCiphertext);
   } catch {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
@@ -300,9 +284,7 @@ function parseCreateBody(body: unknown) {
 
   if (
     kdfSalt.byteLength !== KDF_SALT_BYTES ||
-    wrappingIv.byteLength !== WRAPPING_IV_BYTES ||
-    keyRingIv.byteLength !== WRAPPING_IV_BYTES ||
-    wrappedMek.byteLength !== CIPHERTEXT_BYTES ||
+    !isSafeCiphertext(wrappedMek) ||
     keyRingCiphertext.byteLength > MAX_KEY_RING_CIPHERTEXT_BYTES
   ) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
@@ -312,10 +294,10 @@ function parseCreateBody(body: unknown) {
     keyRingId: value.keyRingId,
     wrappingId: value.wrappingId,
     activeDekId: value.activeDekId,
+    encryptionParams,
+    wrappingParams,
     kdfSalt,
-    wrappingIv,
     wrappedMek,
-    keyRingIv,
     keyRingCiphertext,
   };
 }
@@ -328,12 +310,9 @@ function parseChangePasswordBody(body: unknown) {
   if (
     typeof value.currentWrappingId !== 'string' ||
     typeof value.wrappingId !== 'string' ||
-    value.kdfVersion !== 1 ||
     value.kdfAlgorithm !== 'argon2id' ||
     !sameJson(value.kdfParams, KDF_PARAMS_V1) ||
-    value.wrappingVersion !== 1 ||
-    value.wrappingAlgorithm !== 'aes-256-gcm' ||
-    !sameJson(value.wrappingParams, WRAPPING_PARAMS_V1)
+    value.wrappingAlgorithm !== 'aes-256-gcm'
   ) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
@@ -341,38 +320,36 @@ function parseChangePasswordBody(body: unknown) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
+  const wrappingParams = parseAesGcmParams(value.wrappingParams);
+  if (!wrappingParams) {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+
   if (
     typeof value.kdfSalt !== 'string' ||
-    typeof value.wrappingIv !== 'string' ||
     typeof value.ciphertext !== 'string'
   ) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
   let kdfSalt: Uint8Array;
-  let wrappingIv: Uint8Array;
   let wrappedMek: Uint8Array;
   try {
     kdfSalt = Uint8Array.fromBase64(value.kdfSalt);
-    wrappingIv = Uint8Array.fromBase64(value.wrappingIv);
     wrappedMek = Uint8Array.fromBase64(value.ciphertext);
   } catch {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
-  if (
-    kdfSalt.byteLength !== KDF_SALT_BYTES ||
-    wrappingIv.byteLength !== WRAPPING_IV_BYTES ||
-    wrappedMek.byteLength !== CIPHERTEXT_BYTES
-  ) {
+  if (kdfSalt.byteLength !== KDF_SALT_BYTES || !isSafeCiphertext(wrappedMek)) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
   return {
     currentWrappingId: value.currentWrappingId,
     wrappingId: value.wrappingId,
+    wrappingParams,
     kdfSalt,
-    wrappingIv,
     wrappedMek,
   };
 }
@@ -386,7 +363,6 @@ function parseUpdateBody(body: unknown) {
     !Number.isInteger(value.currentRevision) ||
     (value.currentRevision as number) < 1 ||
     typeof value.activeDekId !== 'string' ||
-    value.encryptionVersion !== 1 ||
     value.encryptionAlgorithm !== 'aes-256-gcm'
   ) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
@@ -395,49 +371,69 @@ function parseUpdateBody(body: unknown) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
-  if (
-    typeof value.keyRingIv !== 'string' ||
-    typeof value.keyRingCiphertext !== 'string'
-  ) {
+  const encryptionParams = parseAesGcmParams(value.encryptionParams);
+  if (!encryptionParams) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
-  let keyRingIv: Uint8Array;
+  if (typeof value.keyRingCiphertext !== 'string') {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+
   let keyRingCiphertext: Uint8Array;
   try {
-    keyRingIv = Uint8Array.fromBase64(value.keyRingIv);
     keyRingCiphertext = Uint8Array.fromBase64(value.keyRingCiphertext);
   } catch {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
-  if (
-    keyRingIv.byteLength !== WRAPPING_IV_BYTES ||
-    keyRingCiphertext.byteLength > MAX_KEY_RING_CIPHERTEXT_BYTES
-  ) {
+  if (keyRingCiphertext.byteLength > MAX_KEY_RING_CIPHERTEXT_BYTES) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
   return {
     currentRevision: value.currentRevision as number,
     activeDekId: value.activeDekId,
-    encryptionVersion: value.encryptionVersion,
     encryptionAlgorithm: value.encryptionAlgorithm,
-    keyRingIv,
+    encryptionParams,
     keyRingCiphertext,
   };
 }
 
+function parseAesGcmParams(
+  value: unknown,
+): { iv: string; tagBits: number } | null {
+  if (!value || typeof value !== 'object') return null;
+  const obj = value as Record<string, unknown>;
+  if (typeof obj.iv !== 'string' || !obj.iv) return null;
+  if (typeof obj.tagBits !== 'number') return null;
+  try {
+    const bytes = Uint8Array.fromBase64(obj.iv);
+    if (bytes.byteLength !== IV_BYTES) return null;
+  } catch {
+    return null;
+  }
+  return { iv: obj.iv, tagBits: obj.tagBits };
+}
+
 function serializeRecord(keyRingRow: KeyRingRow, wrapping: KeyRingWrappingRow) {
+  const encryptionParams = JSON.parse(keyRingRow.encryptionParamsJson) as {
+    iv: string;
+    tagBits: number;
+  };
+  const wrappingParams = JSON.parse(wrapping.wrappingParamsJson) as {
+    iv: string;
+    tagBits: number;
+  };
+
   return {
     keyRing: {
       id: keyRingRow.id,
       userId: keyRingRow.userId,
       activeDekId: keyRingRow.activeDekId,
       revision: keyRingRow.revision,
-      encryptionVersion: keyRingRow.encryptionVersion,
       encryptionAlgorithm: keyRingRow.encryptionAlgorithm,
-      iv: keyRingRow.iv?.toBase64(),
+      encryptionParams,
       ciphertext: keyRingRow.ciphertext?.toBase64(),
       createdAt: serializeTimestamp(keyRingRow.createdAt),
       updatedAt: serializeTimestamp(keyRingRow.updatedAt),
@@ -447,14 +443,11 @@ function serializeRecord(keyRingRow: KeyRingRow, wrapping: KeyRingWrappingRow) {
         id: wrapping.id,
         userId: wrapping.userId,
         method: wrapping.method,
-        kdfVersion: wrapping.kdfVersion,
         kdfAlgorithm: wrapping.kdfAlgorithm,
         kdfParams: JSON.parse(wrapping.kdfParamsJson) as unknown,
         kdfSalt: wrapping.kdfSalt.toBase64(),
-        wrappingVersion: wrapping.wrappingVersion,
         wrappingAlgorithm: wrapping.wrappingAlgorithm,
-        wrappingParams: JSON.parse(wrapping.wrappingParamsJson) as unknown,
-        wrappingIv: wrapping.wrappingIv.toBase64(),
+        wrappingParams,
         ciphertext: wrapping.ciphertext.toBase64(),
         createdAt: serializeTimestamp(wrapping.createdAt),
       },
@@ -470,6 +463,10 @@ function isSafeId(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     value,
   );
+}
+
+function isSafeCiphertext(value: Uint8Array): boolean {
+  return value.byteLength === CIPHERTEXT_BYTES;
 }
 
 function serializeTimestamp(value: Date): string {

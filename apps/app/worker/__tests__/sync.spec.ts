@@ -61,8 +61,7 @@ function pushBody(ciphertext: Uint8Array, id = crypto.randomUUID()) {
       encryptionKeyId: TEST_KEY_ID,
       keyRingRevision: 1,
       encryptionAlgorithm: TEST_ALGORITHM,
-      encryptionVersion: 1,
-      iv: toBase64(TEST_IV),
+      encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
       ciphertext: toBase64(ciphertext),
     }),
   };
@@ -84,8 +83,7 @@ function compactBody(
       encryptionKeyId: TEST_KEY_ID,
       keyRingRevision: 1,
       encryptionAlgorithm: TEST_ALGORITHM,
-      encryptionVersion: 1,
-      iv: toBase64(TEST_IV),
+      encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
       ciphertext: toBase64(ciphertext),
     }),
   };
@@ -99,9 +97,11 @@ async function insertTestKeyRing() {
       id: 'key-ring-1',
       userId: 'user-1',
       activeDekId: TEST_KEY_ID,
-      encryptionVersion: 1,
       encryptionAlgorithm: TEST_ALGORITHM,
-      iv: new Uint8Array(12),
+      encryptionParamsJson: JSON.stringify({
+        iv: toBase64(new Uint8Array(12)),
+        tagBits: 128,
+      }),
       ciphertext: new Uint8Array(16),
     })
     .onConflictDoNothing();
@@ -164,8 +164,7 @@ describe('GET /api/sync', () => {
         kind: string;
         encryptionKeyId: string;
         encryptionAlgorithm: string;
-        encryptionVersion: number;
-        iv: string;
+        encryptionParams: { iv: string; tagBits: number };
         ciphertext: string;
       }>;
     };
@@ -174,8 +173,8 @@ describe('GET /api/sync', () => {
     expect(body.records[0].kind).toBe('update');
     expect(body.records[0].encryptionKeyId).toBe(TEST_KEY_ID);
     expect(body.records[0].encryptionAlgorithm).toBe(TEST_ALGORITHM);
-    expect(body.records[0].encryptionVersion).toBe(1);
-    expect(body.records[0].iv).toBe(toBase64(TEST_IV));
+    expect(body.records[0].encryptionParams.iv).toBe(toBase64(TEST_IV));
+    expect(body.records[0].encryptionParams.tagBits).toBe(128);
     expect(body.records[0].ciphertext).toBe(toBase64(ciphertexts[0]));
     expect(body.records[1].seq).toBe(2);
     expect(body.records[2].seq).toBe(3);
@@ -264,8 +263,7 @@ describe('POST /api/sync', () => {
         id: 'uuid-1',
         encryptionKeyId: TEST_KEY_ID,
         encryptionAlgorithm: TEST_ALGORITHM,
-        encryptionVersion: 1,
-        iv: toBase64(TEST_IV),
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
         ciphertext: toBase64(makeCiphertext([1])),
       }),
     });
@@ -301,8 +299,7 @@ describe('POST /api/sync', () => {
         id: crypto.randomUUID(),
         encryptionKeyId: 'not-a-uuid',
         encryptionAlgorithm: TEST_ALGORITHM,
-        encryptionVersion: 1,
-        iv: toBase64(TEST_IV),
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
         ciphertext: toBase64(makeCiphertext([1])),
       }),
     });
@@ -404,8 +401,7 @@ describe('POST /api/sync', () => {
         encryptionKeyId: wrongKeyId,
         keyRingRevision: 1,
         encryptionAlgorithm: TEST_ALGORITHM,
-        encryptionVersion: 1,
-        iv: toBase64(TEST_IV),
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
         ciphertext: toBase64(makeCiphertext([1])),
       }),
     });
@@ -452,8 +448,7 @@ describe('POST /api/sync', () => {
         encryptionKeyId: TEST_KEY_ID,
         keyRingRevision: 999,
         encryptionAlgorithm: TEST_ALGORITHM,
-        encryptionVersion: 1,
-        iv: toBase64(TEST_IV),
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
         ciphertext: toBase64(makeCiphertext([1])),
       }),
     });
@@ -545,8 +540,7 @@ describe('POST /api/sync/compact', () => {
         id: crypto.randomUUID(),
         encryptionKeyId: TEST_KEY_ID,
         encryptionAlgorithm: TEST_ALGORITHM,
-        encryptionVersion: 1,
-        iv: toBase64(TEST_IV),
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
         ciphertext: toBase64(makeCiphertext([99])),
       }),
     });
@@ -573,8 +567,7 @@ describe('POST /api/sync/compact', () => {
         id: crypto.randomUUID(),
         encryptionKeyId: 'not-a-uuid',
         encryptionAlgorithm: TEST_ALGORITHM,
-        encryptionVersion: 1,
-        iv: toBase64(TEST_IV),
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
         ciphertext: toBase64(makeCiphertext([99])),
       }),
     });
@@ -639,8 +632,7 @@ describe('POST /api/sync/compact', () => {
         encryptionKeyId: wrongKeyId,
         keyRingRevision: 1,
         encryptionAlgorithm: TEST_ALGORITHM,
-        encryptionVersion: 1,
-        iv: toBase64(TEST_IV),
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
         ciphertext: toBase64(makeCiphertext([99])),
       }),
     });
@@ -674,8 +666,7 @@ describe('POST /api/sync/compact', () => {
         encryptionKeyId: TEST_KEY_ID,
         keyRingRevision: 999,
         encryptionAlgorithm: TEST_ALGORITHM,
-        encryptionVersion: 1,
-        iv: toBase64(TEST_IV),
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
         ciphertext: toBase64(makeCiphertext([99])),
       }),
     });

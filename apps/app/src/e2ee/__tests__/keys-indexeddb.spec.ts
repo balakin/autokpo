@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { KDF_PARAMS_V1, WRAPPING_PARAMS_V1 } from '../key-ring-record';
+import { KDF_PARAMS_V1 } from '../key-ring-record';
 import {
   KeysIndexeddb,
   type KeyRingRecord,
@@ -30,9 +30,8 @@ function makeKeyRingRecord(userId = USER_ID): KeyRingRecord {
     keyRingId: 'kr-1',
     activeDekId: 'dek-1',
     revision: 1,
-    encryptionVersion: 1,
     encryptionAlgorithm: 'aes-256-gcm',
-    iv: 'base64iv==',
+    encryptionParams: { iv: new Uint8Array(12).fill(10), tagBits: 128 },
     ciphertext: 'base64ciphertext==',
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
@@ -45,11 +44,9 @@ function makeWrapperRecord(userId = USER_ID): WrapperRecord {
     method: 'password',
     wrappingId: 'w-1',
     ciphertext: new Uint8Array(48).fill(1),
-    wrappingIv: new Uint8Array(12).fill(2),
     wrappingAlgorithm: 'aes-256-gcm',
-    wrappingVersion: 1,
+    wrappingParams: { iv: new Uint8Array(12).fill(2), tagBits: 128 },
     kdfAlgorithm: 'argon2id',
-    kdfVersion: 1,
     kdfParams: KDF_PARAMS_V1,
     kdfSalt: new Uint8Array(16).fill(3),
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -68,7 +65,7 @@ async function makeLdkRecord(userId = USER_ID): Promise<LocalWrapperRecord> {
     wrapperId: 'wr-1',
     ldk,
     ciphertext: new Uint8Array(48).fill(4),
-    wrappingIv: new Uint8Array(12).fill(5),
+    wrappingParams: { iv: new Uint8Array(12).fill(5), tagBits: 128 },
   };
 }
 
@@ -84,18 +81,13 @@ async function makePinRecord(userId = USER_ID): Promise<LocalWrapperRecordPin> {
     wrapperId: 'wr-pin-1',
     pinLdk,
     pinSaltCiphertext: new Uint8Array(32).fill(6),
-    pinSaltIv: new Uint8Array(12).fill(7),
-    pinEncryptionVersion: 1,
     pinEncryptionAlgorithm: 'aes-256-gcm',
-    pinEncryptionParams: WRAPPING_PARAMS_V1,
+    pinEncryptionParams: { iv: new Uint8Array(12).fill(7), tagBits: 128 },
     kdfAlgorithm: 'argon2id',
-    kdfVersion: 1,
     kdfParams: KDF_PARAMS_V1,
     wrappingAlgorithm: 'aes-256-gcm',
-    wrappingVersion: 1,
-    wrappingParams: WRAPPING_PARAMS_V1,
+    wrappingParams: { iv: new Uint8Array(12).fill(9), tagBits: 128 },
     ciphertext: new Uint8Array(48).fill(8),
-    wrappingIv: new Uint8Array(12).fill(9),
     createdAt: '2026-01-01T00:00:00.000Z',
     failedAttempts: 0,
   };
@@ -144,7 +136,7 @@ describe('KeysIndexeddb — wrapper store', () => {
     const stored = await store.readWrapper(USER_ID);
     expect(stored).toEqual(record);
     expect(stored?.ciphertext).toBeInstanceOf(Uint8Array);
-    expect(stored?.wrappingIv).toBeInstanceOf(Uint8Array);
+    expect(stored?.wrappingParams.iv).toBeInstanceOf(Uint8Array);
     expect(stored?.kdfSalt).toBeInstanceOf(Uint8Array);
   });
 
@@ -173,7 +165,7 @@ describe('KeysIndexeddb — local_wrapper store', () => {
       throw new Error('expected ldk record');
     expect(stored.ldk).toBeInstanceOf(CryptoKey);
     expect(stored.ciphertext).toBeInstanceOf(Uint8Array);
-    expect(stored.wrappingIv).toBeInstanceOf(Uint8Array);
+    expect(stored.wrappingParams.iv).toBeInstanceOf(Uint8Array);
   });
 
   it('deleteLocalWrapper removes the record', async () => {
@@ -199,9 +191,9 @@ describe('KeysIndexeddb — local_wrapper store', () => {
     if (stored?.method !== 'pin') return;
     expect(stored.pinLdk).toBeInstanceOf(CryptoKey);
     expect(stored.pinSaltCiphertext).toBeInstanceOf(Uint8Array);
-    expect(stored.pinSaltIv).toBeInstanceOf(Uint8Array);
+    expect(stored.pinEncryptionParams.iv).toBeInstanceOf(Uint8Array);
     expect(stored.ciphertext).toBeInstanceOf(Uint8Array);
-    expect(stored.wrappingIv).toBeInstanceOf(Uint8Array);
+    expect(stored.wrappingParams.iv).toBeInstanceOf(Uint8Array);
     expect(stored.failedAttempts).toBe(0);
     expect(stored.createdAt).toBe('2026-01-01T00:00:00.000Z');
   });

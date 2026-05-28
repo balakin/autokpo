@@ -36,7 +36,6 @@ import {
   fetchKeyRingProfile,
   KeyRingConflictError,
 } from '../e2ee/key-ring-api';
-import { WRAPPING_PARAMS_V1 } from '../e2ee/key-ring-record';
 import { KeysIndexeddb, type LocalWrapperRecord } from '../e2ee/keys-indexeddb';
 import { PinInput } from '../e2ee/pin-input';
 import { SetPinModal } from '../e2ee/set-pin-modal';
@@ -123,10 +122,10 @@ export function SecuritySettingsPage() {
       const {
         pinLdk,
         pinSaltCiphertext,
-        pinSaltIv,
+        pinEncryptionParams,
         kdfParams,
         ciphertext,
-        wrappingIv,
+        wrappingParams,
       } = await wrapMekWithPin(mek, pin, userId, wrapperId);
       const store = new KeysIndexeddb();
       await store.whenReady;
@@ -136,18 +135,13 @@ export function SecuritySettingsPage() {
         wrapperId,
         pinLdk,
         pinSaltCiphertext,
-        pinSaltIv,
-        pinEncryptionVersion: 1,
         pinEncryptionAlgorithm: 'aes-256-gcm',
-        pinEncryptionParams: WRAPPING_PARAMS_V1,
+        pinEncryptionParams,
         kdfAlgorithm: 'argon2id',
-        kdfVersion: 1,
         kdfParams,
         wrappingAlgorithm: 'aes-256-gcm',
-        wrappingVersion: 1,
-        wrappingParams: WRAPPING_PARAMS_V1,
+        wrappingParams,
         ciphertext,
-        wrappingIv,
         createdAt: new Date().toISOString(),
         failedAttempts: 0,
       });
@@ -166,7 +160,7 @@ export function SecuritySettingsPage() {
     try {
       const ldk = await generateLdk();
       const wrapperId = crypto.randomUUID();
-      const { ciphertext, iv } = await wrapMekWithLdk(
+      const { ciphertext, wrappingParams } = await wrapMekWithLdk(
         mek,
         ldk,
         userId,
@@ -180,7 +174,7 @@ export function SecuritySettingsPage() {
         wrapperId,
         ldk,
         ciphertext,
-        wrappingIv: iv,
+        wrappingParams,
       });
       store.close();
       setMethod('ldk');

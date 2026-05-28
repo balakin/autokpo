@@ -25,11 +25,9 @@ function validPayload() {
     keyRingId: '11111111-1111-4111-8111-111111111111',
     wrappingId: '22222222-2222-4222-8222-222222222222',
     activeDekId: '33333333-3333-4333-8333-333333333333',
-    encryptionVersion: 1,
     encryptionAlgorithm: 'aes-256-gcm',
-    keyRingIv: bytesBase64(12),
+    encryptionParams: { iv: bytesBase64(12), tagBits: 128 },
     keyRingCiphertext: bytesBase64(48),
-    kdfVersion: 1,
     kdfAlgorithm: 'argon2id',
     kdfParams: {
       memorySize: 65536,
@@ -38,10 +36,8 @@ function validPayload() {
       hashLength: 32,
     },
     kdfSalt: bytesBase64(16),
-    wrappingVersion: 1,
     wrappingAlgorithm: 'aes-256-gcm',
-    wrappingParams: { ivBytes: 12, tagBits: 128 },
-    wrappingIv: bytesBase64(12),
+    wrappingParams: { iv: bytesBase64(12), tagBits: 128 },
     ciphertext: bytesBase64(48),
   };
 }
@@ -50,7 +46,6 @@ function validChangePayload(currentWrappingId: string) {
   return {
     currentWrappingId,
     wrappingId: '44444444-4444-4444-8444-444444444444',
-    kdfVersion: 1,
     kdfAlgorithm: 'argon2id',
     kdfParams: {
       memorySize: 65536,
@@ -59,10 +54,8 @@ function validChangePayload(currentWrappingId: string) {
       hashLength: 32,
     },
     kdfSalt: bytesBase64(16),
-    wrappingVersion: 1,
     wrappingAlgorithm: 'aes-256-gcm',
-    wrappingParams: { ivBytes: 12, tagBits: 128 },
-    wrappingIv: bytesBase64(12),
+    wrappingParams: { iv: bytesBase64(12), tagBits: 128 },
     ciphertext: bytesBase64(48),
   };
 }
@@ -71,9 +64,8 @@ function validUpdatePayload(currentRevision: number) {
   return {
     currentRevision,
     activeDekId: '66666666-6666-4666-8666-666666666666',
-    encryptionVersion: 1,
     encryptionAlgorithm: 'aes-256-gcm',
-    keyRingIv: bytesBase64(12),
+    encryptionParams: { iv: bytesBase64(12), tagBits: 128 },
     keyRingCiphertext: bytesBase64(64),
   };
 }
@@ -280,9 +272,8 @@ describe('/api/e2ee/key-ring', () => {
       id: payload.keyRingId,
       activeDekId: updatePayload.activeDekId,
       revision: 2,
-      encryptionVersion: updatePayload.encryptionVersion,
       encryptionAlgorithm: updatePayload.encryptionAlgorithm,
-      iv: updatePayload.keyRingIv,
+      encryptionParams: updatePayload.encryptionParams,
       ciphertext: updatePayload.keyRingCiphertext,
     });
     expect(profile.wrappers).toEqual([
@@ -340,7 +331,7 @@ describe('/api/e2ee/key-ring', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...validUpdatePayload(1),
-        keyRingIv: bytesBase64(8),
+        encryptionParams: { iv: bytesBase64(8), tagBits: 128 },
       }),
     });
 
@@ -394,7 +385,7 @@ describe('/api/e2ee/key-ring', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...validChangePayload(payload.wrappingId),
-        wrappingIv: bytesBase64(8),
+        wrappingParams: { iv: bytesBase64(8), tagBits: 128 },
       }),
     });
 

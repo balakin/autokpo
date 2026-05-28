@@ -16,6 +16,11 @@ const uint8ArraySchema = z
   .custom<Uint8Array>(isUint8Array)
   .transform(toUint8Array);
 
+const aesGcmParamsSchema = z.object({
+  iv: uint8ArraySchema,
+  tagBits: z.number().int(),
+});
+
 const DB_NAME = 'autokpo-e2ee';
 const DB_VERSION = 1;
 
@@ -32,9 +37,8 @@ const keyRingRecordSchema = z.object({
   keyRingId: z.string(),
   activeDekId: z.string(),
   revision: z.number().int().positive(),
-  encryptionVersion: z.literal(1),
   encryptionAlgorithm: z.literal('aes-256-gcm'),
-  iv: z.string(),
+  encryptionParams: aesGcmParamsSchema,
   ciphertext: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -45,11 +49,9 @@ const wrapperRecordSchema = z.object({
   method: z.literal('password'),
   wrappingId: z.string(),
   ciphertext: uint8ArraySchema,
-  wrappingIv: uint8ArraySchema,
   wrappingAlgorithm: z.literal('aes-256-gcm'),
-  wrappingVersion: z.literal(1),
+  wrappingParams: aesGcmParamsSchema,
   kdfAlgorithm: z.literal('argon2id'),
-  kdfVersion: z.literal(1),
   kdfParams: kdfParamsV1Schema,
   kdfSalt: uint8ArraySchema,
   createdAt: z.string(),
@@ -67,7 +69,7 @@ const localWrapperRecordLdkSchema = z.object({
   wrapperId: z.string(),
   ldk: cryptoKeySchema,
   ciphertext: uint8ArraySchema,
-  wrappingIv: uint8ArraySchema,
+  wrappingParams: aesGcmParamsSchema,
 });
 
 const localWrapperRecordPinSchema = z.object({
@@ -76,24 +78,13 @@ const localWrapperRecordPinSchema = z.object({
   wrapperId: z.string(),
   pinLdk: cryptoKeySchema,
   pinSaltCiphertext: uint8ArraySchema,
-  pinSaltIv: uint8ArraySchema,
-  pinEncryptionVersion: z.literal(1),
   pinEncryptionAlgorithm: z.literal('aes-256-gcm'),
-  pinEncryptionParams: z.object({
-    ivBytes: z.number().int(),
-    tagBits: z.number().int(),
-  }),
+  pinEncryptionParams: aesGcmParamsSchema,
   kdfAlgorithm: z.literal('argon2id'),
-  kdfVersion: z.literal(1),
   kdfParams: kdfParamsV1Schema,
   wrappingAlgorithm: z.literal('aes-256-gcm'),
-  wrappingVersion: z.literal(1),
-  wrappingParams: z.object({
-    ivBytes: z.number().int(),
-    tagBits: z.number().int(),
-  }),
+  wrappingParams: aesGcmParamsSchema,
   ciphertext: uint8ArraySchema,
-  wrappingIv: uint8ArraySchema,
   createdAt: z.string(),
   failedAttempts: z.number().int(),
 });

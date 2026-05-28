@@ -28,8 +28,7 @@ erDiagram
     uuid active_dek_id
     int revision
     string encryption_algorithm
-    int encryption_version
-    bytes iv
+    text encryption_params_json
     bytes ciphertext
   }
 
@@ -39,11 +38,9 @@ erDiagram
     string method
     string status
     string kdf_algorithm
-    int kdf_version
     bytes kdf_salt
     string wrapping_algorithm
-    int wrapping_version
-    bytes wrapping_iv
+    text wrapping_params_json
     bytes ciphertext
   }
 ```
@@ -94,7 +91,7 @@ flowchart LR
   deks --> json
   json --> enc[AES-256-GCM with MEK]
   aad[AAD: e2ee-key-ring user activeDek revision] --> enc
-  enc --> stored[Stored key_ring IV and ciphertext]
+  enc --> stored[Stored key_ring encryption_params and ciphertext]
 ```
 
 AAD:

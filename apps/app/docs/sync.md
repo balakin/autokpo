@@ -29,8 +29,7 @@ erDiagram
     uuid encryption_key_id
     int key_ring_revision
     string encryption_algorithm
-    int encryption_version
-    bytes iv
+    text encryption_params_json
     bytes ciphertext
   }
 
@@ -55,8 +54,7 @@ Sync rows use DEKs from the unlocked E2EE key ring. See [`e2ee.md`](./e2ee.md#ke
 Each sync row uses:
 
 - algorithm: `aes-256-gcm`
-- version: `1`
-- IV: 12 random bytes
+- encryption params: `{ iv: 12 random bytes (base64), tagBits: 128 }`
 - ciphertext: encrypted Yjs delta/snapshot plus GCM tag
 - AAD:
 
@@ -69,7 +67,7 @@ Rules:
 1. Decrypt pulled rows with the row's `encryptionKeyId`, not blindly with the active DEK.
 2. AAD binds ciphertext to user, DEK id, key-ring revision, row id, and row kind.
 3. Changing `kind`, `id`, `encryptionKeyId`, `keyRingRevision`, user, IV, or ciphertext invalidates authentication.
-4. Unsupported encryption algorithm/version is a hard error.
+4. Unsupported encryption algorithm is a hard error.
 
 ## Browser actors
 

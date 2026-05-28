@@ -22,8 +22,10 @@ const encEnvelopeSchema = z.object({
   encryptionKeyId: uuidSchema,
   keyRingRevision: z.number().int().positive(),
   encryptionAlgorithm: z.literal('aes-256-gcm'),
-  encryptionVersion: z.literal(1),
-  iv: z.string().min(1),
+  encryptionParams: z.object({
+    iv: z.string().min(1),
+    tagBits: z.number().int(),
+  }),
   ciphertext: z.string().min(1),
 });
 
@@ -84,9 +86,9 @@ router.get('/', async (c) => {
         encryptionKeyId: syncRecord.encryptionKeyId,
         keyRingRevision: syncRecord.keyRingRevision,
         encryptionAlgorithm: syncRecord.encryptionAlgorithm,
-        encryptionVersion: syncRecord.encryptionVersion,
         iv: syncRecord.iv,
         ciphertext: syncRecord.ciphertext,
+        encryptionVersion: syncRecord.encryptionVersion,
       })
       .from(syncRecord)
       .where(and(eq(syncRecord.userId, userId), gt(syncRecord.seq, since)))
@@ -115,8 +117,10 @@ router.get('/', async (c) => {
     encryptionKeyId: row.encryptionKeyId,
     keyRingRevision: row.keyRingRevision,
     encryptionAlgorithm: row.encryptionAlgorithm,
-    encryptionVersion: row.encryptionVersion,
-    iv: row.iv.toBase64(),
+    encryptionParams: {
+      iv: row.iv.toBase64(),
+      tagBits: 128,
+    },
     ciphertext: row.ciphertext.toBase64(),
   }));
 
@@ -146,15 +150,14 @@ router.post('/', async (c) => {
     encryptionKeyId,
     keyRingRevision,
     encryptionAlgorithm,
-    encryptionVersion,
-    iv: ivBase64,
+    encryptionParams,
     ciphertext: ciphertextBase64,
   } = parsed.data;
 
   let ivBytes: Uint8Array;
   let ciphertextBytes: Uint8Array;
   try {
-    ivBytes = Uint8Array.fromBase64(ivBase64);
+    ivBytes = Uint8Array.fromBase64(encryptionParams.iv);
     ciphertextBytes = Uint8Array.fromBase64(ciphertextBase64);
   } catch {
     return c.json({ error: 'Invalid base64 encoding' }, 400);
@@ -196,9 +199,7 @@ router.post('/', async (c) => {
               encryptionAlgorithm: sql`${encryptionAlgorithm}`.as(
                 'encryption_algorithm',
               ),
-              encryptionVersion: sql`${encryptionVersion}`.as(
-                'encryption_version',
-              ),
+              encryptionVersion: sql`1`.as('encryption_version'),
               keyRingRevision: sql`${keyRingRevision}`.as('key_ring_revision'),
               iv: sql`${ivBytes}`.as('iv'),
               ciphertext: sql`${ciphertextBytes}`.as('ciphertext'),
@@ -251,7 +252,7 @@ router.post('/', async (c) => {
     if (existing) {
       if (
         existing.existingEncryptionAlgorithm === encryptionAlgorithm &&
-        existing.existingEncryptionVersion === encryptionVersion &&
+        existing.existingEncryptionVersion === 1 &&
         existing.existingKeyRingRevision === keyRingRevision &&
         existing.existingIv.byteLength === ivBytes.byteLength &&
         new Uint8Array(existing.existingIv).every((v, i) => v === ivBytes[i]) &&
@@ -304,15 +305,14 @@ router.post('/compact', async (c) => {
     encryptionKeyId,
     keyRingRevision,
     encryptionAlgorithm,
-    encryptionVersion,
-    iv: ivBase64,
+    encryptionParams,
     ciphertext: ciphertextBase64,
   } = parsed.data;
 
   let ivBytes: Uint8Array;
   let snapshotCiphertext: Uint8Array;
   try {
-    ivBytes = Uint8Array.fromBase64(ivBase64);
+    ivBytes = Uint8Array.fromBase64(encryptionParams.iv);
     snapshotCiphertext = Uint8Array.fromBase64(ciphertextBase64);
   } catch {
     return c.json({ error: 'Invalid base64 encoding' }, 400);
@@ -332,7 +332,6 @@ router.post('/compact', async (c) => {
     encryptionKeyId,
     keyRingRevision,
     encryptionAlgorithm,
-    encryptionVersion,
     ivBytes,
     ciphertext: snapshotCiphertext,
   });
@@ -358,7 +357,6 @@ type SnapshotPayload = {
   encryptionKeyId: string;
   keyRingRevision: number;
   encryptionAlgorithm: string;
-  encryptionVersion: number;
   ivBytes: Uint8Array;
   ciphertext: Uint8Array;
 };
@@ -378,7 +376,6 @@ async function insertCompactSnapshot(
     encryptionKeyId,
     keyRingRevision,
     encryptionAlgorithm,
-    encryptionVersion,
     ivBytes,
     ciphertext,
   }: SnapshotPayload,
@@ -461,7 +458,7 @@ async function insertCompactSnapshot(
           userId,
           seq: sql`(select coalesce(max(${syncRecord.seq}), 0) + 1 from ${syncRecord} where ${syncRecord.userId} = ${userId})`,
           encryptionAlgorithm,
-          encryptionVersion,
+          encryptionVersion: 1,
           keyRingRevision,
           iv: ivBytes,
           ciphertext,
@@ -488,7 +485,7 @@ async function insertCompactSnapshot(
     if (existing) {
       if (
         existing.encryptionAlgorithm === encryptionAlgorithm &&
-        existing.encryptionVersion === encryptionVersion &&
+        existing.encryptionVersion === 1 &&
         existing.keyRingRevision === keyRingRevision &&
         existing.iv.byteLength === ivBytes.byteLength &&
         new Uint8Array(existing.iv).every((v, i) => v === ivBytes[i]) &&

@@ -9,8 +9,7 @@ export interface SyncRecord {
   encryptionKeyId: string;
   keyRingRevision: number;
   encryptionAlgorithm: 'aes-256-gcm';
-  encryptionVersion: number;
-  iv: Uint8Array;
+  encryptionParams: { iv: Uint8Array; tagBits: number };
   ciphertext: Uint8Array;
 }
 
@@ -73,8 +72,7 @@ export async function pull({
       encryptionKeyId: string;
       keyRingRevision: number;
       encryptionAlgorithm: 'aes-256-gcm';
-      encryptionVersion: number;
-      iv: string;
+      encryptionParams: { iv: string; tagBits: number };
       ciphertext: string;
     }>;
   };
@@ -85,8 +83,10 @@ export async function pull({
     encryptionKeyId: r.encryptionKeyId,
     keyRingRevision: r.keyRingRevision,
     encryptionAlgorithm: r.encryptionAlgorithm,
-    encryptionVersion: r.encryptionVersion,
-    iv: base64ToBytes(r.iv),
+    encryptionParams: {
+      iv: base64ToBytes(r.encryptionParams.iv),
+      tagBits: r.encryptionParams.tagBits,
+    },
     ciphertext: base64ToBytes(r.ciphertext),
   }));
   return { records, head, status: 200 };
@@ -98,8 +98,7 @@ export async function push({
   encryptionKeyId,
   keyRingRevision,
   encryptionAlgorithm,
-  encryptionVersion,
-  iv,
+  encryptionParams,
   localUserId,
 }: {
   delta: Uint8Array;
@@ -107,8 +106,7 @@ export async function push({
   encryptionKeyId: string;
   keyRingRevision: number;
   encryptionAlgorithm: 'aes-256-gcm';
-  encryptionVersion: number;
-  iv: Uint8Array;
+  encryptionParams: { iv: Uint8Array; tagBits: number };
   localUserId: string;
 }): Promise<{ assignedSeq: number; compactHint: boolean }> {
   const headers: Record<string, string> = {
@@ -124,8 +122,10 @@ export async function push({
       encryptionKeyId,
       keyRingRevision,
       encryptionAlgorithm,
-      encryptionVersion,
-      iv: bytesToBase64(iv),
+      encryptionParams: {
+        iv: bytesToBase64(encryptionParams.iv),
+        tagBits: encryptionParams.tagBits,
+      },
       ciphertext: bytesToBase64(delta),
     }),
   });
@@ -147,8 +147,7 @@ export async function compact({
   encryptionKeyId,
   keyRingRevision,
   encryptionAlgorithm,
-  encryptionVersion,
-  iv,
+  encryptionParams,
   localUserId,
 }: {
   snapshot: Uint8Array;
@@ -157,8 +156,7 @@ export async function compact({
   encryptionKeyId: string;
   keyRingRevision: number;
   encryptionAlgorithm: 'aes-256-gcm';
-  encryptionVersion: number;
-  iv: Uint8Array;
+  encryptionParams: { iv: Uint8Array; tagBits: number };
   localUserId: string;
 }): Promise<{ assignedSeq: number }> {
   const headers: Record<string, string> = {
@@ -175,8 +173,10 @@ export async function compact({
       encryptionKeyId,
       keyRingRevision,
       encryptionAlgorithm,
-      encryptionVersion,
-      iv: bytesToBase64(iv),
+      encryptionParams: {
+        iv: bytesToBase64(encryptionParams.iv),
+        tagBits: encryptionParams.tagBits,
+      },
       ciphertext: bytesToBase64(snapshot),
     }),
   });

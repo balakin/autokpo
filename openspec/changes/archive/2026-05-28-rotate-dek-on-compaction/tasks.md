@@ -38,6 +38,6 @@
 
 - [x] 6.1 Add crypto tests for revision-bound sync AAD and multi-DEK lookup behavior.
 - [x] 6.2 Add worker tests for `keyRingRevision` schema validation, write barriers, persistence, pull serialization, and key-ring ciphertext size limits.
-- [ ] 6.3 Add sync engine tests for rotation-before-compaction, idempotent compact retry with the same prepared payload, and no repeated rotation during retry.
-- [ ] 6.4 Add stale client tests for write-conflict recovery, one-time key-ring refetch on future row revision, and hard errors for current-or-older decrypt failures.
-- [ ] 6.5 Run scoped Vitest suites for E2EE, sync logic, sync engine, local persistence, and worker sync/e2ee routes.
+- [x] 6.3 Add sync engine tests for rotation-before-compaction, idempotent compact retry with the same prepared payload, and no repeated rotation during retry.
+- [x] 6.4 Add stale client tests for write-conflict recovery, one-time key-ring refetch on future row revision, and hard errors for current-or-older decrypt failures.
+- [x] 6.5 Run scoped Vitest suites for E2EE, sync logic, sync engine, local persistence, and worker sync/e2ee routes.

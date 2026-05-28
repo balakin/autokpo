@@ -19,7 +19,7 @@ The system SHALL store each local encrypted Yjs update or snapshot as an AES-256
 - **THEN** AES-GCM authentication SHALL fail
 - **AND** the system SHALL treat the local persistence database as broken
 
-### Requirement: Dedicated local persistence DEK wrapping record omits version fields
+### Requirement: Dedicated local persistence DEK
 
 The local key record stored in the `local_key` object store SHALL contain `id: "active"`, `schemaVersion: 1`, `localDekId`, `wrappingAlgorithm: "aes-256-gcm"`, `wrappingParams` (containing `iv` and `tagBits`), `wrappedDek`, and `createdAt`. It SHALL NOT contain a standalone `wrappingIv` or `wrappingVersion` field.
 
@@ -29,10 +29,3 @@ The local key record stored in the `local_key` object store SHALL contain `id: "
 - **THEN** the local key record SHALL contain `wrappingParams: { iv: <Uint8Array>, tagBits: 128 }`
 - **AND** SHALL NOT contain a standalone `wrappingIv` field
 - **AND** SHALL NOT contain a `wrappingVersion` field
-
-## REMOVED Requirements
-
-### Requirement: encryptionVersion and standalone iv stored at envelope root
-
-**Reason**: Version is redundant with algorithm string; iv belongs inside encryptionParams for consistency.
-**Migration**: IDB database version bump with migration that reads old envelope shape (with `encryptionVersion` and top-level `iv`) and rewrites to new shape (with `encryptionParams: { iv, tagBits }`) on first open.

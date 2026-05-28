@@ -6,49 +6,36 @@ Define end-to-end encryption for CRDT sync payloads before upload and after down
 
 ### Requirement: Sync blobs are encrypted before upload
 
-The sync engine SHALL encrypt every Yjs delta and snapshot blob using AES-256-GCM with a random 12-byte IV before sending it to the server. The `ciphertext` field in the request body SHALL contain only the raw ciphertext (base64-encoded). The algorithm, IV, encryption version, key-ring revision, and DEK id SHALL be sent as separate JSON fields `encryptionAlgorithm`, `iv` (base64), `encryptionVersion` (integer), `keyRingRevision` (integer), and `encryptionKeyId` (string). The plaintext SHALL never leave the browser.
+The sync engine SHALL encrypt every Yjs delta and snapshot blob using AES-256-GCM with a random 12-byte IV before sending it to the server. The `ciphertext` field in the request body SHALL contain only the raw ciphertext (base64-encoded). The algorithm, encryption params (including IV), key-ring revision, and DEK id SHALL be sent as JSON fields. The plaintext SHALL never leave the browser.
 
 #### Scenario: Push encrypts delta before upload
 
 - **WHEN** the sync engine prepares a push
 - **THEN** it SHALL generate a random 12-byte IV
 - **AND** encrypt the Yjs delta bytes using AES-256-GCM with the active DEK from the unlocked key ring
-- **AND** send the request body `{ id, encryptionKeyId, keyRingRevision, encryptionAlgorithm: "aes-256-gcm", encryptionVersion: 1, iv: <base64>, ciphertext: <base64 ciphertext> }`
+- **AND** send the request body `{ id, encryptionKeyId, keyRingRevision, encryptionAlgorithm: "aes-256-gcm", encryptionParams: { iv: <base64>, tagBits: 128 }, ciphertext: <base64 ciphertext> }`
 - **AND** `encryptionKeyId` SHALL equal the active DEK id
 - **AND** `keyRingRevision` SHALL equal the current unlocked key-ring revision
+- **AND** the body SHALL NOT contain a standalone `iv` field or an `encryptionVersion` field
 
 #### Scenario: Compact encrypts snapshot before upload
 
 - **WHEN** the sync engine prepares a compact
-- **THEN** it SHALL encrypt the full Yjs snapshot using the same split-envelope format
-- **AND** send `{ id, encryptionKeyId, keyRingRevision, encryptionAlgorithm: "aes-256-gcm", encryptionVersion: 1, iv: <base64>, ciphertext: <base64 ciphertext> }` in the compact request body
-- **AND** `encryptionKeyId` SHALL equal the active DEK id selected for the compact session
-- **AND** `keyRingRevision` SHALL equal the key-ring revision selected for the compact session
+- **THEN** it SHALL encrypt the full Yjs snapshot using the same params-envelope format
+- **AND** send `{ id, encryptionKeyId, keyRingRevision, encryptionAlgorithm: "aes-256-gcm", encryptionParams: { iv: <base64>, tagBits: 128 }, ciphertext: <base64 ciphertext> }` in the compact request body
+- **AND** the body SHALL NOT contain a standalone `iv` field or an `encryptionVersion` field
 
 ### Requirement: Received sync blobs are decrypted before application
 
-The sync engine SHALL decrypt every received record before applying it to the Y.Doc. Each pull response record SHALL include `id`, `encryptionKeyId`, `keyRingRevision`, `encryptionAlgorithm`, `encryptionVersion`, `iv` (base64), and `ciphertext` (base64 ciphertext) as separate fields; the client SHALL base64-decode `iv` and `ciphertext`, then decrypt using AES-256-GCM and the DEK identified by `encryptionKeyId`.
+The sync engine SHALL decrypt every received record before applying it to the Y.Doc. Each pull response record SHALL include `id`, `encryptionKeyId`, `keyRingRevision`, `encryptionAlgorithm`, `encryptionParams` (containing `iv` and `tagBits`), and `ciphertext`; the client SHALL use `encryptionParams.iv` (base64-decoded) and `encryptionParams.tagBits` to decrypt using AES-256-GCM with the DEK identified by `encryptionKeyId`.
 
 #### Scenario: Pull decrypts records before applying to Y.Doc
 
 - **WHEN** the sync engine receives records from a pull response
-- **THEN** for each record it SHALL read `id`, `encryptionKeyId`, `keyRingRevision`, `encryptionAlgorithm`, and `encryptionVersion`, decode `iv` and `ciphertext` from base64
-- **AND** decrypt the ciphertext using AES-256-GCM with the IV and the DEK identified by `encryptionKeyId` in the unlocked key ring
+- **THEN** for each record it SHALL read `id`, `encryptionKeyId`, `keyRingRevision`, `encryptionAlgorithm`, decode `encryptionParams.iv` and `ciphertext` from base64
+- **AND** decrypt the ciphertext using AES-256-GCM with the IV and tagBits from `encryptionParams` and the DEK identified by `encryptionKeyId`
 - **AND** pass the resulting plaintext bytes to `applyRecordsToDoc`
-
-#### Scenario: Future key-ring revision triggers one profile refresh
-
-- **WHEN** the sync engine receives a record whose `keyRingRevision` is greater than the local unlocked key-ring revision
-- **THEN** the sync engine SHALL refetch the key-ring profile once
-- **AND** retry decryption after the profile refresh
-- **AND** SHALL surface an error if the refreshed key-ring revision is still less than the record revision
-
-#### Scenario: Decryption failure aborts application
-
-- **WHEN** decryption of a received blob fails after any required key-ring refresh (wrong key, missing DEK, tampered ciphertext, bad AAD)
-- **THEN** the system SHALL NOT apply any bytes from that record to the Y.Doc
-- **AND** SHALL surface the error to the sync engine error path
-- **AND** SHALL NOT repeatedly refetch the key-ring profile when the record `keyRingRevision` is less than or equal to the local key-ring revision
+- **AND** the record SHALL NOT contain a standalone `iv` field or `encryptionVersion` field
 
 ### Requirement: AAD binds ciphertext to its metadata
 

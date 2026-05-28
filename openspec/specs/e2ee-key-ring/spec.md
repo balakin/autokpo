@@ -29,8 +29,9 @@ The system SHALL derive a KEK from the encryption password locally and use it to
 - **WHEN** the user completes encryption setup
 - **THEN** the system SHALL derive a KEK using Argon2id with stored versioned parameters and a random salt
 - **AND** the browser SHALL generate a wrapper id before wrapping the MEK
-- **AND** the system SHALL encrypt the MEK using AES-256-GCM with a random `wrappingIv`
+- **AND** the system SHALL encrypt the MEK using AES-256-GCM with a random IV stored inside `wrappingParams`
 - **AND** the system SHALL use AAD `autokpo:e2ee-wrapped-mek:v1:{userId}:{wrapperId}:{method}`
+- **AND** the wrapper record SHALL NOT contain a standalone `wrappingIv` field
 
 ### Requirement: Backend stores key ring and active wrapper metadata
 
@@ -40,11 +41,13 @@ The system SHALL persist one key ring per authenticated user and password wrappe
 
 - **WHEN** setup saves the key-ring profile
 - **THEN** the backend SHALL create one `key_ring` row for the authenticated user
-- **AND** the backend SHALL store `activeDekId`, `revision`, `encryptionAlgorithm`, `encryptionVersion`, `iv`, and encrypted key-ring `ciphertext`
+- **AND** the backend SHALL store `activeDekId`, `revision`, `encryptionAlgorithm`, `encryptionParams` (containing `iv` and `tagBits`), and encrypted key-ring `ciphertext`
+- **AND** the backend SHALL NOT store a separate `encryptionVersion` or `iv` field outside `encryptionParams`
 - **AND** the backend SHALL initialize `revision` to `1`
 - **AND** the backend SHALL create one `key_ring_wrapping` row with method `password` and status `active`
 - **AND** the backend SHALL store the frontend-provided wrapper id without replacing it
-- **AND** the backend SHALL store KDF parameters, KDF salt, wrapping algorithm, wrapping version, `wrappingIv`, and wrapped MEK `ciphertext`
+- **AND** the backend SHALL store KDF algorithm, KDF params, KDF salt, wrapping algorithm, `wrappingParams` (containing `iv` and `tagBits`), and wrapped MEK `ciphertext`
+- **AND** the backend SHALL NOT store separate `wrappingVersion`, `wrappingIv`, or `kdfVersion` fields
 - **AND** the backend SHALL persist the key-ring row and password-wrapper row atomically so neither row remains without the other after a failed setup write
 - **AND** the backend SHALL NOT store the encryption password, KEK, plaintext MEK, plaintext DEK, or plaintext key ring
 

@@ -8,30 +8,26 @@ TBD - created by archiving change secure-local-persistence. Update Purpose after
 
 ### Requirement: Dedicated local persistence DEK
 
-The system SHALL encrypt local IndexedDB Yjs persistence rows with a dedicated local persistence DEK that is distinct from the remote sync DEK. The active local persistence DEK SHALL be randomly generated, identified by `localDekId`, wrapped by the unlocked MEK, and stored as a singleton record in the same IndexedDB database as the encrypted Yjs update rows.
+The local key record stored in the `local_key` object store SHALL contain `id: "active"`, `schemaVersion: 1`, `localDekId`, `wrappingAlgorithm: "aes-256-gcm"`, `wrappingParams` (containing `iv` and `tagBits`), `wrappedDek`, and `createdAt`. It SHALL NOT contain a standalone `wrappingIv` or `wrappingVersion` field.
 
-#### Scenario: Fresh local persistence creates local key
+#### Scenario: Local key record uses wrappingParams
 
-- **WHEN** the encrypted local persistence database opens and no active local key record exists
-- **THEN** the system SHALL generate a random local persistence DEK
-- **AND** SHALL wrap the local persistence DEK with the MEK using AES-256-GCM
-- **AND** SHALL store the wrapped key in the `local_key` object store with `id: "active"`, `schemaVersion: 1`, `localDekId`, wrapping metadata, and `createdAt`
-
-#### Scenario: Local persistence does not use remote DEK
-
-- **WHEN** the system encrypts a local IndexedDB Yjs update or snapshot row
-- **THEN** it SHALL use the unwrapped local persistence DEK
-- **AND** SHALL NOT use the remote sync active DEK for the local row ciphertext
+- **WHEN** the encrypted local persistence database stores the wrapped local DEK
+- **THEN** the local key record SHALL contain `wrappingParams: { iv: <Uint8Array>, tagBits: 128 }`
+- **AND** SHALL NOT contain a standalone `wrappingIv` field
+- **AND** SHALL NOT contain a `wrappingVersion` field
 
 ### Requirement: Local encrypted rows are bound to row identity
 
-The system SHALL store each local encrypted Yjs update or snapshot as an AES-256-GCM envelope containing `schemaVersion: 1`, `kind`, `id`, `encryptionAlgorithm: "aes-256-gcm"`, `encryptionVersion: 1`, `encryptionKeyId`, `iv`, and `ciphertext`. The `id` SHALL be generated before encryption and SHALL be included in AES-GCM AAD together with the database name, store name, row kind, and local key id.
+The system SHALL store each local encrypted Yjs update or snapshot as an AES-256-GCM envelope containing `schemaVersion: 1`, `kind`, `id`, `encryptionAlgorithm: "aes-256-gcm"`, `encryptionKeyId`, `encryptionParams` (containing `iv` and `tagBits`), and `ciphertext`. The `id` SHALL be generated before encryption and SHALL be included in AES-GCM AAD together with the database name, store name, row kind, and local key id.
 
-#### Scenario: Update row includes generated id
+#### Scenario: Update row includes generated id and params
 
 - **WHEN** the system persists a local Yjs update row
 - **THEN** it SHALL generate an `id` for that row before encryption
 - **AND** SHALL store the same `id` in the encrypted envelope
+- **AND** SHALL store `encryptionParams: { iv: <base64>, tagBits: 128 }` inside the envelope
+- **AND** SHALL NOT store a standalone `iv` or `encryptionVersion` field at the envelope root
 - **AND** SHALL include the `id` in the AES-GCM AAD used to encrypt the row
 
 #### Scenario: Row id substitution fails authentication

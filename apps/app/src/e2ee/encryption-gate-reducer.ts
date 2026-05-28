@@ -9,6 +9,8 @@ export type EncryptionGateState = {
   mek: Uint8Array | null;
   activeDek: Uint8Array | null;
   activeDekId: string | null;
+  keyRingRevision: number | null;
+  deks: Record<string, Uint8Array> | null;
 };
 
 export type EncryptionGateAction =
@@ -26,6 +28,8 @@ export type EncryptionGateAction =
       mek: Uint8Array;
       activeDek: Uint8Array;
       activeDekId: string;
+      keyRingRevision: number;
+      deks: Record<string, Uint8Array>;
     };
 
 export function createInitialEncryptionGateState(
@@ -37,6 +41,8 @@ export function createInitialEncryptionGateState(
     mek: null,
     activeDek: null,
     activeDekId: null,
+    keyRingRevision: null,
+    deks: null,
   };
 }
 
@@ -92,6 +98,8 @@ export function encryptionGateReducer(
         mek: null,
         activeDek: null,
         activeDekId: null,
+        keyRingRevision: null,
+        deks: null,
       };
     case 'unlocked':
       return {
@@ -100,6 +108,8 @@ export function encryptionGateReducer(
         mek: action.mek,
         activeDek: action.activeDek,
         activeDekId: action.activeDekId,
+        keyRingRevision: action.keyRingRevision,
+        deks: action.deks,
       };
   }
 }

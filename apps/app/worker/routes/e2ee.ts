@@ -26,6 +26,7 @@ const WRAPPING_PARAMS_V1 = {
 const KDF_SALT_BYTES = 16;
 const WRAPPING_IV_BYTES = 12;
 const CIPHERTEXT_BYTES = 48;
+const MAX_KEY_RING_CIPHERTEXT_BYTES = 64 * 1024;
 
 export const e2eeRouter = new Hono<{ Bindings: Env }>();
 
@@ -301,7 +302,8 @@ function parseCreateBody(body: unknown) {
     kdfSalt.byteLength !== KDF_SALT_BYTES ||
     wrappingIv.byteLength !== WRAPPING_IV_BYTES ||
     keyRingIv.byteLength !== WRAPPING_IV_BYTES ||
-    wrappedMek.byteLength !== CIPHERTEXT_BYTES
+    wrappedMek.byteLength !== CIPHERTEXT_BYTES ||
+    keyRingCiphertext.byteLength > MAX_KEY_RING_CIPHERTEXT_BYTES
   ) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
@@ -409,7 +411,10 @@ function parseUpdateBody(body: unknown) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
-  if (keyRingIv.byteLength !== WRAPPING_IV_BYTES) {
+  if (
+    keyRingIv.byteLength !== WRAPPING_IV_BYTES ||
+    keyRingCiphertext.byteLength > MAX_KEY_RING_CIPHERTEXT_BYTES
+  ) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 

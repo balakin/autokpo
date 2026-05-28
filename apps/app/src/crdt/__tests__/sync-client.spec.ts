@@ -53,6 +53,7 @@ function buildJsonRecords(
     seq: number;
     kind: 'update' | 'snapshot';
     encryptionKeyId: string;
+    keyRingRevision: number;
     encryptionAlgorithm?: 'aes-256-gcm';
     ciphertext: Uint8Array;
     encryptionVersion?: number;
@@ -64,6 +65,7 @@ function buildJsonRecords(
     seq: r.seq,
     kind: r.kind,
     encryptionKeyId: r.encryptionKeyId,
+    keyRingRevision: r.keyRingRevision,
     encryptionAlgorithm: r.encryptionAlgorithm ?? TEST_ALGORITHM,
     encryptionVersion: r.encryptionVersion ?? 1,
     iv: bytesToBase64(r.iv ?? TEST_IV),
@@ -130,12 +132,14 @@ describe('pull', () => {
               seq: 3,
               kind: 'update',
               encryptionKeyId: 'key-1',
+              keyRingRevision: 1,
               ciphertext: ciphertext1,
             },
             {
               seq: 4,
               kind: 'snapshot',
               encryptionKeyId: 'key-1',
+              keyRingRevision: 1,
               ciphertext: ciphertext2,
             },
           ]),
@@ -153,6 +157,7 @@ describe('pull', () => {
       seq: 3,
       kind: 'update',
       encryptionKeyId: 'key-1',
+      keyRingRevision: 1,
       encryptionAlgorithm: TEST_ALGORITHM,
       encryptionVersion: 1,
       iv: TEST_IV,
@@ -163,6 +168,7 @@ describe('pull', () => {
       seq: 4,
       kind: 'snapshot',
       encryptionKeyId: 'key-1',
+      keyRingRevision: 1,
       encryptionAlgorithm: TEST_ALGORITHM,
       encryptionVersion: 1,
       iv: TEST_IV,
@@ -199,6 +205,7 @@ describe('push', () => {
       delta,
       id: 'test-uuid-123',
       encryptionKeyId: 'key-1',
+      keyRingRevision: 1,
       encryptionAlgorithm: TEST_ALGORITHM,
       encryptionVersion: 1,
       iv: TEST_IV,
@@ -212,6 +219,7 @@ describe('push', () => {
     const body = JSON.parse(call[1]?.body as string) as {
       id: string;
       encryptionKeyId: string;
+      keyRingRevision: number;
       encryptionAlgorithm: string;
       encryptionVersion: number;
       iv: string;
@@ -234,6 +242,7 @@ describe('push', () => {
       delta: new Uint8Array([1]),
       id: 'uuid-1',
       encryptionKeyId: 'key-1',
+      keyRingRevision: 1,
       encryptionAlgorithm: TEST_ALGORITHM,
       encryptionVersion: 1,
       iv: TEST_IV,
@@ -254,6 +263,7 @@ describe('push', () => {
       delta: new Uint8Array([1]),
       id: 'uuid-1',
       encryptionKeyId: 'key-1',
+      keyRingRevision: 1,
       encryptionAlgorithm: TEST_ALGORITHM,
       encryptionVersion: 1,
       iv: TEST_IV,
@@ -271,6 +281,7 @@ describe('push', () => {
       delta: new Uint8Array([1]),
       id: 'uuid-1',
       encryptionKeyId: 'key-1',
+      keyRingRevision: 1,
       encryptionAlgorithm: TEST_ALGORITHM,
       encryptionVersion: 1,
       iv: TEST_IV,
@@ -287,6 +298,7 @@ describe('push', () => {
         delta: new Uint8Array([1]),
         id: 'uuid-1',
         encryptionKeyId: 'key-1',
+        keyRingRevision: 1,
         encryptionAlgorithm: TEST_ALGORITHM,
         encryptionVersion: 1,
         iv: TEST_IV,
@@ -316,6 +328,7 @@ describe('compact', () => {
       replacesUpTo: 10,
       id: 'compact-uuid-abc',
       encryptionKeyId: 'key-1',
+      keyRingRevision: 1,
       encryptionAlgorithm: TEST_ALGORITHM,
       encryptionVersion: 1,
       iv: TEST_IV,
@@ -353,6 +366,7 @@ describe('compact', () => {
       replacesUpTo: 15,
       id: 'uuid-1',
       encryptionKeyId: 'key-1',
+      keyRingRevision: 1,
       encryptionAlgorithm: TEST_ALGORITHM,
       encryptionVersion: 1,
       iv: TEST_IV,
@@ -370,6 +384,7 @@ describe('compact', () => {
         replacesUpTo: 5,
         id: 'uuid-1',
         encryptionKeyId: 'key-1',
+        keyRingRevision: 1,
         encryptionAlgorithm: TEST_ALGORITHM,
         encryptionVersion: 1,
         iv: TEST_IV,

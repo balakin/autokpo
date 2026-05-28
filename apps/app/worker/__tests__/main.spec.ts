@@ -41,13 +41,14 @@ describe('worker', () => {
       })
       .onConflictDoNothing();
     await workerTestEnv.DB.prepare(
-      'INSERT INTO sync_record (id, user_id, seq, encryption_algorithm, encryption_version, iv, ciphertext, kind, encryption_key_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO sync_record (id, user_id, seq, encryption_algorithm, encryption_version, key_ring_revision, iv, ciphertext, kind, encryption_key_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     )
       .bind(
         crypto.randomUUID(),
         userId,
         1,
         'aes-256-gcm',
+        1,
         1,
         new Uint8Array(12).buffer,
         new Uint8Array([1]).buffer,

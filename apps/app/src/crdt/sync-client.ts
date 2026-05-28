@@ -7,6 +7,7 @@ export interface SyncRecord {
   seq: number;
   kind: 'update' | 'snapshot';
   encryptionKeyId: string;
+  keyRingRevision: number;
   encryptionAlgorithm: 'aes-256-gcm';
   encryptionVersion: number;
   iv: Uint8Array;
@@ -70,6 +71,7 @@ export async function pull({
       id: string;
       kind: 'update' | 'snapshot';
       encryptionKeyId: string;
+      keyRingRevision: number;
       encryptionAlgorithm: 'aes-256-gcm';
       encryptionVersion: number;
       iv: string;
@@ -81,6 +83,7 @@ export async function pull({
     seq: r.seq,
     kind: r.kind,
     encryptionKeyId: r.encryptionKeyId,
+    keyRingRevision: r.keyRingRevision,
     encryptionAlgorithm: r.encryptionAlgorithm,
     encryptionVersion: r.encryptionVersion,
     iv: base64ToBytes(r.iv),
@@ -93,6 +96,7 @@ export async function push({
   delta,
   id,
   encryptionKeyId,
+  keyRingRevision,
   encryptionAlgorithm,
   encryptionVersion,
   iv,
@@ -101,6 +105,7 @@ export async function push({
   delta: Uint8Array;
   id: string;
   encryptionKeyId: string;
+  keyRingRevision: number;
   encryptionAlgorithm: 'aes-256-gcm';
   encryptionVersion: number;
   iv: Uint8Array;
@@ -117,6 +122,7 @@ export async function push({
     body: JSON.stringify({
       id,
       encryptionKeyId,
+      keyRingRevision,
       encryptionAlgorithm,
       encryptionVersion,
       iv: bytesToBase64(iv),
@@ -139,6 +145,7 @@ export async function compact({
   replacesUpTo,
   id,
   encryptionKeyId,
+  keyRingRevision,
   encryptionAlgorithm,
   encryptionVersion,
   iv,
@@ -148,6 +155,7 @@ export async function compact({
   replacesUpTo: number;
   id: string;
   encryptionKeyId: string;
+  keyRingRevision: number;
   encryptionAlgorithm: 'aes-256-gcm';
   encryptionVersion: number;
   iv: Uint8Array;
@@ -165,6 +173,7 @@ export async function compact({
     body: JSON.stringify({
       id,
       encryptionKeyId,
+      keyRingRevision,
       encryptionAlgorithm,
       encryptionVersion,
       iv: bytesToBase64(iv),

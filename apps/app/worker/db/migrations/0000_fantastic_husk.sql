@@ -103,6 +103,7 @@ CREATE TABLE `sync_record` (
 	`seq` integer NOT NULL,
 	`encryption_algorithm` text NOT NULL,
 	`encryption_version` integer NOT NULL,
+	`key_ring_revision` integer NOT NULL,
 	`iv` blob NOT NULL,
 	`ciphertext` blob NOT NULL,
 	`kind` text NOT NULL,

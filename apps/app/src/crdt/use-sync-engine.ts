@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react';
 import { useAuth } from '../auth/use-auth';
 import { useRequiredUserId } from '../auth/use-required-user-id';
 import { useEncryptionContext } from '../e2ee/encryption-context';
+import { createRotatedKeyRingPayload } from '../e2ee/encryption-crypto';
 import { useLeader } from '../leader';
 import { createLogger } from '../utils/create-logger';
 
@@ -17,6 +18,7 @@ import {
   compact as compactHttp,
   pull as pullHttp,
   push as pushHttp,
+  type SyncRecord,
 } from './sync-client';
 import {
   REMOTE_ORIGIN,
@@ -49,7 +51,15 @@ export function useSyncEngine(
   const ydoc = useDoc();
   const { isLeader } = useLeader();
   const syncState = useSyncMetadataStore();
-  const { activeDek, activeDekId } = useEncryptionContext();
+  const {
+    mek,
+    activeDek,
+    activeDekId,
+    keyRingRevision,
+    deks,
+    refreshKeyRingProfile,
+    updateKeyRingProfile,
+  } = useEncryptionContext();
   const isLeaderRef = useRef(isLeader);
   isLeaderRef.current = isLeader;
   const pushInFlightRef = useRef(false);
@@ -60,12 +70,23 @@ export function useSyncEngine(
   );
   const schedulePushRef = useRef<() => void>(() => {});
   const localUpdateQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const pendingPushVersionRef = useRef(0);
   const persistenceRef = useRef(persistence);
   persistenceRef.current = persistence;
   const activeDekRef = useRef(activeDek);
   activeDekRef.current = activeDek;
   const activeDekIdRef = useRef(activeDekId);
   activeDekIdRef.current = activeDekId;
+  const mekRef = useRef(mek);
+  mekRef.current = mek;
+  const keyRingRevisionRef = useRef(keyRingRevision);
+  keyRingRevisionRef.current = keyRingRevision;
+  const deksRef = useRef(deks);
+  deksRef.current = deks;
+  const refreshKeyRingProfileRef = useRef(refreshKeyRingProfile);
+  refreshKeyRingProfileRef.current = refreshKeyRingProfile;
+  const updateKeyRingProfileRef = useRef(updateKeyRingProfile);
+  updateKeyRingProfileRef.current = updateKeyRingProfile;
 
   const handleAuthFailureRef = useRef((error: unknown): boolean => {
     if (!(error instanceof SyncRequestError)) return false;
@@ -77,6 +98,29 @@ export function useSyncEngine(
     return true;
   });
 
+  async function decryptPulledRecordsWithFreshKeyRing(
+    records: Awaited<ReturnType<typeof pullHttp>>['records'],
+  ): Promise<Uint8Array[]> {
+    if (records.length === 0) return [];
+    try {
+      return await decryptPulledRecords({
+        records,
+        deks: deksRef.current,
+        keyRingRevision: keyRingRevisionRef.current,
+        userId,
+      });
+    } catch (error) {
+      if (!(error instanceof FutureKeyRingRevisionError)) throw error;
+      const refreshed = await refreshKeyRingProfileRef.current();
+      return decryptPulledRecords({
+        records,
+        deks: refreshed.deks,
+        keyRingRevision: refreshed.revision,
+        userId,
+      });
+    }
+  }
+
   // --- Mutations ---
 
   const pushMutation = useMutation({
@@ -84,6 +128,7 @@ export function useSyncEngine(
       delta,
       id,
       encryptionKeyId,
+      keyRingRevision,
       encryptionAlgorithm,
       encryptionVersion,
       iv,
@@ -92,6 +137,7 @@ export function useSyncEngine(
       delta: Uint8Array;
       id: string;
       encryptionKeyId: string;
+      keyRingRevision: number;
       encryptionAlgorithm: 'aes-256-gcm';
       encryptionVersion: number;
       iv: Uint8Array;
@@ -101,6 +147,7 @@ export function useSyncEngine(
         delta,
         id,
         encryptionKeyId,
+        keyRingRevision,
         encryptionAlgorithm,
         encryptionVersion,
         iv,
@@ -119,6 +166,7 @@ export function useSyncEngine(
       replacesUpTo,
       id,
       encryptionKeyId,
+      keyRingRevision,
       encryptionAlgorithm,
       encryptionVersion,
       iv,
@@ -128,6 +176,7 @@ export function useSyncEngine(
       replacesUpTo: number;
       id: string;
       encryptionKeyId: string;
+      keyRingRevision: number;
       encryptionAlgorithm: 'aes-256-gcm';
       encryptionVersion: number;
       iv: Uint8Array;
@@ -138,6 +187,7 @@ export function useSyncEngine(
         replacesUpTo,
         id,
         encryptionKeyId,
+        keyRingRevision,
         encryptionAlgorithm,
         encryptionVersion,
         iv,
@@ -177,23 +227,8 @@ export function useSyncEngine(
           result.head,
           result.status,
         );
-        // Decrypt each record ciphertext before applying to the Y.Doc.
-        const plaintexts = await Promise.all(
-          result.records.map((record) =>
-            decryptSyncPayload({
-              payload: {
-                encryptionAlgorithm: record.encryptionAlgorithm,
-                encryptionVersion: record.encryptionVersion as 1,
-                iv: record.iv,
-                ciphertext: record.ciphertext,
-              },
-              activeDek: activeDekRef.current,
-              userId,
-              activeDekId: record.encryptionKeyId,
-              blockId: record.id,
-              kind: record.kind,
-            }),
-          ),
+        const plaintexts = await decryptPulledRecordsWithFreshKeyRing(
+          result.records,
         );
         await persistenceRef.current?.persistRemoteUpdates(plaintexts);
         // Apply all received records inside one Yjs transaction so
@@ -263,84 +298,6 @@ export function useSyncEngine(
       }, PUSH_DEBOUNCE_MS);
     };
 
-    doCompactRef.current = async (replacesUpTo: number) => {
-      const id = crypto.randomUUID();
-      const plainSnapshot = encodeStateAsUpdate(ydoc);
-      const {
-        encryptionVersion,
-        encryptionAlgorithm,
-        iv,
-        ciphertext: encryptedSnapshot,
-      } = await encryptSyncPayload({
-        plaintext: plainSnapshot,
-        activeDek: activeDekRef.current,
-        userId,
-        activeDekId: activeDekIdRef.current,
-        blockId: id,
-        kind: 'snapshot',
-      });
-      const encryptionKeyId = activeDekIdRef.current;
-      log(
-        'compact: replacesUpTo=%d, snapshot=%d bytes',
-        replacesUpTo,
-        plainSnapshot.byteLength,
-      );
-      try {
-        const result = await compactMutation.mutateAsync({
-          snapshot: encryptedSnapshot,
-          replacesUpTo,
-          id,
-          encryptionKeyId,
-          encryptionAlgorithm,
-          encryptionVersion,
-          iv,
-          localUserId: userId,
-        });
-        // "Push as poll": the server assigns a dense monotonic seq,
-        // so prevHead = assignedSeq - 1. If it matches our cursor,
-        // no other device appended in between — we're contiguous.
-        const prevHead = result.assignedSeq - 1;
-        const { cursor } = syncState.read();
-        log(
-          'compact: assignedSeq=%d, prevHead=%d, cursor=%d, dirty=%s',
-          result.assignedSeq,
-          prevHead,
-          cursor,
-          syncState.read().dirty,
-        );
-        if (prevHead === cursor) {
-          // Compact is contiguous with server head. Re-read after
-          // async gap to avoid clobbering concurrent writes.
-          const { cursor: freshCursor, dirty } = syncState.read();
-          syncState.write({
-            cursor: Math.max(result.assignedSeq, freshCursor),
-            stateVector: encodeStateVector(ydoc),
-            dirty,
-            lastSuccessfulSyncAt: Date.now(),
-          });
-          schedulePushIfPendingChanges(
-            syncState.read(),
-            schedulePushRef.current,
-          );
-        } else {
-          // Other devices appended rows between our last pull and
-          // this compact, creating a gap. Pull to fetch those rows;
-          // the pull-success listener will re-derive the delta and
-          // schedule push if there are pending local edits.
-          log(
-            'compact: gap detected (prevHead=%d > cursor=%d), pulling',
-            prevHead,
-            cursor,
-          );
-          await queryClient.invalidateQueries({ queryKey: SYNC_QUERY_KEY });
-        }
-      } catch (error) {
-        if (handleAuthFailureRef.current(error)) return;
-        log('compact: failed');
-        // compact failed — will retry on next push cycle
-      }
-    };
-
     doPushRef.current = async () => {
       if (pushInFlightRef.current) return;
       // Dirty flag tracks whether local changes exist that
@@ -365,32 +322,37 @@ export function useSyncEngine(
         await doCompactRef.current(cursor);
         return;
       }
-      const {
-        encryptionVersion,
-        encryptionAlgorithm,
-        iv,
-        ciphertext: encryptedDelta,
-      } = await encryptSyncPayload({
-        plaintext: plainDelta,
-        activeDek: activeDekRef.current,
-        userId,
-        activeDekId: activeDekIdRef.current,
-        blockId: id,
-        kind: 'update',
-      });
+      const stateVector = encodeStateVector(ydoc);
+      const pendingPushVersion = pendingPushVersionRef.current;
       const encryptionKeyId = activeDekIdRef.current;
-      log(
-        'push: delta=%d bytes, cursor=%d, dirty=%s',
-        plainDelta.byteLength,
-        cursor,
-        syncState.read().dirty,
-      );
-      pushInFlightRef.current = true;
+      const preparedKeyRingRevision = keyRingRevisionRef.current;
       try {
+        pushInFlightRef.current = true;
+        const {
+          encryptionVersion,
+          encryptionAlgorithm,
+          iv,
+          ciphertext: encryptedDelta,
+        } = await encryptSyncPayload({
+          plaintext: plainDelta,
+          activeDek: activeDekRef.current,
+          userId,
+          activeDekId: activeDekIdRef.current,
+          keyRingRevision: keyRingRevisionRef.current,
+          blockId: id,
+          kind: 'update',
+        });
+        log(
+          'push: delta=%d bytes, cursor=%d, dirty=%s',
+          plainDelta.byteLength,
+          cursor,
+          syncState.read().dirty,
+        );
         const result = await pushMutation.mutateAsync({
           delta: encryptedDelta,
           id,
           encryptionKeyId,
+          keyRingRevision: preparedKeyRingRevision,
           encryptionAlgorithm,
           encryptionVersion,
           iv,
@@ -400,35 +362,35 @@ export function useSyncEngine(
         // Dense monotonic sequence means prevHead = assignedSeq - 1, no gaps.
         const prevHead = result.assignedSeq - 1;
         log(
-          'push: assignedSeq=%d, prevHead=%d, cursor=%d, compactHint=%s, dirty=%s',
+          'push: assignedSeq=%d, prevHead=%d, cursor=%d, compactHint=%s',
           result.assignedSeq,
           prevHead,
           cursor,
           result.compactHint,
-          syncState.read().dirty,
         );
         if (prevHead === cursor) {
           // No concurrent appends — our push is contiguous with
           // the server head. Re-read after async gap to avoid
-          // clobbering concurrent writes. Mark dirty=false: our
-          // edits are now on the server.
+          // clobbering concurrent writes. Clear dirty only if no
+          // local/follower update arrived after this payload was prepared.
           const { cursor: freshCursor } = syncState.read();
+          const dirty = pendingPushVersionRef.current !== pendingPushVersion;
           syncState.write({
             cursor: Math.max(result.assignedSeq, freshCursor),
-            stateVector: encodeStateVector(ydoc),
-            dirty: false,
+            stateVector,
+            dirty,
             lastSuccessfulSyncAt: Date.now(),
           });
           if (result.compactHint) {
             // Server flagged soft cap — compact to free storage.
             await doCompactRef.current(result.assignedSeq);
             return;
+          } else {
+            schedulePushIfPendingChanges(
+              syncState.read(),
+              schedulePushRef.current,
+            );
           }
-          // Check for pending local edits; no pull needed.
-          schedulePushIfPendingChanges(
-            syncState.read(),
-            schedulePushRef.current,
-          );
         } else {
           // Concurrent appends from other devices created a gap.
           // Pull to reconcile; the pull-success listener will
@@ -442,6 +404,11 @@ export function useSyncEngine(
         }
       } catch (error) {
         if (handleAuthFailureRef.current(error)) return;
+        if (isWriteConflict(error)) {
+          await refreshKeyRingProfileRef.current();
+          await queryClient.invalidateQueries({ queryKey: SYNC_QUERY_KEY });
+          return;
+        }
         // React Query already retried (up to 3x with backoff).
         // On permanent failure (413) it stops. Transient
         // failures are retried. No manual reschedule here — the
@@ -452,6 +419,139 @@ export function useSyncEngine(
         pushInFlightRef.current = false;
       }
     };
+
+    doCompactRef.current = async (replacesUpTo: number) => {
+      const plainSnapshot = encodeStateAsUpdate(ydoc);
+      const stateVector = encodeStateVector(ydoc);
+      const pendingPushVersion = pendingPushVersionRef.current;
+      const compactKey = await resolveCompactKey(keyRingRevisionRef.current);
+      const id = crypto.randomUUID();
+      const {
+        encryptionVersion,
+        encryptionAlgorithm,
+        iv,
+        ciphertext: encryptedSnapshot,
+      } = await encryptSyncPayload({
+        plaintext: plainSnapshot,
+        activeDek: compactKey.activeDek,
+        userId,
+        activeDekId: compactKey.activeDekId,
+        keyRingRevision: compactKey.revision,
+        blockId: id,
+        kind: 'snapshot',
+      });
+      const encryptionKeyId = compactKey.activeDekId;
+      const preparedKeyRingRevision = compactKey.revision;
+      log(
+        'compact: replacesUpTo=%d, snapshot=%d bytes',
+        replacesUpTo,
+        plainSnapshot.byteLength,
+      );
+      try {
+        const result = await compactMutation.mutateAsync({
+          snapshot: encryptedSnapshot,
+          replacesUpTo,
+          id,
+          encryptionKeyId,
+          keyRingRevision: preparedKeyRingRevision,
+          encryptionAlgorithm,
+          encryptionVersion,
+          iv,
+          localUserId: userId,
+        });
+        // "Push as poll": the server assigns a dense monotonic seq,
+        // so prevHead = assignedSeq - 1. If it matches our cursor,
+        // no other device appended in between — we're contiguous.
+        const prevHead = result.assignedSeq - 1;
+        const { cursor } = syncState.read();
+        log(
+          'compact: assignedSeq=%d, prevHead=%d, cursor=%d, dirty=%s',
+          result.assignedSeq,
+          prevHead,
+          cursor,
+          syncState.read().dirty,
+        );
+        if (prevHead === cursor) {
+          // Compact is contiguous with server head. Re-read after
+          // async gap to avoid clobbering concurrent writes. Clear dirty only
+          // if no local/follower update arrived after this snapshot was prepared.
+          const { cursor: freshCursor } = syncState.read();
+          const dirty = pendingPushVersionRef.current !== pendingPushVersion;
+          syncState.write({
+            cursor: Math.max(result.assignedSeq, freshCursor),
+            stateVector,
+            dirty,
+            lastSuccessfulSyncAt: Date.now(),
+          });
+          schedulePushIfPendingChanges(
+            syncState.read(),
+            schedulePushRef.current,
+          );
+        } else {
+          // Other devices appended rows between our last pull and
+          // this compact, creating a gap. Pull to fetch those rows;
+          // the pull-success listener will re-derive the delta and
+          // schedule push if there are pending local edits.
+          log(
+            'compact: gap detected (prevHead=%d > cursor=%d), pulling',
+            prevHead,
+            cursor,
+          );
+          await queryClient.invalidateQueries({ queryKey: SYNC_QUERY_KEY });
+        }
+      } catch (error) {
+        if (handleAuthFailureRef.current(error)) return;
+        if (isWriteConflict(error)) {
+          // A compact write conflict means this prepared snapshot was based on
+          // stale sync/key-ring state. Do not retry it. Pull first; if local
+          // dirty state still needs upload, the next push cycle will decide
+          // whether compaction is still necessary.
+          await queryClient.invalidateQueries({ queryKey: SYNC_QUERY_KEY });
+          return;
+        }
+        log('compact: failed');
+        // compact failed — will retry on next push cycle
+      }
+    };
+
+    async function resolveCompactKey(basisRevision: number): Promise<{
+      activeDek: Uint8Array;
+      activeDekId: string;
+      revision: number;
+    }> {
+      if (keyRingRevisionRef.current > basisRevision) {
+        return {
+          activeDek: activeDekRef.current,
+          activeDekId: activeDekIdRef.current,
+          revision: keyRingRevisionRef.current,
+        };
+      }
+
+      const rotated = await createRotatedKeyRingPayload({
+        userId,
+        mek: mekRef.current,
+        currentRevision: keyRingRevisionRef.current,
+        deks: deksRef.current,
+      });
+      try {
+        await updateKeyRingProfileRef.current(rotated.request);
+        return {
+          activeDek: rotated.activeDek,
+          activeDekId: rotated.activeDekId,
+          revision: rotated.revision,
+        };
+      } catch {
+        const refreshed = await refreshKeyRingProfileRef.current();
+        if (refreshed.revision <= basisRevision) {
+          throw new Error('Refetched key ring is not newer than compact basis');
+        }
+        return {
+          activeDek: refreshed.activeDek,
+          activeDekId: refreshed.activeDekId,
+          revision: refreshed.revision,
+        };
+      }
+    }
   }, [userId, compactMutation, pushMutation, queryClient, syncState, ydoc]);
 
   // --- Cleanup push timer on unmount ---
@@ -469,6 +569,7 @@ export function useSyncEngine(
   useEffect(() => {
     function onYDocUpdate(update: Uint8Array, origin: unknown): void {
       if (origin === REMOTE_ORIGIN) return;
+      pendingPushVersionRef.current += 1;
       log('ydoc: local update (%d bytes), dirty triggered', update.byteLength);
       localUpdateQueueRef.current = localUpdateQueueRef.current
         .then(async () => {
@@ -500,6 +601,7 @@ export function useSyncEngine(
       switch (msg.type) {
         case 'local-update': {
           log('bus: local-update (%d bytes)', msg.bytes.byteLength);
+          pendingPushVersionRef.current += 1;
           applyUpdate(ydoc, msg.bytes, REMOTE_ORIGIN);
           if (isLeaderRef.current) {
             schedulePushRef.current();
@@ -527,6 +629,67 @@ export function useSyncEngine(
     if (!isLeader) return;
     void queryClient.invalidateQueries({ queryKey: SYNC_QUERY_KEY });
   }, [isLeader, queryClient]);
+}
+
+class FutureKeyRingRevisionError extends Error {
+  requiredRevision: number;
+
+  constructor(requiredRevision: number) {
+    super('Pulled sync row references a future key-ring revision');
+    this.name = 'FutureKeyRingRevisionError';
+    this.requiredRevision = requiredRevision;
+  }
+}
+
+async function decryptPulledRecords({
+  records,
+  deks,
+  keyRingRevision,
+  userId,
+}: {
+  records: SyncRecord[];
+  deks: Record<string, Uint8Array>;
+  keyRingRevision: number;
+  userId: string;
+}): Promise<Uint8Array[]> {
+  const requiredRevision = Math.max(
+    keyRingRevision,
+    ...records.map((record) => record.keyRingRevision),
+  );
+  if (requiredRevision > keyRingRevision) {
+    throw new FutureKeyRingRevisionError(requiredRevision);
+  }
+
+  return Promise.all(
+    records.map((record) => {
+      const dek = deks[record.encryptionKeyId];
+      if (!dek) {
+        throw new Error('Missing DEK for pulled sync row');
+      }
+      return decryptSyncPayload({
+        payload: {
+          encryptionAlgorithm: record.encryptionAlgorithm,
+          encryptionVersion: record.encryptionVersion as 1,
+          iv: record.iv,
+          ciphertext: record.ciphertext,
+        },
+        activeDek: dek,
+        userId,
+        activeDekId: record.encryptionKeyId,
+        keyRingRevision: record.keyRingRevision,
+        blockId: record.id,
+        kind: record.kind,
+      });
+    }),
+  );
+}
+
+function isWriteConflict(error: unknown): boolean {
+  return (
+    error instanceof SyncRequestError &&
+    error.status === 409 &&
+    error.code === 'write_conflict'
+  );
 }
 
 export function triggerSync(queryClient: QueryClient): void {

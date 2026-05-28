@@ -59,6 +59,7 @@ function pushBody(ciphertext: Uint8Array, id = crypto.randomUUID()) {
     body: JSON.stringify({
       id,
       encryptionKeyId: TEST_KEY_ID,
+      keyRingRevision: 1,
       encryptionAlgorithm: TEST_ALGORITHM,
       encryptionVersion: 1,
       iv: toBase64(TEST_IV),
@@ -81,6 +82,7 @@ function compactBody(
     body: JSON.stringify({
       id,
       encryptionKeyId: TEST_KEY_ID,
+      keyRingRevision: 1,
       encryptionAlgorithm: TEST_ALGORITHM,
       encryptionVersion: 1,
       iv: toBase64(TEST_IV),
@@ -225,6 +227,21 @@ describe('GET /api/sync', () => {
     const rawBody: unknown = await res.json();
     const body = rawBody as { records: unknown[] };
     expect(body.records).toHaveLength(0);
+  });
+
+  it('includes keyRingRevision in pull response records', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    await syncRequest('/api/sync', pushBody(makeCiphertext([1])));
+
+    const res = await syncRequest('/api/sync', { headers: syncHeaders() });
+    expect(res.status).toBe(200);
+    const rawBody: unknown = await res.json();
+    const body = rawBody as {
+      records: Array<{ keyRingRevision: unknown }>;
+    };
+    expect(body.records).toHaveLength(1);
+    expect(body.records[0].keyRingRevision).toBe(1);
   });
 });
 
@@ -385,6 +402,7 @@ describe('POST /api/sync', () => {
       body: JSON.stringify({
         id: crypto.randomUUID(),
         encryptionKeyId: wrongKeyId,
+        keyRingRevision: 1,
         encryptionAlgorithm: TEST_ALGORITHM,
         encryptionVersion: 1,
         iv: toBase64(TEST_IV),
@@ -415,6 +433,34 @@ describe('POST /api/sync', () => {
 
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({ code: 'write_conflict' });
+    const rows = await db
+      .select()
+      .from(syncRecord)
+      .where(eq(syncRecord.userId, 'user-1'));
+    expect(rows).toHaveLength(0);
+  });
+
+  it('returns 409 write_conflict when keyRingRevision does not match stored revision', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+
+    const res = await syncRequest('/api/sync', {
+      method: 'POST',
+      headers: syncHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        encryptionKeyId: TEST_KEY_ID,
+        keyRingRevision: 999,
+        encryptionAlgorithm: TEST_ALGORITHM,
+        encryptionVersion: 1,
+        iv: toBase64(TEST_IV),
+        ciphertext: toBase64(makeCiphertext([1])),
+      }),
+    });
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ code: 'write_conflict' });
+    const db = getDb(workerTestEnv.DB);
     const rows = await db
       .select()
       .from(syncRecord)
@@ -591,6 +637,7 @@ describe('POST /api/sync/compact', () => {
       body: JSON.stringify({
         id: crypto.randomUUID(),
         encryptionKeyId: wrongKeyId,
+        keyRingRevision: 1,
         encryptionAlgorithm: TEST_ALGORITHM,
         encryptionVersion: 1,
         iv: toBase64(TEST_IV),
@@ -600,6 +647,41 @@ describe('POST /api/sync/compact', () => {
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({ code: 'write_conflict' });
 
+    const db = getDb(workerTestEnv.DB);
+    const rows = await db
+      .select()
+      .from(syncRecord)
+      .where(eq(syncRecord.userId, 'user-1'));
+    expect(rows.filter((r) => r.kind === 'snapshot')).toHaveLength(0);
+    expect(rows.filter((r) => r.kind === 'update')).toHaveLength(3);
+  });
+
+  it('returns 409 write_conflict when compact keyRingRevision does not match stored revision', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    for (let i = 0; i < 3; i++) {
+      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+    }
+
+    const res = await syncRequest('/api/sync/compact', {
+      method: 'POST',
+      headers: syncHeaders({
+        'Content-Type': 'application/json',
+        'X-Replaces-Up-To': '3',
+      }),
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        encryptionKeyId: TEST_KEY_ID,
+        keyRingRevision: 999,
+        encryptionAlgorithm: TEST_ALGORITHM,
+        encryptionVersion: 1,
+        iv: toBase64(TEST_IV),
+        ciphertext: toBase64(makeCiphertext([99])),
+      }),
+    });
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ code: 'write_conflict' });
     const db = getDb(workerTestEnv.DB);
     const rows = await db
       .select()

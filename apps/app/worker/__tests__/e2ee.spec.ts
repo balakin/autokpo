@@ -400,4 +400,34 @@ describe('/api/e2ee/key-ring', () => {
 
     expect(res.status).toBe(400);
   });
+
+  it('rejects setup when keyRingCiphertext exceeds 64 KiB', async () => {
+    const oversized = new Uint8Array(64 * 1024 + 1).fill(1).toBase64();
+    const res = await req('/api/e2ee/key-ring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...validPayload(), keyRingCiphertext: oversized }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects key ring update when keyRingCiphertext exceeds 64 KiB', async () => {
+    const payload = validPayload();
+    await req('/api/e2ee/key-ring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const oversized = new Uint8Array(64 * 1024 + 1).fill(1).toBase64();
+    const res = await req('/api/e2ee/key-ring', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...validUpdatePayload(1),
+        keyRingCiphertext: oversized,
+      }),
+    });
+    expect(res.status).toBe(400);
+  });
 });

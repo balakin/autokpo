@@ -20,6 +20,7 @@ const uuidSchema = z.uuid();
 const encEnvelopeSchema = z.object({
   id: uuidSchema,
   encryptionKeyId: uuidSchema,
+  keyRingRevision: z.number().int().positive(),
   encryptionAlgorithm: z.literal('aes-256-gcm'),
   encryptionVersion: z.literal(1),
   iv: z.string().min(1),
@@ -81,6 +82,7 @@ router.get('/', async (c) => {
         seq: syncRecord.seq,
         kind: syncRecord.kind,
         encryptionKeyId: syncRecord.encryptionKeyId,
+        keyRingRevision: syncRecord.keyRingRevision,
         encryptionAlgorithm: syncRecord.encryptionAlgorithm,
         encryptionVersion: syncRecord.encryptionVersion,
         iv: syncRecord.iv,
@@ -111,6 +113,7 @@ router.get('/', async (c) => {
     seq: row.seq,
     kind: row.kind,
     encryptionKeyId: row.encryptionKeyId,
+    keyRingRevision: row.keyRingRevision,
     encryptionAlgorithm: row.encryptionAlgorithm,
     encryptionVersion: row.encryptionVersion,
     iv: row.iv.toBase64(),
@@ -141,6 +144,7 @@ router.post('/', async (c) => {
   const {
     id,
     encryptionKeyId,
+    keyRingRevision,
     encryptionAlgorithm,
     encryptionVersion,
     iv: ivBase64,
@@ -175,6 +179,7 @@ router.post('/', async (c) => {
             and(
               eq(keyRing.userId, userId),
               eq(keyRing.activeDekId, encryptionKeyId),
+              eq(keyRing.revision, keyRingRevision),
             ),
           ),
       ),
@@ -194,6 +199,7 @@ router.post('/', async (c) => {
               encryptionVersion: sql`${encryptionVersion}`.as(
                 'encryption_version',
               ),
+              keyRingRevision: sql`${keyRingRevision}`.as('key_ring_revision'),
               iv: sql`${ivBytes}`.as('iv'),
               ciphertext: sql`${ciphertextBytes}`.as('ciphertext'),
               kind: sql`'update'`.as('kind'),
@@ -235,6 +241,7 @@ router.post('/', async (c) => {
         existingSeq: syncRecord.seq,
         existingEncryptionAlgorithm: syncRecord.encryptionAlgorithm,
         existingEncryptionVersion: syncRecord.encryptionVersion,
+        existingKeyRingRevision: syncRecord.keyRingRevision,
         existingIv: syncRecord.iv,
         existingCiphertext: syncRecord.ciphertext,
       })
@@ -245,6 +252,7 @@ router.post('/', async (c) => {
       if (
         existing.existingEncryptionAlgorithm === encryptionAlgorithm &&
         existing.existingEncryptionVersion === encryptionVersion &&
+        existing.existingKeyRingRevision === keyRingRevision &&
         existing.existingIv.byteLength === ivBytes.byteLength &&
         new Uint8Array(existing.existingIv).every((v, i) => v === ivBytes[i]) &&
         existing.existingCiphertext.byteLength === ciphertextBytes.byteLength &&
@@ -294,6 +302,7 @@ router.post('/compact', async (c) => {
   const {
     id,
     encryptionKeyId,
+    keyRingRevision,
     encryptionAlgorithm,
     encryptionVersion,
     iv: ivBase64,
@@ -321,6 +330,7 @@ router.post('/compact', async (c) => {
   const insertResult = await insertCompactSnapshot(db, userId, replacesUpTo, {
     id,
     encryptionKeyId,
+    keyRingRevision,
     encryptionAlgorithm,
     encryptionVersion,
     ivBytes,
@@ -346,6 +356,7 @@ export { router as syncRouter };
 type SnapshotPayload = {
   id: string;
   encryptionKeyId: string;
+  keyRingRevision: number;
   encryptionAlgorithm: string;
   encryptionVersion: number;
   ivBytes: Uint8Array;
@@ -365,6 +376,7 @@ async function insertCompactSnapshot(
   {
     id,
     encryptionKeyId,
+    keyRingRevision,
     encryptionAlgorithm,
     encryptionVersion,
     ivBytes,
@@ -381,6 +393,7 @@ async function insertCompactSnapshot(
             and(
               eq(keyRing.userId, userId),
               eq(keyRing.activeDekId, encryptionKeyId),
+              eq(keyRing.revision, keyRingRevision),
             ),
           ),
       ),
@@ -449,6 +462,7 @@ async function insertCompactSnapshot(
           seq: sql`(select coalesce(max(${syncRecord.seq}), 0) + 1 from ${syncRecord} where ${syncRecord.userId} = ${userId})`,
           encryptionAlgorithm,
           encryptionVersion,
+          keyRingRevision,
           iv: ivBytes,
           ciphertext,
           kind: 'snapshot',
@@ -464,6 +478,7 @@ async function insertCompactSnapshot(
         seq: syncRecord.seq,
         encryptionAlgorithm: syncRecord.encryptionAlgorithm,
         encryptionVersion: syncRecord.encryptionVersion,
+        keyRingRevision: syncRecord.keyRingRevision,
         iv: syncRecord.iv,
         ciphertext: syncRecord.ciphertext,
       })
@@ -474,6 +489,7 @@ async function insertCompactSnapshot(
       if (
         existing.encryptionAlgorithm === encryptionAlgorithm &&
         existing.encryptionVersion === encryptionVersion &&
+        existing.keyRingRevision === keyRingRevision &&
         existing.iv.byteLength === ivBytes.byteLength &&
         new Uint8Array(existing.iv).every((v, i) => v === ivBytes[i]) &&
         existing.ciphertext.byteLength === ciphertext.byteLength &&

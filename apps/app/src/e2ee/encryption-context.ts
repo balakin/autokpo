@@ -1,5 +1,6 @@
 import { createContext, use } from 'react';
 
+import type { DecryptedKeyRing } from './encryption-crypto';
 import type {
   SerializedKeyRingProfile,
   UpdateKeyRingRequest,
@@ -9,8 +10,11 @@ export interface EncryptionContextValue {
   mek: Uint8Array;
   activeDek: Uint8Array;
   activeDekId: string;
+  keyRingRevision: number;
+  deks: Record<string, Uint8Array>;
+  getDek: (dekId: string) => Uint8Array | null;
   clearEncryptionSession: () => void;
-  refreshKeyRingProfile: () => Promise<void>;
+  refreshKeyRingProfile: () => Promise<DecryptedKeyRing>;
   updateKeyRingProfile: (
     request: UpdateKeyRingRequest,
   ) => Promise<SerializedKeyRingProfile>;

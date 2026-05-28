@@ -17,6 +17,8 @@ function state(
     mek: null,
     activeDek: null,
     activeDekId: null,
+    keyRingRevision: null,
+    deks: null,
     ...overrides,
   };
 }
@@ -100,6 +102,8 @@ describe('encryptionGateReducer', () => {
         mek,
         activeDek,
         activeDekId: 'key-1',
+        keyRingRevision: 1,
+        deks: { 'key-1': activeDek },
       }),
     ).toEqual({
       userId: 'user-1',
@@ -107,6 +111,8 @@ describe('encryptionGateReducer', () => {
       mek,
       activeDek,
       activeDekId: 'key-1',
+      keyRingRevision: 1,
+      deks: { 'key-1': activeDek },
     });
   });
 
@@ -118,6 +124,8 @@ describe('encryptionGateReducer', () => {
           mek,
           activeDek,
           activeDekId: 'key-1',
+          keyRingRevision: 1,
+          deks: { 'key-1': activeDek },
         }),
         { type: 'clear-session' },
       ),
@@ -127,6 +135,8 @@ describe('encryptionGateReducer', () => {
       mek: null,
       activeDek: null,
       activeDekId: null,
+      keyRingRevision: null,
+      deks: null,
     });
   });
 });

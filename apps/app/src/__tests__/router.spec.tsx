@@ -132,6 +132,8 @@ describe('router bundle boundaries', () => {
       mek: new Uint8Array(32).fill(2),
       activeDek: new Uint8Array(32).fill(1),
       activeDekId: 'dek-1',
+      revision: 1,
+      deks: { 'dek-1': new Uint8Array(32).fill(1) },
     });
     vi.stubGlobal(
       'fetch',

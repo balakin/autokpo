@@ -159,6 +159,8 @@ beforeEach(() => {
   decryptKeyRingWithMekMock.mockResolvedValue({
     activeDek,
     activeDekId: 'dek-1',
+    revision: 1,
+    deks: { 'dek-1': activeDek },
   });
   fetchKeyRingProfileMock.mockRejectedValue(notFoundError());
   createKeyRingProfilePayloadMock.mockResolvedValue({
@@ -166,16 +168,22 @@ beforeEach(() => {
     mek: new Uint8Array(32),
     activeDek,
     activeDekId: 'dek-1',
+    revision: 1,
+    deks: { 'dek-1': activeDek },
   });
   createKeyRingProfileMock.mockResolvedValue(makeRecord());
   unwrapKeyRingProfileMock.mockResolvedValue({
     mek: new Uint8Array(32),
     activeDek,
     activeDekId: 'dek-1',
+    revision: 1,
+    deks: { 'dek-1': activeDek },
   });
   decryptKeyRingWithMekMock.mockResolvedValue({
     activeDek,
     activeDekId: 'dek-1',
+    revision: 1,
+    deks: { 'dek-1': activeDek },
   });
 });
 
@@ -657,6 +665,8 @@ describe('EncryptionGate — PIN unlock path', () => {
     decryptKeyRingWithMekMock.mockResolvedValue({
       activeDek,
       activeDekId: 'dek-1',
+      revision: 1,
+      deks: { 'dek-1': activeDek },
     });
 
     renderGate();

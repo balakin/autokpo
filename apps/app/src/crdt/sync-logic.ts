@@ -51,6 +51,7 @@ export interface EncryptedSyncPayload {
 type SyncPayloadAadContext = {
   userId: string;
   activeDekId: string;
+  keyRingRevision: number;
   blockId: string;
   kind: 'update' | 'snapshot';
 };
@@ -70,11 +71,18 @@ export async function encryptSyncPayload({
   activeDek,
   userId,
   activeDekId,
+  keyRingRevision,
   blockId,
   kind,
 }: EncryptSyncPayloadInput): Promise<EncryptedSyncPayload> {
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const aad = buildAad({ userId, activeDekId, blockId, kind });
+  const aad = buildAad({
+    userId,
+    activeDekId,
+    keyRingRevision,
+    blockId,
+    kind,
+  });
   const ciphertext = await aesGcmEncrypt({
     keyBytes: activeDek,
     iv,
@@ -94,6 +102,7 @@ export async function decryptSyncPayload({
   activeDek,
   userId,
   activeDekId,
+  keyRingRevision,
   blockId,
   kind,
 }: DecryptSyncPayloadInput): Promise<Uint8Array> {
@@ -107,17 +116,24 @@ export async function decryptSyncPayload({
       `Unsupported encryption_version: ${String(encryptionVersion)}`,
     );
   }
-  const aad = buildAad({ userId, activeDekId, blockId, kind });
+  const aad = buildAad({
+    userId,
+    activeDekId,
+    keyRingRevision,
+    blockId,
+    kind,
+  });
   return aesGcmDecrypt({ keyBytes: activeDek, iv, ciphertext, aad });
 }
 
 function buildAad({
   userId,
   activeDekId,
+  keyRingRevision,
   blockId,
   kind,
 }: SyncPayloadAadContext): Uint8Array {
   return new TextEncoder().encode(
-    `autokpo:e2ee-update:v1:${userId}:${activeDekId}:${blockId}:${kind}`,
+    `autokpo:e2ee-update:v1:${userId}:${activeDekId}:${keyRingRevision}:${blockId}:${kind}`,
   );
 }

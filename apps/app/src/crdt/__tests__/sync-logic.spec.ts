@@ -189,7 +189,15 @@ describe('encryptSyncPayload / decryptSyncPayload', () => {
     plaintext: Uint8Array,
     kind: 'update' | 'snapshot' = 'update',
   ) {
-    return { plaintext, activeDek, userId, activeDekId: keyId, blockId, kind };
+    return {
+      plaintext,
+      activeDek,
+      userId,
+      activeDekId: keyId,
+      keyRingRevision: 1,
+      blockId,
+      kind,
+    };
   }
 
   function decryptInput(
@@ -197,6 +205,7 @@ describe('encryptSyncPayload / decryptSyncPayload', () => {
     overrides: Partial<{
       userId: string;
       activeDekId: string;
+      keyRingRevision: number;
       blockId: string;
       kind: 'update' | 'snapshot';
     }> = {},
@@ -206,6 +215,7 @@ describe('encryptSyncPayload / decryptSyncPayload', () => {
       activeDek,
       userId,
       activeDekId: keyId,
+      keyRingRevision: 1,
       blockId,
       kind: 'update' as const,
       ...overrides,
@@ -252,6 +262,14 @@ describe('encryptSyncPayload / decryptSyncPayload', () => {
     ).rejects.toThrow();
   });
 
+  it('decryption fails when AAD keyRingRevision differs', async () => {
+    const plaintext = new Uint8Array([1, 2]);
+    const encrypted = await encryptSyncPayload(encryptInput(plaintext));
+    await expect(
+      decryptSyncPayload(decryptInput(encrypted, { keyRingRevision: 2 })),
+    ).rejects.toThrow();
+  });
+
   it('decryption fails when AAD block id differs', async () => {
     const plaintext = new Uint8Array([1, 2]);
     const encrypted = await encryptSyncPayload(encryptInput(plaintext));
@@ -283,6 +301,7 @@ describe('encryptSyncPayload / decryptSyncPayload', () => {
         activeDek,
         userId,
         activeDekId: keyId,
+        keyRingRevision: 1,
         blockId,
         kind: 'update',
       }),
@@ -301,6 +320,7 @@ describe('encryptSyncPayload / decryptSyncPayload', () => {
         activeDek,
         userId,
         activeDekId: keyId,
+        keyRingRevision: 1,
         blockId,
         kind: 'update',
       }),

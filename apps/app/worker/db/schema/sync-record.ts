@@ -27,6 +27,7 @@ export const syncRecord = sqliteTable(
     seq: integer('seq').notNull(),
     encryptionAlgorithm: text('encryption_algorithm').notNull(),
     encryptionVersion: integer('encryption_version').notNull(),
+    keyRingRevision: integer('key_ring_revision').notNull(),
     iv: blobBytes('iv').notNull(),
     ciphertext: blobBytes('ciphertext').notNull(),
     kind: text('kind', { enum: ['update', 'snapshot'] }).notNull(),

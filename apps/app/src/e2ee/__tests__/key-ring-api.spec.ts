@@ -94,7 +94,7 @@ describe('key ring api', () => {
       activeDekId: 'dek-1',
       encryptionAlgorithm: 'aes-256-gcm' as const,
       encryptionParams: { iv: 'iv', tagBits: 128 },
-      keyRingCiphertext: 'ciphertext',
+      ciphertext: 'ciphertext',
     };
 
     await expect(updateKeyRingProfile(request)).resolves.toEqual(profile);
@@ -117,7 +117,7 @@ describe('key ring api', () => {
         activeDekId: 'dek-1',
         encryptionAlgorithm: 'aes-256-gcm',
         encryptionParams: { iv: 'iv', tagBits: 128 },
-        keyRingCiphertext: 'ciphertext',
+        ciphertext: 'ciphertext',
       }),
     ).rejects.toBeInstanceOf(KeyRingConflictError);
   });

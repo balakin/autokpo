@@ -127,7 +127,7 @@ e2eeRouter.put('/key-ring', async (c) => {
           revision: parsed.currentRevision + 1,
           encryptionAlgorithm: parsed.encryptionAlgorithm,
           encryptionParams: JSON.stringify(parsed.encryptionParams),
-          ciphertext: parsed.keyRingCiphertext,
+          ciphertext: parsed.ciphertext,
           updatedAt: new Date(),
         })
         .where(
@@ -238,14 +238,6 @@ function parseCreateBody(body: unknown) {
     typeof value.keyRingId !== 'string' ||
     typeof value.wrappingId !== 'string' ||
     typeof value.activeDekId !== 'string' ||
-    value.encryptionAlgorithm !== 'aes-256-gcm' ||
-    value.kdfAlgorithm !== 'argon2id' ||
-    !sameJson(value.kdfParams, KDF_PARAMS_V1) ||
-    value.wrappingAlgorithm !== 'aes-256-gcm'
-  ) {
-    return Response.json({ code: 'invalid_payload' }, { status: 400 });
-  }
-  if (
     !isSafeId(value.keyRingId) ||
     !isSafeId(value.wrappingId) ||
     !isSafeId(value.activeDekId)
@@ -253,39 +245,58 @@ function parseCreateBody(body: unknown) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
-  const encryptionParams = parseAesGcmParams(value.encryptionParams);
+  const keyRingBlock = value.keyRing as Record<string, unknown> | null;
+  if (!keyRingBlock || typeof keyRingBlock !== 'object') {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+  if (keyRingBlock.encryptionAlgorithm !== 'aes-256-gcm') {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+  const encryptionParams = parseAesGcmParams(keyRingBlock.encryptionParams);
   if (!encryptionParams) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
-
-  const wrappingParams = parseAesGcmParams(value.wrappingParams);
-  if (!wrappingParams) {
+  if (typeof keyRingBlock.ciphertext !== 'string') {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
+  const mekBlock = value.mek as Record<string, unknown> | null;
+  if (!mekBlock || typeof mekBlock !== 'object') {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
   if (
-    typeof value.kdfSalt !== 'string' ||
-    typeof value.ciphertext !== 'string' ||
-    typeof value.keyRingCiphertext !== 'string'
+    mekBlock.kdfAlgorithm !== 'argon2id' ||
+    !sameJson(mekBlock.kdfParams, KDF_PARAMS_V1) ||
+    mekBlock.wrappingAlgorithm !== 'aes-256-gcm'
+  ) {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+  const wrappingParams = parseAesGcmParams(mekBlock.wrappingParams);
+  if (!wrappingParams) {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+  if (
+    typeof mekBlock.kdfSalt !== 'string' ||
+    typeof mekBlock.ciphertext !== 'string'
   ) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
+  let keyRingCiphertext: Uint8Array;
   let kdfSalt: Uint8Array;
   let wrappedMek: Uint8Array;
-  let keyRingCiphertext: Uint8Array;
   try {
-    kdfSalt = Uint8Array.fromBase64(value.kdfSalt);
-    wrappedMek = Uint8Array.fromBase64(value.ciphertext);
-    keyRingCiphertext = Uint8Array.fromBase64(value.keyRingCiphertext);
+    keyRingCiphertext = Uint8Array.fromBase64(keyRingBlock.ciphertext);
+    kdfSalt = Uint8Array.fromBase64(mekBlock.kdfSalt);
+    wrappedMek = Uint8Array.fromBase64(mekBlock.ciphertext);
   } catch {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
   if (
+    keyRingCiphertext.byteLength > MAX_KEY_RING_CIPHERTEXT_BYTES ||
     kdfSalt.byteLength !== KDF_SALT_BYTES ||
-    !isSafeCiphertext(wrappedMek) ||
-    keyRingCiphertext.byteLength > MAX_KEY_RING_CIPHERTEXT_BYTES
+    !isSafeCiphertext(wrappedMek)
   ) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
@@ -376,18 +387,18 @@ function parseUpdateBody(body: unknown) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
-  if (typeof value.keyRingCiphertext !== 'string') {
+  if (typeof value.ciphertext !== 'string') {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
-  let keyRingCiphertext: Uint8Array;
+  let ciphertext: Uint8Array;
   try {
-    keyRingCiphertext = Uint8Array.fromBase64(value.keyRingCiphertext);
+    ciphertext = Uint8Array.fromBase64(value.ciphertext);
   } catch {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
-  if (keyRingCiphertext.byteLength > MAX_KEY_RING_CIPHERTEXT_BYTES) {
+  if (ciphertext.byteLength > MAX_KEY_RING_CIPHERTEXT_BYTES) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
 
@@ -396,7 +407,7 @@ function parseUpdateBody(body: unknown) {
     activeDekId: value.activeDekId,
     encryptionAlgorithm: value.encryptionAlgorithm,
     encryptionParams,
-    keyRingCiphertext,
+    ciphertext,
   };
 }
 

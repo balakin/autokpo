@@ -25,20 +25,24 @@ function validPayload() {
     keyRingId: '11111111-1111-4111-8111-111111111111',
     wrappingId: '22222222-2222-4222-8222-222222222222',
     activeDekId: '33333333-3333-4333-8333-333333333333',
-    encryptionAlgorithm: 'aes-256-gcm',
-    encryptionParams: { iv: bytesBase64(12), tagBits: 128 },
-    keyRingCiphertext: bytesBase64(48),
-    kdfAlgorithm: 'argon2id',
-    kdfParams: {
-      memorySize: 65536,
-      iterations: 3,
-      parallelism: 1,
-      hashLength: 32,
+    keyRing: {
+      encryptionAlgorithm: 'aes-256-gcm',
+      encryptionParams: { iv: bytesBase64(12), tagBits: 128 },
+      ciphertext: bytesBase64(48),
     },
-    kdfSalt: bytesBase64(16),
-    wrappingAlgorithm: 'aes-256-gcm',
-    wrappingParams: { iv: bytesBase64(12), tagBits: 128 },
-    ciphertext: bytesBase64(48),
+    mek: {
+      kdfAlgorithm: 'argon2id',
+      kdfParams: {
+        memorySize: 65536,
+        iterations: 3,
+        parallelism: 1,
+        hashLength: 32,
+      },
+      kdfSalt: bytesBase64(16),
+      wrappingAlgorithm: 'aes-256-gcm',
+      wrappingParams: { iv: bytesBase64(12), tagBits: 128 },
+      ciphertext: bytesBase64(48),
+    },
   };
 }
 
@@ -66,7 +70,7 @@ function validUpdatePayload(currentRevision: number) {
     activeDekId: '66666666-6666-4666-8666-666666666666',
     encryptionAlgorithm: 'aes-256-gcm',
     encryptionParams: { iv: bytesBase64(12), tagBits: 128 },
-    keyRingCiphertext: bytesBase64(64),
+    ciphertext: bytesBase64(64),
   };
 }
 
@@ -183,10 +187,14 @@ describe('/api/e2ee/key-ring', () => {
   });
 
   it('rejects invalid payloads', async () => {
+    const p = validPayload();
     const res = await req('/api/e2ee/key-ring', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...validPayload(), kdfSalt: bytesBase64(8) }),
+      body: JSON.stringify({
+        ...p,
+        mek: { ...p.mek, kdfSalt: bytesBase64(8) },
+      }),
     });
     expect(res.status).toBe(400);
   });
@@ -227,7 +235,7 @@ describe('/api/e2ee/key-ring', () => {
       id: payload.keyRingId,
       activeDekId: payload.activeDekId,
       revision: 1,
-      ciphertext: payload.keyRingCiphertext,
+      ciphertext: payload.keyRing.ciphertext,
     });
     expect(profile.wrappers).toEqual([
       expect.objectContaining({ id: changePayload.wrappingId }),
@@ -274,7 +282,7 @@ describe('/api/e2ee/key-ring', () => {
       revision: 2,
       encryptionAlgorithm: updatePayload.encryptionAlgorithm,
       encryptionParams: updatePayload.encryptionParams,
-      ciphertext: updatePayload.keyRingCiphertext,
+      ciphertext: updatePayload.ciphertext,
     });
     expect(profile.wrappers).toEqual([
       expect.objectContaining({ id: payload.wrappingId }),
@@ -298,7 +306,7 @@ describe('/api/e2ee/key-ring', () => {
     const staleUpdate = {
       ...validUpdatePayload(1),
       activeDekId: '77777777-7777-4777-8777-777777777777',
-      keyRingCiphertext: bytesBase64(72),
+      ciphertext: bytesBase64(72),
     };
     const res = await req('/api/e2ee/key-ring', {
       method: 'PUT',
@@ -314,7 +322,7 @@ describe('/api/e2ee/key-ring', () => {
     expect(profile.keyRing).toMatchObject({
       activeDekId: firstUpdate.activeDekId,
       revision: 2,
-      ciphertext: firstUpdate.keyRingCiphertext,
+      ciphertext: firstUpdate.ciphertext,
     });
   });
 
@@ -339,7 +347,7 @@ describe('/api/e2ee/key-ring', () => {
     const get = await req('/api/e2ee/key-ring');
     const profile: SerializedKeyRingProfile = await get.json();
     expect(profile.keyRing.revision).toBe(1);
-    expect(profile.keyRing.ciphertext).toBe(payload.keyRingCiphertext);
+    expect(profile.keyRing.ciphertext).toBe(payload.keyRing.ciphertext);
   });
 
   it('rejects stale password wrapper changes without replacing the active wrapper', async () => {
@@ -392,17 +400,21 @@ describe('/api/e2ee/key-ring', () => {
     expect(res.status).toBe(400);
   });
 
-  it('rejects setup when keyRingCiphertext exceeds 64 KiB', async () => {
+  it('rejects setup when key ring ciphertext exceeds 64 KiB', async () => {
     const oversized = new Uint8Array(64 * 1024 + 1).fill(1).toBase64();
+    const p = validPayload();
     const res = await req('/api/e2ee/key-ring', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...validPayload(), keyRingCiphertext: oversized }),
+      body: JSON.stringify({
+        ...p,
+        keyRing: { ...p.keyRing, ciphertext: oversized },
+      }),
     });
     expect(res.status).toBe(400);
   });
 
-  it('rejects key ring update when keyRingCiphertext exceeds 64 KiB', async () => {
+  it('rejects key ring update when key ring ciphertext exceeds 64 KiB', async () => {
     const payload = validPayload();
     await req('/api/e2ee/key-ring', {
       method: 'POST',
@@ -416,7 +428,7 @@ describe('/api/e2ee/key-ring', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...validUpdatePayload(1),
-        keyRingCiphertext: oversized,
+        ciphertext: oversized,
       }),
     });
     expect(res.status).toBe(400);

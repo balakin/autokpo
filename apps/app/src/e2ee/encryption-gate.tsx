@@ -550,6 +550,7 @@ async function storeLdkWrapper(
       wrapperId,
       ldk,
       ciphertext,
+      wrappingAlgorithm: 'aes-256-gcm',
       wrappingParams,
     });
   } catch {

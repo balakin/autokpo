@@ -65,6 +65,7 @@ async function makeLdkRecord(userId = USER_ID): Promise<LocalWrapperRecord> {
     wrapperId: 'wr-1',
     ldk,
     ciphertext: new Uint8Array(48).fill(4),
+    wrappingAlgorithm: 'aes-256-gcm',
     wrappingParams: { iv: new Uint8Array(12).fill(5), tagBits: 128 },
   };
 }
@@ -81,8 +82,8 @@ async function makePinRecord(userId = USER_ID): Promise<LocalWrapperRecordPin> {
     wrapperId: 'wr-pin-1',
     pinLdk,
     pinSaltCiphertext: new Uint8Array(32).fill(6),
-    pinEncryptionAlgorithm: 'aes-256-gcm',
-    pinEncryptionParams: { iv: new Uint8Array(12).fill(7), tagBits: 128 },
+    pinSaltAlgorithm: 'aes-256-gcm',
+    pinSaltParams: { iv: new Uint8Array(12).fill(7), tagBits: 128 },
     kdfAlgorithm: 'argon2id',
     kdfParams: KDF_PARAMS_V1,
     wrappingAlgorithm: 'aes-256-gcm',
@@ -191,7 +192,7 @@ describe('KeysIndexeddb — local_wrapper store', () => {
     if (stored?.method !== 'pin') return;
     expect(stored.pinLdk).toBeInstanceOf(CryptoKey);
     expect(stored.pinSaltCiphertext).toBeInstanceOf(Uint8Array);
-    expect(stored.pinEncryptionParams.iv).toBeInstanceOf(Uint8Array);
+    expect(stored.pinSaltParams.iv).toBeInstanceOf(Uint8Array);
     expect(stored.ciphertext).toBeInstanceOf(Uint8Array);
     expect(stored.wrappingParams.iv).toBeInstanceOf(Uint8Array);
     expect(stored.failedAttempts).toBe(0);

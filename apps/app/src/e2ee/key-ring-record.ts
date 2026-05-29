@@ -46,15 +46,19 @@ export const createKeyRingProfileRequestSchema = z.object({
   keyRingId: z.string(),
   wrappingId: z.string(),
   activeDekId: z.string(),
-  encryptionAlgorithm: z.literal('aes-256-gcm'),
-  encryptionParams: aesGcmParamsV1Schema,
-  keyRingCiphertext: z.string(),
-  kdfAlgorithm: z.literal('argon2id'),
-  kdfParams: kdfParamsV1Schema,
-  kdfSalt: z.string(),
-  wrappingAlgorithm: z.literal('aes-256-gcm'),
-  wrappingParams: aesGcmParamsV1Schema,
-  ciphertext: z.string(),
+  keyRing: z.object({
+    encryptionAlgorithm: z.literal('aes-256-gcm'),
+    encryptionParams: aesGcmParamsV1Schema,
+    ciphertext: z.string(),
+  }),
+  mek: z.object({
+    kdfAlgorithm: z.literal('argon2id'),
+    kdfParams: kdfParamsV1Schema,
+    kdfSalt: z.string(),
+    wrappingAlgorithm: z.literal('aes-256-gcm'),
+    wrappingParams: aesGcmParamsV1Schema,
+    ciphertext: z.string(),
+  }),
 });
 
 export const changeMasterPasswordRequestSchema = z.object({
@@ -73,7 +77,7 @@ export const updateKeyRingRequestSchema = z.object({
   activeDekId: z.string(),
   encryptionAlgorithm: z.literal('aes-256-gcm'),
   encryptionParams: aesGcmParamsV1Schema,
-  keyRingCiphertext: z.string(),
+  ciphertext: z.string(),
 });
 
 export type KdfParamsV1 = z.infer<typeof kdfParamsV1Schema>;

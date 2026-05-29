@@ -69,6 +69,7 @@ const localWrapperRecordLdkSchema = z.object({
   wrapperId: z.string(),
   ldk: cryptoKeySchema,
   ciphertext: uint8ArraySchema,
+  wrappingAlgorithm: z.literal('aes-256-gcm'),
   wrappingParams: aesGcmParamsSchema,
 });
 
@@ -78,8 +79,8 @@ const localWrapperRecordPinSchema = z.object({
   wrapperId: z.string(),
   pinLdk: cryptoKeySchema,
   pinSaltCiphertext: uint8ArraySchema,
-  pinEncryptionAlgorithm: z.literal('aes-256-gcm'),
-  pinEncryptionParams: aesGcmParamsSchema,
+  pinSaltAlgorithm: z.literal('aes-256-gcm'),
+  pinSaltParams: aesGcmParamsSchema,
   kdfAlgorithm: z.literal('argon2id'),
   kdfParams: kdfParamsV1Schema,
   wrappingAlgorithm: z.literal('aes-256-gcm'),

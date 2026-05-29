@@ -122,7 +122,7 @@ export function SecuritySettingsPage() {
       const {
         pinLdk,
         pinSaltCiphertext,
-        pinEncryptionParams,
+        pinSaltParams,
         kdfParams,
         ciphertext,
         wrappingParams,
@@ -135,8 +135,8 @@ export function SecuritySettingsPage() {
         wrapperId,
         pinLdk,
         pinSaltCiphertext,
-        pinEncryptionAlgorithm: 'aes-256-gcm',
-        pinEncryptionParams,
+        pinSaltAlgorithm: 'aes-256-gcm',
+        pinSaltParams,
         kdfAlgorithm: 'argon2id',
         kdfParams,
         wrappingAlgorithm: 'aes-256-gcm',
@@ -174,6 +174,7 @@ export function SecuritySettingsPage() {
         wrapperId,
         ldk,
         ciphertext,
+        wrappingAlgorithm: 'aes-256-gcm',
         wrappingParams,
       });
       store.close();

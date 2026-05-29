@@ -519,7 +519,7 @@ describe('EncryptionGate', () => {
       activeDekId: 'dek-1',
       encryptionAlgorithm: 'aes-256-gcm',
       encryptionParams: { iv: 'iv', tagBits: 128 },
-      keyRingCiphertext: 'updated-ciphertext',
+      ciphertext: 'updated-ciphertext',
     });
 
     const store = new KeysIndexeddb();
@@ -579,7 +579,7 @@ describe('EncryptionGate', () => {
         activeDekId: 'dek-1',
         encryptionAlgorithm: 'aes-256-gcm',
         encryptionParams: { iv: 'iv', tagBits: 128 },
-        keyRingCiphertext: 'stale-ciphertext',
+        ciphertext: 'stale-ciphertext',
       }),
     ).rejects.toThrow('conflict');
 
@@ -619,8 +619,8 @@ describe('EncryptionGate — PIN unlock path', () => {
       wrapperId: 'wr-pin-1',
       pinLdk,
       pinSaltCiphertext: new Uint8Array(32).fill(1),
-      pinEncryptionAlgorithm: 'aes-256-gcm',
-      pinEncryptionParams: { iv: new Uint8Array(12).fill(2), tagBits: 128 },
+      pinSaltAlgorithm: 'aes-256-gcm',
+      pinSaltParams: { iv: new Uint8Array(12).fill(2), tagBits: 128 },
       kdfAlgorithm: 'argon2id',
       kdfParams: KDF_PARAMS_V1,
       wrappingAlgorithm: 'aes-256-gcm',

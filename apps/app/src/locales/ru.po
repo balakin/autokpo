@@ -60,7 +60,7 @@ msgstr "Если вы обнаружили ошибку или хотите пр
 msgid "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
 msgstr "Если вы хотите улучшить AutoKPO, ваши pull request'ы приветствуются."
 
-#: src/settings/security-settings-page.tsx:358
+#: src/settings/security-settings-page.tsx:359
 msgid "Aplikacija se otključava bez interakcije pri svakom pokretanju."
 msgstr "Приложение разблокируется автоматически при каждом запуске без каких-либо действий."
 
@@ -227,7 +227,7 @@ msgstr "Выберите год для новой книги."
 msgid "Izaberite JPEG, PNG ili WebP sliku."
 msgstr "Выберите изображение JPEG, PNG или WebP."
 
-#: src/settings/security-settings-page.tsx:333
+#: src/settings/security-settings-page.tsx:334
 msgid "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju aplikacije."
 msgstr "Выберите способ разблокировки зашифрованных данных при каждом запуске приложения."
 
@@ -326,7 +326,7 @@ msgstr "Конвертация валюты"
 msgid "Korisnički avatar"
 msgstr "Аватар пользователя"
 
-#: src/settings/security-settings-page.tsx:243
+#: src/settings/security-settings-page.tsx:244
 msgid "Korisnik nije prijavljen."
 msgstr "Пользователь не вошел в систему."
 
@@ -359,7 +359,7 @@ msgstr "Лимит: {limitFormatted} (<0>ст. 42 ЗПДГа</0>)"
 msgid "Limit: {rollingLimitFormatted} (<0>čl. 33 ZPDV</0>)"
 msgstr "Лимит: {rollingLimitFormatted} (<0>ст. 33 ЗПДВ</0>)"
 
-#: src/settings/security-settings-page.tsx:330
+#: src/settings/security-settings-page.tsx:331
 msgid "Lokalno otključavanje"
 msgstr "Локальная разблокировка"
 
@@ -474,7 +474,7 @@ msgstr "Не удалось загрузить данные аккаунта. П
 msgid "Nije moguće pripremiti profilnu sliku za slanje."
 msgstr "Не удалось подготовить изображение профиля к загрузке."
 
-#: src/settings/security-settings-page.tsx:299
+#: src/settings/security-settings-page.tsx:300
 msgid "Nije moguće promeniti šifru. Pokušajte ponovo."
 msgstr "Не удалось изменить пароль. Повторите попытку."
 
@@ -499,7 +499,7 @@ msgstr "Не удалось удалить изображение профиля
 msgid "Nismo uspeli da pošaljemo kod. Pokušajte ponovo."
 msgstr "Нам не удалось отправить код. Пожалуйста, попробуйте снова."
 
-#: src/settings/security-settings-page.tsx:356
+#: src/settings/security-settings-page.tsx:357
 msgid "Ništa"
 msgstr "Нет"
 
@@ -512,7 +512,7 @@ msgstr "Не получили код?"
 msgid "Nova knjiga"
 msgstr "Новая книга"
 
-#: src/settings/security-settings-page.tsx:575
+#: src/settings/security-settings-page.tsx:576
 msgid "Nova šifra"
 msgstr "Новый пароль"
 
@@ -667,9 +667,9 @@ msgstr "Вы отменили вход. Попробуйте снова."
 #: src/entries/entry-modal.tsx:66
 #: src/settings/account-settings-page.tsx:680
 #: src/settings/account-settings-page.tsx:937
-#: src/settings/security-settings-page.tsx:511
-#: src/settings/security-settings-page.tsx:619
-#: src/settings/security-settings-page.tsx:827
+#: src/settings/security-settings-page.tsx:512
+#: src/settings/security-settings-page.tsx:620
+#: src/settings/security-settings-page.tsx:828
 #: src/signatures/signature-preview.tsx:61
 msgid "Otkaži"
 msgstr "Отмена"
@@ -749,9 +749,9 @@ msgstr "ПИБ должен содержать только цифры"
 
 #: src/e2ee/pin-unlock-screen.tsx:63
 #: src/e2ee/set-pin-modal.tsx:82
-#: src/settings/security-settings-page.tsx:367
-#: src/settings/security-settings-page.tsx:476
-#: src/settings/security-settings-page.tsx:752
+#: src/settings/security-settings-page.tsx:368
+#: src/settings/security-settings-page.tsx:477
+#: src/settings/security-settings-page.tsx:753
 msgid "PIN kod"
 msgstr "PIN-код"
 
@@ -815,8 +815,8 @@ msgid "Podesite šifru za šifrovanje"
 msgstr "Настройте пароль шифрования"
 
 #: src/e2ee/pin-unlock-screen.tsx:80
-#: src/settings/security-settings-page.tsx:200
-#: src/settings/security-settings-page.tsx:268
+#: src/settings/security-settings-page.tsx:201
+#: src/settings/security-settings-page.tsx:269
 msgid "Pogrešan PIN. Pokušajte ponovo."
 msgstr "Неверный PIN. Попробуйте ещё раз."
 
@@ -824,7 +824,7 @@ msgstr "Неверный PIN. Попробуйте ещё раз."
 msgid "Pogrešan PIN. Preostalo pokušaja: {remaining}."
 msgstr "Неверный PIN. Осталось попыток: {remaining}."
 
-#: src/settings/security-settings-page.tsx:269
+#: src/settings/security-settings-page.tsx:270
 msgid "Pogrešna šifra. Pokušajte ponovo."
 msgstr "Неверный пароль. Повторите попытку."
 
@@ -900,7 +900,7 @@ msgstr "Подпись"
 msgid "Potpis je sačuvan"
 msgstr "Подпись сохранена"
 
-#: src/settings/security-settings-page.tsx:835
+#: src/settings/security-settings-page.tsx:836
 msgid "Potvrdi"
 msgstr "Подтвердить"
 
@@ -908,7 +908,7 @@ msgstr "Подтвердить"
 msgid "Potvrdite da razumete da šifra ne može biti vraćena."
 msgstr "Подтвердите, что понимаете: пароль нельзя восстановить."
 
-#: src/settings/security-settings-page.tsx:596
+#: src/settings/security-settings-page.tsx:597
 msgid "Potvrdite novu šifru"
 msgstr "Подтвердите новый пароль"
 
@@ -921,7 +921,7 @@ msgstr "Подтвердите PIN-код"
 msgid "Potvrdite prijavu"
 msgstr "Подтвердите вход"
 
-#: src/settings/security-settings-page.tsx:723
+#: src/settings/security-settings-page.tsx:724
 msgid "Potvrdite promenu šifre"
 msgstr "Подтвердите изменение пароля"
 
@@ -954,7 +954,7 @@ msgstr "Скачайте копию данных вашего аккаунта."
 msgid "Preuzmite kopiju svih podataka knjiga i stavki."
 msgstr "Скачайте копию всех данных книг и записей."
 
-#: src/settings/security-settings-page.tsx:369
+#: src/settings/security-settings-page.tsx:370
 msgid "Pri svakom pokretanju unosite 6-cifreni PIN kod."
 msgstr "Вводите 6-значный PIN-код при каждом запуске."
 
@@ -1023,7 +1023,7 @@ msgstr "Изображение профиля удалено."
 msgid "Profilna slika mora biti manja od 256 KB."
 msgstr "Изображение профиля должно быть меньше 256 КБ."
 
-#: src/settings/security-settings-page.tsx:555
+#: src/settings/security-settings-page.tsx:556
 msgid "Promena utiče samo na šifru kojom se otključavaju podaci sa servera. Lokalni PIN ili automatsko otključavanje ostaju isti."
 msgstr "Изменение затрагивает только пароль для разблокировки данных с сервера. Локальный PIN или автоматическая разблокировка остаются прежними."
 
@@ -1032,16 +1032,16 @@ msgstr "Изменение затрагивает только пароль дл
 msgid "Promeni profilnu sliku"
 msgstr "Изменить фото профиля"
 
-#: src/settings/security-settings-page.tsx:398
-#: src/settings/security-settings-page.tsx:626
+#: src/settings/security-settings-page.tsx:399
+#: src/settings/security-settings-page.tsx:627
 msgid "Promeni šifru"
 msgstr "Изменить пароль"
 
-#: src/settings/security-settings-page.tsx:386
+#: src/settings/security-settings-page.tsx:387
 msgid "Promenite glavnu šifru. Podaci neće biti ponovo šifrovani."
 msgstr "Измените мастер-пароль. Данные не будут зашифрованы заново."
 
-#: src/settings/security-settings-page.tsx:552
+#: src/settings/security-settings-page.tsx:553
 msgid "Promenite šifru za šifrovanje"
 msgstr "Изменить пароль шифрования"
 
@@ -1147,11 +1147,11 @@ msgstr "Код налогоплательщика должен состоять 
 #: src/e2ee/encryption-setup-screen.tsx:92
 #: src/e2ee/encryption-unlock-screen.tsx:71
 #: src/e2ee/encryption-unlock-screen.tsx:75
-#: src/settings/security-settings-page.tsx:383
+#: src/settings/security-settings-page.tsx:384
 msgid "Šifra za šifrovanje"
 msgstr "Пароль шифрования"
 
-#: src/settings/security-settings-page.tsx:291
+#: src/settings/security-settings-page.tsx:292
 msgid "Šifra za šifrovanje je promenjena."
 msgstr "Пароль шифрования изменён."
 
@@ -1225,7 +1225,7 @@ msgstr "Тема"
 msgid "Trenutna sesija"
 msgstr "Текущая сессия"
 
-#: src/settings/security-settings-page.tsx:794
+#: src/settings/security-settings-page.tsx:795
 msgid "Trenutna šifra"
 msgstr "Текущий пароль"
 
@@ -1245,7 +1245,7 @@ msgstr "Загрузка сессий…"
 msgid "Ukloni iz omiljenih za {year}"
 msgstr "Убрать {year} из избранного"
 
-#: src/settings/security-settings-page.tsx:453
+#: src/settings/security-settings-page.tsx:454
 msgid "Ukloni PIN kod"
 msgstr "Удалить PIN-код"
 
@@ -1275,11 +1275,11 @@ msgid "Unesite jednokratni kod koji smo poslali na:"
 msgstr "Введите одноразовый код, который мы отправили на:"
 
 #: src/e2ee/pin-unlock-screen.tsx:52
-#: src/settings/security-settings-page.tsx:746
+#: src/settings/security-settings-page.tsx:747
 msgid "Unesite PIN kod"
 msgstr "Введите PIN-код"
 
-#: src/settings/security-settings-page.tsx:727
+#: src/settings/security-settings-page.tsx:728
 msgid "Unesite PIN kod da biste nastavili."
 msgstr "Введите PIN-код, чтобы продолжить."
 
@@ -1292,11 +1292,11 @@ msgstr "Введите данные новой записи."
 msgid "Unesite šifru za šifrovanje."
 msgstr "Введите пароль шифрования."
 
-#: src/settings/security-settings-page.tsx:456
+#: src/settings/security-settings-page.tsx:457
 msgid "Unesite trenutni PIN kod da biste potvrdili."
 msgstr "Введите текущий PIN-код для подтверждения."
 
-#: src/settings/security-settings-page.tsx:729
+#: src/settings/security-settings-page.tsx:730
 msgid "Unesite trenutnu šifru da biste nastavili."
 msgstr "Введите текущий пароль, чтобы продолжить."
 

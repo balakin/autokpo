@@ -63,7 +63,7 @@ async function makeRecordWithPlaintextKeyRing(
     keyBytes: mek,
     params: { iv: keyRingIv, tagBits: AES_GCM_PARAMS_V1.tagBits },
     plaintext: new TextEncoder().encode(JSON.stringify(keyRingPlaintext)),
-    aad: keyRingAad(userId, activeDekId, revision),
+    aad: keyRingAad('key-ring-1', userId, activeDekId, revision),
   });
   const wrappedMek = await aesGcmEncrypt({
     keyBytes: kek,

@@ -411,7 +411,7 @@ msgstr "Назад"
 msgid "Nazad na prijavu"
 msgstr "Вернуться к входу"
 
-#: src/e2ee/encryption-gate.tsx:370
+#: src/e2ee/encryption-gate.tsx:391
 msgid "Ne možemo da proverimo šifrovanje"
 msgstr "Не удалось проверить шифрование"
 
@@ -828,7 +828,7 @@ msgstr "Неверный PIN. Осталось попыток: {remaining}."
 msgid "Pogrešna šifra. Pokušajte ponovo."
 msgstr "Неверный пароль. Повторите попытку."
 
-#: src/e2ee/encryption-gate.tsx:386
+#: src/e2ee/encryption-gate.tsx:407
 msgid "Pokušaj ponovo"
 msgstr "Попробовать снова"
 
@@ -1050,7 +1050,7 @@ msgstr "Изменить пароль шифрования"
 msgid "Proverite internet vezu i pokušajte ponovo kasnije."
 msgstr "Проверьте подключение к интернету и попробуйте позже."
 
-#: src/e2ee/encryption-gate.tsx:373
+#: src/e2ee/encryption-gate.tsx:394
 msgid "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
 msgstr "Проверьте подключение к интернету и попробуйте снова. Мы не будем создавать новый ключ, пока не проверим существующую настройку учётной записи."
 

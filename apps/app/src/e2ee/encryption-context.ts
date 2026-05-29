@@ -10,6 +10,7 @@ export interface EncryptionContextValue {
   mek: Uint8Array;
   activeDek: Uint8Array;
   activeDekId: string;
+  keyRingId: string;
   keyRingRevision: number;
   deks: Record<string, Uint8Array>;
   getDek: (dekId: string) => Uint8Array | null;

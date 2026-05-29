@@ -55,6 +55,7 @@ export function useSyncEngine(
     mek,
     activeDek,
     activeDekId,
+    keyRingId,
     keyRingRevision,
     deks,
     refreshKeyRingProfile,
@@ -79,6 +80,8 @@ export function useSyncEngine(
   activeDekIdRef.current = activeDekId;
   const mekRef = useRef(mek);
   mekRef.current = mek;
+  const keyRingIdRef = useRef(keyRingId);
+  keyRingIdRef.current = keyRingId;
   const keyRingRevisionRef = useRef(keyRingRevision);
   keyRingRevisionRef.current = keyRingRevision;
   const deksRef = useRef(deks);
@@ -518,6 +521,7 @@ export function useSyncEngine(
       }
 
       const rotated = await createRotatedKeyRingPayload({
+        keyRingId: keyRingIdRef.current,
         userId,
         mek: mekRef.current,
         currentRevision: keyRingRevisionRef.current,

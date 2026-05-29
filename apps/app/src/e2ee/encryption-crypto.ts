@@ -62,7 +62,7 @@ export async function createKeyRingProfilePayload(
     keyBytes: mek,
     params: { iv: keyRingIv, tagBits: AES_GCM_PARAMS_V1.tagBits },
     plaintext: new TextEncoder().encode(keyRingPlaintext),
-    aad: keyRingAad(userId, activeDekId, 1),
+    aad: keyRingAad(keyRingId, userId, activeDekId, 1),
   });
   const wrappedMek = await aesGcmEncrypt({
     keyBytes: kek,
@@ -167,6 +167,7 @@ export async function unwrapKeyRingProfile(
 export async function decryptKeyRingWithMek(
   mek: Uint8Array,
   keyRing: {
+    id: string;
     userId: string;
     activeDekId: string;
     revision: number;
@@ -185,7 +186,12 @@ export async function decryptKeyRingWithMek(
       tagBits: keyRing.encryptionParams.tagBits,
     },
     ciphertext: base64ToBytes(keyRing.ciphertext),
-    aad: keyRingAad(keyRing.userId, keyRing.activeDekId, keyRing.revision),
+    aad: keyRingAad(
+      keyRing.id,
+      keyRing.userId,
+      keyRing.activeDekId,
+      keyRing.revision,
+    ),
   });
   const parsed = JSON.parse(new TextDecoder().decode(keyRingBytes)) as {
     revision?: unknown;
@@ -227,11 +233,13 @@ export async function decryptKeyRingWithMek(
 }
 
 export async function createRotatedKeyRingPayload({
+  keyRingId,
   userId,
   mek,
   currentRevision,
   deks,
 }: {
+  keyRingId: string;
   userId: string;
   mek: Uint8Array;
   currentRevision: number;
@@ -255,7 +263,7 @@ export async function createRotatedKeyRingPayload({
     keyBytes: mek,
     params: { iv: keyRingIv, tagBits: AES_GCM_PARAMS_V1.tagBits },
     plaintext: new TextEncoder().encode(keyRingPlaintext),
-    aad: keyRingAad(userId, activeDekId, revision),
+    aad: keyRingAad(keyRingId, userId, activeDekId, revision),
   });
 
   return {
@@ -343,12 +351,13 @@ function toBuffer(bytes: Uint8Array): ArrayBuffer {
 }
 
 export function keyRingAad(
+  keyRingId: string,
   userId: string,
   activeDekId: string,
   revision: number,
 ): Uint8Array {
   return new TextEncoder().encode(
-    `autokpo:e2ee-key-ring:v1:${userId}:${activeDekId}:${revision}`,
+    `autokpo:e2ee-key-ring:v1:${keyRingId}:${userId}:${activeDekId}:${revision}`,
   );
 }
 

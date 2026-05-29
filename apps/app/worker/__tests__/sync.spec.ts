@@ -11,6 +11,11 @@ import {
 import { getDb } from '../db';
 import { keyRing, syncRecord } from '../db/schema';
 import app from '../main';
+import {
+  MAX_SYNC_BODY_BYTES,
+  MAX_SYNC_CIPHERTEXT_BYTES,
+  maxBase64Length,
+} from '../payload-limits';
 
 const sessionState: SessionState = { userId: 'user-1', headers: null };
 const authHeaders = makeAuthHeaders(sessionState);
@@ -356,6 +361,19 @@ describe('POST /api/sync', () => {
     expect(res.status).toBe(400);
   });
 
+  it('returns 413 before JSON validation when request body exceeds sync body limit', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    const res = await syncRequest('/api/sync', {
+      method: 'POST',
+      headers: syncHeaders({ 'Content-Type': 'application/json' }),
+      body: ' '.repeat(MAX_SYNC_BODY_BYTES + 1),
+    });
+
+    expect(res.status).toBe(413);
+    expect(await res.json()).toEqual({ code: 'payload_too_large' });
+  });
+
   it('returns 400 for non-UUID frontend-provided ids', async () => {
     await authHeaders();
     await insertTestKeyRing();
@@ -460,6 +478,48 @@ describe('POST /api/sync', () => {
 
     const res = await syncRequest('/api/sync', pushBody(oversized));
     expect(res.status).toBe(413);
+  });
+
+  it('returns 413 before decoding when ciphertext base64 is too long', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    const res = await syncRequest('/api/sync', {
+      method: 'POST',
+      headers: syncHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        encryptionKeyId: TEST_KEY_ID,
+        keyRingRevision: 1,
+        encryptionAlgorithm: TEST_ALGORITHM,
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
+        ciphertext: 'A'.repeat(maxBase64Length(MAX_SYNC_CIPHERTEXT_BYTES) + 1),
+      }),
+    });
+
+    expect(res.status).toBe(413);
+  });
+
+  it('database rejects sync rows above the ciphertext size limit', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    const db = getDb(workerTestEnv.DB);
+
+    await expect(
+      db.insert(syncRecord).values({
+        id: crypto.randomUUID(),
+        userId: 'user-1',
+        seq: 1,
+        encryptionAlgorithm: TEST_ALGORITHM,
+        encryptionParams: JSON.stringify({
+          iv: toBase64(TEST_IV),
+          tagBits: 128,
+        }),
+        keyRingRevision: 1,
+        ciphertext: new Uint8Array(MAX_SYNC_CIPHERTEXT_BYTES + 1),
+        kind: 'update',
+        encryptionKeyId: TEST_KEY_ID,
+      }),
+    ).rejects.toThrow();
   });
 
   it('returns 409 write_conflict when encryptionKeyId does not match active DEK at write time', async () => {
@@ -619,6 +679,44 @@ describe('POST /api/sync/compact', () => {
       }),
     });
     expect(res.status).toBe(400);
+  });
+
+  it('returns 413 before JSON validation when compact body exceeds sync body limit', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    const res = await syncRequest('/api/sync/compact', {
+      method: 'POST',
+      headers: syncHeaders({
+        'Content-Type': 'application/json',
+        'X-Replaces-Up-To': '0',
+      }),
+      body: ' '.repeat(MAX_SYNC_BODY_BYTES + 1),
+    });
+
+    expect(res.status).toBe(413);
+    expect(await res.json()).toEqual({ code: 'payload_too_large' });
+  });
+
+  it('returns 413 before decoding when compact ciphertext base64 is too long', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    const res = await syncRequest('/api/sync/compact', {
+      method: 'POST',
+      headers: syncHeaders({
+        'Content-Type': 'application/json',
+        'X-Replaces-Up-To': '0',
+      }),
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        encryptionKeyId: TEST_KEY_ID,
+        keyRingRevision: 1,
+        encryptionAlgorithm: TEST_ALGORITHM,
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
+        ciphertext: 'A'.repeat(maxBase64Length(MAX_SYNC_CIPHERTEXT_BYTES) + 1),
+      }),
+    });
+
+    expect(res.status).toBe(413);
   });
 
   it('returns 400 for non-UUID compact ids', async () => {

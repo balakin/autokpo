@@ -1,6 +1,7 @@
 import type { InferSelectModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import {
+  check,
   customType,
   index,
   integer,
@@ -8,6 +9,12 @@ import {
   text,
   uniqueIndex,
 } from 'drizzle-orm/sqlite-core';
+
+import {
+  KDF_SALT_BYTES,
+  MAX_KEY_RING_CIPHERTEXT_BYTES,
+  WRAPPED_MEK_CIPHERTEXT_BYTES,
+} from '../../payload-limits';
 
 import { user } from './auth';
 
@@ -39,7 +46,13 @@ export const keyRing = sqliteTable(
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),
   },
-  (table) => [uniqueIndex('key_ring_user_id_idx').on(table.userId)],
+  (table) => [
+    uniqueIndex('key_ring_user_id_idx').on(table.userId),
+    check(
+      'key_ring_ciphertext_size_check',
+      sql`length(${table.ciphertext}) <= ${sql.raw(String(MAX_KEY_RING_CIPHERTEXT_BYTES))}`,
+    ),
+  ],
 );
 
 export const keyRingWrapping = sqliteTable(
@@ -67,6 +80,14 @@ export const keyRingWrapping = sqliteTable(
       .on(table.userId, table.method)
       .where(sql`${table.status} = 'active'`),
     index('key_ring_wrapping_user_id_idx').on(table.userId),
+    check(
+      'key_ring_wrapping_kdf_salt_size_check',
+      sql`length(${table.kdfSalt}) = ${sql.raw(String(KDF_SALT_BYTES))}`,
+    ),
+    check(
+      'key_ring_wrapping_ciphertext_size_check',
+      sql`length(${table.ciphertext}) = ${sql.raw(String(WRAPPED_MEK_CIPHERTEXT_BYTES))}`,
+    ),
   ],
 );
 

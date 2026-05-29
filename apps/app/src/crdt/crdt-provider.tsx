@@ -17,7 +17,7 @@ export function CrdtProvider({
   userId: string;
   children: React.ReactNode;
 }) {
-  const { mek, activeDek, activeDekId } = useEncryptionContext();
+  const { mek } = useEncryptionContext();
   const [runtime, setRuntime] = useState<CrdtRuntime | null>(null);
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export function CrdtProvider({
       setRuntime(null);
       void nextRuntime.destroy();
     };
-  }, [activeDek, activeDekId, mek, userId]);
+  }, [mek, userId]);
 
   if (runtime === null) return null;
 

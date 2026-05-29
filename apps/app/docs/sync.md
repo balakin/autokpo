@@ -145,11 +145,14 @@ sequenceDiagram
 Rules:
 
 1. Pull uses the cursor as `If-None-Match`; server returns current head as `ETag`.
-2. `304` means the cursor is already at head.
-3. `410` means local sync metadata is invalid. Reset sync metadata and retry from scratch; do not wipe the Y.Doc.
-4. `decryptPulledRecords` throws `FutureKeyRingRevisionError` when rows reference a newer key-ring revision; the pull path refreshes the key ring once and retries decryption.
-5. If rows still reference a future revision after refresh, fail hard.
-6. Pull advances `cursor` but preserves local `dirty` and `stateVector` because pull does not acknowledge local edits.
+2. The latest snapshot row is the server's baseline boundary. A fresh pull from cursor `0` returns the latest snapshot plus later rows, or all rows when no snapshot exists.
+3. An incremental cursor older than the latest snapshot receives `410`, because snapshots can contain changes that have no standalone update row.
+4. An incremental cursor at or after the latest snapshot receives rows with `seq > cursor`.
+5. `304` means the cursor is already at head.
+6. `410` means local sync metadata is invalid. Reset sync metadata and retry from scratch; do not wipe the Y.Doc.
+7. `decryptPulledRecords` throws `FutureKeyRingRevisionError` when rows reference a newer key-ring revision; the pull path refreshes the key ring once and retries decryption.
+8. If rows still reference a future revision after refresh, fail hard.
+9. Pull advances `cursor` but preserves local `dirty` and `stateVector` because pull does not acknowledge local edits.
 
 ## Push flow
 
@@ -252,10 +255,12 @@ Rules:
 1. Compact when a delta exceeds the client update limit or server returns `X-Compact-Hint: please`.
 2. Snapshot plaintext is the full encoded Y.Doc state.
 3. Snapshot rows use `kind = snapshot`; kind is included in AAD.
-4. Rotation adds a new DEK, makes it active, increments revision by one, and keeps previous DEKs.
-5. The client does not pre-fetch the key ring before attempting rotation; it uses the unlocked key-ring state and relies on the `currentRevision` guard. If another device wins that rotation race, refresh the key ring, join the winner's newer revision, and continue preparing the compact snapshot.
-6. Compact uses the state vector captured with the prepared snapshot. If another local/follower update arrives while compaction is in flight, compact keeps `dirty=true` and schedules another push; otherwise it can clear `dirty`.
-7. A `409 write_conflict` from `POST /api/sync/compact` means the prepared snapshot is stale. End the current compact attempt and invalidate pull. Do not refresh keys or retry the same snapshot in that compact flow; after pull, a later push cycle decides whether compaction is still needed.
+4. After accepting a snapshot, the server deletes all rows with `seq <= X-Replaces-Up-To`; it does not retain a pre-snapshot tail.
+5. Clients whose cursors are older than the latest snapshot recover through `410` and a fresh pull from cursor `0`.
+6. Rotation adds a new DEK, makes it active, increments revision by one, and keeps previous DEKs.
+7. The client does not pre-fetch the key ring before attempting rotation; it uses the unlocked key-ring state and relies on the `currentRevision` guard. If another device wins that rotation race, refresh the key ring, join the winner's newer revision, and continue preparing the compact snapshot.
+8. Compact uses the state vector captured with the prepared snapshot. If another local/follower update arrives while compaction is in flight, compact keeps `dirty=true` and schedules another push; otherwise it can clear `dirty`.
+9. A `409 write_conflict` from `POST /api/sync/compact` means the prepared snapshot is stale. End the current compact attempt and invalidate pull. Do not refresh keys or retry the same snapshot in that compact flow; after pull, a later push cycle decides whether compaction is still needed.
 
 ## Server write and idempotency rules
 
@@ -287,7 +292,7 @@ Rules:
 5. Server assigns dense monotonic `seq` values per user.
 6. Server hard storage cap is 4 MiB of ciphertext per user.
 7. Server asks for compaction at 200 rows or 2 MiB by returning `X-Compact-Hint: please`.
-8. Compact keeps a tail bounded by 50 rows or 256 KiB, so recently stale clients can often catch up without immediate `410`.
+8. Compact deletes all covered rows; clients behind the latest snapshot recover by resetting sync metadata and pulling the latest snapshot baseline.
 
 ## Error handling summary
 
@@ -327,6 +332,7 @@ Rules:
 - Pull decrypts each row with the row's own DEK id.
 - `REMOTE_ORIGIN` is used for remote/bus-applied Yjs updates.
 - `410` resets sync metadata only, never the Y.Doc.
+- The latest server snapshot is the baseline for fresh pulls and for stale-cursor recovery.
 - Followers only call `markDirty()` for localStorage sync metadata.
 - Only the leader writes cursor/state-vector/last-success metadata.
 - Server never receives plaintext Yjs updates or snapshots.

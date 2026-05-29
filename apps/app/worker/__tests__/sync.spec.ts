@@ -208,6 +208,80 @@ describe('GET /api/sync', () => {
     expect(body.records).toHaveLength(2);
   });
 
+  it('returns latest snapshot plus later rows for fresh pull', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    for (let i = 0; i < 3; i++) {
+      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+    }
+
+    const compactRes = await syncRequest(
+      '/api/sync/compact',
+      compactBody(makeCiphertext([99]), 3),
+    );
+    expect(compactRes.status).toBe(200);
+    await syncRequest('/api/sync', pushBody(makeCiphertext([4])));
+    await syncRequest('/api/sync', pushBody(makeCiphertext([5])));
+
+    const res = await syncRequest('/api/sync', { headers: syncHeaders() });
+    expect(res.status).toBe(200);
+    expect(res.headers.get('ETag')).toBe('"6"');
+    const rawBody: unknown = await res.json();
+    const body = rawBody as { records: Array<{ seq: number; kind: string }> };
+    expect(body.records).toEqual([
+      expect.objectContaining({ seq: 4, kind: 'snapshot' }),
+      expect.objectContaining({ seq: 5, kind: 'update' }),
+      expect.objectContaining({ seq: 6, kind: 'update' }),
+    ]);
+  });
+
+  it('returns 410 when cursor is older than latest snapshot', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    for (let i = 0; i < 3; i++) {
+      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+    }
+    const compactRes = await syncRequest(
+      '/api/sync/compact',
+      compactBody(makeCiphertext([99]), 3),
+    );
+    expect(compactRes.status).toBe(200);
+
+    const res = await syncRequest('/api/sync', {
+      headers: syncHeaders({ 'If-None-Match': '"3"' }),
+    });
+
+    expect(res.status).toBe(410);
+  });
+
+  it('returns later rows when cursor is at latest snapshot', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    for (let i = 0; i < 3; i++) {
+      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+    }
+    const compactRes = await syncRequest(
+      '/api/sync/compact',
+      compactBody(makeCiphertext([99]), 3),
+    );
+    expect(compactRes.status).toBe(200);
+    await syncRequest('/api/sync', pushBody(makeCiphertext([4])));
+    await syncRequest('/api/sync', pushBody(makeCiphertext([5])));
+
+    const res = await syncRequest('/api/sync', {
+      headers: syncHeaders({ 'If-None-Match': '"4"' }),
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get('ETag')).toBe('"6"');
+    const rawBody: unknown = await res.json();
+    const body = rawBody as { records: Array<{ seq: number; kind: string }> };
+    expect(body.records).toEqual([
+      expect.objectContaining({ seq: 5, kind: 'update' }),
+      expect.objectContaining({ seq: 6, kind: 'update' }),
+    ]);
+  });
+
   it('returns 410 when cursor is newer than head', async () => {
     await authHeaders();
     await insertTestKeyRing();
@@ -574,33 +648,34 @@ describe('POST /api/sync/compact', () => {
     expect(invalidKeyId.status).toBe(400);
   });
 
-  it('keeps tail within COMPACT_TAIL_MAX_ROWS and COMPACT_TAIL_MAX_BYTES', async () => {
+  it('deletes all covered rows without retaining a tail', async () => {
     await authHeaders();
     await insertTestKeyRing();
-    const ciphertext = new Uint8Array(60 * 1024);
-    for (let i = 0; i < 50; i++) {
-      await syncRequest('/api/sync', pushBody(ciphertext));
+    for (let i = 0; i < 5; i++) {
+      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
     }
 
     const compactRes = await syncRequest(
       '/api/sync/compact',
-      compactBody(makeCiphertext([99]), 50),
+      compactBody(makeCiphertext([99]), 5),
     );
     expect(compactRes.status).toBe(200);
+
+    const db = getDb(workerTestEnv.DB);
+    const rows = await db
+      .select({ seq: syncRecord.seq, kind: syncRecord.kind })
+      .from(syncRecord)
+      .where(eq(syncRecord.userId, 'user-1'));
+    expect(rows).toEqual([{ seq: 6, kind: 'snapshot' }]);
 
     const getRes = await syncRequest('/api/sync', { headers: syncHeaders() });
     const rawBody2: unknown = await getRes.json();
     const body = rawBody2 as {
-      records: Array<{ kind: string; ciphertext: string }>;
+      records: Array<{ seq: number; kind: string }>;
     };
-
-    const tailRecords = body.records.filter((r) => r.kind === 'update');
-    expect(tailRecords.length).toBeLessThanOrEqual(50);
-
-    const totalTailBytes = tailRecords.reduce((sum, r) => {
-      return sum + atob(r.ciphertext).length;
-    }, 0);
-    expect(totalTailBytes).toBeLessThanOrEqual(256 * 1024);
+    expect(body.records).toEqual([
+      expect.objectContaining({ seq: 6, kind: 'snapshot' }),
+    ]);
   });
 
   it('JSON body is accepted', async () => {

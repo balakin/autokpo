@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "2a1ceff8-5ad2-4b5e-ac60-122f607fb0b9",
+  "id": "53ed1cdd-2444-400f-8d3b-1ac4759d7015",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -423,6 +423,14 @@
         },
         "revision": {
           "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "plaintext_schema_version": {
+          "name": "plaintext_schema_version",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,

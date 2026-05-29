@@ -78,6 +78,7 @@ function makeRecord(userId = 'user-1'): SerializedKeyRingProfile {
       userId,
       activeDekId: 'dek-1',
       revision: 1,
+      plaintextSchemaVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
       encryptionParams: { iv: 'AAAAAAAAAAAAAAAA', tagBits: 128 },
       ciphertext:

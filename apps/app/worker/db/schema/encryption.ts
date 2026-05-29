@@ -26,6 +26,9 @@ export const keyRing = sqliteTable(
       .references(() => user.id, { onDelete: 'cascade' }),
     activeDekId: text('active_dek_id').notNull(),
     revision: integer('revision').default(1).notNull(),
+    plaintextSchemaVersion: integer('plaintext_schema_version')
+      .default(1)
+      .notNull(),
     encryptionAlgorithm: text('encryption_algorithm').notNull(),
     encryptionParams: text('encryption_params').notNull(),
     ciphertext: blobBytes('ciphertext').notNull(),

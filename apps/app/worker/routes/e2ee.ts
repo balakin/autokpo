@@ -78,6 +78,7 @@ e2eeRouter.post('/key-ring', async (c) => {
           userId: session.user.id,
           activeDekId: parsed.activeDekId,
           revision: 1,
+          plaintextSchemaVersion: parsed.plaintextSchemaVersion,
           encryptionAlgorithm: 'aes-256-gcm',
           encryptionParams: JSON.stringify(parsed.encryptionParams),
           ciphertext: parsed.keyRingCiphertext,
@@ -125,6 +126,7 @@ e2eeRouter.put('/key-ring', async (c) => {
         .set({
           activeDekId: parsed.activeDekId,
           revision: parsed.currentRevision + 1,
+          plaintextSchemaVersion: parsed.plaintextSchemaVersion,
           encryptionAlgorithm: parsed.encryptionAlgorithm,
           encryptionParams: JSON.stringify(parsed.encryptionParams),
           ciphertext: parsed.ciphertext,
@@ -249,6 +251,9 @@ function parseCreateBody(body: unknown) {
   if (!keyRingBlock || typeof keyRingBlock !== 'object') {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
+  if (keyRingBlock.plaintextSchemaVersion !== 1) {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
   if (keyRingBlock.encryptionAlgorithm !== 'aes-256-gcm') {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
@@ -305,6 +310,7 @@ function parseCreateBody(body: unknown) {
     keyRingId: value.keyRingId,
     wrappingId: value.wrappingId,
     activeDekId: value.activeDekId,
+    plaintextSchemaVersion: 1 as const,
     encryptionParams,
     wrappingParams,
     kdfSalt,
@@ -374,6 +380,7 @@ function parseUpdateBody(body: unknown) {
     !Number.isInteger(value.currentRevision) ||
     (value.currentRevision as number) < 1 ||
     typeof value.activeDekId !== 'string' ||
+    value.plaintextSchemaVersion !== 1 ||
     value.encryptionAlgorithm !== 'aes-256-gcm'
   ) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
@@ -405,6 +412,7 @@ function parseUpdateBody(body: unknown) {
   return {
     currentRevision: value.currentRevision as number,
     activeDekId: value.activeDekId,
+    plaintextSchemaVersion: 1 as const,
     encryptionAlgorithm: value.encryptionAlgorithm,
     encryptionParams,
     ciphertext,
@@ -443,6 +451,7 @@ function serializeRecord(keyRingRow: KeyRingRow, wrapping: KeyRingWrappingRow) {
       userId: keyRingRow.userId,
       activeDekId: keyRingRow.activeDekId,
       revision: keyRingRow.revision,
+      plaintextSchemaVersion: keyRingRow.plaintextSchemaVersion,
       encryptionAlgorithm: keyRingRow.encryptionAlgorithm,
       encryptionParams,
       ciphertext: keyRingRow.ciphertext?.toBase64(),

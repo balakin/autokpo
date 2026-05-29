@@ -26,6 +26,7 @@ function validPayload() {
     wrappingId: '22222222-2222-4222-8222-222222222222',
     activeDekId: '33333333-3333-4333-8333-333333333333',
     keyRing: {
+      plaintextSchemaVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
       encryptionParams: { iv: bytesBase64(12), tagBits: 128 },
       ciphertext: bytesBase64(48),
@@ -68,6 +69,7 @@ function validUpdatePayload(currentRevision: number) {
   return {
     currentRevision,
     activeDekId: '66666666-6666-4666-8666-666666666666',
+    plaintextSchemaVersion: 1,
     encryptionAlgorithm: 'aes-256-gcm',
     encryptionParams: { iv: bytesBase64(12), tagBits: 128 },
     ciphertext: bytesBase64(64),

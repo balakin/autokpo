@@ -65,6 +65,7 @@ describe('key ring api', () => {
         userId: 'user-1',
         activeDekId: 'dek-1',
         revision: 2,
+        plaintextSchemaVersion: 1,
         encryptionAlgorithm: 'aes-256-gcm',
         encryptionParams: { iv: 'iv', tagBits: 128 },
         ciphertext: 'ciphertext',
@@ -92,6 +93,7 @@ describe('key ring api', () => {
     const request = {
       currentRevision: 1,
       activeDekId: 'dek-1',
+      plaintextSchemaVersion: 1 as const,
       encryptionAlgorithm: 'aes-256-gcm' as const,
       encryptionParams: { iv: 'iv', tagBits: 128 },
       ciphertext: 'ciphertext',
@@ -115,6 +117,7 @@ describe('key ring api', () => {
       updateKeyRingProfile({
         currentRevision: 1,
         activeDekId: 'dek-1',
+        plaintextSchemaVersion: 1,
         encryptionAlgorithm: 'aes-256-gcm',
         encryptionParams: { iv: 'iv', tagBits: 128 },
         ciphertext: 'ciphertext',

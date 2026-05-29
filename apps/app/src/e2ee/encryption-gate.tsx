@@ -9,6 +9,7 @@ import {
   createKeyRingProfilePayload,
   decryptKeyRingWithMek,
   type DecryptedKeyRing,
+  type DekEntry,
   EncryptionUnlockError,
   generateLdk,
   unwrapKeyRingProfile,
@@ -206,7 +207,7 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
       let activeDekId: string;
       let keyRingId: string;
       let keyRingRevision: number;
-      let deks: Record<string, Uint8Array>;
+      let deks: Record<string, DekEntry>;
 
       if (profile) {
         await store.writeKeyRing(keyRingRecordFromProfile(profile, userId));
@@ -367,7 +368,7 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
           keyRingId: gateState.keyRingId,
           keyRingRevision: gateState.keyRingRevision,
           deks: gateState.deks,
-          getDek: (dekId) => gateState.deks?.[dekId] ?? null,
+          getDek: (dekId) => gateState.deks?.[dekId]?.key ?? null,
           clearEncryptionSession: () => dispatch({ type: 'clear-session' }),
           refreshKeyRingProfile: refreshKeyRingProfileCache,
           updateKeyRingProfile: updateKeyRingProfileCache,
@@ -478,6 +479,7 @@ function keyRingRecordFromProfile(
     keyRingId: profile.keyRing.id,
     activeDekId: profile.keyRing.activeDekId,
     revision: profile.keyRing.revision,
+    plaintextSchemaVersion: profile.keyRing.plaintextSchemaVersion,
     encryptionAlgorithm: profile.keyRing.encryptionAlgorithm,
     encryptionParams: {
       iv: base64ToBytes(profile.keyRing.encryptionParams.iv),
@@ -544,7 +546,7 @@ function toUnlockedAction(decrypted: DecryptedKeyRing): {
   activeDek: Uint8Array;
   activeDekId: string;
   keyRingRevision: number;
-  deks: Record<string, Uint8Array>;
+  deks: Record<string, DekEntry>;
 } {
   return {
     activeDek: decrypted.activeDek,

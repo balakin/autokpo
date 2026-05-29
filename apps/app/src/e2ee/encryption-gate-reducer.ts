@@ -1,3 +1,4 @@
+import type { DekEntry } from './encryption-crypto';
 import {
   getInitialEncryptionSessionState,
   type EncryptionSessionState,
@@ -11,7 +12,7 @@ export type EncryptionGateState = {
   activeDekId: string | null;
   keyRingId: string | null;
   keyRingRevision: number | null;
-  deks: Record<string, Uint8Array> | null;
+  deks: Record<string, DekEntry> | null;
 };
 
 export type EncryptionGateAction =
@@ -31,7 +32,7 @@ export type EncryptionGateAction =
       activeDekId: string;
       keyRingId: string;
       keyRingRevision: number;
-      deks: Record<string, Uint8Array>;
+      deks: Record<string, DekEntry>;
     };
 
 export function createInitialEncryptionGateState(

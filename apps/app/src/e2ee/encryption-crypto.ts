@@ -23,11 +23,17 @@ export class EncryptionUnlockError extends Error {
   }
 }
 
+export type DekEntry = {
+  key: Uint8Array;
+  createdAt: number;
+  retiredAt: number | null;
+};
+
 export type DecryptedKeyRing = {
   activeDek: Uint8Array;
   activeDekId: string;
   revision: number;
-  deks: Record<string, Uint8Array>;
+  deks: Record<string, DekEntry>;
 };
 
 export async function createKeyRingProfilePayload(
@@ -39,7 +45,7 @@ export async function createKeyRingProfilePayload(
   activeDek: Uint8Array;
   activeDekId: string;
   revision: number;
-  deks: Record<string, Uint8Array>;
+  deks: Record<string, DekEntry>;
 }> {
   const keyRingId = crypto.randomUUID();
   const wrappingId = crypto.randomUUID();
@@ -50,12 +56,14 @@ export async function createKeyRingProfilePayload(
   const keyRingIv = randomBytes(IV_BYTES);
   const wrappingIv = randomBytes(IV_BYTES);
   const kek = await deriveKek(password, salt, KDF_PARAMS_V1);
+  const now = Date.now();
   const keyRingPlaintext = JSON.stringify({
-    version: 1,
-    revision: 1,
-    activeDekId,
     deks: {
-      [activeDekId]: bytesToBase64(dek),
+      [activeDekId]: {
+        key: bytesToBase64(dek),
+        createdAt: now,
+        retiredAt: null,
+      },
     },
   });
   const keyRingCiphertext = await aesGcmEncrypt({
@@ -71,17 +79,23 @@ export async function createKeyRingProfilePayload(
     aad: wrappedMekAad(userId, wrappingId, 'password'),
   });
 
+  const initialDekEntry: DekEntry = {
+    key: dek,
+    createdAt: now,
+    retiredAt: null,
+  };
   return {
     mek,
     activeDek: dek,
     activeDekId,
     revision: 1,
-    deks: { [activeDekId]: dek },
+    deks: { [activeDekId]: initialDekEntry },
     request: {
       keyRingId,
       wrappingId,
       activeDekId,
       keyRing: {
+        plaintextSchemaVersion: 1,
         encryptionAlgorithm: 'aes-256-gcm',
         encryptionParams: {
           iv: bytesToBase64(keyRingIv),
@@ -194,39 +208,35 @@ export async function decryptKeyRingWithMek(
     ),
   });
   const parsed = JSON.parse(new TextDecoder().decode(keyRingBytes)) as {
-    revision?: unknown;
-    activeDekId?: unknown;
     deks?: Record<string, unknown>;
   };
-  const revision = parsed.revision;
-  const activeDekId = parsed.activeDekId;
   const deks = parsed.deks;
-  if (
-    revision !== keyRing.revision ||
-    activeDekId !== keyRing.activeDekId ||
-    deks === undefined ||
-    !(activeDekId in deks)
-  ) {
+  if (deks === undefined || !(keyRing.activeDekId in deks)) {
     throw new EncryptionUnlockError();
   }
 
-  const decodedDeks: Record<string, Uint8Array> = {};
-  for (const [dekId, encoded] of Object.entries(deks)) {
-    if (typeof encoded !== 'string') {
+  const decodedDeks: Record<string, DekEntry> = {};
+  for (const [dekId, entry] of Object.entries(deks)) {
+    if (!entry || typeof entry !== 'object') throw new EncryptionUnlockError();
+    const { key, createdAt, retiredAt } = entry as Record<string, unknown>;
+    if (typeof key !== 'string') throw new EncryptionUnlockError();
+    if (typeof createdAt !== 'number') throw new EncryptionUnlockError();
+    if (retiredAt !== null && typeof retiredAt !== 'number')
       throw new EncryptionUnlockError();
-    }
-    const decoded = base64ToBytes(encoded);
-    if (decoded.byteLength !== DEK_BYTES) {
-      throw new EncryptionUnlockError();
-    }
-    decodedDeks[dekId] = decoded;
+    const keyBytes = base64ToBytes(key);
+    if (keyBytes.byteLength !== DEK_BYTES) throw new EncryptionUnlockError();
+    decodedDeks[dekId] = {
+      key: keyBytes,
+      createdAt,
+      retiredAt: retiredAt ?? null,
+    };
   }
 
-  const activeDek = decodedDeks[activeDekId];
-  if (!activeDek) throw new EncryptionUnlockError();
+  const activeDekEntry = decodedDeks[keyRing.activeDekId];
+  if (!activeDekEntry) throw new EncryptionUnlockError();
   return {
-    activeDek,
-    activeDekId,
+    activeDek: activeDekEntry.key,
+    activeDekId: keyRing.activeDekId,
     revision: keyRing.revision,
     deks: decodedDeks,
   };
@@ -237,43 +247,60 @@ export async function createRotatedKeyRingPayload({
   userId,
   mek,
   currentRevision,
+  activeDekId: currentActiveDekId,
   deks,
 }: {
   keyRingId: string;
   userId: string;
   mek: Uint8Array;
   currentRevision: number;
-  deks: Record<string, Uint8Array>;
+  activeDekId: string;
+  deks: Record<string, DekEntry>;
 }): Promise<{ request: UpdateKeyRingRequest } & DecryptedKeyRing> {
-  const activeDekId = crypto.randomUUID();
+  const now = Date.now();
+  const newActiveDekId = crypto.randomUUID();
   const activeDek = randomBytes(DEK_BYTES);
   const revision = currentRevision + 1;
-  const nextDeks = { ...deks, [activeDekId]: activeDek };
+  const newDekEntry: DekEntry = {
+    key: activeDek,
+    createdAt: now,
+    retiredAt: null,
+  };
+  const nextDeks: Record<string, DekEntry> = Object.fromEntries(
+    Object.entries(deks).map(([id, entry]) => [
+      id,
+      id === currentActiveDekId ? { ...entry, retiredAt: now } : entry,
+    ]),
+  );
+  nextDeks[newActiveDekId] = newDekEntry;
   const keyRingIv = randomBytes(IV_BYTES);
   const encodedDeks = Object.fromEntries(
-    Object.entries(nextDeks).map(([dekId, dek]) => [dekId, bytesToBase64(dek)]),
+    Object.entries(nextDeks).map(([dekId, entry]) => [
+      dekId,
+      {
+        key: bytesToBase64(entry.key),
+        createdAt: entry.createdAt,
+        retiredAt: entry.retiredAt,
+      },
+    ]),
   );
-  const keyRingPlaintext = JSON.stringify({
-    version: 1,
-    revision,
-    activeDekId,
-    deks: encodedDeks,
-  });
+  const keyRingPlaintext = JSON.stringify({ deks: encodedDeks });
   const keyRingCiphertext = await aesGcmEncrypt({
     keyBytes: mek,
     params: { iv: keyRingIv, tagBits: AES_GCM_PARAMS_V1.tagBits },
     plaintext: new TextEncoder().encode(keyRingPlaintext),
-    aad: keyRingAad(keyRingId, userId, activeDekId, revision),
+    aad: keyRingAad(keyRingId, userId, newActiveDekId, revision),
   });
 
   return {
     activeDek,
-    activeDekId,
+    activeDekId: newActiveDekId,
     revision,
     deks: nextDeks,
     request: {
       currentRevision,
-      activeDekId,
+      activeDekId: newActiveDekId,
+      plaintextSchemaVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
       encryptionParams: {
         iv: bytesToBase64(keyRingIv),

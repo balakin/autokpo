@@ -82,6 +82,7 @@ function makeRecord(userId = 'user-1'): SerializedKeyRingProfile {
       userId,
       activeDekId: 'dek-1',
       revision: 1,
+      plaintextSchemaVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
       encryptionParams: { iv: 'AAAAAAAAAAAAAAAA', tagBits: 128 },
       ciphertext:
@@ -517,6 +518,7 @@ describe('EncryptionGate', () => {
     await capturedContext!.updateKeyRingProfile({
       currentRevision: 1,
       activeDekId: 'dek-1',
+      plaintextSchemaVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
       encryptionParams: { iv: 'iv', tagBits: 128 },
       ciphertext: 'updated-ciphertext',
@@ -577,6 +579,7 @@ describe('EncryptionGate', () => {
       capturedContext!.updateKeyRingProfile({
         currentRevision: 1,
         activeDekId: 'dek-1',
+        plaintextSchemaVersion: 1,
         encryptionAlgorithm: 'aes-256-gcm',
         encryptionParams: { iv: 'iv', tagBits: 128 },
         ciphertext: 'stale-ciphertext',

@@ -17,6 +17,7 @@ const keyRingSchema = z.object({
   userId: z.string(),
   activeDekId: z.string(),
   revision: z.number().int().positive(),
+  plaintextSchemaVersion: z.literal(1),
   encryptionAlgorithm: z.literal('aes-256-gcm'),
   encryptionParams: aesGcmParamsV1Schema,
   ciphertext: z.string(),
@@ -47,6 +48,7 @@ export const createKeyRingProfileRequestSchema = z.object({
   wrappingId: z.string(),
   activeDekId: z.string(),
   keyRing: z.object({
+    plaintextSchemaVersion: z.literal(1),
     encryptionAlgorithm: z.literal('aes-256-gcm'),
     encryptionParams: aesGcmParamsV1Schema,
     ciphertext: z.string(),
@@ -75,6 +77,7 @@ export const changeMasterPasswordRequestSchema = z.object({
 export const updateKeyRingRequestSchema = z.object({
   currentRevision: z.number().int().positive(),
   activeDekId: z.string(),
+  plaintextSchemaVersion: z.literal(1),
   encryptionAlgorithm: z.literal('aes-256-gcm'),
   encryptionParams: aesGcmParamsV1Schema,
   ciphertext: z.string(),

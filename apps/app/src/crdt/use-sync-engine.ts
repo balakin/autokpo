@@ -5,7 +5,10 @@ import { useEffect, useRef } from 'react';
 import { useAuth } from '../auth/use-auth';
 import { useRequiredUserId } from '../auth/use-required-user-id';
 import { useEncryptionContext } from '../e2ee/encryption-context';
-import { createRotatedKeyRingPayload } from '../e2ee/encryption-crypto';
+import {
+  createRotatedKeyRingPayload,
+  type DekEntry,
+} from '../e2ee/encryption-crypto';
 import { useLeader } from '../leader';
 import { createLogger } from '../utils/create-logger';
 
@@ -525,6 +528,7 @@ export function useSyncEngine(
         userId,
         mek: mekRef.current,
         currentRevision: keyRingRevisionRef.current,
+        activeDekId: activeDekIdRef.current,
         deks: deksRef.current,
       });
       try {
@@ -642,7 +646,7 @@ async function decryptPulledRecords({
   userId,
 }: {
   records: SyncRecord[];
-  deks: Record<string, Uint8Array>;
+  deks: Record<string, DekEntry>;
   keyRingRevision: number;
   userId: string;
 }): Promise<Uint8Array[]> {
@@ -656,8 +660,8 @@ async function decryptPulledRecords({
 
   return Promise.all(
     records.map((record) => {
-      const dek = deks[record.encryptionKeyId];
-      if (!dek) {
+      const dekEntry = deks[record.encryptionKeyId];
+      if (!dekEntry) {
         throw new Error('Missing DEK for pulled sync row');
       }
       return decryptSyncPayload({
@@ -666,7 +670,7 @@ async function decryptPulledRecords({
           encryptionParams: record.encryptionParams,
           ciphertext: record.ciphertext,
         },
-        activeDek: dek,
+        activeDek: dekEntry.key,
         userId,
         activeDekId: record.encryptionKeyId,
         keyRingRevision: record.keyRingRevision,

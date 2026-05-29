@@ -30,6 +30,7 @@ function makeKeyRingRecord(userId = USER_ID): KeyRingRecord {
     keyRingId: 'kr-1',
     activeDekId: 'dek-1',
     revision: 1,
+    plaintextSchemaVersion: 1 as const,
     encryptionAlgorithm: 'aes-256-gcm',
     encryptionParams: { iv: new Uint8Array(12).fill(10), tagBits: 128 },
     ciphertext: 'base64ciphertext==',

@@ -7,7 +7,7 @@ import { UserAvatar } from '../user-avatar';
 import { getAvatarColorClass } from '../user-avatar-color';
 
 describe('UserAvatar', () => {
-  it('shows fallback safely when image url exists in test env', () => {
+  it('always shows initials fallback', () => {
     render(
       <I18nProvider i18n={i18n}>
         <UserAvatar
@@ -19,6 +19,7 @@ describe('UserAvatar', () => {
     );
 
     expect(screen.getByText('U')).toBeInTheDocument();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 
   it('falls back to initial when image is absent', () => {

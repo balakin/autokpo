@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Navigate } from 'react-router';
 import { LocationDisplay, renderWithProviders } from 'tests/render-helpers';
@@ -8,39 +8,12 @@ import { AccountSettingsPage } from '../account-settings-page';
 import { GeneralSettingsPage } from '../general-settings-page';
 import { SettingsPage } from '../settings-page';
 
-vi.mock('react-easy-crop', () => ({
-  default: ({
-    image,
-    onCropComplete,
-  }: {
-    image: string;
-    onCropComplete?: (croppedArea: unknown, croppedAreaPixels: unknown) => void;
-  }) => {
-    return (
-      <button
-        type="button"
-        data-testid="mock-cropper"
-        data-image={image}
-        onClick={() =>
-          onCropComplete?.(
-            { x: 0, y: 0, width: 512, height: 512 },
-            { x: 10, y: 20, width: 120, height: 120 },
-          )
-        }
-      >
-        crop
-      </button>
-    );
-  },
-}));
-
 const mockDeleteAccount = vi.fn<() => Promise<void>>();
 const mockFetchAccountProfile = vi.fn<
   () => Promise<{
     id: string;
     name: string | null;
     email: string | null;
-    image: string | null;
   }>
 >();
 const mockFetchAccountSessions = vi.fn<
@@ -63,18 +36,12 @@ const mockTriggerSync = vi.fn();
 const mockUseSyncMetadata = vi.fn<
   (selector: unknown, isEqual?: unknown) => number | null
 >(() => null);
-const mockUploadProfileImage = vi.fn<(blob: Blob) => Promise<unknown>>();
-const mockRemoveProfileImage = vi.fn<() => Promise<unknown>>();
-const mockCreateObjectURL = vi.fn(() => 'blob:avatar-image');
-const mockRevokeObjectURL = vi.fn();
 
 vi.mock('../account-settings-api', () => ({
   buildAccountExport: vi.fn().mockResolvedValue({}),
   deleteAccount: () => mockDeleteAccount(),
   fetchAccountProfile: () => mockFetchAccountProfile(),
   fetchAccountSessions: () => mockFetchAccountSessions(),
-  uploadProfileImage: (blob: Blob) => mockUploadProfileImage(blob),
-  removeProfileImage: () => mockRemoveProfileImage(),
   revokeAccountSession: (token: string) => mockRevokeAccountSession(token),
   revokeOtherAccountSessions: () => mockRevokeOtherAccountSessions(),
 }));
@@ -88,7 +55,7 @@ vi.mock('../export', () => ({
 
 vi.mock('../../auth/use-auth', () => ({
   useAuth: () => ({
-    user: { id: 'test-user', email: 'test@example.com', image: null },
+    user: { id: 'test-user', email: 'test@example.com' },
     logout: vi.fn(),
   }),
 }));
@@ -132,7 +99,6 @@ beforeEach(() => {
     id: 'test-user',
     name: 'Test User',
     email: 'test@example.com',
-    image: null,
   });
   mockFetchAccountSessions.mockReset();
   mockFetchAccountSessions.mockResolvedValue([
@@ -161,14 +127,6 @@ beforeEach(() => {
   mockRevokeAccountSession.mockResolvedValue(undefined);
   mockRevokeOtherAccountSessions.mockReset();
   mockRevokeOtherAccountSessions.mockResolvedValue(undefined);
-  mockUploadProfileImage.mockReset();
-  mockUploadProfileImage.mockResolvedValue(undefined);
-  mockRemoveProfileImage.mockReset();
-  mockRemoveProfileImage.mockResolvedValue(undefined);
-  mockCreateObjectURL.mockClear();
-  mockRevokeObjectURL.mockClear();
-  vi.spyOn(URL, 'createObjectURL').mockImplementation(mockCreateObjectURL);
-  vi.spyOn(URL, 'revokeObjectURL').mockImplementation(mockRevokeObjectURL);
 });
 
 afterEach(() => {
@@ -384,164 +342,10 @@ describe('SettingsPage', () => {
 
     expect(await screen.findByText('test@example.com')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: 'Uredi profilnu sliku' }),
-    ).toBeInTheDocument();
-    expect(
       screen.getByRole('button', { name: 'Obriši nalog' }),
     ).toBeInTheDocument();
     expect(screen.queryByText('Test User')).not.toBeInTheDocument();
     expect(mockFetchAccountProfile).toHaveBeenCalledTimes(1);
-  });
-
-  it('opens the file picker when the avatar button is pressed', async () => {
-    const user = userEvent.setup();
-    await renderSettings('/settings/account');
-    await screen.findByText('test@example.com');
-
-    const fileInput = screen.getByTestId('profile-image-input');
-    const clickSpy = vi.spyOn(fileInput, 'click');
-
-    await user.click(
-      screen.getByRole('button', { name: 'Uredi profilnu sliku' }),
-    );
-    await user.click(await screen.findByText('Promeni profilnu sliku'));
-
-    expect(clickSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it('opens crop modal for selected image and cancels without changing avatar', async () => {
-    const user = userEvent.setup();
-    mockFetchAccountProfile.mockResolvedValue({
-      id: 'test-user',
-      name: 'Test User',
-      email: 'test@example.com',
-      image: 'https://example.com/avatar.png',
-    });
-
-    await renderSettings('/settings/account');
-    await screen.findByText('test@example.com');
-
-    const fileInput = screen.getByTestId('profile-image-input');
-    const file = new File(['fake'], 'avatar.png', { type: 'image/png' });
-    await user.upload(fileInput, file);
-
-    expect(await screen.findByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-cropper')).toHaveAttribute(
-      'data-image',
-      'blob:avatar-image',
-    );
-
-    await user.click(screen.getByRole('button', { name: 'Otkaži' }));
-
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'Uredi profilnu sliku' }),
-    ).toBeInTheDocument();
-    expect(mockRevokeObjectURL).toHaveBeenCalledWith('blob:avatar-image');
-  });
-
-  it('revokes object url on unmount when crop modal is open', async () => {
-    const user = userEvent.setup();
-    const { unmount } = await renderSettings('/settings/account');
-    await screen.findByText('test@example.com');
-
-    const fileInput = screen.getByTestId('profile-image-input');
-    await user.upload(
-      fileInput,
-      new File(['fake'], 'avatar.png', { type: 'image/png' }),
-    );
-    expect(await screen.findByRole('dialog')).toBeInTheDocument();
-
-    mockRevokeObjectURL.mockClear();
-    unmount();
-
-    expect(mockRevokeObjectURL).toHaveBeenCalledWith('blob:avatar-image');
-  });
-
-  it('uploads cropped avatar on success and shows validation error for oversized export', async () => {
-    const user = userEvent.setup();
-    class MockImage {
-      onload: null | (() => void) = null;
-      onerror: null | (() => void) = null;
-      addEventListener() {}
-      removeEventListener() {}
-      set src(_value: string) {
-        queueMicrotask(() => this.onload?.());
-      }
-    }
-    vi.stubGlobal('Image', MockImage);
-    const toBlob = vi.fn((cb: (blob: Blob | null) => void) => {
-      cb(new Blob(['avatar'], { type: 'image/webp' }));
-    });
-    const createElement = document.createElement.bind(document);
-    vi.spyOn(document, 'createElement').mockImplementation(
-      (tagName: string) => {
-        if (tagName === 'canvas') {
-          return {
-            width: 0,
-            height: 0,
-            getContext: () => ({ drawImage: vi.fn() }),
-            toBlob,
-          } as unknown as HTMLCanvasElement;
-        }
-        return createElement(tagName);
-      },
-    );
-
-    await renderSettings('/settings/account');
-    await screen.findByText('test@example.com');
-
-    const fileInput = screen.getByTestId('profile-image-input');
-    await user.upload(
-      fileInput,
-      new File(['fake'], 'avatar.png', { type: 'image/png' }),
-    );
-    await waitFor(() => expect(mockCreateObjectURL).toHaveBeenCalledTimes(1));
-    await user.click(screen.getByTestId('mock-cropper'));
-
-    await user.click(screen.getByRole('button', { name: 'Sačuvaj sliku' }));
-
-    await waitFor(() =>
-      expect(mockUploadProfileImage).toHaveBeenCalledWith(expect.any(Blob)),
-    );
-
-    mockUploadProfileImage.mockReset();
-    mockUploadProfileImage.mockResolvedValue(undefined);
-    toBlob.mockImplementation((cb: (blob: Blob | null) => void) => {
-      cb(new Blob([new Uint8Array(300 * 1024)], { type: 'image/webp' }));
-    });
-
-    await user.upload(
-      fileInput,
-      new File(['fake2'], 'avatar2.png', { type: 'image/png' }),
-    );
-    await user.click(screen.getByTestId('mock-cropper'));
-    await user.click(screen.getByRole('button', { name: 'Sačuvaj sliku' }));
-
-    expect(mockUploadProfileImage).not.toHaveBeenCalled();
-    expect(
-      await screen.findByText('Profilna slika mora biti manja od 256 KB.'),
-    ).toBeInTheDocument();
-  });
-
-  it('removes avatar from account controls', async () => {
-    const user = userEvent.setup();
-    mockFetchAccountProfile.mockResolvedValue({
-      id: 'test-user',
-      name: 'Test User',
-      email: 'test@example.com',
-      image: 'https://example.com/avatar.png',
-    });
-
-    await renderSettings('/settings/account');
-    await screen.findByText('test@example.com');
-
-    await user.click(
-      screen.getByRole('button', { name: 'Uredi profilnu sliku' }),
-    );
-    await user.click(await screen.findByText('Ukloni profilnu sliku'));
-
-    expect(mockRemoveProfileImage).toHaveBeenCalledTimes(1);
   });
 
   it('shows account sessions with metadata and without raw tokens', async () => {

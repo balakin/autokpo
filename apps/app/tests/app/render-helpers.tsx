@@ -247,7 +247,6 @@ export async function renderWithProviders(
                     user: {
                       id: TEST_USER_ID,
                       email: 'test@example.com',
-                      image: null,
                     },
                     refresh: () => Promise.resolve(TEST_USER_ID),
                     logout: () => Promise.resolve(),

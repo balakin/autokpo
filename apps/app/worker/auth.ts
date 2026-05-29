@@ -3,7 +3,6 @@ import { betterAuth } from 'better-auth';
 import type { Context, ExecutionContext } from 'hono';
 
 import { getAuthOptions } from './auth-options';
-import { importPendingAvatar, publicPathToAvatarKey } from './avatar-storage';
 import { getDb } from './db';
 import * as schema from './db/schema/auth';
 import { sendAccountDeletedEmail } from './send-account-deleted-email';
@@ -89,14 +88,6 @@ function getAuth(env: Env, executionCtx: ExecutionContext) {
             to,
             locale,
           ),
-      },
-      avatarImportConfig: {
-        importPendingAvatar: (userId, pendingAvatarUrl) =>
-          importPendingAvatar(env, userId, pendingAvatarUrl),
-        deleteUserAvatar: async (image) => {
-          const key = publicPathToAvatarKey(image);
-          if (key) await env.AVATARS.delete(key);
-        },
       },
       executionCtx,
       turnstileSecretKey: env.TURNSTILE_SECRET_KEY,

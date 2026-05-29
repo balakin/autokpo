@@ -7,14 +7,8 @@
   "main": "./worker/main.ts",
   "assets": {
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/avatars/*"],
+    "run_worker_first": ["/api/*"],
   },
-  "r2_buckets": [
-    {
-      "binding": "AVATARS",
-      "bucket_name": "autokpo-avatars-dev",
-    },
-  ],
   "d1_databases": [
     {
       "binding": "DB",
@@ -40,12 +34,6 @@
   },
   "env": {
     "production": {
-      "r2_buckets": [
-        {
-          "binding": "AVATARS",
-          "bucket_name": "autokpo-avatars-production",
-        },
-      ],
       "d1_databases": [
         {
           "binding": "DB",

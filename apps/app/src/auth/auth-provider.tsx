@@ -19,8 +19,6 @@ function authStateFromSession(session: StoredSession | null) {
         : {
             id: session.userId,
             email: session.email ?? null,
-            image: session.image ?? null,
-            imageStatus: session.imageStatus ?? 'ready',
           },
   };
 }
@@ -63,24 +61,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAuthState(authStateFromSession(readStoredSession()));
     });
   }, []);
-
-  useEffect(() => {
-    if (authState.user?.imageStatus !== 'importing') return;
-
-    let attempts = 0;
-    const interval = window.setInterval(() => {
-      attempts += 1;
-      void refreshSession().then(() => {
-        setAuthState(authStateFromSession(readStoredSession()));
-      });
-
-      if (attempts >= 8) {
-        window.clearInterval(interval);
-      }
-    }, 2000);
-
-    return () => window.clearInterval(interval);
-  }, [authState.user?.imageStatus]);
 
   async function logout() {
     await logoutSession();

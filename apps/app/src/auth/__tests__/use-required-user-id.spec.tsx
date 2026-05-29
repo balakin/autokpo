@@ -17,7 +17,6 @@ describe('useRequiredUserId', () => {
           user: {
             id: 'required-user',
             email: 'required@example.com',
-            image: null,
           },
 
           refresh: () => Promise.resolve('required-user'),

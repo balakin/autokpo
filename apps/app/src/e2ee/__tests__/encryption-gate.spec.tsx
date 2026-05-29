@@ -125,7 +125,7 @@ function renderGate(userId = 'user-1') {
     <I18nWrapper>
       <AuthContext
         value={{
-          user: { id: userId, email: 'user@example.com', image: null },
+          user: { id: userId, email: 'user@example.com' },
           refresh: () => Promise.resolve(userId),
           logout: () => Promise.resolve(),
         }}
@@ -367,7 +367,7 @@ describe('EncryptionGate', () => {
       <I18nWrapper>
         <AuthContext
           value={{
-            user: { id: 'user-1', email: 'user@example.com', image: null },
+            user: { id: 'user-1', email: 'user@example.com' },
             refresh: () => Promise.resolve('user-1'),
             logout: () => Promise.resolve(),
           }}
@@ -395,7 +395,7 @@ describe('EncryptionGate', () => {
       <I18nWrapper>
         <AuthContext
           value={{
-            user: { id: 'user-2', email: 'user@example.com', image: null },
+            user: { id: 'user-2', email: 'user@example.com' },
             refresh: () => Promise.resolve('user-2'),
             logout: () => Promise.resolve(),
           }}
@@ -449,7 +449,7 @@ describe('EncryptionGate', () => {
       <I18nWrapper>
         <AuthContext
           value={{
-            user: { id: 'user-1', email: 'user@example.com', image: null },
+            user: { id: 'user-1', email: 'user@example.com' },
             refresh: () => Promise.resolve('user-1'),
             logout: () => Promise.resolve(),
           }}
@@ -496,7 +496,7 @@ describe('EncryptionGate', () => {
       <I18nWrapper>
         <AuthContext
           value={{
-            user: { id: 'user-1', email: 'user@example.com', image: null },
+            user: { id: 'user-1', email: 'user@example.com' },
             refresh: () => Promise.resolve('user-1'),
             logout: () => Promise.resolve(),
           }}
@@ -556,7 +556,7 @@ describe('EncryptionGate', () => {
       <I18nWrapper>
         <AuthContext
           value={{
-            user: { id: 'user-1', email: 'user@example.com', image: null },
+            user: { id: 'user-1', email: 'user@example.com' },
             refresh: () => Promise.resolve('user-1'),
             logout: () => Promise.resolve(),
           }}

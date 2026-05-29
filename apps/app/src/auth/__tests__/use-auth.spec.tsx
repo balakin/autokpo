@@ -14,7 +14,7 @@ describe('useAuth', () => {
     render(
       <AuthContext
         value={{
-          user: { id: 'u1', email: 'u1@example.com', image: null },
+          user: { id: 'u1', email: 'u1@example.com' },
 
           refresh: () => Promise.resolve(null),
           logout: () => Promise.resolve(),

@@ -23,21 +23,12 @@ type AccountDeletedEmailOptions = {
   sendEmail: (to: string, locale: string) => Promise<void>;
 };
 
-type AvatarImportOptions = {
-  importPendingAvatar: (
-    userId: string,
-    pendingAvatarUrl: string,
-  ) => Promise<void>;
-  deleteUserAvatar: (image: string) => Promise<void>;
-};
-
 type AuthOptionsInput = {
   google: SocialAuthOptions;
   github: SocialAuthOptions;
   emailOtpConfig: EmailOtpOptions;
   accountDeletedEmailConfig: AccountDeletedEmailOptions;
   executionCtx: ExecutionContext;
-  avatarImportConfig?: AvatarImportOptions;
   turnstileSecretKey?: string;
 };
 
@@ -47,7 +38,6 @@ export function getAuthOptions({
   emailOtpConfig,
   accountDeletedEmailConfig,
   executionCtx,
-  avatarImportConfig,
   turnstileSecretKey,
 }: AuthOptionsInput) {
   return {
@@ -69,77 +59,15 @@ export function getAuthOptions({
       },
     },
     user: {
-      additionalFields: {
-        imageStatus: {
-          type: ['importing', 'ready'],
-          required: false,
-          defaultValue: 'ready',
-          input: false,
-        },
-        pendingAvatarUrl: {
-          type: 'string',
-          required: false,
-          input: false,
-          returned: false,
-        },
-      },
       deleteUser: {
         enabled: true,
-        afterDelete(
-          user: { email: string; image?: string | null },
-          request: Request | undefined,
-        ) {
+        afterDelete(user: { email: string }, request: Request | undefined) {
           const locale =
             request?.headers.get('X-Preferred-Locale') ?? 'sr-Latn';
           executionCtx.waitUntil(
             accountDeletedEmailConfig.sendEmail(user.email, locale),
           );
-          if (user.image && avatarImportConfig) {
-            executionCtx.waitUntil(
-              avatarImportConfig.deleteUserAvatar(user.image),
-            );
-          }
           return Promise.resolve();
-        },
-      },
-    },
-    databaseHooks: {
-      user: {
-        create: {
-          before(user: Record<string, unknown>) {
-            const pendingAvatarUrl =
-              typeof user.image === 'string' && user.image.length > 0
-                ? user.image
-                : null;
-
-            return Promise.resolve({
-              data: {
-                ...user,
-                image: null,
-                imageStatus: pendingAvatarUrl ? 'importing' : 'ready',
-                pendingAvatarUrl,
-              },
-            });
-          },
-          after(user: Record<string, unknown>) {
-            const userId = typeof user.id === 'string' ? user.id : null;
-            const pendingAvatarUrl =
-              typeof user.pendingAvatarUrl === 'string' &&
-              user.pendingAvatarUrl.length > 0
-                ? user.pendingAvatarUrl
-                : null;
-
-            if (userId && pendingAvatarUrl && avatarImportConfig) {
-              executionCtx.waitUntil(
-                avatarImportConfig.importPendingAvatar(
-                  userId,
-                  pendingAvatarUrl,
-                ),
-              );
-            }
-
-            return Promise.resolve();
-          },
         },
       },
     },

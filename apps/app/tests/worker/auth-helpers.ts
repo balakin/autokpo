@@ -51,10 +51,6 @@ const authOptions = getAuthOptions({
   accountDeletedEmailConfig: {
     sendEmail: vi.fn(),
   },
-  avatarImportConfig: {
-    importPendingAvatar: vi.fn(),
-    deleteUserAvatar: vi.fn(),
-  },
   executionCtx: {} as ExecutionContext,
 });
 

@@ -151,7 +151,7 @@ msgstr "An error occurred. Please try again."
 msgid "Dostupno je ažuriranje"
 msgstr "Update available"
 
-#: src/settings/account-settings-page.tsx:411
+#: src/settings/account-settings-page.tsx:399
 msgid "Druga sesija"
 msgstr "Other session"
 
@@ -160,7 +160,7 @@ msgid "Duplikat"
 msgstr "Duplicate"
 
 #: src/auth/email-form.tsx:68
-#: src/settings/account-settings-page.tsx:657
+#: src/settings/account-settings-page.tsx:645
 msgid "Email adresa"
 msgstr "Email address"
 
@@ -199,19 +199,19 @@ msgstr "You have local changes that are not synced. If you continue, unsent data
 msgid "Imate nesačuvane izmene. Da li zaista želite da napustite stranicu?"
 msgstr "You have unsaved changes. Are you sure you want to leave the page?"
 
-#: src/settings/account-settings-page.tsx:426
+#: src/settings/account-settings-page.tsx:414
 msgid "IP adresa"
 msgstr "IP address"
 
-#: src/settings/account-settings-page.tsx:429
+#: src/settings/account-settings-page.tsx:417
 msgid "IP adresa nije dostupna"
 msgstr "IP address is not available"
 
-#: src/settings/account-settings-page.tsx:456
+#: src/settings/account-settings-page.tsx:444
 msgid "Ističe"
 msgstr "Expires"
 
-#: src/settings/account-settings-page.tsx:459
+#: src/settings/account-settings-page.tsx:447
 msgid "Ističe:"
 msgstr "Expires:"
 
@@ -222,10 +222,6 @@ msgstr "Select year"
 #: src/books/add-book-modal.tsx:104
 msgid "Izaberite godinu za novu knjigu."
 msgstr "Select a year for the new book."
-
-#: src/settings/account-settings-page.tsx:758
-msgid "Izaberite JPEG, PNG ili WebP sliku."
-msgstr "Choose a JPEG, PNG, or WebP image."
 
 #: src/settings/security-settings-page.tsx:334
 msgid "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju aplikacije."
@@ -263,7 +259,7 @@ msgstr "Foreign currency amount"
 msgid "Izvezi podatke"
 msgstr "Export data"
 
-#: src/settings/account-settings-page.tsx:575
+#: src/settings/account-settings-page.tsx:563
 msgid "Izvezi podatke naloga"
 msgstr "Export account data"
 
@@ -335,11 +331,11 @@ msgstr "User is not signed in."
 msgid "KPO unosi"
 msgstr "KPO entries"
 
-#: src/settings/account-settings-page.tsx:444
+#: src/settings/account-settings-page.tsx:432
 msgid "Kreirana"
 msgstr "Created"
 
-#: src/settings/account-settings-page.tsx:447
+#: src/settings/account-settings-page.tsx:435
 msgid "Kreirana:"
 msgstr "Created:"
 
@@ -373,7 +369,7 @@ msgstr "You can send code again in {resendSecondsLeft}s"
 
 #: src/auth/profile-popover.tsx:68
 #: src/e2ee/encryption-profile-popover.tsx:63
-#: src/settings/account-settings-page.tsx:856
+#: src/settings/account-settings-page.tsx:716
 #: src/settings/settings-page.tsx:49
 msgid "Nalog"
 msgstr "Account"
@@ -428,7 +424,7 @@ msgstr "Invalid date format"
 msgid "Neke funkcionalnosti mogu biti nedostupne dok se ponovo ne povežete."
 msgstr "Some features may be unavailable until you reconnect."
 
-#: src/settings/account-settings-page.tsx:309
+#: src/settings/account-settings-page.tsx:297
 msgid "Nema drugih aktivnih sesija."
 msgstr "There are no other active sessions."
 
@@ -441,7 +437,7 @@ msgid "Nema unetih stavki"
 msgstr "No entries"
 
 #: src/auth/profile-popover.tsx:92
-#: src/settings/account-settings-page.tsx:873
+#: src/settings/account-settings-page.tsx:733
 msgid "Nesinhronizovano"
 msgstr "Not synced"
 
@@ -449,50 +445,38 @@ msgstr "Not synced"
 msgid "Nezavršeno"
 msgstr "Incomplete"
 
+#: src/settings/account-settings-page.tsx:437
 #: src/settings/account-settings-page.tsx:449
-#: src/settings/account-settings-page.tsx:461
 msgid "nije dostupna"
 msgstr "is not available"
 
-#: src/settings/account-settings-page.tsx:605
+#: src/settings/account-settings-page.tsx:593
 msgid "Nije moguće obrisati nalog. Proverite internet vezu i pokušajte ponovo."
 msgstr "Unable to delete account. Check your internet connection and try again."
 
-#: src/settings/account-settings-page.tsx:271
+#: src/settings/account-settings-page.tsx:259
 msgid "Nije moguće odjaviti ostale sesije. Pokušajte ponovo."
 msgstr "Unable to sign out other sessions. Please try again."
 
-#: src/settings/account-settings-page.tsx:261
+#: src/settings/account-settings-page.tsx:249
 msgid "Nije moguće odjaviti sesiju. Pokušajte ponovo."
 msgstr "Unable to sign out the session. Please try again."
 
-#: src/settings/account-settings-page.tsx:553
+#: src/settings/account-settings-page.tsx:541
 msgid "Nije moguće preuzeti podatke naloga. Proverite internet vezu i pokušajte ponovo."
 msgstr "Could not download account data. Check your internet connection and try again."
-
-#: src/settings/account-settings-page.tsx:789
-msgid "Nije moguće pripremiti profilnu sliku za slanje."
-msgstr "Unable to prepare the profile image for upload."
 
 #: src/settings/security-settings-page.tsx:300
 msgid "Nije moguće promeniti šifru. Pokušajte ponovo."
 msgstr "Unable to change the password. Please try again."
 
-#: src/settings/account-settings-page.tsx:733
-msgid "Nije moguće sačuvati profilnu sliku. Pokušajte ponovo."
-msgstr "Unable to save the profile image. Please try again."
-
-#: src/settings/account-settings-page.tsx:221
+#: src/settings/account-settings-page.tsx:209
 msgid "Nije moguće učitati nalog"
 msgstr "Unable to load account"
 
-#: src/settings/account-settings-page.tsx:372
+#: src/settings/account-settings-page.tsx:360
 msgid "Nije moguće učitati sesije"
 msgstr "Unable to load sessions"
-
-#: src/settings/account-settings-page.tsx:743
-msgid "Nije moguće ukloniti profilnu sliku. Pokušajte ponovo."
-msgstr "Unable to remove the profile image. Please try again."
 
 #: src/auth/email-form.tsx:52
 #: src/auth/email-otp-sign-in.tsx:54
@@ -543,12 +527,12 @@ msgstr "Delete"
 msgid "Obriši knjigu za {year}"
 msgstr "Delete book for {year}"
 
-#: src/settings/account-settings-page.tsx:688
-#: src/settings/account-settings-page.tsx:889
+#: src/settings/account-settings-page.tsx:676
+#: src/settings/account-settings-page.tsx:749
 msgid "Obriši nalog"
 msgstr "Delete account"
 
-#: src/settings/account-settings-page.tsx:630
+#: src/settings/account-settings-page.tsx:618
 msgid "Obriši nalog?"
 msgstr "Delete account?"
 
@@ -597,8 +581,8 @@ msgstr "Sign-out requires an internet connection. If urgent, clear this site's d
 msgid "Odjavi ipak"
 msgstr "Sign out anyway"
 
-#: src/settings/account-settings-page.tsx:476
-#: src/settings/account-settings-page.tsx:479
+#: src/settings/account-settings-page.tsx:464
+#: src/settings/account-settings-page.tsx:467
 msgid "Odjavi ovu sesiju"
 msgstr "Sign out this session"
 
@@ -607,7 +591,7 @@ msgstr "Sign out this session"
 msgid "Odjavi se"
 msgstr "Sign out"
 
-#: src/settings/account-settings-page.tsx:321
+#: src/settings/account-settings-page.tsx:309
 msgid "Odjavi sve ostale sesije"
 msgstr "Sign out all other sessions"
 
@@ -620,7 +604,7 @@ msgid "Omiljene knjige"
 msgstr "Favorite books"
 
 #: src/auth/profile-popover.tsx:80
-#: src/settings/account-settings-page.tsx:867
+#: src/settings/account-settings-page.tsx:727
 msgid "Online"
 msgstr "Online"
 
@@ -665,8 +649,7 @@ msgstr "You cancelled the sign-in. Please try again."
 #: src/entity-profiles/entity-profile-preview.tsx:59
 #: src/entries/entries-table.tsx:145
 #: src/entries/entry-modal.tsx:66
-#: src/settings/account-settings-page.tsx:680
-#: src/settings/account-settings-page.tsx:937
+#: src/settings/account-settings-page.tsx:668
 #: src/settings/security-settings-page.tsx:512
 #: src/settings/security-settings-page.tsx:620
 #: src/settings/security-settings-page.tsx:828
@@ -704,15 +687,15 @@ msgstr "Open menu"
 msgid "Ova godina"
 msgstr "This year"
 
-#: src/settings/account-settings-page.tsx:183
+#: src/settings/account-settings-page.tsx:171
 msgid "Ova podešavanja zahtevaju internet vezu."
 msgstr "These settings require an internet connection."
 
-#: src/settings/account-settings-page.tsx:643
+#: src/settings/account-settings-page.tsx:631
 msgid "Ova radnja se ne može opozvati."
 msgstr "This action cannot be undone."
 
-#: src/settings/account-settings-page.tsx:636
+#: src/settings/account-settings-page.tsx:624
 msgid "Ova radnja trajno briše vaš AutoKPO nalog i sve sinhronizovane podatke. Lokalni podaci na ovom uređaju biće uklonjeni nakon odjave."
 msgstr "This action permanently deletes your AutoKPO account and all synchronized data. Local data on this device will be removed after sign-out."
 
@@ -795,14 +778,14 @@ msgid "Podešavanja"
 msgstr "Settings"
 
 #: src/auth/profile-popover.tsx:110
-#: src/settings/account-settings-page.tsx:96
-#: src/settings/account-settings-page.tsx:141
-#: src/settings/account-settings-page.tsx:180
-#: src/settings/account-settings-page.tsx:213
+#: src/settings/account-settings-page.tsx:85
+#: src/settings/account-settings-page.tsx:129
+#: src/settings/account-settings-page.tsx:168
+#: src/settings/account-settings-page.tsx:201
 msgid "Podešavanja naloga"
 msgstr "Account settings"
 
-#: src/settings/account-settings-page.tsx:193
+#: src/settings/account-settings-page.tsx:181
 msgid "Podešavanja naloga nisu dostupna offline"
 msgstr "Account settings are not available offline"
 
@@ -849,10 +832,6 @@ msgstr "Try again"
 #: src/signatures/signature-schema.ts:14
 msgid "Polje je obavezno"
 msgstr "This field is required"
-
-#: src/settings/account-settings-page.tsx:925
-msgid "Pomerite i zumirajte sliku da izaberete deo koji će se prikazivati kao profilna slika."
-msgstr "Move and zoom the image to choose the part that will appear as your profile image."
 
 #: src/app-shell/sidebar.tsx:129
 #: src/app-shell/top-bar.tsx:39
@@ -930,11 +909,11 @@ msgstr "Confirm password change"
 msgid "Potvrdite šifru"
 msgstr "Confirm password"
 
-#: src/settings/account-settings-page.tsx:99
+#: src/settings/account-settings-page.tsx:88
 msgid "Pregled podataka povezanih sa vašim nalogom."
 msgstr "Review the information connected to your account."
 
-#: src/settings/account-settings-page.tsx:282
+#: src/settings/account-settings-page.tsx:270
 msgid "Pregledajte aktivne prijave na drugim uređajima."
 msgstr "Review active sign-ins on other devices."
 
@@ -946,7 +925,7 @@ msgstr "The downloaded document is a draft. You must sign it and stamp it with a
 msgid "Preuzmi PDF"
 msgstr "Download PDF"
 
-#: src/settings/account-settings-page.tsx:565
+#: src/settings/account-settings-page.tsx:553
 msgid "Preuzmite kopiju podataka vašeg naloga."
 msgstr "Download a copy of your account data."
 
@@ -1011,26 +990,14 @@ msgstr "Profile"
 msgid "Profil je sačuvan"
 msgstr "Profile saved"
 
-#: src/settings/account-settings-page.tsx:728
-msgid "Profilna slika je sačuvana."
-msgstr "Profile image saved."
-
-#: src/settings/account-settings-page.tsx:739
-msgid "Profilna slika je uklonjena."
-msgstr "Profile image removed."
-
-#: src/settings/account-settings-page.tsx:784
-msgid "Profilna slika mora biti manja od 256 KB."
-msgstr "Profile image must be smaller than 256 KB."
+#: src/settings/account-settings-page.tsx:703
+#: src/settings/account-settings-page.tsx:704
+msgid "Promena avatara trenutno nije dostupna"
+msgstr "Changing avatar is not available right now"
 
 #: src/settings/security-settings-page.tsx:556
 msgid "Promena utiče samo na šifru kojom se otključavaju podaci sa servera. Lokalni PIN ili automatsko otključavanje ostaju isti."
 msgstr "The change affects only the password used to unlock data from the server. Your local PIN or automatic unlock stays the same."
-
-#: src/settings/account-settings-page.tsx:833
-#: src/settings/account-settings-page.tsx:836
-msgid "Promeni profilnu sliku"
-msgstr "Change profile photo"
 
 #: src/settings/security-settings-page.tsx:399
 #: src/settings/security-settings-page.tsx:627
@@ -1045,8 +1012,8 @@ msgstr "Change your master password. Data will not be re-encrypted."
 msgid "Promenite šifru za šifrovanje"
 msgstr "Change encryption password"
 
-#: src/settings/account-settings-page.tsx:224
-#: src/settings/account-settings-page.tsx:375
+#: src/settings/account-settings-page.tsx:212
+#: src/settings/account-settings-page.tsx:363
 msgid "Proverite internet vezu i pokušajte ponovo kasnije."
 msgstr "Check your internet connection and try again later."
 
@@ -1081,10 +1048,6 @@ msgstr "Please wait a moment and try again."
 msgid "Sačuvaj"
 msgstr "Save"
 
-#: src/settings/account-settings-page.tsx:943
-msgid "Sačuvaj sliku"
-msgstr "Save image"
-
 #: src/working-layout/working-layout.tsx:149
 msgid "Sadržaj knjige"
 msgstr "Book contents"
@@ -1103,11 +1066,11 @@ msgstr "Registered address"
 msgid "Sesija je istekla. Pokušajte ponovo."
 msgstr "The session expired. Please try again."
 
-#: src/settings/account-settings-page.tsx:257
+#: src/settings/account-settings-page.tsx:245
 msgid "Sesija je odjavljena."
 msgstr "The session has been signed out."
 
-#: src/settings/account-settings-page.tsx:279
+#: src/settings/account-settings-page.tsx:267
 msgid "Sesije"
 msgstr "Sessions"
 
@@ -1160,7 +1123,7 @@ msgid "Šifrovanje"
 msgstr "Encryption"
 
 #: src/auth/profile-popover.tsx:97
-#: src/settings/account-settings-page.tsx:878
+#: src/settings/account-settings-page.tsx:738
 msgid "Sinhronizovano"
 msgstr "Synced"
 
@@ -1177,7 +1140,7 @@ msgstr "Sync now"
 msgid "Sistemska"
 msgstr "System"
 
-#: src/settings/account-settings-page.tsx:267
+#: src/settings/account-settings-page.tsx:255
 msgid "Sve ostale sesije su odjavljene."
 msgstr "All other sessions have been signed out."
 
@@ -1220,8 +1183,8 @@ msgstr "Dark"
 msgid "Tema"
 msgstr "Theme"
 
-#: src/settings/account-settings-page.tsx:409
-#: src/settings/account-settings-page.tsx:417
+#: src/settings/account-settings-page.tsx:397
+#: src/settings/account-settings-page.tsx:405
 msgid "Trenutna sesija"
 msgstr "Current session"
 
@@ -1233,11 +1196,11 @@ msgstr "Current password"
 msgid "Trenutni jezik: {localeName}"
 msgstr "Current language: {localeName}"
 
-#: src/settings/account-settings-page.tsx:146
+#: src/settings/account-settings-page.tsx:134
 msgid "Učitavanje podataka naloga…"
 msgstr "Loading account data…"
 
-#: src/settings/account-settings-page.tsx:336
+#: src/settings/account-settings-page.tsx:324
 msgid "Učitavanje sesija…"
 msgstr "Loading sessions…"
 
@@ -1248,11 +1211,6 @@ msgstr "Remove {year} from favorites"
 #: src/settings/security-settings-page.tsx:454
 msgid "Ukloni PIN kod"
 msgstr "Remove PIN code"
-
-#: src/settings/account-settings-page.tsx:843
-#: src/settings/account-settings-page.tsx:846
-msgid "Ukloni profilnu sliku"
-msgstr "Remove profile image"
 
 #: src/stats/stat-card.tsx:71
 msgid "Ukupno"
@@ -1308,11 +1266,11 @@ msgstr "Entries"
 msgid "upravo sada"
 msgstr "just now"
 
-#: src/settings/account-settings-page.tsx:435
+#: src/settings/account-settings-page.tsx:423
 msgid "Uređaj"
 msgstr "Device"
 
-#: src/settings/account-settings-page.tsx:438
+#: src/settings/account-settings-page.tsx:426
 msgid "Uređaj nije poznat"
 msgstr "Device is unknown"
 
@@ -1332,11 +1290,6 @@ msgstr "Edit signature"
 #: src/entity-profiles/entity-profile-preview.tsx:43
 msgid "Uredi profil"
 msgstr "Edit profile"
-
-#: src/settings/account-settings-page.tsx:809
-#: src/settings/account-settings-page.tsx:904
-msgid "Uredi profilnu sliku"
-msgstr "Edit profile image"
 
 #: src/entries/entry-modal.tsx:43
 msgid "Uredi unos"
@@ -1358,7 +1311,7 @@ msgstr "Your AutoKPO account and synchronized data have been permanently removed
 msgid "Vaš nalog nema javnu email adresu. Prijavite se putem jednokratnog koda na email."
 msgstr "Your account has no public email address. Sign in via one-time code instead."
 
-#: src/settings/account-settings-page.tsx:562
+#: src/settings/account-settings-page.tsx:550
 msgid "Vaši podaci"
 msgstr "Your data"
 
@@ -1376,11 +1329,11 @@ msgstr "A new version is probably available. Reload the app to continue."
 msgid "Vrednost ne može biti negativna"
 msgstr "Value cannot be negative"
 
-#: src/settings/account-settings-page.tsx:648
+#: src/settings/account-settings-page.tsx:636
 msgid "Za potvrdu unesite email adresu naloga:"
 msgstr "To confirm, enter the account email address:"
 
-#: src/settings/account-settings-page.tsx:196
+#: src/settings/account-settings-page.tsx:184
 msgid "Za pregled i izmenu naloga potrebna je internet veza. Opšta podešavanja aplikacije ostaju dostupna bez interneta."
 msgstr "An internet connection is required to view and edit your account. General app settings remain available without internet."
 

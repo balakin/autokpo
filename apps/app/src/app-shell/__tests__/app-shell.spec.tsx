@@ -44,7 +44,7 @@ function renderAppShell(initialPath = '/dashboard') {
     <DocContext value={new YDoc()}>
       <AuthContext
         value={{
-          user: { id: 'test-user', email: 'test@example.com', image: null },
+          user: { id: 'test-user', email: 'test@example.com' },
           refresh: () => Promise.resolve('test-user'),
           logout: () => Promise.resolve(),
         }}

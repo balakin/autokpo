@@ -106,7 +106,7 @@ Rules:
 1. Only the leader tab performs HTTP pull, push, and compact.
 2. Every tab may write encrypted IndexedDB persistence for local Yjs updates.
 3. Follower tabs only call `syncState.markDirty()` for localStorage sync state; they do not write cursor, state vector, or last-success metadata.
-4. Followers send `local-update` and `request-sync` messages to the leader over `BroadcastChannel`.
+4. Any tab broadcasts `local-update` over `BroadcastChannel` when a local Yjs edit occurs; the leader schedules a push and all other tabs apply the update via `REMOTE_ORIGIN`. Follower tabs send `request-sync` to ask the leader to pull. The leader broadcasts `remote-update` after a successful pull; all other tabs apply it via `REMOTE_ORIGIN`.
 5. Remote and bus-applied updates use `REMOTE_ORIGIN`, so they do not echo back into local dirty tracking.
 
 ## Pull flow

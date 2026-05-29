@@ -79,33 +79,28 @@ Rules:
 ```mermaid
 flowchart LR
   subgraph plainRing[Plaintext key ring]
-    version[version: 1]
-    revision[revision]
-    activeDekId[activeDekId]
     deks[deks map]
   end
 
-  version --> json[JSON]
-  revision --> json
-  activeDekId --> json
-  deks --> json
+  deks --> json[JSON]
   json --> enc[AES-256-GCM with MEK]
-  aad[AAD: e2ee-key-ring user activeDek revision] --> enc
+  aad[AAD: e2ee-key-ring keyRingId user activeDek revision] --> enc
   enc --> stored[Stored key_ring encryption_params and ciphertext]
 ```
 
 AAD:
 
 ```text
-autokpo:e2ee-key-ring:v1:${userId}:${activeDekId}:${revision}
+autokpo:e2ee-key-ring:v1:${keyRingId}:${userId}:${activeDekId}:${revision}
 ```
 
 Rules:
 
-1. Key-ring plaintext must match database metadata: same revision and same active DEK id.
-2. `deks` must contain the active DEK id.
-3. Every decoded DEK must be 32 bytes.
-4. Any mismatch is an unlock/decrypt failure.
+1. Key-ring plaintext contains only the `deks` map. `activeDekId` and `revision` are DB metadata bound via AAD, not stored in the plaintext.
+2. AAD binds the ciphertext to key ring id, user, active DEK id, and revision; decryption fails if any of these don't match.
+3. `deks` must contain the active DEK id.
+4. Every decoded DEK must be 32 bytes.
+5. Any mismatch is an unlock/decrypt failure.
 
 ## MEK wrapper envelope
 
@@ -184,9 +179,11 @@ Unlocked session exposes:
 - `mek`
 - `activeDek`
 - `activeDekId`
+- `keyRingId`
 - `keyRingRevision`
 - full `deks` map
 - `getDek(dekId)`
+- `clearEncryptionSession()`
 - `refreshKeyRingProfile()`
 - `updateKeyRingProfile()`
 

@@ -12,9 +12,6 @@ const MAX_CIPHERTEXT_BYTES = MAX_PLAINTEXT_BYTES + 16; // plaintext + GCM tag on
 const SOFT_CAP_ROWS = 200;
 const SOFT_CAP_BYTES = 2 * 1024 * 1024;
 const HARD_CAP_BYTES = 4 * 1024 * 1024;
-const COMPACT_TAIL_MAX_ROWS = 50;
-const COMPACT_TAIL_MAX_BYTES = 256 * 1024;
-
 const uuidSchema = z.uuid();
 
 const encEnvelopeSchema = z.object({
@@ -69,12 +66,18 @@ router.get('/', async (c) => {
     return c.json({ error: 'Invalid If-None-Match header' }, 400);
   }
 
+  const freshPullFloor = sql<number>`COALESCE(
+    (SELECT MAX(${syncRecord.seq}) FROM ${syncRecord} WHERE ${syncRecord.userId} = ${userId} AND ${syncRecord.kind} = 'snapshot'),
+    (SELECT MIN(${syncRecord.seq}) FROM ${syncRecord} WHERE ${syncRecord.userId} = ${userId}),
+    1
+  )`;
+
   const [[keyRingRow], [meta], items] = await db.batch([
     db.select().from(keyRing).where(eq(keyRing.userId, userId)).limit(1),
     db
       .select({
         head: sql<number>`COALESCE(MAX(${syncRecord.seq}), 0)`,
-        minSeq: sql<number>`COALESCE(MIN(${syncRecord.seq}), 0)`,
+        latestSnapshotSeq: sql<number>`COALESCE(MAX(CASE WHEN ${syncRecord.kind} = 'snapshot' THEN ${syncRecord.seq} END), 0)`,
       })
       .from(syncRecord)
       .where(eq(syncRecord.userId, userId)),
@@ -90,13 +93,24 @@ router.get('/', async (c) => {
         ciphertext: syncRecord.ciphertext,
       })
       .from(syncRecord)
-      .where(and(eq(syncRecord.userId, userId), gt(syncRecord.seq, since)))
+      .where(
+        and(
+          eq(syncRecord.userId, userId),
+          since === 0
+            ? gte(syncRecord.seq, freshPullFloor)
+            : gt(syncRecord.seq, since),
+        ),
+      )
       .orderBy(syncRecord.seq),
   ]);
 
   if (!keyRingRow) return codeResponse('encryption_key_not_found', 404);
 
-  if (since > 0 && meta.minSeq > 0 && since < meta.minSeq) {
+  if (
+    since > 0 &&
+    meta.latestSnapshotSeq > 0 &&
+    since < meta.latestSnapshotSeq
+  ) {
     return c.json({ error: 'Cursor is stale; refetch from scratch' }, 410);
   }
   if (since > meta.head) {
@@ -335,15 +349,18 @@ router.post('/compact', async (c) => {
   });
   if (insertResult instanceof Response) return insertResult;
 
-  const { nextSeq, meta, tailRows } = insertResult;
-  const effectiveCutoff = computeEffectiveCutoff(
-    tailRows,
-    meta?.head ?? 0,
-    replacesUpTo,
-  );
+  if (replacesUpTo > 0) {
+    await db
+      .delete(syncRecord)
+      .where(
+        and(
+          eq(syncRecord.userId, userId),
+          sql`${syncRecord.seq} <= ${replacesUpTo}`,
+        ),
+      );
+  }
 
-  await deleteCompactedRecords(db, userId, effectiveCutoff);
-
+  const { nextSeq } = insertResult;
   const headers: Record<string, string> = { ETag: `"${nextSeq}"` };
   return c.body(null, 200, headers);
 });
@@ -361,8 +378,6 @@ type SnapshotPayload = {
 
 type InsertCompactSnapshotResult = {
   nextSeq: number;
-  meta: { head: number; rowCount: number; totalBytes: number } | undefined;
-  tailRows: Array<{ seq: number; ciphertextSize: number }>;
 };
 
 async function insertCompactSnapshot(
@@ -379,7 +394,7 @@ async function insertCompactSnapshot(
   }: SnapshotPayload,
 ): Promise<Response | InsertCompactSnapshotResult> {
   try {
-    const [, , , [meta], tailRows, [insertResult]] = await db.batch([
+    const [, , , [insertResult]] = await db.batch([
       // guard: abort if encryptionKeyId doesn't match the user's active DEK
       assertExists(db, (q) =>
         q
@@ -429,25 +444,6 @@ async function insertCompactSnapshot(
             ),
         ),
       ),
-      // aggregate stats needed for the compact hint
-      db
-        .select({
-          head: sql<number>`COALESCE(MAX(${syncRecord.seq}), 0)`,
-          rowCount: sql<number>`COUNT(*)`,
-          totalBytes: sql<number>`COALESCE(SUM(LENGTH(${syncRecord.ciphertext})), 0)`,
-        })
-        .from(syncRecord)
-        .where(eq(syncRecord.userId, userId)),
-      // tail rows needed to compute the safe deletion cutoff; only size is needed, not the bytes
-      db
-        .select({
-          seq: syncRecord.seq,
-          ciphertextSize: sql<number>`LENGTH(${syncRecord.ciphertext})`,
-        })
-        .from(syncRecord)
-        .where(eq(syncRecord.userId, userId))
-        .orderBy(sql`${syncRecord.seq} DESC`)
-        .limit(COMPACT_TAIL_MAX_ROWS * 2),
       // insert the snapshot; throws on duplicate id so the catch can handle idempotency
       db
         .insert(syncRecord)
@@ -465,7 +461,7 @@ async function insertCompactSnapshot(
         .returning({ seq: syncRecord.seq }),
     ]);
 
-    return { nextSeq: insertResult.seq, meta, tailRows };
+    return { nextSeq: insertResult.seq };
   } catch {
     const [existing] = await db
       .select({
@@ -496,43 +492,5 @@ async function insertCompactSnapshot(
     }
 
     return codeResponse('write_conflict', 409);
-  }
-}
-
-function computeEffectiveCutoff(
-  tailRows: Array<{ seq: number; ciphertextSize: number }>,
-  head: number,
-  replacesUpTo: number,
-): number {
-  // Walk the tail (newest → oldest) to find the oldest seq we must keep.
-  // We preserve a minimum tail so a client that just compacted isn't immediately
-  // told to compact again and has enough records to catch up from a stale cursor.
-  let keepCutoff = head; // conservative default: keep everything
-  let rowsAccum = 0;
-  let bytesAccum = 0;
-  for (const row of tailRows) {
-    if (rowsAccum >= COMPACT_TAIL_MAX_ROWS) break; // tail row budget exhausted
-    if (bytesAccum + row.ciphertextSize > COMPACT_TAIL_MAX_BYTES) break; // tail byte budget exhausted
-    keepCutoff = row.seq - 1; // this row must be kept, so the cutoff is just before it
-    rowsAccum += 1;
-    bytesAccum += row.ciphertextSize;
-  }
-  return Math.min(replacesUpTo, keepCutoff);
-}
-
-async function deleteCompactedRecords(
-  db: ReturnType<typeof getDb>,
-  userId: string,
-  effectiveCutoff: number,
-): Promise<void> {
-  if (effectiveCutoff > 0) {
-    await db
-      .delete(syncRecord)
-      .where(
-        and(
-          eq(syncRecord.userId, userId),
-          sql`${syncRecord.seq} <= ${effectiveCutoff}`,
-        ),
-      );
   }
 }

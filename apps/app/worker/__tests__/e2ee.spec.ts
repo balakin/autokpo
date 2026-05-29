@@ -12,6 +12,13 @@ import {
 import { getDb } from '../db';
 import { keyRing, keyRingWrapping } from '../db/schema';
 import app from '../main';
+import {
+  KDF_SALT_BYTES,
+  MAX_E2EE_BODY_BYTES,
+  MAX_KEY_RING_CIPHERTEXT_BYTES,
+  WRAPPED_MEK_CIPHERTEXT_BYTES,
+  maxBase64Length,
+} from '../payload-limits';
 
 const sessionState: SessionState = { userId: 'e2ee-user-1', headers: null };
 const authHeaders = makeAuthHeaders(sessionState);
@@ -204,6 +211,17 @@ describe('/api/e2ee/key-ring', () => {
     expect(res.status).toBe(400);
   });
 
+  it('returns 413 before JSON validation when setup body exceeds E2EE body limit', async () => {
+    const res = await req('/api/e2ee/key-ring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: ' '.repeat(MAX_E2EE_BODY_BYTES + 1),
+    });
+
+    expect(res.status).toBe(413);
+    expect(await res.json()).toEqual({ code: 'payload_too_large' });
+  });
+
   it('rejects frontend-provided IDs that are not UUIDs', async () => {
     const p = validPayload();
     const cases = [
@@ -297,6 +315,24 @@ describe('/api/e2ee/key-ring', () => {
     expect(profile.wrappers).toEqual([
       expect.objectContaining({ id: payload.mek.id }),
     ]);
+  });
+
+  it('returns 413 before JSON validation when update body exceeds E2EE body limit', async () => {
+    const payload = validPayload();
+    await req('/api/e2ee/key-ring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const res = await req('/api/e2ee/key-ring', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: ' '.repeat(MAX_E2EE_BODY_BYTES + 1),
+    });
+
+    expect(res.status).toBe(413);
+    expect(await res.json()).toEqual({ code: 'payload_too_large' });
   });
 
   it('rejects stale key ring revision without changing ciphertext', async () => {
@@ -410,6 +446,24 @@ describe('/api/e2ee/key-ring', () => {
     expect(res.status).toBe(400);
   });
 
+  it('returns 413 before JSON validation when password change body exceeds E2EE body limit', async () => {
+    const payload = validPayload();
+    await req('/api/e2ee/key-ring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const res = await req('/api/e2ee/key-ring/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: ' '.repeat(MAX_E2EE_BODY_BYTES + 1),
+    });
+
+    expect(res.status).toBe(413);
+    expect(await res.json()).toEqual({ code: 'payload_too_large' });
+  });
+
   it('rejects setup when key ring ciphertext exceeds 64 KiB', async () => {
     const oversized = new Uint8Array(64 * 1024 + 1).fill(1).toBase64();
     const p = validPayload();
@@ -421,6 +475,45 @@ describe('/api/e2ee/key-ring', () => {
         keyRing: { ...p.keyRing, ciphertext: oversized },
       }),
     });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects setup before decoding when key ring ciphertext base64 is too long', async () => {
+    const p = validPayload();
+    const res = await req('/api/e2ee/key-ring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...p,
+        keyRing: {
+          ...p.keyRing,
+          ciphertext: 'A'.repeat(
+            maxBase64Length(MAX_KEY_RING_CIPHERTEXT_BYTES) + 1,
+          ),
+        },
+      }),
+    });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects setup before decoding when wrapper base64 fields are too long', async () => {
+    const p = validPayload();
+    const res = await req('/api/e2ee/key-ring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...p,
+        mek: {
+          ...p.mek,
+          kdfSalt: 'A'.repeat(maxBase64Length(KDF_SALT_BYTES) + 1),
+          ciphertext: 'A'.repeat(
+            maxBase64Length(WRAPPED_MEK_CIPHERTEXT_BYTES) + 1,
+          ),
+        },
+      }),
+    });
+
     expect(res.status).toBe(400);
   });
 
@@ -442,5 +535,73 @@ describe('/api/e2ee/key-ring', () => {
       }),
     });
     expect(res.status).toBe(400);
+  });
+
+  it('rejects invalid IV before decoding oversized AES-GCM params', async () => {
+    const p = validPayload();
+    const res = await req('/api/e2ee/key-ring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...p,
+        keyRing: {
+          ...p.keyRing,
+          encryptionParams: { iv: 'A'.repeat(17), tagBits: 128 },
+        },
+      }),
+    });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('database rejects key ring ciphertext above the size limit', async () => {
+    await authHeaders();
+    const db = getDb(workerTestEnv.DB);
+
+    await expect(
+      db.insert(keyRing).values({
+        id: crypto.randomUUID(),
+        userId: 'e2ee-user-1',
+        activeDekId: crypto.randomUUID(),
+        encryptionAlgorithm: 'aes-256-gcm',
+        encryptionParams: JSON.stringify({ iv: bytesBase64(12), tagBits: 128 }),
+        ciphertext: new Uint8Array(MAX_KEY_RING_CIPHERTEXT_BYTES + 1),
+      }),
+    ).rejects.toThrow();
+  });
+
+  it('database rejects wrapper blobs with incorrect fixed sizes', async () => {
+    await authHeaders();
+    const db = getDb(workerTestEnv.DB);
+
+    await expect(
+      db.insert(keyRingWrapping).values({
+        id: crypto.randomUUID(),
+        userId: 'e2ee-user-1',
+        method: 'password',
+        status: 'active',
+        kdfAlgorithm: 'argon2id',
+        kdfParams: JSON.stringify({}),
+        kdfSalt: new Uint8Array(KDF_SALT_BYTES + 1),
+        wrappingAlgorithm: 'aes-256-gcm',
+        wrappingParams: JSON.stringify({ iv: bytesBase64(12), tagBits: 128 }),
+        ciphertext: new Uint8Array(WRAPPED_MEK_CIPHERTEXT_BYTES),
+      }),
+    ).rejects.toThrow();
+
+    await expect(
+      db.insert(keyRingWrapping).values({
+        id: crypto.randomUUID(),
+        userId: 'e2ee-user-1',
+        method: 'password',
+        status: 'active',
+        kdfAlgorithm: 'argon2id',
+        kdfParams: JSON.stringify({}),
+        kdfSalt: new Uint8Array(KDF_SALT_BYTES),
+        wrappingAlgorithm: 'aes-256-gcm',
+        wrappingParams: JSON.stringify({ iv: bytesBase64(12), tagBits: 128 }),
+        ciphertext: new Uint8Array(WRAPPED_MEK_CIPHERTEXT_BYTES + 1),
+      }),
+    ).rejects.toThrow();
   });
 });

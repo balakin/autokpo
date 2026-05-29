@@ -1,12 +1,15 @@
 import type { InferSelectModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import {
+  check,
   customType,
   integer,
   sqliteTable,
   text,
   uniqueIndex,
 } from 'drizzle-orm/sqlite-core';
+
+import { MAX_SYNC_CIPHERTEXT_BYTES } from '../../payload-limits';
 
 import { user } from './auth';
 
@@ -37,6 +40,10 @@ export const syncRecord = sqliteTable(
   },
   (table) => [
     uniqueIndex('sync_record_user_id_seq_idx').on(table.userId, table.seq),
+    check(
+      'sync_record_ciphertext_size_check',
+      sql`length(${table.ciphertext}) <= ${sql.raw(String(MAX_SYNC_CIPHERTEXT_BYTES))}`,
+    ),
   ],
 );
 

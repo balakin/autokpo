@@ -6,12 +6,14 @@ import { requireSession } from '../auth';
 import { getDb } from '../db';
 import { assertCondition, assertExists } from '../db/assert';
 import { keyRing, syncRecord } from '../db/schema';
+import { MAX_SYNC_CIPHERTEXT_BYTES, maxBase64Length } from '../payload-limits';
 
-const MAX_PLAINTEXT_BYTES = 1 * 1024 * 1024;
-const MAX_CIPHERTEXT_BYTES = MAX_PLAINTEXT_BYTES + 16; // plaintext + GCM tag only
 const SOFT_CAP_ROWS = 200;
 const SOFT_CAP_BYTES = 2 * 1024 * 1024;
 const HARD_CAP_BYTES = 4 * 1024 * 1024;
+const MAX_SYNC_CIPHERTEXT_BASE64_LENGTH = maxBase64Length(
+  MAX_SYNC_CIPHERTEXT_BYTES,
+);
 const uuidSchema = z.uuid();
 
 const encEnvelopeSchema = z.object({
@@ -169,6 +171,9 @@ router.post('/', async (c) => {
 
   let ivBytes: Uint8Array;
   let ciphertextBytes: Uint8Array;
+  if (ciphertextBase64.length > MAX_SYNC_CIPHERTEXT_BASE64_LENGTH) {
+    return c.json({ error: 'Payload too large' }, 413);
+  }
   try {
     ivBytes = Uint8Array.fromBase64(encryptionParams.iv);
     ciphertextBytes = Uint8Array.fromBase64(ciphertextBase64);
@@ -179,7 +184,7 @@ router.post('/', async (c) => {
   if (ivBytes.byteLength !== 12) {
     return c.json({ error: 'IV must be 12 bytes' }, 400);
   }
-  if (ciphertextBytes.byteLength > MAX_CIPHERTEXT_BYTES) {
+  if (ciphertextBytes.byteLength > MAX_SYNC_CIPHERTEXT_BYTES) {
     return c.json({ error: 'Payload too large' }, 413);
   }
 
@@ -323,6 +328,9 @@ router.post('/compact', async (c) => {
 
   let ivBytes: Uint8Array;
   let snapshotCiphertext: Uint8Array;
+  if (ciphertextBase64.length > MAX_SYNC_CIPHERTEXT_BASE64_LENGTH) {
+    return c.json({ error: 'Payload too large' }, 413);
+  }
   try {
     ivBytes = Uint8Array.fromBase64(encryptionParams.iv);
     snapshotCiphertext = Uint8Array.fromBase64(ciphertextBase64);
@@ -333,7 +341,7 @@ router.post('/compact', async (c) => {
   if (ivBytes.byteLength !== 12) {
     return c.json({ error: 'IV must be 12 bytes' }, 400);
   }
-  if (snapshotCiphertext.byteLength > MAX_CIPHERTEXT_BYTES) {
+  if (snapshotCiphertext.byteLength > MAX_SYNC_CIPHERTEXT_BYTES) {
     return c.json({ error: 'Payload too large' }, 413);
   }
 

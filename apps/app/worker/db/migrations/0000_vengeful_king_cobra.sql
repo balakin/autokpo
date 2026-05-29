@@ -70,7 +70,8 @@ CREATE TABLE `key_ring` (
 	`ciphertext` blob NOT NULL,
 	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
 	`updated_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
-	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade,
+	CONSTRAINT "key_ring_ciphertext_size_check" CHECK(length("key_ring"."ciphertext") <= 65536)
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `key_ring_user_id_idx` ON `key_ring` (`user_id`);--> statement-breakpoint
@@ -87,7 +88,9 @@ CREATE TABLE `key_ring_wrapping` (
 	`ciphertext` blob NOT NULL,
 	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
 	`revoked_at` integer,
-	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade,
+	CONSTRAINT "key_ring_wrapping_kdf_salt_size_check" CHECK(length("key_ring_wrapping"."kdf_salt") = 16),
+	CONSTRAINT "key_ring_wrapping_ciphertext_size_check" CHECK(length("key_ring_wrapping"."ciphertext") = 48)
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `key_ring_wrapping_active_user_method_unique` ON `key_ring_wrapping` (`user_id`,`method`) WHERE "key_ring_wrapping"."status" = 'active';--> statement-breakpoint
@@ -103,7 +106,8 @@ CREATE TABLE `sync_record` (
 	`kind` text NOT NULL,
 	`encryption_key_id` text NOT NULL,
 	`created` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
-	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade,
+	CONSTRAINT "sync_record_ciphertext_size_check" CHECK(length("sync_record"."ciphertext") <= 1048592)
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `sync_record_user_id_seq_idx` ON `sync_record` (`user_id`,`seq`);--> statement-breakpoint

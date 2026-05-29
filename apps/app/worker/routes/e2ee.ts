@@ -10,6 +10,13 @@ import {
   type KeyRingRow,
   type KeyRingWrappingRow,
 } from '../db/schema';
+import {
+  AES_GCM_IV_BYTES,
+  KDF_SALT_BYTES,
+  MAX_KEY_RING_CIPHERTEXT_BYTES,
+  WRAPPED_MEK_CIPHERTEXT_BYTES,
+  maxBase64Length,
+} from '../payload-limits';
 
 const KDF_PARAMS_V1 = {
   memorySize: 65536,
@@ -18,10 +25,14 @@ const KDF_PARAMS_V1 = {
   hashLength: 32,
 } as const;
 
-const KDF_SALT_BYTES = 16;
-const IV_BYTES = 12;
-const CIPHERTEXT_BYTES = 48;
-const MAX_KEY_RING_CIPHERTEXT_BYTES = 64 * 1024;
+const MAX_KEY_RING_CIPHERTEXT_BASE64_LENGTH = maxBase64Length(
+  MAX_KEY_RING_CIPHERTEXT_BYTES,
+);
+const KDF_SALT_BASE64_LENGTH = maxBase64Length(KDF_SALT_BYTES);
+const WRAPPED_MEK_CIPHERTEXT_BASE64_LENGTH = maxBase64Length(
+  WRAPPED_MEK_CIPHERTEXT_BYTES,
+);
+const AES_GCM_IV_BASE64_LENGTH = maxBase64Length(AES_GCM_IV_BYTES);
 
 export const e2eeRouter = new Hono<{ Bindings: Env }>();
 
@@ -287,6 +298,13 @@ function parseCreateBody(body: unknown) {
   ) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
+  if (
+    keyRingBlock.ciphertext.length > MAX_KEY_RING_CIPHERTEXT_BASE64_LENGTH ||
+    mekBlock.kdfSalt.length > KDF_SALT_BASE64_LENGTH ||
+    mekBlock.ciphertext.length > WRAPPED_MEK_CIPHERTEXT_BASE64_LENGTH
+  ) {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
 
   let keyRingCiphertext: Uint8Array;
   let kdfSalt: Uint8Array;
@@ -349,6 +367,12 @@ function parseChangePasswordBody(body: unknown) {
   ) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
+  if (
+    value.kdfSalt.length > KDF_SALT_BASE64_LENGTH ||
+    value.ciphertext.length > WRAPPED_MEK_CIPHERTEXT_BASE64_LENGTH
+  ) {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
 
   let kdfSalt: Uint8Array;
   let wrappedMek: Uint8Array;
@@ -398,6 +422,9 @@ function parseUpdateBody(body: unknown) {
   if (typeof value.ciphertext !== 'string') {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
+  if (value.ciphertext.length > MAX_KEY_RING_CIPHERTEXT_BASE64_LENGTH) {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
 
   let ciphertext: Uint8Array;
   try {
@@ -426,10 +453,11 @@ function parseAesGcmParams(
   if (!value || typeof value !== 'object') return null;
   const obj = value as Record<string, unknown>;
   if (typeof obj.iv !== 'string' || !obj.iv) return null;
+  if (obj.iv.length > AES_GCM_IV_BASE64_LENGTH) return null;
   if (typeof obj.tagBits !== 'number') return null;
   try {
     const bytes = Uint8Array.fromBase64(obj.iv);
-    if (bytes.byteLength !== IV_BYTES) return null;
+    if (bytes.byteLength !== AES_GCM_IV_BYTES) return null;
   } catch {
     return null;
   }
@@ -487,7 +515,7 @@ function isSafeId(value: string): boolean {
 }
 
 function isSafeCiphertext(value: Uint8Array): boolean {
-  return value.byteLength === CIPHERTEXT_BYTES;
+  return value.byteLength === WRAPPED_MEK_CIPHERTEXT_BYTES;
 }
 
 function serializeTimestamp(value: Date): string {

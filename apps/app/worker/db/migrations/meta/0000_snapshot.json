@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "70c89931-f11c-439f-8c84-68fe490fc400",
+  "id": "d35b416d-a86b-4611-a20f-ef510f7291bc",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -480,7 +480,12 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {}
+      "checkConstraints": {
+        "key_ring_ciphertext_size_check": {
+          "name": "key_ring_ciphertext_size_check",
+          "value": "length(\"key_ring\".\"ciphertext\") <= 65536"
+        }
+      }
     },
     "key_ring_wrapping": {
       "name": "key_ring_wrapping",
@@ -597,7 +602,16 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {}
+      "checkConstraints": {
+        "key_ring_wrapping_kdf_salt_size_check": {
+          "name": "key_ring_wrapping_kdf_salt_size_check",
+          "value": "length(\"key_ring_wrapping\".\"kdf_salt\") = 16"
+        },
+        "key_ring_wrapping_ciphertext_size_check": {
+          "name": "key_ring_wrapping_ciphertext_size_check",
+          "value": "length(\"key_ring_wrapping\".\"ciphertext\") = 48"
+        }
+      }
     },
     "sync_record": {
       "name": "sync_record",
@@ -694,7 +708,12 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {}
+      "checkConstraints": {
+        "sync_record_ciphertext_size_check": {
+          "name": "sync_record_ciphertext_size_check",
+          "value": "length(\"sync_record\".\"ciphertext\") <= 1048592"
+        }
+      }
     },
     "tx_assert": {
       "name": "tx_assert",

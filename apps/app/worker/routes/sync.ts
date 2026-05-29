@@ -86,9 +86,8 @@ router.get('/', async (c) => {
         encryptionKeyId: syncRecord.encryptionKeyId,
         keyRingRevision: syncRecord.keyRingRevision,
         encryptionAlgorithm: syncRecord.encryptionAlgorithm,
-        iv: syncRecord.iv,
+        encryptionParams: syncRecord.encryptionParams,
         ciphertext: syncRecord.ciphertext,
-        encryptionVersion: syncRecord.encryptionVersion,
       })
       .from(syncRecord)
       .where(and(eq(syncRecord.userId, userId), gt(syncRecord.seq, since)))
@@ -117,9 +116,9 @@ router.get('/', async (c) => {
     encryptionKeyId: row.encryptionKeyId,
     keyRingRevision: row.keyRingRevision,
     encryptionAlgorithm: row.encryptionAlgorithm,
-    encryptionParams: {
-      iv: row.iv.toBase64(),
-      tagBits: 128,
+    encryptionParams: JSON.parse(row.encryptionParams) as {
+      iv: string;
+      tagBits: number;
     },
     ciphertext: row.ciphertext.toBase64(),
   }));
@@ -199,9 +198,10 @@ router.post('/', async (c) => {
               encryptionAlgorithm: sql`${encryptionAlgorithm}`.as(
                 'encryption_algorithm',
               ),
-              encryptionVersion: sql`1`.as('encryption_version'),
+              encryptionParams: sql`${JSON.stringify(encryptionParams)}`.as(
+                'encryption_params',
+              ),
               keyRingRevision: sql`${keyRingRevision}`.as('key_ring_revision'),
-              iv: sql`${ivBytes}`.as('iv'),
               ciphertext: sql`${ciphertextBytes}`.as('ciphertext'),
               kind: sql`'update'`.as('kind'),
               encryptionKeyId: sql`${encryptionKeyId}`.as('encryption_key_id'),
@@ -240,22 +240,20 @@ router.post('/', async (c) => {
     const [existing] = await db
       .select({
         existingSeq: syncRecord.seq,
-        existingEncryptionAlgorithm: syncRecord.encryptionAlgorithm,
-        existingEncryptionVersion: syncRecord.encryptionVersion,
-        existingKeyRingRevision: syncRecord.keyRingRevision,
-        existingIv: syncRecord.iv,
+        existingEncryptionParams: syncRecord.encryptionParams,
         existingCiphertext: syncRecord.ciphertext,
       })
       .from(syncRecord)
       .where(and(eq(syncRecord.userId, userId), eq(syncRecord.id, id)));
 
     if (existing) {
+      const existingParams = JSON.parse(existing.existingEncryptionParams) as {
+        iv: string;
+        tagBits: number;
+      };
       if (
-        existing.existingEncryptionAlgorithm === encryptionAlgorithm &&
-        existing.existingEncryptionVersion === 1 &&
-        existing.existingKeyRingRevision === keyRingRevision &&
-        existing.existingIv.byteLength === ivBytes.byteLength &&
-        new Uint8Array(existing.existingIv).every((v, i) => v === ivBytes[i]) &&
+        existingParams.iv === encryptionParams.iv &&
+        existingParams.tagBits === encryptionParams.tagBits &&
         existing.existingCiphertext.byteLength === ciphertextBytes.byteLength &&
         new Uint8Array(existing.existingCiphertext).every(
           (v, i) => v === ciphertextBytes[i],
@@ -332,7 +330,7 @@ router.post('/compact', async (c) => {
     encryptionKeyId,
     keyRingRevision,
     encryptionAlgorithm,
-    ivBytes,
+    encryptionParams,
     ciphertext: snapshotCiphertext,
   });
   if (insertResult instanceof Response) return insertResult;
@@ -357,7 +355,7 @@ type SnapshotPayload = {
   encryptionKeyId: string;
   keyRingRevision: number;
   encryptionAlgorithm: string;
-  ivBytes: Uint8Array;
+  encryptionParams: { iv: string; tagBits: number };
   ciphertext: Uint8Array;
 };
 
@@ -376,7 +374,7 @@ async function insertCompactSnapshot(
     encryptionKeyId,
     keyRingRevision,
     encryptionAlgorithm,
-    ivBytes,
+    encryptionParams,
     ciphertext,
   }: SnapshotPayload,
 ): Promise<Response | InsertCompactSnapshotResult> {
@@ -458,9 +456,8 @@ async function insertCompactSnapshot(
           userId,
           seq: sql`(select coalesce(max(${syncRecord.seq}), 0) + 1 from ${syncRecord} where ${syncRecord.userId} = ${userId})`,
           encryptionAlgorithm,
-          encryptionVersion: 1,
+          encryptionParams: JSON.stringify(encryptionParams),
           keyRingRevision,
-          iv: ivBytes,
           ciphertext,
           kind: 'snapshot',
           encryptionKeyId,
@@ -473,22 +470,20 @@ async function insertCompactSnapshot(
     const [existing] = await db
       .select({
         seq: syncRecord.seq,
-        encryptionAlgorithm: syncRecord.encryptionAlgorithm,
-        encryptionVersion: syncRecord.encryptionVersion,
-        keyRingRevision: syncRecord.keyRingRevision,
-        iv: syncRecord.iv,
+        encryptionParams: syncRecord.encryptionParams,
         ciphertext: syncRecord.ciphertext,
       })
       .from(syncRecord)
       .where(and(eq(syncRecord.userId, userId), eq(syncRecord.id, id)));
 
     if (existing) {
+      const existingParams = JSON.parse(existing.encryptionParams) as {
+        iv: string;
+        tagBits: number;
+      };
       if (
-        existing.encryptionAlgorithm === encryptionAlgorithm &&
-        existing.encryptionVersion === 1 &&
-        existing.keyRingRevision === keyRingRevision &&
-        existing.iv.byteLength === ivBytes.byteLength &&
-        new Uint8Array(existing.iv).every((v, i) => v === ivBytes[i]) &&
+        existingParams.iv === encryptionParams.iv &&
+        existingParams.tagBits === encryptionParams.tagBits &&
         existing.ciphertext.byteLength === ciphertext.byteLength &&
         new Uint8Array(existing.ciphertext).every((v, i) => v === ciphertext[i])
       ) {

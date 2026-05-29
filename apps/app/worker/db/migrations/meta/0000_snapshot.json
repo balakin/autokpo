@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "91f3882b-67cd-4857-8ed0-eff66d90272c",
+  "id": "0b23481e-7acd-47ac-8884-3ed8a6859c19",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -637,9 +637,9 @@
           "notNull": true,
           "autoincrement": false
         },
-        "encryption_version": {
-          "name": "encryption_version",
-          "type": "integer",
+        "encryption_params": {
+          "name": "encryption_params",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -647,13 +647,6 @@
         "key_ring_revision": {
           "name": "key_ring_revision",
           "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "iv": {
-          "name": "iv",
-          "type": "blob",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false

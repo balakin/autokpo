@@ -23,9 +23,8 @@ type Profile = {
     userId: string;
     activeDekId: string;
     revision: number;
-    encryptionVersion: 1;
     encryptionAlgorithm: 'aes-256-gcm';
-    iv: string;
+    encryptionParams: { iv: string; tagBits: number };
     ciphertext: string;
     createdAt: string;
     updatedAt: string;
@@ -34,7 +33,6 @@ type Profile = {
     id: string;
     userId: string;
     method: 'password';
-    kdfVersion: 1;
     kdfAlgorithm: 'argon2id';
     kdfParams: {
       memorySize: number;
@@ -43,10 +41,8 @@ type Profile = {
       hashLength: number;
     };
     kdfSalt: string;
-    wrappingVersion: 1;
     wrappingAlgorithm: 'aes-256-gcm';
-    wrappingParams: { ivBytes: number; tagBits: number };
-    wrappingIv: string;
+    wrappingParams: { iv: string; tagBits: number };
     ciphertext: string;
     createdAt: string;
   }>;
@@ -123,9 +119,8 @@ function profile(): Profile {
       userId: 'test-user',
       activeDekId: 'dek-1',
       revision: 1,
-      encryptionVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
-      iv: 'iv',
+      encryptionParams: { iv: 'iv', tagBits: 128 },
       ciphertext: 'ciphertext',
       createdAt: '2026-01-01T00:00:00.000Z',
       updatedAt: '2026-01-01T00:00:00.000Z',
@@ -135,7 +130,6 @@ function profile(): Profile {
         id: 'current-wrapper',
         userId: 'test-user',
         method: 'password',
-        kdfVersion: 1,
         kdfAlgorithm: 'argon2id',
         kdfParams: {
           memorySize: 65536,
@@ -144,10 +138,8 @@ function profile(): Profile {
           hashLength: 32,
         },
         kdfSalt: 'salt',
-        wrappingVersion: 1,
         wrappingAlgorithm: 'aes-256-gcm',
-        wrappingParams: { ivBytes: 12, tagBits: 128 },
-        wrappingIv: 'iv',
+        wrappingParams: { iv: 'iv', tagBits: 128 },
         ciphertext: 'ciphertext',
         createdAt: '2026-01-01T00:00:00.000Z',
       },

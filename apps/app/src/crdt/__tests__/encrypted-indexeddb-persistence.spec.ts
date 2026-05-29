@@ -140,9 +140,8 @@ describe('EncryptedIndexeddbPersistence', () => {
       kind: 'update',
       id: crypto.randomUUID(),
       encryptionAlgorithm: 'aes-256-gcm',
-      encryptionVersion: 1,
+      encryptionParams: { iv: new Uint8Array(12), tagBits: 128 },
       encryptionKeyId: 'key-1',
-      iv: new Uint8Array(12),
       ciphertext: new Uint8Array([1, 2, 3]),
     });
 

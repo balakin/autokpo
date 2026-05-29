@@ -1,3 +1,4 @@
+import type { DekEntry } from './encryption-crypto';
 import {
   getInitialEncryptionSessionState,
   type EncryptionSessionState,
@@ -9,6 +10,9 @@ export type EncryptionGateState = {
   mek: Uint8Array | null;
   activeDek: Uint8Array | null;
   activeDekId: string | null;
+  keyRingId: string | null;
+  keyRingRevision: number | null;
+  deks: Record<string, DekEntry> | null;
 };
 
 export type EncryptionGateAction =
@@ -26,6 +30,9 @@ export type EncryptionGateAction =
       mek: Uint8Array;
       activeDek: Uint8Array;
       activeDekId: string;
+      keyRingId: string;
+      keyRingRevision: number;
+      deks: Record<string, DekEntry>;
     };
 
 export function createInitialEncryptionGateState(
@@ -37,6 +44,9 @@ export function createInitialEncryptionGateState(
     mek: null,
     activeDek: null,
     activeDekId: null,
+    keyRingId: null,
+    keyRingRevision: null,
+    deks: null,
   };
 }
 
@@ -92,6 +102,9 @@ export function encryptionGateReducer(
         mek: null,
         activeDek: null,
         activeDekId: null,
+        keyRingId: null,
+        keyRingRevision: null,
+        deks: null,
       };
     case 'unlocked':
       return {
@@ -100,6 +113,9 @@ export function encryptionGateReducer(
         mek: action.mek,
         activeDek: action.activeDek,
         activeDekId: action.activeDekId,
+        keyRingId: action.keyRingId,
+        keyRingRevision: action.keyRingRevision,
+        deks: action.deks,
       };
   }
 }

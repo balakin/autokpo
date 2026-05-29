@@ -65,9 +65,10 @@ CREATE TABLE `key_ring` (
 	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
 	`active_dek_id` text NOT NULL,
-	`encryption_version` integer NOT NULL,
+	`revision` integer DEFAULT 1 NOT NULL,
+	`plaintext_schema_version` integer DEFAULT 1 NOT NULL,
 	`encryption_algorithm` text NOT NULL,
-	`iv` blob NOT NULL,
+	`encryption_params` text NOT NULL,
 	`ciphertext` blob NOT NULL,
 	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
 	`updated_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
@@ -80,14 +81,11 @@ CREATE TABLE `key_ring_wrapping` (
 	`user_id` text NOT NULL,
 	`method` text NOT NULL,
 	`status` text NOT NULL,
-	`kdf_version` integer NOT NULL,
 	`kdf_algorithm` text NOT NULL,
-	`kdf_params_json` text NOT NULL,
+	`kdf_params` text NOT NULL,
 	`kdf_salt` blob NOT NULL,
-	`wrapping_version` integer NOT NULL,
 	`wrapping_algorithm` text NOT NULL,
-	`wrapping_params_json` text NOT NULL,
-	`wrapping_iv` blob NOT NULL,
+	`wrapping_params` text NOT NULL,
 	`ciphertext` blob NOT NULL,
 	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
 	`revoked_at` integer,
@@ -101,13 +99,17 @@ CREATE TABLE `sync_record` (
 	`user_id` text NOT NULL,
 	`seq` integer NOT NULL,
 	`encryption_algorithm` text NOT NULL,
-	`encryption_version` integer NOT NULL,
-	`iv` blob NOT NULL,
+	`encryption_params` text NOT NULL,
+	`key_ring_revision` integer NOT NULL,
 	`ciphertext` blob NOT NULL,
 	`kind` text NOT NULL,
 	`encryption_key_id` text NOT NULL,
-	`created` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	`created` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `sync_record_user_id_seq_idx` ON `sync_record` (`user_id`,`seq`);
+CREATE UNIQUE INDEX `sync_record_user_id_seq_idx` ON `sync_record` (`user_id`,`seq`);--> statement-breakpoint
+CREATE TABLE `tx_assert` (
+	`ok` integer NOT NULL,
+	CONSTRAINT "tx_assert_ok_check" CHECK("tx_assert"."ok" = 1)
+);

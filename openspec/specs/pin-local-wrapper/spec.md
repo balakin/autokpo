@@ -13,20 +13,17 @@ The `local_wrapper` IndexedDB store SHALL support a `method: 'pin'` record with 
 - `wrapperId` (string, UUID)
 - `pinLdk` (CryptoKey, `extractable: false`, AES-256-GCM)
 - `pinSaltCiphertext` (Uint8Array)
-- `pinSaltIv` (Uint8Array)
-- `pinEncryptionVersion: 1`
 - `pinEncryptionAlgorithm: 'aes-256-gcm'`
-- `pinEncryptionParams` (`{ ivBytes: 12, tagBits: 128 }`)
+- `pinEncryptionParams` (`{ iv: Uint8Array, tagBits: 128 }`)
 - `kdfAlgorithm: 'argon2id'`
-- `kdfVersion: 1`
 - `kdfParams` (`{ memorySize, iterations, parallelism, hashLength }`)
 - `ciphertext` (Uint8Array — MEK wrapped with KEK)
-- `wrappingIv` (Uint8Array)
-- `wrappingVersion: 1`
 - `wrappingAlgorithm: 'aes-256-gcm'`
-- `wrappingParams` (`{ ivBytes: 12, tagBits: 128 }`)
+- `wrappingParams` (`{ iv: Uint8Array, tagBits: 128 }`)
 - `createdAt` (ISO string)
 - `failedAttempts` (number)
+
+The record SHALL NOT contain `pinEncryptionVersion`, `wrappingVersion`, `kdfVersion`, standalone `pinSaltIv`, or standalone `wrappingIv` fields.
 
 #### Scenario: PIN wrapper record passes schema validation
 
@@ -34,10 +31,13 @@ The `local_wrapper` IndexedDB store SHALL support a `method: 'pin'` record with 
 - **THEN** it SHALL parse successfully against the `localWrapperRecordPinSchema`
 - **AND** `method` SHALL equal `'pin'`
 - **AND** `pinLdk` SHALL be a CryptoKey with `extractable: false`
+- **AND** `pinEncryptionParams.iv` SHALL be a Uint8Array
+- **AND** `wrappingParams.iv` SHALL be a Uint8Array
+- **AND** the record SHALL NOT have a standalone `pinSaltIv` or `wrappingIv` field
 
 ### Requirement: PIN wrapper uses hardware-bound KDF salt
 
-When creating a PIN wrapper, the system SHALL generate a random 16-byte salt, encrypt it with a freshly generated non-extractable AES-256-GCM pinLDK, and store the encrypted salt alongside the pinLDK. The plaintext salt SHALL NOT be stored.
+When creating a PIN wrapper, the system SHALL generate a random 16-byte salt, encrypt it with a freshly generated non-extractable AES-256-GCM pinLDK, and store the encrypted salt alongside the pinLDK. The IV used to encrypt the salt SHALL be stored inside `pinEncryptionParams`. The plaintext salt SHALL NOT be stored.
 
 #### Scenario: Creating a PIN wrapper encrypts the KDF salt
 
@@ -45,31 +45,26 @@ When creating a PIN wrapper, the system SHALL generate a random 16-byte salt, en
 - **THEN** it SHALL generate a random non-extractable AES-256-GCM CryptoKey as `pinLdk`
 - **AND** generate a random 16-byte `salt`
 - **AND** encrypt `salt` with `pinLdk` using AES-256-GCM with AAD `autokpo:e2ee-pin-salt:v1:{userId}:{wrapperId}`
-- **AND** store the resulting ciphertext as `pinSaltCiphertext` and IV as `pinSaltIv`
+- **AND** store the resulting ciphertext as `pinSaltCiphertext` and the IV inside `pinEncryptionParams: { iv, tagBits: 128 }`
+- **AND** NOT store a standalone `pinSaltIv` field
 - **AND** NOT store the plaintext `salt`
 
 #### Scenario: Unlocking decrypts salt before KDF
 
 - **WHEN** the system attempts to unlock using a PIN wrapper
-- **THEN** it SHALL first decrypt `pinSaltCiphertext` using `pinLdk` with AAD `autokpo:e2ee-pin-salt:v1:{userId}:{wrapperId}`
+- **THEN** it SHALL first decrypt `pinSaltCiphertext` using `pinLdk` with IV from `pinEncryptionParams.iv` and AAD `autokpo:e2ee-pin-salt:v1:{userId}:{wrapperId}`
 - **AND** pass the decrypted salt to Argon2id together with the entered PIN
 
 ### Requirement: PIN wrapper derives KEK with Argon2id and wraps MEK
 
-The system SHALL derive a Key Encryption Key (KEK) from the PIN using Argon2id with the decrypted hardware-bound salt and `KDF_PARAMS_V1`. The KEK SHALL be used to wrap the MEK with AES-256-GCM. The AAD for MEK wrapping SHALL be `autokpo:e2ee-wrapped-mek:v1:{userId}:{wrapperId}:pin`.
+The system SHALL derive a Key Encryption Key (KEK) from the PIN using Argon2id with the decrypted hardware-bound salt and `KDF_PARAMS_V1`. The KEK SHALL be used to wrap the MEK with AES-256-GCM. The wrapping IV SHALL be stored inside `wrappingParams`. The AAD for MEK wrapping SHALL be `autokpo:e2ee-wrapped-mek:v1:{userId}:{wrapperId}:pin`.
 
-#### Scenario: PIN wrapper creation wraps MEK correctly
+#### Scenario: PIN wraps MEK and stores wrapping IV inside params
 
-- **WHEN** the system creates a PIN wrapper
-- **THEN** it SHALL derive KEK = Argon2id(PIN, decrypted_salt, KDF_PARAMS_V1)
-- **AND** wrap MEK with KEK using AES-256-GCM with a random IV and AAD `autokpo:e2ee-wrapped-mek:v1:{userId}:{wrapperId}:pin`
-- **AND** store `ciphertext` and `wrappingIv` in the record
-
-#### Scenario: Wrong PIN fails MEK decryption
-
-- **WHEN** the system attempts to unlock with an incorrect PIN
-- **THEN** AES-GCM decryption of the MEK SHALL fail due to authentication tag mismatch
-- **AND** the system SHALL NOT produce a valid MEK
+- **WHEN** the system wraps the MEK with the PIN-derived KEK
+- **THEN** it SHALL store the wrapping IV inside `wrappingParams: { iv, tagBits: 128 }`
+- **AND** SHALL NOT store a standalone `wrappingIv` field
+- **AND** SHALL use AAD `autokpo:e2ee-wrapped-mek:v1:{userId}:{wrapperId}:pin`
 
 ### Requirement: Creating a PIN wrapper replaces any existing local wrapper
 

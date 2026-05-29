@@ -48,12 +48,14 @@ describe('EncryptedIndexeddbPersistence', () => {
       schemaVersion: 1,
       kind: 'update',
       encryptionAlgorithm: 'aes-256-gcm',
-      encryptionVersion: 1,
     });
     expect(typeof rows[0].id).toBe('string');
     expect(typeof rows[0].encryptionKeyId).toBe('string');
-    expect(ArrayBuffer.isView(rows[0].iv)).toBe(true);
-    expect(rows[0].iv).toHaveLength(12);
+    expect(rows[0].encryptionParams).toBeDefined();
+    const params = rows[0].encryptionParams!;
+    expect(ArrayBuffer.isView(params.iv)).toBe(true);
+    expect(params.iv).toHaveLength(12);
+    expect(params.tagBits).toBe(128);
     expect(ArrayBuffer.isView(rows[0].ciphertext)).toBe(true);
     expect(rows[0].ciphertext).not.toEqual(plaintextUpdate);
   });
@@ -138,9 +140,8 @@ describe('EncryptedIndexeddbPersistence', () => {
       kind: 'update',
       id: crypto.randomUUID(),
       encryptionAlgorithm: 'aes-256-gcm',
-      encryptionVersion: 1,
+      encryptionParams: { iv: new Uint8Array(12), tagBits: 128 },
       encryptionKeyId: 'key-1',
-      iv: new Uint8Array(12),
       ciphertext: new Uint8Array([1, 2, 3]),
     });
 
@@ -338,9 +339,8 @@ type EncryptedRow = {
   kind?: unknown;
   id?: unknown;
   encryptionAlgorithm?: unknown;
-  encryptionVersion?: unknown;
   encryptionKeyId?: unknown;
-  iv?: unknown;
+  encryptionParams?: { iv?: unknown; tagBits?: unknown };
   ciphertext?: unknown;
 };
 

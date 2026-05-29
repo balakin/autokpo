@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "154db7bf-1ab4-4b4d-993a-073d5c53b33d",
+  "id": "53ed1cdd-2444-400f-8d3b-1ac4759d7015",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -421,12 +421,21 @@
           "notNull": true,
           "autoincrement": false
         },
-        "encryption_version": {
-          "name": "encryption_version",
+        "revision": {
+          "name": "revision",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": 1
+        },
+        "plaintext_schema_version": {
+          "name": "plaintext_schema_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
         },
         "encryption_algorithm": {
           "name": "encryption_algorithm",
@@ -435,9 +444,9 @@
           "notNull": true,
           "autoincrement": false
         },
-        "iv": {
-          "name": "iv",
-          "type": "blob",
+        "encryption_params": {
+          "name": "encryption_params",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -519,13 +528,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "kdf_version": {
-          "name": "kdf_version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "kdf_algorithm": {
           "name": "kdf_algorithm",
           "type": "text",
@@ -533,8 +535,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "kdf_params_json": {
-          "name": "kdf_params_json",
+        "kdf_params": {
+          "name": "kdf_params",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -547,13 +549,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "wrapping_version": {
-          "name": "wrapping_version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "wrapping_algorithm": {
           "name": "wrapping_algorithm",
           "type": "text",
@@ -561,16 +556,9 @@
           "notNull": true,
           "autoincrement": false
         },
-        "wrapping_params_json": {
-          "name": "wrapping_params_json",
+        "wrapping_params": {
+          "name": "wrapping_params",
           "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "wrapping_iv": {
-          "name": "wrapping_iv",
-          "type": "blob",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -657,16 +645,16 @@
           "notNull": true,
           "autoincrement": false
         },
-        "encryption_version": {
-          "name": "encryption_version",
-          "type": "integer",
+        "encryption_params": {
+          "name": "encryption_params",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "iv": {
-          "name": "iv",
-          "type": "blob",
+        "key_ring_revision": {
+          "name": "key_ring_revision",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -698,7 +686,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
         }
       },
       "indexes": {
@@ -722,6 +710,28 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
+    },
+    "tx_assert": {
+      "name": "tx_assert",
+      "columns": {
+        "ok": {
+          "name": "ok",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "tx_assert_ok_check": {
+          "name": "tx_assert_ok_check",
+          "value": "\"tx_assert\".\"ok\" = 1"
+        }
+      }
     }
   },
   "views": {},

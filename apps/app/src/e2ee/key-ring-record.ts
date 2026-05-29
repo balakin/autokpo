@@ -7,8 +7,8 @@ export const kdfParamsV1Schema = z.object({
   hashLength: z.number().int(),
 });
 
-export const wrappingParamsV1Schema = z.object({
-  ivBytes: z.number().int(),
+export const aesGcmParamsV1Schema = z.object({
+  iv: z.string(),
   tagBits: z.number().int(),
 });
 
@@ -16,9 +16,10 @@ const keyRingSchema = z.object({
   id: z.string(),
   userId: z.string(),
   activeDekId: z.string(),
-  encryptionVersion: z.literal(1),
+  revision: z.number().int().positive(),
+  plaintextSchemaVersion: z.literal(1),
   encryptionAlgorithm: z.literal('aes-256-gcm'),
-  iv: z.string(),
+  encryptionParams: aesGcmParamsV1Schema,
   ciphertext: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -28,14 +29,11 @@ const wrapperSchema = z.object({
   id: z.string(),
   userId: z.string(),
   method: z.literal('password'),
-  kdfVersion: z.literal(1),
   kdfAlgorithm: z.literal('argon2id'),
   kdfParams: kdfParamsV1Schema,
   kdfSalt: z.string(),
-  wrappingVersion: z.literal(1),
   wrappingAlgorithm: z.literal('aes-256-gcm'),
-  wrappingParams: wrappingParamsV1Schema,
-  wrappingIv: z.string(),
+  wrappingParams: aesGcmParamsV1Schema,
   ciphertext: z.string(),
   createdAt: z.string(),
 });
@@ -46,40 +44,47 @@ export const serializedKeyRingProfileSchema = z.object({
 });
 
 export const createKeyRingProfileRequestSchema = z.object({
-  keyRingId: z.string(),
-  wrappingId: z.string(),
-  activeDekId: z.string(),
-  encryptionVersion: z.literal(1),
-  encryptionAlgorithm: z.literal('aes-256-gcm'),
-  keyRingIv: z.string(),
-  keyRingCiphertext: z.string(),
-  kdfVersion: z.literal(1),
-  kdfAlgorithm: z.literal('argon2id'),
-  kdfParams: kdfParamsV1Schema,
-  kdfSalt: z.string(),
-  wrappingVersion: z.literal(1),
-  wrappingAlgorithm: z.literal('aes-256-gcm'),
-  wrappingParams: wrappingParamsV1Schema,
-  wrappingIv: z.string(),
-  ciphertext: z.string(),
+  keyRing: z.object({
+    id: z.string(),
+    activeDekId: z.string(),
+    plaintextSchemaVersion: z.literal(1),
+    encryptionAlgorithm: z.literal('aes-256-gcm'),
+    encryptionParams: aesGcmParamsV1Schema,
+    ciphertext: z.string(),
+  }),
+  mek: z.object({
+    id: z.string(),
+    kdfAlgorithm: z.literal('argon2id'),
+    kdfParams: kdfParamsV1Schema,
+    kdfSalt: z.string(),
+    wrappingAlgorithm: z.literal('aes-256-gcm'),
+    wrappingParams: aesGcmParamsV1Schema,
+    ciphertext: z.string(),
+  }),
 });
 
 export const changeMasterPasswordRequestSchema = z.object({
   currentWrappingId: z.string(),
   wrappingId: z.string(),
-  kdfVersion: z.literal(1),
   kdfAlgorithm: z.literal('argon2id'),
   kdfParams: kdfParamsV1Schema,
   kdfSalt: z.string(),
-  wrappingVersion: z.literal(1),
   wrappingAlgorithm: z.literal('aes-256-gcm'),
-  wrappingParams: wrappingParamsV1Schema,
-  wrappingIv: z.string(),
+  wrappingParams: aesGcmParamsV1Schema,
+  ciphertext: z.string(),
+});
+
+export const updateKeyRingRequestSchema = z.object({
+  currentRevision: z.number().int().positive(),
+  activeDekId: z.string(),
+  plaintextSchemaVersion: z.literal(1),
+  encryptionAlgorithm: z.literal('aes-256-gcm'),
+  encryptionParams: aesGcmParamsV1Schema,
   ciphertext: z.string(),
 });
 
 export type KdfParamsV1 = z.infer<typeof kdfParamsV1Schema>;
-export type WrappingParamsV1 = z.infer<typeof wrappingParamsV1Schema>;
+export type AesGcmParamsV1 = z.infer<typeof aesGcmParamsV1Schema>;
 export type SerializedKeyRingProfile = z.infer<
   typeof serializedKeyRingProfileSchema
 >;
@@ -89,7 +94,7 @@ export type CreateKeyRingProfileRequest = z.infer<
 export type ChangeMasterPasswordRequest = z.infer<
   typeof changeMasterPasswordRequestSchema
 >;
-export type WrapParamsV1 = WrappingParamsV1;
+export type UpdateKeyRingRequest = z.infer<typeof updateKeyRingRequestSchema>;
 
 export const KDF_PARAMS_V1 = {
   memorySize: 65536,
@@ -98,10 +103,7 @@ export const KDF_PARAMS_V1 = {
   hashLength: 32,
 } as const satisfies KdfParamsV1;
 
-export const WRAPPING_PARAMS_V1 = {
-  ivBytes: 12,
-  tagBits: 128,
-} as const satisfies WrappingParamsV1;
+export const AES_GCM_PARAMS_V1 = { tagBits: 128 } as const;
 
 export function isSerializedKeyRingProfile(
   value: unknown,

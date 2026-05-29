@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { DekEntry } from '../encryption-crypto';
 import {
   encryptionGateReducer,
   type EncryptionGateState,
@@ -7,6 +8,11 @@ import {
 
 const activeDek = new Uint8Array(32).fill(1);
 const mek = new Uint8Array(32).fill(2);
+const dekEntry: DekEntry = {
+  key: activeDek,
+  createdAt: 1737000000000,
+  retiredAt: null,
+};
 
 function state(
   overrides: Partial<EncryptionGateState> = {},
@@ -17,6 +23,9 @@ function state(
     mek: null,
     activeDek: null,
     activeDekId: null,
+    keyRingId: null,
+    keyRingRevision: null,
+    deks: null,
     ...overrides,
   };
 }
@@ -100,6 +109,9 @@ describe('encryptionGateReducer', () => {
         mek,
         activeDek,
         activeDekId: 'key-1',
+        keyRingId: 'ring-1',
+        keyRingRevision: 1,
+        deks: { 'key-1': dekEntry },
       }),
     ).toEqual({
       userId: 'user-1',
@@ -107,6 +119,9 @@ describe('encryptionGateReducer', () => {
       mek,
       activeDek,
       activeDekId: 'key-1',
+      keyRingId: 'ring-1',
+      keyRingRevision: 1,
+      deks: { 'key-1': dekEntry },
     });
   });
 
@@ -118,6 +133,9 @@ describe('encryptionGateReducer', () => {
           mek,
           activeDek,
           activeDekId: 'key-1',
+          keyRingId: 'ring-1',
+          keyRingRevision: 1,
+          deks: { 'key-1': dekEntry },
         }),
         { type: 'clear-session' },
       ),
@@ -127,6 +145,9 @@ describe('encryptionGateReducer', () => {
       mek: null,
       activeDek: null,
       activeDekId: null,
+      keyRingId: null,
+      keyRingRevision: null,
+      deks: null,
     });
   });
 });

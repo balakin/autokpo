@@ -34,22 +34,24 @@ describe('worker', () => {
         id: keyId,
         userId,
         activeDekId: 'dek-1',
-        encryptionVersion: 1,
         encryptionAlgorithm: 'aes-256-gcm',
-        iv: new Uint8Array(12),
+        encryptionParams: JSON.stringify({
+          iv: 'AAAAAAAAAAAAAAAA',
+          tagBits: 128,
+        }),
         ciphertext: new Uint8Array(16),
       })
       .onConflictDoNothing();
     await workerTestEnv.DB.prepare(
-      'INSERT INTO sync_record (id, user_id, seq, encryption_algorithm, encryption_version, iv, ciphertext, kind, encryption_key_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO sync_record (id, user_id, seq, encryption_algorithm, encryption_params, key_ring_revision, ciphertext, kind, encryption_key_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
     )
       .bind(
         crypto.randomUUID(),
         userId,
         1,
         'aes-256-gcm',
+        JSON.stringify({ iv: 'AAAAAAAAAAAAAAAA', tagBits: 128 }),
         1,
-        new Uint8Array(12).buffer,
         new Uint8Array([1]).buffer,
         'update',
         keyId,

@@ -189,7 +189,15 @@ describe('encryptSyncPayload / decryptSyncPayload', () => {
     plaintext: Uint8Array,
     kind: 'update' | 'snapshot' = 'update',
   ) {
-    return { plaintext, activeDek, userId, activeDekId: keyId, blockId, kind };
+    return {
+      plaintext,
+      activeDek,
+      userId,
+      activeDekId: keyId,
+      keyRingRevision: 1,
+      blockId,
+      kind,
+    };
   }
 
   function decryptInput(
@@ -197,6 +205,7 @@ describe('encryptSyncPayload / decryptSyncPayload', () => {
     overrides: Partial<{
       userId: string;
       activeDekId: string;
+      keyRingRevision: number;
       blockId: string;
       kind: 'update' | 'snapshot';
     }> = {},
@@ -206,6 +215,7 @@ describe('encryptSyncPayload / decryptSyncPayload', () => {
       activeDek,
       userId,
       activeDekId: keyId,
+      keyRingRevision: 1,
       blockId,
       kind: 'update' as const,
       ...overrides,
@@ -219,12 +229,12 @@ describe('encryptSyncPayload / decryptSyncPayload', () => {
     expect(decrypted).toEqual(plaintext);
   });
 
-  it('returns aes-256-gcm, encryptionVersion=1, 12-byte IV, and ciphertext of correct length', async () => {
+  it('returns aes-256-gcm, encryptionParams with 12-byte IV, tagBits=128, and ciphertext of correct length', async () => {
     const plaintext = new Uint8Array([10, 20, 30]);
     const encrypted = await encryptSyncPayload(encryptInput(plaintext));
     expect(encrypted.encryptionAlgorithm).toBe('aes-256-gcm');
-    expect(encrypted.encryptionVersion).toBe(1);
-    expect(encrypted.iv.byteLength).toBe(12);
+    expect(encrypted.encryptionParams.iv.byteLength).toBe(12);
+    expect(encrypted.encryptionParams.tagBits).toBe(128);
     expect(encrypted.ciphertext.byteLength).toBe(plaintext.byteLength + 16); // plaintext + GCM tag
   });
 
@@ -252,6 +262,14 @@ describe('encryptSyncPayload / decryptSyncPayload', () => {
     ).rejects.toThrow();
   });
 
+  it('decryption fails when AAD keyRingRevision differs', async () => {
+    const plaintext = new Uint8Array([1, 2]);
+    const encrypted = await encryptSyncPayload(encryptInput(plaintext));
+    await expect(
+      decryptSyncPayload(decryptInput(encrypted, { keyRingRevision: 2 })),
+    ).rejects.toThrow();
+  });
+
   it('decryption fails when AAD block id differs', async () => {
     const plaintext = new Uint8Array([1, 2]);
     const encrypted = await encryptSyncPayload(encryptInput(plaintext));
@@ -276,34 +294,16 @@ describe('encryptSyncPayload / decryptSyncPayload', () => {
       decryptSyncPayload({
         payload: {
           encryptionAlgorithm: 'ChaCha20-Poly1305' as 'aes-256-gcm',
-          encryptionVersion: 1,
-          iv: new Uint8Array(12),
+          encryptionParams: { iv: new Uint8Array(12), tagBits: 128 },
           ciphertext: new Uint8Array(16),
         },
         activeDek,
         userId,
         activeDekId: keyId,
+        keyRingRevision: 1,
         blockId,
         kind: 'update',
       }),
     ).rejects.toThrow('Unsupported encryption_algorithm');
-  });
-
-  it('throws on unknown encryption_version', async () => {
-    await expect(
-      decryptSyncPayload({
-        payload: {
-          encryptionAlgorithm: 'aes-256-gcm',
-          encryptionVersion: 99 as 1,
-          iv: new Uint8Array(12),
-          ciphertext: new Uint8Array(16),
-        },
-        activeDek,
-        userId,
-        activeDekId: keyId,
-        blockId,
-        kind: 'update',
-      }),
-    ).rejects.toThrow('Unsupported encryption_version');
   });
 });

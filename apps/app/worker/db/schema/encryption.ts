@@ -11,7 +11,6 @@ import {
 
 import { user } from './auth';
 
-// D1 returns blobs as ArrayBuffer; Buffer is unavailable in workerd.
 const blobBytes = customType<{ data: Uint8Array; driverData: ArrayBuffer }>({
   dataType: () => 'blob',
   fromDriver: (v) => new Uint8Array(v),
@@ -26,9 +25,12 @@ export const keyRing = sqliteTable(
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     activeDekId: text('active_dek_id').notNull(),
-    encryptionVersion: integer('encryption_version').notNull(),
+    revision: integer('revision').default(1).notNull(),
+    plaintextSchemaVersion: integer('plaintext_schema_version')
+      .default(1)
+      .notNull(),
     encryptionAlgorithm: text('encryption_algorithm').notNull(),
-    iv: blobBytes('iv').notNull(),
+    encryptionParams: text('encryption_params').notNull(),
     ciphertext: blobBytes('ciphertext').notNull(),
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
@@ -49,14 +51,11 @@ export const keyRingWrapping = sqliteTable(
       .references(() => user.id, { onDelete: 'cascade' }),
     method: text('method', { enum: ['password'] }).notNull(),
     status: text('status', { enum: ['active', 'revoked'] }).notNull(),
-    kdfVersion: integer('kdf_version').notNull(),
     kdfAlgorithm: text('kdf_algorithm').notNull(),
-    kdfParamsJson: text('kdf_params_json').notNull(),
+    kdfParams: text('kdf_params').notNull(),
     kdfSalt: blobBytes('kdf_salt').notNull(),
-    wrappingVersion: integer('wrapping_version').notNull(),
     wrappingAlgorithm: text('wrapping_algorithm').notNull(),
-    wrappingParamsJson: text('wrapping_params_json').notNull(),
-    wrappingIv: blobBytes('wrapping_iv').notNull(),
+    wrappingParams: text('wrapping_params').notNull(),
     ciphertext: blobBytes('ciphertext').notNull(),
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)

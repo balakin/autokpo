@@ -6,7 +6,7 @@ import { I18nWrapper } from '../../../tests/app/render-helpers';
 import { AuthContext } from '../../auth/auth-context';
 import { useEncryptionContext } from '../encryption-context';
 import { EncryptionGate } from '../encryption-gate';
-import { KDF_PARAMS_V1, WRAPPING_PARAMS_V1 } from '../key-ring-record';
+import { KDF_PARAMS_V1 } from '../key-ring-record';
 import type {
   CreateKeyRingProfileRequest,
   SerializedKeyRingProfile,
@@ -15,6 +15,7 @@ import { KeysIndexeddb } from '../keys-indexeddb';
 
 const createKeyRingProfileMock = vi.hoisted(() => vi.fn());
 const fetchKeyRingProfileMock = vi.hoisted(() => vi.fn());
+const updateKeyRingProfileMock = vi.hoisted(() => vi.fn());
 const createKeyRingProfilePayloadMock = vi.hoisted(() => vi.fn());
 const unwrapKeyRingProfileMock = vi.hoisted(() => vi.fn());
 const generateLdkMock = vi.hoisted(() => vi.fn().mockResolvedValue({}));
@@ -35,10 +36,18 @@ vi.mock('../key-ring-api', () => {
       this.name = 'KeyRingNotFoundError';
     }
   }
+  class KeyRingConflictError extends Error {
+    constructor() {
+      super('conflict');
+      this.name = 'KeyRingConflictError';
+    }
+  }
   return {
+    KeyRingConflictError,
     KeyRingNotFoundError,
     createKeyRingProfile: createKeyRingProfileMock,
     fetchKeyRingProfile: fetchKeyRingProfileMock,
+    updateKeyRingProfile: updateKeyRingProfileMock,
   };
 });
 
@@ -72,9 +81,10 @@ function makeRecord(userId = 'user-1'): SerializedKeyRingProfile {
       id: 'key-ring-1',
       userId,
       activeDekId: 'dek-1',
-      encryptionVersion: 1,
+      revision: 1,
+      plaintextSchemaVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
-      iv: 'AAAAAAAAAAAAAAAA',
+      encryptionParams: { iv: 'AAAAAAAAAAAAAAAA', tagBits: 128 },
       ciphertext:
         'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       createdAt: '2026-01-01T00:00:00.000Z',
@@ -85,7 +95,6 @@ function makeRecord(userId = 'user-1'): SerializedKeyRingProfile {
         id: 'wrapping-1',
         userId,
         method: 'password',
-        kdfVersion: 1,
         kdfAlgorithm: 'argon2id',
         kdfParams: {
           memorySize: 65536,
@@ -94,10 +103,8 @@ function makeRecord(userId = 'user-1'): SerializedKeyRingProfile {
           hashLength: 32,
         },
         kdfSalt: 'AAAAAAAAAAAAAAAAAAAAAA==',
-        wrappingVersion: 1,
         wrappingAlgorithm: 'aes-256-gcm',
-        wrappingParams: { ivBytes: 12, tagBits: 128 },
-        wrappingIv: 'AAAAAAAAAAAAAAAA',
+        wrappingParams: { iv: 'AAAAAAAAAAAAAAAA', tagBits: 128 },
         ciphertext:
           'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
         createdAt: '2026-01-01T00:00:00.000Z',
@@ -136,6 +143,7 @@ beforeEach(() => {
   sessionStorage.clear();
   createKeyRingProfileMock.mockReset();
   fetchKeyRingProfileMock.mockReset();
+  updateKeyRingProfileMock.mockReset();
   createKeyRingProfilePayloadMock.mockReset();
   unwrapKeyRingProfileMock.mockReset();
   generateLdkMock.mockResolvedValue({});
@@ -148,23 +156,33 @@ beforeEach(() => {
   decryptKeyRingWithMekMock.mockResolvedValue({
     activeDek,
     activeDekId: 'dek-1',
+    revision: 1,
+    deks: { 'dek-1': activeDek },
   });
   fetchKeyRingProfileMock.mockRejectedValue(notFoundError());
   createKeyRingProfilePayloadMock.mockResolvedValue({
-    request: { keyRingId: 'key-ring-1' } as CreateKeyRingProfileRequest,
+    request: {
+      keyRing: { id: 'key-ring-1' },
+    } as unknown as CreateKeyRingProfileRequest,
     mek: new Uint8Array(32),
     activeDek,
     activeDekId: 'dek-1',
+    revision: 1,
+    deks: { 'dek-1': activeDek },
   });
   createKeyRingProfileMock.mockResolvedValue(makeRecord());
   unwrapKeyRingProfileMock.mockResolvedValue({
     mek: new Uint8Array(32),
     activeDek,
     activeDekId: 'dek-1',
+    revision: 1,
+    deks: { 'dek-1': activeDek },
   });
   decryptKeyRingWithMekMock.mockResolvedValue({
     activeDek,
     activeDekId: 'dek-1',
+    revision: 1,
+    deks: { 'dek-1': activeDek },
   });
 });
 
@@ -268,7 +286,7 @@ describe('EncryptionGate', () => {
       'secret123',
     );
     expect(createKeyRingProfileMock).toHaveBeenCalledWith({
-      keyRingId: 'key-ring-1',
+      keyRing: { id: 'key-ring-1' },
     });
   });
 
@@ -419,8 +437,7 @@ describe('EncryptionGate', () => {
     const user = userEvent.setup();
     fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
 
-    let capturedContext: { activeDek: Uint8Array; activeDekId: string } | null =
-      null;
+    let capturedContext: ReturnType<typeof useEncryptionContext> | null = null;
 
     function ContextCapture() {
       capturedContext = useEncryptionContext();
@@ -460,6 +477,124 @@ describe('EncryptionGate', () => {
     expect(capturedContext!.activeDekId).toBe('dek-1');
   });
 
+  it('updates encrypted key ring cache from successful context update', async () => {
+    const user = userEvent.setup();
+    fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
+    const updated = makeRecord();
+    updated.keyRing.revision = 2;
+    updated.keyRing.ciphertext = 'updated-ciphertext';
+    updateKeyRingProfileMock.mockResolvedValue(updated);
+    let capturedContext: ReturnType<typeof useEncryptionContext> | null = null;
+
+    function ContextCapture() {
+      capturedContext = useEncryptionContext();
+      return null;
+    }
+
+    localStorage.setItem('autokpo:locale', 'sr-Latn');
+    render(
+      <I18nWrapper>
+        <AuthContext
+          value={{
+            user: { id: 'user-1', email: 'user@example.com', image: null },
+            refresh: () => Promise.resolve('user-1'),
+            logout: () => Promise.resolve(),
+          }}
+        >
+          <EncryptionGate userId="user-1">
+            <ContextCapture />
+            <div>protected content</div>
+          </EncryptionGate>
+        </AuthContext>
+      </I18nWrapper>,
+    );
+    await user.type(
+      await screen.findByLabelText(/Šifra za šifrovanje/i),
+      'secret123',
+    );
+    await user.click(
+      screen.getByRole('button', { name: /Otključaj podatke/i }),
+    );
+    await screen.findByText('protected content');
+
+    await capturedContext!.updateKeyRingProfile({
+      currentRevision: 1,
+      activeDekId: 'dek-1',
+      plaintextSchemaVersion: 1,
+      encryptionAlgorithm: 'aes-256-gcm',
+      encryptionParams: { iv: 'iv', tagBits: 128 },
+      ciphertext: 'updated-ciphertext',
+    });
+
+    const store = new KeysIndexeddb();
+    const cached = await store.readKeyRing('user-1');
+    store.close();
+    expect(cached?.revision).toBe(2);
+    expect(cached?.ciphertext).toBe('updated-ciphertext');
+  });
+
+  it('refetches encrypted key ring cache on context update conflict', async () => {
+    const user = userEvent.setup();
+    fetchKeyRingProfileMock.mockResolvedValueOnce(makeRecord());
+    fetchKeyRingProfileMock.mockResolvedValueOnce(makeRecord());
+    const latest = makeRecord();
+    latest.keyRing.revision = 3;
+    latest.keyRing.ciphertext = 'latest-ciphertext';
+    fetchKeyRingProfileMock.mockResolvedValueOnce(latest);
+    const conflict = new Error('conflict');
+    conflict.name = 'KeyRingConflictError';
+    updateKeyRingProfileMock.mockRejectedValue(conflict);
+    let capturedContext: ReturnType<typeof useEncryptionContext> | null = null;
+
+    function ContextCapture() {
+      capturedContext = useEncryptionContext();
+      return null;
+    }
+
+    localStorage.setItem('autokpo:locale', 'sr-Latn');
+    render(
+      <I18nWrapper>
+        <AuthContext
+          value={{
+            user: { id: 'user-1', email: 'user@example.com', image: null },
+            refresh: () => Promise.resolve('user-1'),
+            logout: () => Promise.resolve(),
+          }}
+        >
+          <EncryptionGate userId="user-1">
+            <ContextCapture />
+            <div>protected content</div>
+          </EncryptionGate>
+        </AuthContext>
+      </I18nWrapper>,
+    );
+    await user.type(
+      await screen.findByLabelText(/Šifra za šifrovanje/i),
+      'secret123',
+    );
+    await user.click(
+      screen.getByRole('button', { name: /Otključaj podatke/i }),
+    );
+    await screen.findByText('protected content');
+
+    await expect(
+      capturedContext!.updateKeyRingProfile({
+        currentRevision: 1,
+        activeDekId: 'dek-1',
+        plaintextSchemaVersion: 1,
+        encryptionAlgorithm: 'aes-256-gcm',
+        encryptionParams: { iv: 'iv', tagBits: 128 },
+        ciphertext: 'stale-ciphertext',
+      }),
+    ).rejects.toThrow('conflict');
+
+    const store = new KeysIndexeddb();
+    const cached = await store.readKeyRing('user-1');
+    store.close();
+    expect(cached?.revision).toBe(3);
+    expect(cached?.ciphertext).toBe('latest-ciphertext');
+  });
+
   it('does not render children (and thus context) when locked', async () => {
     fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
 
@@ -489,18 +624,13 @@ describe('EncryptionGate — PIN unlock path', () => {
       wrapperId: 'wr-pin-1',
       pinLdk,
       pinSaltCiphertext: new Uint8Array(32).fill(1),
-      pinSaltIv: new Uint8Array(12).fill(2),
-      pinEncryptionVersion: 1,
-      pinEncryptionAlgorithm: 'aes-256-gcm',
-      pinEncryptionParams: WRAPPING_PARAMS_V1,
+      pinSaltAlgorithm: 'aes-256-gcm',
+      pinSaltParams: { iv: new Uint8Array(12).fill(2), tagBits: 128 },
       kdfAlgorithm: 'argon2id',
-      kdfVersion: 1,
       kdfParams: KDF_PARAMS_V1,
       wrappingAlgorithm: 'aes-256-gcm',
-      wrappingVersion: 1,
-      wrappingParams: WRAPPING_PARAMS_V1,
+      wrappingParams: { iv: new Uint8Array(12).fill(4), tagBits: 128 },
       ciphertext: new Uint8Array(48).fill(3),
-      wrappingIv: new Uint8Array(12).fill(4),
       createdAt: '2026-01-01T00:00:00.000Z',
       failedAttempts,
     });
@@ -529,6 +659,8 @@ describe('EncryptionGate — PIN unlock path', () => {
     decryptKeyRingWithMekMock.mockResolvedValue({
       activeDek,
       activeDekId: 'dek-1',
+      revision: 1,
+      deks: { 'dek-1': activeDek },
     });
 
     renderGate();

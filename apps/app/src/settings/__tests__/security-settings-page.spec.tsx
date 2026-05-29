@@ -22,9 +22,9 @@ type Profile = {
     id: string;
     userId: string;
     activeDekId: string;
-    encryptionVersion: 1;
+    revision: number;
     encryptionAlgorithm: 'aes-256-gcm';
-    iv: string;
+    encryptionParams: { iv: string; tagBits: number };
     ciphertext: string;
     createdAt: string;
     updatedAt: string;
@@ -33,7 +33,6 @@ type Profile = {
     id: string;
     userId: string;
     method: 'password';
-    kdfVersion: 1;
     kdfAlgorithm: 'argon2id';
     kdfParams: {
       memorySize: number;
@@ -42,10 +41,8 @@ type Profile = {
       hashLength: number;
     };
     kdfSalt: string;
-    wrappingVersion: 1;
     wrappingAlgorithm: 'aes-256-gcm';
-    wrappingParams: { ivBytes: number; tagBits: number };
-    wrappingIv: string;
+    wrappingParams: { iv: string; tagBits: number };
     ciphertext: string;
     createdAt: string;
   }>;
@@ -60,8 +57,10 @@ vi.mock('../../e2ee/encryption-context', () => ({
     mek: new Uint8Array(32).fill(1),
     activeDek: new Uint8Array(32).fill(2),
     activeDekId: 'dek-1',
+    revision: 1,
     clearEncryptionSession: mockClearEncryptionSession,
     refreshKeyRingProfile: mockRefreshKeyRingProfile,
+    updateKeyRingProfile: vi.fn(),
   }),
 }));
 
@@ -119,9 +118,9 @@ function profile(): Profile {
       id: 'key-ring-1',
       userId: 'test-user',
       activeDekId: 'dek-1',
-      encryptionVersion: 1,
+      revision: 1,
       encryptionAlgorithm: 'aes-256-gcm',
-      iv: 'iv',
+      encryptionParams: { iv: 'iv', tagBits: 128 },
       ciphertext: 'ciphertext',
       createdAt: '2026-01-01T00:00:00.000Z',
       updatedAt: '2026-01-01T00:00:00.000Z',
@@ -131,7 +130,6 @@ function profile(): Profile {
         id: 'current-wrapper',
         userId: 'test-user',
         method: 'password',
-        kdfVersion: 1,
         kdfAlgorithm: 'argon2id',
         kdfParams: {
           memorySize: 65536,
@@ -140,10 +138,8 @@ function profile(): Profile {
           hashLength: 32,
         },
         kdfSalt: 'salt',
-        wrappingVersion: 1,
         wrappingAlgorithm: 'aes-256-gcm',
-        wrappingParams: { ivBytes: 12, tagBits: 128 },
-        wrappingIv: 'iv',
+        wrappingParams: { iv: 'iv', tagBits: 128 },
         ciphertext: 'ciphertext',
         createdAt: '2026-01-01T00:00:00.000Z',
       },

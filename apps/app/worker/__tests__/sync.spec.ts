@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { clearAuthData, workerTestEnv } from '../../tests/worker/auth-helpers';
@@ -8,12 +9,13 @@ import {
   type SessionState,
 } from '../../tests/worker/request-helpers';
 import { getDb } from '../db';
-import { keyRing } from '../db/schema';
+import { keyRing, syncRecord } from '../db/schema';
 import app from '../main';
 
 const sessionState: SessionState = { userId: 'user-1', headers: null };
 const authHeaders = makeAuthHeaders(sessionState);
 const TEST_KEY_ID = '11111111-1111-4111-8111-111111111111';
+const NEXT_KEY_ID = '22222222-2222-4222-8222-222222222222';
 const TEST_ALGORITHM = 'aes-256-gcm';
 
 async function syncRequest(path: string, init?: RequestInit | Request) {
@@ -57,9 +59,9 @@ function pushBody(ciphertext: Uint8Array, id = crypto.randomUUID()) {
     body: JSON.stringify({
       id,
       encryptionKeyId: TEST_KEY_ID,
+      keyRingRevision: 1,
       encryptionAlgorithm: TEST_ALGORITHM,
-      encryptionVersion: 1,
-      iv: toBase64(TEST_IV),
+      encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
       ciphertext: toBase64(ciphertext),
     }),
   };
@@ -79,9 +81,9 @@ function compactBody(
     body: JSON.stringify({
       id,
       encryptionKeyId: TEST_KEY_ID,
+      keyRingRevision: 1,
       encryptionAlgorithm: TEST_ALGORITHM,
-      encryptionVersion: 1,
-      iv: toBase64(TEST_IV),
+      encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
       ciphertext: toBase64(ciphertext),
     }),
   };
@@ -95,9 +97,11 @@ async function insertTestKeyRing() {
       id: 'key-ring-1',
       userId: 'user-1',
       activeDekId: TEST_KEY_ID,
-      encryptionVersion: 1,
       encryptionAlgorithm: TEST_ALGORITHM,
-      iv: new Uint8Array(12),
+      encryptionParams: JSON.stringify({
+        iv: toBase64(new Uint8Array(12)),
+        tagBits: 128,
+      }),
       ciphertext: new Uint8Array(16),
     })
     .onConflictDoNothing();
@@ -160,8 +164,7 @@ describe('GET /api/sync', () => {
         kind: string;
         encryptionKeyId: string;
         encryptionAlgorithm: string;
-        encryptionVersion: number;
-        iv: string;
+        encryptionParams: { iv: string; tagBits: number };
         ciphertext: string;
       }>;
     };
@@ -170,8 +173,8 @@ describe('GET /api/sync', () => {
     expect(body.records[0].kind).toBe('update');
     expect(body.records[0].encryptionKeyId).toBe(TEST_KEY_ID);
     expect(body.records[0].encryptionAlgorithm).toBe(TEST_ALGORITHM);
-    expect(body.records[0].encryptionVersion).toBe(1);
-    expect(body.records[0].iv).toBe(toBase64(TEST_IV));
+    expect(body.records[0].encryptionParams.iv).toBe(toBase64(TEST_IV));
+    expect(body.records[0].encryptionParams.tagBits).toBe(128);
     expect(body.records[0].ciphertext).toBe(toBase64(ciphertexts[0]));
     expect(body.records[1].seq).toBe(2);
     expect(body.records[2].seq).toBe(3);
@@ -224,6 +227,21 @@ describe('GET /api/sync', () => {
     const body = rawBody as { records: unknown[] };
     expect(body.records).toHaveLength(0);
   });
+
+  it('includes keyRingRevision in pull response records', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    await syncRequest('/api/sync', pushBody(makeCiphertext([1])));
+
+    const res = await syncRequest('/api/sync', { headers: syncHeaders() });
+    expect(res.status).toBe(200);
+    const rawBody: unknown = await res.json();
+    const body = rawBody as {
+      records: Array<{ keyRingRevision: unknown }>;
+    };
+    expect(body.records).toHaveLength(1);
+    expect(body.records[0].keyRingRevision).toBe(1);
+  });
 });
 
 describe('POST /api/sync', () => {
@@ -245,8 +263,7 @@ describe('POST /api/sync', () => {
         id: 'uuid-1',
         encryptionKeyId: TEST_KEY_ID,
         encryptionAlgorithm: TEST_ALGORITHM,
-        encryptionVersion: 1,
-        iv: toBase64(TEST_IV),
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
         ciphertext: toBase64(makeCiphertext([1])),
       }),
     });
@@ -282,8 +299,7 @@ describe('POST /api/sync', () => {
         id: crypto.randomUUID(),
         encryptionKeyId: 'not-a-uuid',
         encryptionAlgorithm: TEST_ALGORITHM,
-        encryptionVersion: 1,
-        iv: toBase64(TEST_IV),
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
         ciphertext: toBase64(makeCiphertext([1])),
       }),
     });
@@ -371,6 +387,81 @@ describe('POST /api/sync', () => {
     const res = await syncRequest('/api/sync', pushBody(oversized));
     expect(res.status).toBe(413);
   });
+
+  it('returns 409 write_conflict when encryptionKeyId does not match active DEK at write time', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+
+    const wrongKeyId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    const res = await syncRequest('/api/sync', {
+      method: 'POST',
+      headers: syncHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        encryptionKeyId: wrongKeyId,
+        keyRingRevision: 1,
+        encryptionAlgorithm: TEST_ALGORITHM,
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
+        ciphertext: toBase64(makeCiphertext([1])),
+      }),
+    });
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ code: 'write_conflict' });
+
+    const db = getDb(workerTestEnv.DB);
+    const rows = await db
+      .select()
+      .from(syncRecord)
+      .where(eq(syncRecord.userId, 'user-1'));
+    expect(rows).toHaveLength(0);
+  });
+
+  it('rejects old-DEK push after key ring active DEK changes', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    const db = getDb(workerTestEnv.DB);
+    await db
+      .update(keyRing)
+      .set({ activeDekId: NEXT_KEY_ID, revision: 2 })
+      .where(eq(keyRing.userId, 'user-1'));
+
+    const res = await syncRequest('/api/sync', pushBody(makeCiphertext([1])));
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ code: 'write_conflict' });
+    const rows = await db
+      .select()
+      .from(syncRecord)
+      .where(eq(syncRecord.userId, 'user-1'));
+    expect(rows).toHaveLength(0);
+  });
+
+  it('returns 409 write_conflict when keyRingRevision does not match stored revision', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+
+    const res = await syncRequest('/api/sync', {
+      method: 'POST',
+      headers: syncHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        encryptionKeyId: TEST_KEY_ID,
+        keyRingRevision: 999,
+        encryptionAlgorithm: TEST_ALGORITHM,
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
+        ciphertext: toBase64(makeCiphertext([1])),
+      }),
+    });
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ code: 'write_conflict' });
+    const db = getDb(workerTestEnv.DB);
+    const rows = await db
+      .select()
+      .from(syncRecord)
+      .where(eq(syncRecord.userId, 'user-1'));
+    expect(rows).toHaveLength(0);
+  });
 });
 
 describe('POST /api/sync/compact', () => {
@@ -449,8 +540,7 @@ describe('POST /api/sync/compact', () => {
         id: crypto.randomUUID(),
         encryptionKeyId: TEST_KEY_ID,
         encryptionAlgorithm: TEST_ALGORITHM,
-        encryptionVersion: 1,
-        iv: toBase64(TEST_IV),
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
         ciphertext: toBase64(makeCiphertext([99])),
       }),
     });
@@ -477,8 +567,7 @@ describe('POST /api/sync/compact', () => {
         id: crypto.randomUUID(),
         encryptionKeyId: 'not-a-uuid',
         encryptionAlgorithm: TEST_ALGORITHM,
-        encryptionVersion: 1,
-        iv: toBase64(TEST_IV),
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
         ciphertext: toBase64(makeCiphertext([99])),
       }),
     });
@@ -522,5 +611,101 @@ describe('POST /api/sync/compact', () => {
       compactBody(new Uint8Array([0xde, 0xad, 0xbe, 0xef]), 0),
     );
     expect(res.status).toBe(200);
+  });
+
+  it('returns 409 write_conflict when encryptionKeyId does not match active DEK at write time', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    for (let i = 0; i < 3; i++) {
+      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+    }
+
+    const wrongKeyId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    const res = await syncRequest('/api/sync/compact', {
+      method: 'POST',
+      headers: syncHeaders({
+        'Content-Type': 'application/json',
+        'X-Replaces-Up-To': '3',
+      }),
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        encryptionKeyId: wrongKeyId,
+        keyRingRevision: 1,
+        encryptionAlgorithm: TEST_ALGORITHM,
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
+        ciphertext: toBase64(makeCiphertext([99])),
+      }),
+    });
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ code: 'write_conflict' });
+
+    const db = getDb(workerTestEnv.DB);
+    const rows = await db
+      .select()
+      .from(syncRecord)
+      .where(eq(syncRecord.userId, 'user-1'));
+    expect(rows.filter((r) => r.kind === 'snapshot')).toHaveLength(0);
+    expect(rows.filter((r) => r.kind === 'update')).toHaveLength(3);
+  });
+
+  it('returns 409 write_conflict when compact keyRingRevision does not match stored revision', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    for (let i = 0; i < 3; i++) {
+      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+    }
+
+    const res = await syncRequest('/api/sync/compact', {
+      method: 'POST',
+      headers: syncHeaders({
+        'Content-Type': 'application/json',
+        'X-Replaces-Up-To': '3',
+      }),
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        encryptionKeyId: TEST_KEY_ID,
+        keyRingRevision: 999,
+        encryptionAlgorithm: TEST_ALGORITHM,
+        encryptionParams: { iv: toBase64(TEST_IV), tagBits: 128 },
+        ciphertext: toBase64(makeCiphertext([99])),
+      }),
+    });
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ code: 'write_conflict' });
+    const db = getDb(workerTestEnv.DB);
+    const rows = await db
+      .select()
+      .from(syncRecord)
+      .where(eq(syncRecord.userId, 'user-1'));
+    expect(rows.filter((r) => r.kind === 'snapshot')).toHaveLength(0);
+    expect(rows.filter((r) => r.kind === 'update')).toHaveLength(3);
+  });
+
+  it('rejects old-DEK compact after key ring active DEK changes', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    for (let i = 0; i < 3; i++) {
+      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+    }
+    const db = getDb(workerTestEnv.DB);
+    await db
+      .update(keyRing)
+      .set({ activeDekId: NEXT_KEY_ID, revision: 2 })
+      .where(eq(keyRing.userId, 'user-1'));
+
+    const res = await syncRequest(
+      '/api/sync/compact',
+      compactBody(makeCiphertext([99]), 3),
+    );
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ code: 'write_conflict' });
+    const rows = await db
+      .select()
+      .from(syncRecord)
+      .where(eq(syncRecord.userId, 'user-1'));
+    expect(rows.filter((r) => r.kind === 'snapshot')).toHaveLength(0);
+    expect(rows.filter((r) => r.kind === 'update')).toHaveLength(3);
   });
 });

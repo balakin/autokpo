@@ -26,13 +26,13 @@ export const syncRecord = sqliteTable(
       .references(() => user.id, { onDelete: 'cascade' }),
     seq: integer('seq').notNull(),
     encryptionAlgorithm: text('encryption_algorithm').notNull(),
-    encryptionVersion: integer('encryption_version').notNull(),
-    iv: blobBytes('iv').notNull(),
+    encryptionParams: text('encryption_params').notNull(),
+    keyRingRevision: integer('key_ring_revision').notNull(),
     ciphertext: blobBytes('ciphertext').notNull(),
     kind: text('kind', { enum: ['update', 'snapshot'] }).notNull(),
     encryptionKeyId: text('encryption_key_id').notNull(),
-    created: integer('created')
-      .default(sql`CURRENT_TIMESTAMP`)
+    created: integer('created', { mode: 'timestamp_ms' })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),
   },
   (table) => [

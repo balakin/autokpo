@@ -8,16 +8,18 @@ TBD - created by archiving change key-ring. Update Purpose after archive.
 
 ### Requirement: Browser creates encrypted key ring during setup
 
-The system SHALL create a browser-side E2EE key ring when an authenticated user completes first-time encryption setup. The browser SHALL generate a random MEK and a random DEK, store the raw DEK bytes as a base64 value inside a plaintext key-ring `deks` map keyed by DEK id, encrypt the key ring with the MEK, and never send plaintext MEK or DEK bytes to the backend. The plaintext DEK entry SHALL NOT duplicate encryption algorithm, version, or IV metadata because that metadata belongs to each encrypted payload/envelope.
+The system SHALL create a browser-side E2EE key ring when an authenticated user completes first-time encryption setup. The browser SHALL generate a random MEK and a random DEK, store the DEK as a `DekEntry` object inside the plaintext key-ring `deks` map keyed by DEK id, encrypt the key ring with the MEK, and never send plaintext MEK or DEK bytes to the backend. The outer key ring record SHALL carry `plaintextSchemaVersion: 1`. The plaintext SHALL NOT contain `version`, `revision`, or `activeDekId` fields.
 
 #### Scenario: Setup creates MEK, DEK, and encrypted key ring
 
 - **WHEN** an authenticated user submits a valid encryption setup password and acknowledgement
 - **THEN** the browser SHALL generate a random MEK
 - **AND** the browser SHALL generate a random DEK
-- **AND** the browser SHALL create a plaintext key ring containing exactly one DEK map entry whose value is the base64 raw DEK bytes
-- **AND** the browser SHALL set the key ring `activeDekId` to that DEK id
+- **AND** the browser SHALL create a plaintext key ring containing exactly one `deks` map entry of the form `{ key: <base64 DEK bytes>, createdAt: <Date.now() ms>, retiredAt: null }`
+- **AND** the browser SHALL set the key ring `activeDekId` to that DEK id on the outer record
 - **AND** the browser SHALL encrypt the plaintext key ring with the MEK before persistence
+- **AND** the outer key ring record SHALL include `plaintextSchemaVersion: 1`
+- **AND** the plaintext key ring SHALL NOT include `version`, `revision`, or `activeDekId` fields
 - **AND** the backend SHALL NOT receive plaintext MEK or DEK bytes
 
 ### Requirement: Password-derived KEK wraps MEK locally
@@ -29,21 +31,26 @@ The system SHALL derive a KEK from the encryption password locally and use it to
 - **WHEN** the user completes encryption setup
 - **THEN** the system SHALL derive a KEK using Argon2id with stored versioned parameters and a random salt
 - **AND** the browser SHALL generate a wrapper id before wrapping the MEK
-- **AND** the system SHALL encrypt the MEK using AES-256-GCM with a random `wrappingIv`
+- **AND** the system SHALL encrypt the MEK using AES-256-GCM with a random IV stored inside `wrappingParams`
 - **AND** the system SHALL use AAD `autokpo:e2ee-wrapped-mek:v1:{userId}:{wrapperId}:{method}`
+- **AND** the wrapper record SHALL NOT contain a standalone `wrappingIv` field
 
 ### Requirement: Backend stores key ring and active wrapper metadata
 
-The system SHALL persist one key ring per authenticated user and password wrapper metadata without receiving password plaintext, KEK bytes, plaintext MEK bytes, plaintext DEK bytes, or plaintext key-ring JSON.
+The system SHALL persist one key ring per authenticated user and password wrapper metadata without receiving password plaintext, KEK bytes, plaintext MEK bytes, plaintext DEK bytes, or plaintext key-ring JSON. Key-ring setup SHALL persist the key-ring row and initial active password wrapper in one atomic D1 batch, relying on database constraints rather than a preflight existence check as the authority for duplicate setup races.
 
 #### Scenario: Setup stores key ring and password wrapper
 
 - **WHEN** setup saves the key-ring profile
 - **THEN** the backend SHALL create one `key_ring` row for the authenticated user
-- **AND** the backend SHALL store `activeDekId`, `encryptionAlgorithm`, `encryptionVersion`, `iv`, and encrypted key-ring `ciphertext`
+- **AND** the backend SHALL store `activeDekId`, `revision`, `encryptionAlgorithm`, `encryptionParams` (containing `iv` and `tagBits`), and encrypted key-ring `ciphertext`
+- **AND** the backend SHALL NOT store a separate `encryptionVersion` or `iv` field outside `encryptionParams`
+- **AND** the backend SHALL initialize `revision` to `1`
 - **AND** the backend SHALL create one `key_ring_wrapping` row with method `password` and status `active`
 - **AND** the backend SHALL store the frontend-provided wrapper id without replacing it
-- **AND** the backend SHALL store KDF parameters, KDF salt, wrapping algorithm, wrapping version, `wrappingIv`, and wrapped MEK `ciphertext`
+- **AND** the backend SHALL store KDF algorithm, KDF params, KDF salt, wrapping algorithm, `wrappingParams` (containing `iv` and `tagBits`), and wrapped MEK `ciphertext`
+- **AND** the backend SHALL NOT store separate `wrappingVersion`, `wrappingIv`, or `kdfVersion` fields
+- **AND** the backend SHALL persist the key-ring row and password-wrapper row atomically so neither row remains without the other after a failed setup write
 - **AND** the backend SHALL NOT store the encryption password, KEK, plaintext MEK, plaintext DEK, or plaintext key ring
 
 #### Scenario: Duplicate setup is rejected
@@ -51,6 +58,7 @@ The system SHALL persist one key ring per authenticated user and password wrappe
 - **WHEN** an authenticated user already has a key ring
 - **AND** the user submits another key-ring setup request
 - **THEN** the backend SHALL reject the request with a conflict error
+- **AND** the backend SHALL NOT rely on a preflight existence read as the authority for duplicate prevention
 
 ### Requirement: Wrapper lifecycle state is stored and constrained
 
@@ -72,7 +80,7 @@ The system SHALL store wrapper lifecycle state with statuses `active` and `revok
 
 ### Requirement: Unlock decrypts key ring locally
 
-The system SHALL unlock encryption by deriving the KEK locally, unwrapping the MEK locally, decrypting the key ring locally, and exposing the active DEK for the current app session.
+The system SHALL unlock encryption by deriving the KEK locally, unwrapping the MEK locally, decrypting the key ring locally, and exposing the active DEK for the current app session. After decryption the system SHALL verify that the outer record's `activeDekId` is present as a key in the decrypted `deks` map.
 
 #### Scenario: Correct password unlocks active DEK
 
@@ -81,7 +89,8 @@ The system SHALL unlock encryption by deriving the KEK locally, unwrapping the M
 - **THEN** the system SHALL derive the KEK locally
 - **AND** the system SHALL decrypt the wrapped MEK locally using the wrapper id and method in AAD
 - **AND** the system SHALL decrypt the key ring locally using the MEK
-- **AND** the system SHALL read the active DEK's raw key bytes from the decrypted key ring by `activeDekId`
+- **AND** the system SHALL verify that `keyRing.activeDekId` is a key in the decrypted `deks` map
+- **AND** the system SHALL read the active DEK's raw key bytes from `deks[activeDekId].key`
 - **AND** the system SHALL keep plaintext MEK, plaintext key ring, and active DEK material in memory only for the current unlocked app session
 
 #### Scenario: Incorrect password does not unlock key ring
@@ -90,6 +99,13 @@ The system SHALL unlock encryption by deriving the KEK locally, unwrapping the M
 - **THEN** AES-GCM unwrap of the MEK SHALL fail
 - **AND** the system SHALL keep encryption locked
 - **AND** the system SHALL NOT clear the authenticated session
+
+#### Scenario: Decrypted deks missing active DEK id causes unlock failure
+
+- **WHEN** the browser decrypts key-ring ciphertext successfully
+- **AND** the outer record's `activeDekId` is not a key in the decrypted `deks` map
+- **THEN** unlock SHALL fail with the existing key-ring unlock error
+- **AND** plaintext key material SHALL NOT be exposed to the app session
 
 ### Requirement: Key ring cache stores encrypted profile only
 
@@ -123,13 +139,13 @@ The system SHALL cache only the encrypted key-ring profile locally. The cache SH
 
 ### Requirement: Key ring AAD binds ciphertext to user and active DEK
 
-The system SHALL use AES-256-GCM AAD for encrypted key-ring ciphertext constructed as `autokpo:e2ee-key-ring:v1:{userId}:{activeDekId}`.
+The system SHALL use AES-256-GCM AAD for encrypted key-ring ciphertext constructed as `autokpo:e2ee-key-ring:v1:{userId}:{activeDekId}:{revision}`.
 
-#### Scenario: Key ring ciphertext is bound to user and active DEK
+#### Scenario: Key ring ciphertext is bound to user, active DEK, and revision
 
 - **WHEN** the browser encrypts or decrypts key-ring ciphertext
-- **THEN** it SHALL use the MEK, the key-ring IV, and AAD `autokpo:e2ee-key-ring:v1:{userId}:{activeDekId}`
-- **AND** ciphertext moved to another user or active DEK id SHALL fail AES-GCM authentication
+- **THEN** it SHALL use the MEK, the key-ring IV, and AAD `autokpo:e2ee-key-ring:v1:{userId}:{activeDekId}:{revision}`
+- **AND** ciphertext moved to another user, active DEK id, or key-ring revision SHALL fail AES-GCM authentication
 
 ### Requirement: Active DEK is exposed to encrypted app code
 
@@ -162,13 +178,14 @@ The system SHALL allow an authenticated user with an unlocked encryption session
 
 ### Requirement: Backend atomically changes the active password wrapper
 
-The backend SHALL expose `POST /api/e2ee/key-ring/change-password` to atomically replace the active password wrapper for the authenticated user. The request SHALL include `currentWrappingId` and the new wrapper metadata/ciphertext. The backend SHALL revoke the current active password wrapper and insert the new active password wrapper in one transaction only when the active wrapper id matches `currentWrappingId`.
+The backend SHALL expose `POST /api/e2ee/key-ring/change-password` to atomically replace the active password wrapper for the authenticated user. The request SHALL include `currentWrappingId` and the new wrapper metadata/ciphertext. The backend SHALL revoke the current active password wrapper and insert the new active password wrapper in one atomic D1 batch only when the active wrapper id matches `currentWrappingId`.
 
 #### Scenario: Matching current wrapper is replaced
 
 - **WHEN** an authenticated user submits a valid change-password request
 - **AND** `currentWrappingId` matches the user's active password wrapper
 - **THEN** the backend SHALL mark the matched wrapper as `revoked` and set `revokedAt`
+- **AND** the backend SHALL assert inside the D1 batch that the matched wrapper was revoked before inserting the replacement wrapper
 - **AND** the backend SHALL insert the new password wrapper with method `password` and status `active`
 - **AND** the backend SHALL preserve the existing `key_ring` row and encrypted key-ring ciphertext
 - **AND** the backend SHALL return a success response without returning the full key-ring profile
@@ -180,6 +197,7 @@ The backend SHALL expose `POST /api/e2ee/key-ring/change-password` to atomically
 - **THEN** the backend SHALL reject the request with a conflict response
 - **AND** the backend SHALL NOT revoke the active password wrapper
 - **AND** the backend SHALL NOT insert the submitted wrapper as active
+- **AND** any partial wrapper mutation attempted in the same D1 batch SHALL be rolled back
 
 #### Scenario: Replacement keeps one active password wrapper
 
@@ -232,3 +250,137 @@ The client SHALL clear the unlocked encryption session when the change-password 
 - **AND** the client SHALL refetch the key-ring profile
 - **AND** the client SHALL require the user to unlock encryption again
 - **AND** the client SHALL NOT sign the user out solely because of this conflict
+
+### Requirement: Backend atomically updates the encrypted key ring
+
+The backend SHALL expose `PUT /api/e2ee/key-ring` to replace the encrypted key-ring payload for the authenticated user. The request SHALL include `currentRevision`, `activeDekId`, supported key-ring encryption metadata, key-ring IV, and encrypted key-ring ciphertext. The backend SHALL update the key-ring row only when the stored revision equals `currentRevision`, and the conditional mutation plus required postcondition assertion SHALL execute in one D1 batch.
+
+#### Scenario: Matching revision updates key ring
+
+- **WHEN** an authenticated user submits a valid key-ring update request
+- **AND** `currentRevision` equals the stored key-ring revision
+- **THEN** the backend SHALL replace `activeDekId`, `iv`, and encrypted key-ring `ciphertext`
+- **AND** the backend SHALL set `revision` to `currentRevision + 1`
+- **AND** the backend SHALL update `updatedAt`
+- **AND** the backend SHALL assert inside the D1 batch that the row exists with `revision = currentRevision + 1` and the submitted `activeDekId`
+- **AND** the backend SHALL return the updated serialized key-ring profile using the same shape as key-ring fetch
+
+#### Scenario: Stale revision is rejected
+
+- **WHEN** an authenticated user submits a valid key-ring update request
+- **AND** `currentRevision` does not equal the stored key-ring revision
+- **THEN** the backend SHALL reject the request with `409` and code `key_ring_revision_conflict`
+- **AND** the backend SHALL NOT replace the encrypted key-ring ciphertext
+- **AND** any partial key-ring mutation attempted in the same D1 batch SHALL be rolled back
+
+#### Scenario: Update validates key-ring encryption parameters
+
+- **WHEN** an authenticated user submits a key-ring update request with unsupported encryption parameters, invalid UUIDs, invalid base64, or incorrect IV length
+- **THEN** the backend SHALL reject the request with a validation error
+- **AND** the backend SHALL NOT change the key-ring row
+- **AND** the backend SHALL NOT require or receive plaintext MEK, plaintext DEK, or plaintext key-ring JSON
+
+### Requirement: Client handles key-ring update responses
+
+The client SHALL replace its cached encrypted key-ring profile with the server response after a successful key-ring update. When a key-ring update reports a stale revision conflict, the client SHALL refetch the latest key-ring profile and SHALL NOT automatically retry the rejected mutation.
+
+#### Scenario: Successful update refreshes encrypted local cache
+
+- **WHEN** the key-ring update endpoint returns an updated serialized key-ring profile
+- **THEN** the client SHALL write the returned encrypted key-ring record to the `key_ring` IndexedDB object store for the authenticated user
+- **AND** the client SHALL write the returned active password wrapper records to the `wrapper` IndexedDB object store for the authenticated user
+
+#### Scenario: Revision conflict refetches latest profile
+
+- **WHEN** the key-ring update endpoint rejects the request with code `key_ring_revision_conflict`
+- **THEN** the client SHALL request the latest key-ring profile
+- **AND** the client SHALL update the encrypted local cache from the fetched profile
+- **AND** the client SHALL NOT automatically retry the rejected key-ring mutation
+
+### Requirement: Compaction rotates the active DEK
+
+The system SHALL rotate the encrypted key ring as the first step of a sync compact session when the current key-ring revision is not newer than the compact basis revision. Rotation SHALL generate a new random DEK, add it to the plaintext key-ring `deks` map as a `DekEntry` with `createdAt = Date.now()` and `retiredAt = null`, stamp the outgoing active DEK's entry with `retiredAt = Date.now()`, set `activeDekId` to the new DEK id on the outer record, increment the key-ring revision through the existing revision-guarded key-ring update path, and keep previous DEKs in the key ring for read access.
+
+#### Scenario: Compact session rotates before preparing snapshot
+
+- **WHEN** the sync engine starts a compact session
+- **AND** the current key-ring revision is less than or equal to the maximum key-ring revision represented by rows covered by the compact basis
+- **THEN** the browser SHALL generate a new random DEK
+- **AND** the browser SHALL add the new DEK to the plaintext key-ring `deks` map as `{ key: <base64>, createdAt: <Date.now() ms>, retiredAt: null }`
+- **AND** the browser SHALL stamp the outgoing active DEK entry with `retiredAt = Date.now()` before writing
+- **AND** the browser SHALL set `activeDekId` to the new DEK id on the outer record
+- **AND** the browser SHALL update the encrypted key-ring profile using the current revision as the revision precondition
+- **AND** the browser SHALL prepare the compact snapshot only after the key-ring update succeeds
+
+#### Scenario: Existing newer revision is reused
+
+- **WHEN** the sync engine starts or restarts a compact session
+- **AND** the current key-ring revision is greater than the maximum key-ring revision represented by rows covered by the compact basis
+- **THEN** the browser SHALL NOT rotate the key ring again for that compact session
+- **AND** the browser SHALL prepare the compact snapshot using the current active DEK and current key-ring revision
+
+### Requirement: Concurrent rotation conflict joins the latest key ring
+
+The system SHALL handle key-ring revision conflicts during automatic compaction rotation by abandoning the locally generated DEK, refetching the latest key-ring profile, and using the latest active DEK when it is newer than the compact basis. The browser SHALL NOT automatically retry its abandoned generated DEK after a rotation conflict.
+
+#### Scenario: Another client rotates first
+
+- **WHEN** a browser attempts automatic compaction rotation with a stale `currentRevision`
+- **AND** the backend rejects the key-ring update with a revision conflict
+- **THEN** the browser SHALL refetch the latest key-ring profile
+- **AND** the browser SHALL abandon the locally generated DEK from the rejected request
+- **AND** the browser SHALL use the refetched active DEK and revision if that revision is newer than the compact basis revision
+- **AND** the browser SHALL NOT immediately create another automatic rotation for the same compact basis
+
+### Requirement: Unlocked key ring exposes DEKs by id
+
+The system SHALL expose enough decrypted key-ring material to encrypted app code to retrieve a DEK by id for read operations while still exposing the active DEK id for write operations. Plaintext DEK material SHALL remain in memory only for the current unlocked app session. Each DEK entry in memory SHALL carry `key`, `createdAt`, and `retiredAt` fields.
+
+#### Scenario: Sync decrypts old rows after rotation
+
+- **WHEN** the key ring contains multiple DEKs
+- **AND** a pulled sync row references a previous DEK id in `encryptionKeyId`
+- **THEN** the sync engine SHALL retrieve that DEK's raw key bytes from `deks[encryptionKeyId].key` in the unlocked key-ring material
+- **AND** the sync engine SHALL use that DEK to decrypt the row
+- **AND** the sync engine SHALL continue using the active DEK id for new uploads
+
+### Requirement: Each DEK carries creation and retirement timestamps
+
+Every DEK entry in the key ring plaintext SHALL carry `createdAt` and `retiredAt` fields as millisecond Unix timestamps (`number`). `createdAt` SHALL be set to `Date.now()` when the DEK is generated. `retiredAt` SHALL be `null` while the DEK is active and SHALL be set to `Date.now()` when a rotation replaces it with a new active DEK.
+
+#### Scenario: Initial DEK has createdAt and null retiredAt
+
+- **WHEN** the browser creates the initial encrypted key-ring profile during setup
+- **THEN** the single DEK entry in the plaintext `deks` map SHALL have `createdAt` equal to the current millisecond timestamp
+- **AND** `retiredAt` SHALL be `null`
+
+#### Scenario: Rotation stamps outgoing DEK with retiredAt
+
+- **WHEN** the browser generates a new DEK during a key-ring rotation
+- **THEN** the outgoing active DEK entry SHALL be updated with `retiredAt = Date.now()` before the new plaintext is encrypted
+- **AND** the new DEK entry SHALL have `createdAt = Date.now()` and `retiredAt = null`
+- **AND** already-retired DEKs SHALL retain their original `retiredAt` value
+
+#### Scenario: Already-retired DEKs are not re-stamped
+
+- **WHEN** a second or subsequent rotation occurs
+- **AND** the key ring already contains DEKs with non-null `retiredAt`
+- **THEN** the system SHALL NOT modify `retiredAt` on any DEK other than the outgoing active DEK
+
+### Requirement: Key-ring ciphertext size is bounded
+
+The backend SHALL reject key-ring setup and update requests whose encrypted key-ring ciphertext exceeds the configured key-ring ciphertext size limit. The limit SHALL apply to ciphertext bytes after base64 decoding and SHALL prevent unbounded growth of retained DEKs.
+
+#### Scenario: Oversized key-ring update is rejected
+
+- **WHEN** an authenticated client submits a key-ring update whose decoded key-ring ciphertext exceeds the configured limit
+- **THEN** the backend SHALL reject the request with a validation or payload-too-large error
+- **AND** the backend SHALL NOT update the stored key-ring row
+- **AND** the previous active DEK and revision SHALL remain authoritative for sync writes
+
+#### Scenario: Valid retained-DEK key ring is accepted
+
+- **WHEN** an authenticated client submits a key-ring update that adds a DEK and whose decoded key-ring ciphertext is within the configured limit
+- **AND** the supplied `currentRevision` matches the stored key-ring revision
+- **THEN** the backend SHALL accept the update
+- **AND** the backend SHALL store the new active DEK id, incremented revision, IV, and ciphertext

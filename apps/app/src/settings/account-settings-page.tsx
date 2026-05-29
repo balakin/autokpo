@@ -3,19 +3,16 @@ import {
   Button,
   Card,
   Chip,
-  Dropdown,
   Input,
   Label,
   Modal,
-  Skeleton,
   Separator,
+  Skeleton,
   toast,
 } from '@heroui/react';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState, type ChangeEvent } from 'react';
-import Cropper, { type Area } from 'react-easy-crop';
-import 'react-easy-crop/react-easy-crop.css';
+import { useState } from 'react';
 import {
   LuCircleAlert,
   LuCircleCheck,
@@ -24,7 +21,6 @@ import {
   LuGlobe,
   LuLaptop,
   LuLogOut,
-  LuPencil,
   LuTrash,
   LuWifi,
   LuWifiOff,
@@ -43,10 +39,8 @@ import {
   deleteAccount,
   fetchAccountProfile,
   fetchAccountSessions,
-  removeProfileImage,
   revokeAccountSession,
   revokeOtherAccountSessions,
-  uploadProfileImage,
   type AccountSession,
   type AccountProfile,
 } from './account-settings-api';
@@ -75,11 +69,6 @@ export function AccountSettingsPage() {
 
   const invalidateSessions = () =>
     queryClient.invalidateQueries({ queryKey: sessionsQueryKey });
-  const refreshAccount = () =>
-    Promise.all([
-      queryClient.invalidateQueries({ queryKey: accountQueryKey }),
-      auth.refresh(),
-    ]);
 
   if (!isOnline) return <AccountOfflineCard />;
   if (accountQuery.isPending) return <AccountLoadingSkeleton />;
@@ -103,7 +92,6 @@ export function AccountSettingsPage() {
             <AccountProfileSection
               account={account}
               dirty={dirty}
-              onAccountChanged={refreshAccount}
               onDeleteRequest={() => setShowDeleteConfirm(true)}
             />
           </Card.Content>
@@ -698,158 +686,30 @@ function DeleteAccountModal({
 interface AccountProfileSectionProps {
   account: AccountProfile;
   dirty: boolean;
-  onAccountChanged: () => Promise<unknown>;
   onDeleteRequest: () => void;
 }
 
 function AccountProfileSection({
   account,
   dirty,
-  onAccountChanged,
   onDeleteRequest,
 }: AccountProfileSectionProps) {
   const { t } = useLingui();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
-  const isCropModalOpen = selectedImageUrl !== null;
-
-  useEffect(() => {
-    return () => {
-      if (selectedImageUrl) URL.revokeObjectURL(selectedImageUrl);
-    };
-  }, [selectedImageUrl]);
-
-  const uploadMutation = useMutation({
-    mutationFn: uploadProfileImage,
-    onSuccess: () => {
-      toast.success(t`Profilna slika je sačuvana.`);
-      closeCropModal();
-      void onAccountChanged();
-    },
-    onError: () => {
-      toast.danger(t`Nije moguće sačuvati profilnu sliku. Pokušajte ponovo.`);
-    },
-  });
-  const removeMutation = useMutation({
-    mutationFn: removeProfileImage,
-    onSuccess: () => {
-      toast.success(t`Profilna slika je uklonjena.`);
-      void onAccountChanged();
-    },
-    onError: () => {
-      toast.danger(t`Nije moguće ukloniti profilnu sliku. Pokušajte ponovo.`);
-    },
-  });
-
-  function openFileDialog() {
-    if (uploadMutation.isPending || removeMutation.isPending) return;
-    fileInputRef.current?.click();
-  }
-
-  function handleFileSelected(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.currentTarget.files?.[0];
-    event.currentTarget.value = '';
-    if (!file) return;
-
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      toast.danger(t`Izaberite JPEG, PNG ili WebP sliku.`);
-      return;
-    }
-
-    closeCropModal();
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
-    setSelectedImageUrl(URL.createObjectURL(file));
-  }
-
-  function closeCropModal() {
-    if (selectedImageUrl) URL.revokeObjectURL(selectedImageUrl);
-    setSelectedImageUrl(null);
-    setCroppedAreaPixels(null);
-  }
-
-  async function saveCroppedImage() {
-    if (!selectedImageUrl || !croppedAreaPixels) return;
-
-    try {
-      const blob = await exportCroppedAvatar(
-        selectedImageUrl,
-        croppedAreaPixels,
-      );
-      if (blob.size > AVATAR_UPLOAD_MAX_BYTES) {
-        toast.danger(t`Profilna slika mora biti manja od 256 KB.`);
-        return;
-      }
-      uploadMutation.mutate(blob);
-    } catch {
-      toast.danger(t`Nije moguće pripremiti profilnu sliku za slanje.`);
-    }
-  }
-
   return (
     <section className="grid gap-3 rounded-2xl border border-separator/70 bg-surface px-4 py-3 shadow-xs sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
       <div className="flex min-w-0 items-center gap-3">
-        <div className="group relative size-10 shrink-0">
-          <input
-            ref={fileInputRef}
-            data-testid="profile-image-input"
-            className="hidden"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={handleFileSelected}
+        <div
+          className="group relative size-10 shrink-0 cursor-pointer"
+          onClick={() => toast.info(t`Promena avatara trenutno nije dostupna`)}
+          aria-label={t`Promena avatara trenutno nije dostupna`}
+        >
+          <UserAvatar
+            userId={account.id}
+            email={account.email}
+            image={null}
+            size="md"
+            className="size-10 transition-transform group-hover:scale-105"
           />
-          <Dropdown>
-            <Button
-              isIconOnly
-              variant="ghost"
-              aria-label={t`Uredi profilnu sliku`}
-              className="size-10 rounded-full p-0"
-              isDisabled={uploadMutation.isPending || removeMutation.isPending}
-            >
-              <UserAvatar
-                userId={account.id}
-                email={account.email}
-                image={account.image}
-                size="md"
-                className="size-10 transition-transform group-hover:scale-105"
-              />
-            </Button>
-            <span className="pointer-events-none absolute right-0 bottom-0 flex size-4 items-center justify-center rounded-full bg-foreground/90 text-background shadow-sm">
-              <LuPencil className="size-2.5" />
-            </span>
-            <Dropdown.Popover>
-              <Dropdown.Menu
-                onAction={(key) => {
-                  if (key === 'change') openFileDialog();
-                  if (key === 'remove') removeMutation.mutate();
-                }}
-              >
-                <Dropdown.Item
-                  id="change"
-                  textValue={t`Promeni profilnu sliku`}
-                >
-                  <Label>
-                    <Trans>Promeni profilnu sliku</Trans>
-                  </Label>
-                </Dropdown.Item>
-                {account.image ? (
-                  <Dropdown.Item
-                    id="remove"
-                    variant="danger"
-                    textValue={t`Ukloni profilnu sliku`}
-                  >
-                    <Label>
-                      <Trans>Ukloni profilnu sliku</Trans>
-                    </Label>
-                  </Dropdown.Item>
-                ) : null}
-              </Dropdown.Menu>
-            </Dropdown.Popover>
-          </Dropdown>
         </div>
         <div className="min-w-0">
           <p className="text-[11px] font-medium tracking-[0.08em] text-muted uppercase">
@@ -888,114 +748,6 @@ function AccountProfileSection({
         <LuTrash className="size-4" />
         <Trans>Obriši nalog</Trans>
       </Button>
-
-      <Modal.Backdrop
-        isOpen={isCropModalOpen}
-        onOpenChange={(open) => {
-          if (!open) closeCropModal();
-        }}
-        isDismissable={!uploadMutation.isPending}
-        isKeyboardDismissDisabled={uploadMutation.isPending}
-      >
-        <Modal.Container>
-          <Modal.Dialog className="sm:max-w-md">
-            <Modal.Header>
-              <Modal.Heading>
-                <Trans>Uredi profilnu sliku</Trans>
-              </Modal.Heading>
-            </Modal.Header>
-            <Modal.Body>
-              {selectedImageUrl ? (
-                <div className="relative h-72 overflow-hidden rounded-2xl bg-surface-secondary">
-                  <Cropper
-                    image={selectedImageUrl}
-                    crop={crop}
-                    zoom={zoom}
-                    aspect={1}
-                    cropShape="round"
-                    onCropChange={setCrop}
-                    onZoomChange={setZoom}
-                    onCropComplete={(_, areaPixels) => {
-                      setCroppedAreaPixels(areaPixels);
-                    }}
-                  />
-                </div>
-              ) : null}
-              <p className="text-sm text-muted">
-                <Trans>
-                  Pomerite i zumirajte sliku da izaberete deo koji će se
-                  prikazivati kao profilna slika.
-                </Trans>
-              </p>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                variant="secondary"
-                isDisabled={uploadMutation.isPending}
-                onPress={closeCropModal}
-              >
-                <Trans>Otkaži</Trans>
-              </Button>
-              <Button
-                isPending={uploadMutation.isPending}
-                onPress={() => void saveCroppedImage()}
-              >
-                <Trans>Sačuvaj sliku</Trans>
-              </Button>
-            </Modal.Footer>
-            <Modal.CloseTrigger />
-          </Modal.Dialog>
-        </Modal.Container>
-      </Modal.Backdrop>
     </section>
   );
-}
-
-const AVATAR_EXPORT_SIZE = 512;
-const AVATAR_UPLOAD_MAX_BYTES = 256 * 1024;
-
-async function exportCroppedAvatar(
-  imageUrl: string,
-  area: Area,
-): Promise<Blob> {
-  const image = await loadImage(imageUrl);
-  const canvas = document.createElement('canvas');
-  canvas.width = AVATAR_EXPORT_SIZE;
-  canvas.height = AVATAR_EXPORT_SIZE;
-
-  const context = canvas.getContext('2d');
-  if (!context) {
-    throw new Error('Canvas is not available.');
-  }
-
-  context.drawImage(
-    image,
-    area.x,
-    area.y,
-    area.width,
-    area.height,
-    0,
-    0,
-    AVATAR_EXPORT_SIZE,
-    AVATAR_EXPORT_SIZE,
-  );
-
-  const blob = await new Promise<Blob | null>((resolve) => {
-    canvas.toBlob(resolve, 'image/webp', 0.82);
-  });
-
-  if (!blob || blob.type !== 'image/webp') {
-    throw new Error('WebP export is not available.');
-  }
-
-  return blob;
-}
-
-function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error('Image failed to load.'));
-    image.src = src;
-  });
 }

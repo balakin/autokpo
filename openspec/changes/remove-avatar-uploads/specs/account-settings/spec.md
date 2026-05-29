@@ -20,11 +20,11 @@ The Account settings tab SHALL display the signed-in user's server-backed accoun
 - **THEN** the Account tab SHALL display the account identity with an online status indicator
 - **AND** it SHALL display whether local data is synchronized or has unsynchronized changes
 
-#### Scenario: Avatar shows initials with disabled tooltip
+#### Scenario: Avatar shows initials and shows toast on click
 
 - **WHEN** account settings load successfully
 - **THEN** the avatar SHALL render initials only (no image)
-- **AND** hovering over the avatar SHALL show a tooltip indicating avatar changes are not available
+- **AND** clicking or tapping the avatar SHALL show a toast notification indicating avatar changes are not available
 
 #### Scenario: Avatar change action is not available
 

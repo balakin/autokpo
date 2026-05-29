@@ -2,7 +2,7 @@
 
 ### Requirement: Avatar upload and import are permanently disabled
 
-The system SHALL NOT provide avatar upload, OAuth import, or avatar image serving. The `UserAvatar` component SHALL render initials fallback only. Avatar display in the account settings page SHALL show initials with a tooltip indicating the feature is unavailable.
+The system SHALL NOT provide avatar upload, OAuth import, or avatar image serving. The `UserAvatar` component SHALL render initials fallback only. Clicking or tapping the avatar in the account settings page SHALL show a toast notification indicating the feature is unavailable.
 
 #### Scenario: Avatar always shows initials
 

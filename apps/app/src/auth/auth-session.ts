@@ -9,8 +9,6 @@ const LEGACY_SESSION_KEY = 'autokpo:remembered-local-user';
 export type StoredSession = {
   userId: string;
   email: string | null;
-  image: string | null;
-  imageStatus?: 'importing' | 'ready';
 };
 
 function isStoredSession(value: unknown): value is StoredSession {
@@ -20,11 +18,7 @@ function isStoredSession(value: unknown): value is StoredSession {
   const maybe = value as Partial<StoredSession>;
   return (
     typeof maybe.userId === 'string' &&
-    (typeof maybe.email === 'string' || maybe.email === null) &&
-    (typeof maybe.image === 'string' || maybe.image === null) &&
-    (maybe.imageStatus === undefined ||
-      maybe.imageStatus === 'importing' ||
-      maybe.imageStatus === 'ready')
+    (typeof maybe.email === 'string' || maybe.email === null)
   );
 }
 
@@ -53,8 +47,6 @@ export function readStoredSession(): StoredSession | null {
   const migratedSession: StoredSession = {
     userId: legacyUserId,
     email: null,
-    image: null,
-    imageStatus: 'ready',
   };
   localStorage.setItem(SESSION_KEY, JSON.stringify(migratedSession));
   localStorage.removeItem(LEGACY_SESSION_KEY);
@@ -161,8 +153,6 @@ export async function refreshSession(): Promise<string | null> {
   writeStoredSession({
     userId: nextUser.id,
     email: nextUser.email ?? null,
-    image: nextUser.image ?? null,
-    imageStatus: nextUser.imageStatus === 'importing' ? 'importing' : 'ready',
   });
   return nextUser.id;
 }
@@ -170,9 +160,6 @@ export async function refreshSession(): Promise<string | null> {
 export async function logoutSession(): Promise<void> {
   const previousSession = readStoredSession();
   await authClient.signOut();
-  if (typeof caches !== 'undefined') {
-    await caches.delete('avatars');
-  }
   if (previousSession?.userId) {
     clearLocalEncryptionUnlockMaterial(previousSession.userId);
   }

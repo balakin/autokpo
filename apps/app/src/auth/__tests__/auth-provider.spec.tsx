@@ -23,7 +23,6 @@ function Harness() {
     <>
       <span data-testid="userId">{auth.user?.id ?? 'null'}</span>
       <span data-testid="email">{auth.user?.email ?? 'null'}</span>
-      <span data-testid="image">{auth.user?.image ?? 'null'}</span>
       <button onClick={() => void auth.logout()}>logout</button>
     </>
   );
@@ -59,7 +58,6 @@ describe('AuthProvider', () => {
       JSON.stringify({
         userId: 'remembered-user',
         email: 'remembered@example.com',
-        image: null,
       }),
     );
     render(
@@ -71,7 +69,6 @@ describe('AuthProvider', () => {
     expect(screen.getByTestId('email')).toHaveTextContent(
       'remembered@example.com',
     );
-    expect(screen.getByTestId('image')).toHaveTextContent('null');
   });
 
   it('refreshSession updates userId', async () => {
@@ -80,7 +77,6 @@ describe('AuthProvider', () => {
         user: {
           id: 'user-1',
           email: 'user-1@example.com',
-          image: 'https://img.example.com/u1.png',
         },
       },
     });
@@ -96,8 +92,6 @@ describe('AuthProvider', () => {
       JSON.stringify({
         userId: 'user-1',
         email: 'user-1@example.com',
-        image: 'https://img.example.com/u1.png',
-        imageStatus: 'ready',
       }),
     );
   });
@@ -109,7 +103,6 @@ describe('AuthProvider', () => {
       JSON.stringify({
         userId: 'remembered-user',
         email: 'remembered@example.com',
-        image: null,
       }),
     );
     render(
@@ -138,7 +131,6 @@ describe('AuthProvider', () => {
         JSON.stringify({
           userId: 'leader-user',
           email: 'leader@example.com',
-          image: null,
         }),
       );
       window.dispatchEvent(
@@ -147,7 +139,6 @@ describe('AuthProvider', () => {
           newValue: JSON.stringify({
             userId: 'leader-user',
             email: 'leader@example.com',
-            image: null,
           }),
         }),
       );
@@ -155,52 +146,5 @@ describe('AuthProvider', () => {
 
     expect(screen.getByTestId('userId')).toHaveTextContent('leader-user');
     expect(screen.getByTestId('email')).toHaveTextContent('leader@example.com');
-  });
-
-  it('polls until importing image status becomes ready', async () => {
-    vi.useFakeTimers();
-    getSessionMock
-      .mockResolvedValueOnce({
-        data: {
-          user: {
-            id: 'user-1',
-            email: 'user-1@example.com',
-            image: 'https://img.example.com/u1.png',
-            imageStatus: 'importing',
-          },
-        },
-      })
-      .mockResolvedValueOnce({
-        data: {
-          user: {
-            id: 'user-1',
-            email: 'user-1@example.com',
-            image: 'https://img.example.com/u1.png',
-            imageStatus: 'ready',
-          },
-        },
-      });
-
-    render(
-      <AuthProvider>
-        <Harness />
-      </AuthProvider>,
-    );
-    await act(async () => {
-      await Promise.resolve();
-    });
-    expect(getSessionMock).toHaveBeenCalledTimes(1);
-
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(2000);
-      await Promise.resolve();
-    });
-
-    expect(getSessionMock).toHaveBeenCalledTimes(2);
-    expect(screen.getByTestId('image')).toHaveTextContent('u1.png');
-    expect(localStorage.getItem('autokpo:session')).toContain(
-      '"imageStatus":"ready"',
-    );
-    vi.useRealTimers();
   });
 });

@@ -3,8 +3,6 @@ import { createContext } from 'react';
 export type AuthUser = {
   id: string;
   email: string | null;
-  image: string | null;
-  imageStatus?: 'importing' | 'ready';
 };
 
 export type AuthContextValue = {

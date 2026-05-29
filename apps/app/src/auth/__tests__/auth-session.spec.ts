@@ -47,7 +47,6 @@ describe('readStoredSession', () => {
     const session: StoredSession = {
       userId: 'user-abc',
       email: 'user@example.com',
-      image: 'https://img.example.com/a.png',
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
     expect(readStoredSession()).toEqual(session);
@@ -59,8 +58,6 @@ describe('readStoredSession', () => {
     expect(readStoredSession()).toEqual({
       userId: 'legacy-user',
       email: null,
-      image: null,
-      imageStatus: 'ready',
     });
     expect(localStorage.getItem('autokpo:remembered-local-user')).toBeNull();
   });
@@ -68,9 +65,9 @@ describe('readStoredSession', () => {
 
 describe('writeStoredSession', () => {
   it('writes json session', () => {
-    writeStoredSession({ userId: 'u1', email: 'u@example.com', image: null });
+    writeStoredSession({ userId: 'u1', email: 'u@example.com' });
     expect(localStorage.getItem(SESSION_KEY)).toBe(
-      JSON.stringify({ userId: 'u1', email: 'u@example.com', image: null }),
+      JSON.stringify({ userId: 'u1', email: 'u@example.com' }),
     );
   });
 });
@@ -114,31 +111,6 @@ describe('refreshSession', () => {
       JSON.stringify({
         userId: 'google-user',
         email: 'google@example.com',
-        image: 'https://img.example.com/google.png',
-        imageStatus: 'ready',
-      }),
-    );
-  });
-
-  it('preserves importing image status from session payload', async () => {
-    getSessionMock.mockResolvedValue({
-      data: {
-        user: {
-          id: 'google-user',
-          email: 'google@example.com',
-          image: 'https://img.example.com/google.png',
-          imageStatus: 'importing',
-        },
-      },
-    });
-
-    await expect(refreshSession()).resolves.toBe('google-user');
-    expect(localStorage.getItem(SESSION_KEY)).toBe(
-      JSON.stringify({
-        userId: 'google-user',
-        email: 'google@example.com',
-        image: 'https://img.example.com/google.png',
-        imageStatus: 'importing',
       }),
     );
   });
@@ -146,7 +118,7 @@ describe('refreshSession', () => {
   it('clears stored user and returns null when signed out', async () => {
     localStorage.setItem(
       SESSION_KEY,
-      JSON.stringify({ userId: 'old-user', email: null, image: null }),
+      JSON.stringify({ userId: 'old-user', email: null }),
     );
     getSessionMock.mockResolvedValue({ data: null });
 

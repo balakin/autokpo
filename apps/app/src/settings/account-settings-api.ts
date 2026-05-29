@@ -6,8 +6,6 @@ export interface AccountProfile {
   id: string;
   name: string | null;
   email: string | null;
-  image: string | null;
-  imageStatus: 'importing' | 'ready';
 }
 
 export interface AccountSession {
@@ -47,29 +45,7 @@ export async function fetchAccountProfile(): Promise<AccountProfile> {
     id: user.id,
     name: user.name ?? null,
     email: user.email ?? null,
-    image: user.image ?? null,
-    imageStatus: user.imageStatus === 'importing' ? 'importing' : 'ready',
   };
-}
-
-export async function uploadProfileImage(image: Blob): Promise<void> {
-  const response = await fetch('/api/profile/avatar', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'image/webp' },
-    body: image,
-  });
-
-  if (!response.ok) {
-    throw new Error('Profile image upload failed.');
-  }
-}
-
-export async function removeProfileImage(): Promise<void> {
-  const response = await fetch('/api/profile/avatar', { method: 'DELETE' });
-
-  if (!response.ok) {
-    throw new Error('Profile image removal failed.');
-  }
 }
 
 export async function deleteAccount(): Promise<void> {

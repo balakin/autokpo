@@ -34,7 +34,7 @@ export function EncryptionProfilePopover() {
     return null;
   }
 
-  const { id: userId, email, image } = auth.user;
+  const { id: userId, email } = auth.user;
 
   async function signOut() {
     if (!isOnline) return;
@@ -47,7 +47,7 @@ export function EncryptionProfilePopover() {
       <UserAvatar
         userId={userId}
         email={email}
-        image={image}
+        image={null}
         className="size-full"
       />
     </Button>
@@ -57,7 +57,7 @@ export function EncryptionProfilePopover() {
     <div className="space-y-4">
       <section className="rounded-2xl border border-separator/70 bg-surface px-4 py-3 shadow-xs">
         <div className="flex items-center gap-3">
-          <UserAvatar userId={userId} email={email} image={image} size="md" />
+          <UserAvatar userId={userId} email={email} image={null} size="md" />
           <div className="min-w-0">
             <p className="text-[11px] font-medium tracking-[0.08em] text-muted uppercase">
               <Trans>Nalog</Trans>

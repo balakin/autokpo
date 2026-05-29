@@ -28,7 +28,7 @@ erDiagram
     uuid active_dek_id
     int revision
     string encryption_algorithm
-    text encryption_params_json
+    text encryption_params
     bytes ciphertext
   }
 
@@ -40,7 +40,7 @@ erDiagram
     string kdf_algorithm
     bytes kdf_salt
     string wrapping_algorithm
-    text wrapping_params_json
+    text wrapping_params
     bytes ciphertext
   }
 ```

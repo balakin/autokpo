@@ -79,7 +79,7 @@ e2eeRouter.post('/key-ring', async (c) => {
           activeDekId: parsed.activeDekId,
           revision: 1,
           encryptionAlgorithm: 'aes-256-gcm',
-          encryptionParamsJson: JSON.stringify(parsed.encryptionParams),
+          encryptionParams: JSON.stringify(parsed.encryptionParams),
           ciphertext: parsed.keyRingCiphertext,
         })
         .returning(),
@@ -91,10 +91,10 @@ e2eeRouter.post('/key-ring', async (c) => {
           method: 'password',
           status: 'active',
           kdfAlgorithm: 'argon2id',
-          kdfParamsJson: JSON.stringify(KDF_PARAMS_V1),
+          kdfParams: JSON.stringify(KDF_PARAMS_V1),
           kdfSalt: parsed.kdfSalt,
           wrappingAlgorithm: 'aes-256-gcm',
-          wrappingParamsJson: JSON.stringify(parsed.wrappingParams),
+          wrappingParams: JSON.stringify(parsed.wrappingParams),
           ciphertext: parsed.wrappedMek,
         })
         .returning(),
@@ -126,7 +126,7 @@ e2eeRouter.put('/key-ring', async (c) => {
           activeDekId: parsed.activeDekId,
           revision: parsed.currentRevision + 1,
           encryptionAlgorithm: parsed.encryptionAlgorithm,
-          encryptionParamsJson: JSON.stringify(parsed.encryptionParams),
+          encryptionParams: JSON.stringify(parsed.encryptionParams),
           ciphertext: parsed.keyRingCiphertext,
           updatedAt: new Date(),
         })
@@ -215,10 +215,10 @@ e2eeRouter.post('/key-ring/change-password', async (c) => {
         method: 'password',
         status: 'active',
         kdfAlgorithm: 'argon2id',
-        kdfParamsJson: JSON.stringify(KDF_PARAMS_V1),
+        kdfParams: JSON.stringify(KDF_PARAMS_V1),
         kdfSalt: parsed.kdfSalt,
         wrappingAlgorithm: 'aes-256-gcm',
-        wrappingParamsJson: JSON.stringify(parsed.wrappingParams),
+        wrappingParams: JSON.stringify(parsed.wrappingParams),
         ciphertext: parsed.wrappedMek,
       }),
     ]);
@@ -417,11 +417,11 @@ function parseAesGcmParams(
 }
 
 function serializeRecord(keyRingRow: KeyRingRow, wrapping: KeyRingWrappingRow) {
-  const encryptionParams = JSON.parse(keyRingRow.encryptionParamsJson) as {
+  const encryptionParams = JSON.parse(keyRingRow.encryptionParams) as {
     iv: string;
     tagBits: number;
   };
-  const wrappingParams = JSON.parse(wrapping.wrappingParamsJson) as {
+  const wrappingParams = JSON.parse(wrapping.wrappingParams) as {
     iv: string;
     tagBits: number;
   };
@@ -444,7 +444,7 @@ function serializeRecord(keyRingRow: KeyRingRow, wrapping: KeyRingWrappingRow) {
         userId: wrapping.userId,
         method: wrapping.method,
         kdfAlgorithm: wrapping.kdfAlgorithm,
-        kdfParams: JSON.parse(wrapping.kdfParamsJson) as unknown,
+        kdfParams: JSON.parse(wrapping.kdfParams) as unknown,
         kdfSalt: wrapping.kdfSalt.toBase64(),
         wrappingAlgorithm: wrapping.wrappingAlgorithm,
         wrappingParams,

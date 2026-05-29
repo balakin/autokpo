@@ -27,7 +27,7 @@ export const keyRing = sqliteTable(
     activeDekId: text('active_dek_id').notNull(),
     revision: integer('revision').default(1).notNull(),
     encryptionAlgorithm: text('encryption_algorithm').notNull(),
-    encryptionParamsJson: text('encryption_params_json').notNull(),
+    encryptionParams: text('encryption_params').notNull(),
     ciphertext: blobBytes('ciphertext').notNull(),
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
@@ -49,10 +49,10 @@ export const keyRingWrapping = sqliteTable(
     method: text('method', { enum: ['password'] }).notNull(),
     status: text('status', { enum: ['active', 'revoked'] }).notNull(),
     kdfAlgorithm: text('kdf_algorithm').notNull(),
-    kdfParamsJson: text('kdf_params_json').notNull(),
+    kdfParams: text('kdf_params').notNull(),
     kdfSalt: blobBytes('kdf_salt').notNull(),
     wrappingAlgorithm: text('wrapping_algorithm').notNull(),
-    wrappingParamsJson: text('wrapping_params_json').notNull(),
+    wrappingParams: text('wrapping_params').notNull(),
     ciphertext: blobBytes('ciphertext').notNull(),
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)

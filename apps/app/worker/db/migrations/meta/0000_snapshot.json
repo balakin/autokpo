@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "0b23481e-7acd-47ac-8884-3ed8a6859c19",
+  "id": "2a1ceff8-5ad2-4b5e-ac60-122f607fb0b9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -436,8 +436,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "encryption_params_json": {
-          "name": "encryption_params_json",
+        "encryption_params": {
+          "name": "encryption_params",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -527,8 +527,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "kdf_params_json": {
-          "name": "kdf_params_json",
+        "kdf_params": {
+          "name": "kdf_params",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -548,8 +548,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "wrapping_params_json": {
-          "name": "wrapping_params_json",
+        "wrapping_params": {
+          "name": "wrapping_params",
           "type": "text",
           "primaryKey": false,
           "notNull": true,

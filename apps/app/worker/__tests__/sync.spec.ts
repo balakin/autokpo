@@ -98,7 +98,7 @@ async function insertTestKeyRing() {
       userId: 'user-1',
       activeDekId: TEST_KEY_ID,
       encryptionAlgorithm: TEST_ALGORITHM,
-      encryptionParamsJson: JSON.stringify({
+      encryptionParams: JSON.stringify({
         iv: toBase64(new Uint8Array(12)),
         tagBits: 128,
       }),

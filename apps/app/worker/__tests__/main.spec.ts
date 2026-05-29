@@ -35,7 +35,7 @@ describe('worker', () => {
         userId,
         activeDekId: 'dek-1',
         encryptionAlgorithm: 'aes-256-gcm',
-        encryptionParamsJson: JSON.stringify({
+        encryptionParams: JSON.stringify({
           iv: 'AAAAAAAAAAAAAAAA',
           tagBits: 128,
         }),

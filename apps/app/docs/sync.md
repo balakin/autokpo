@@ -29,7 +29,7 @@ erDiagram
     uuid encryption_key_id
     int key_ring_revision
     string encryption_algorithm
-    text encryption_params_json
+    text encryption_params
     bytes ciphertext
   }
 

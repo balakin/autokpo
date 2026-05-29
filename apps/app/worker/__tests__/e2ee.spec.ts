@@ -22,16 +22,16 @@ function bytesBase64(length: number): string {
 
 function validPayload() {
   return {
-    keyRingId: '11111111-1111-4111-8111-111111111111',
-    wrappingId: '22222222-2222-4222-8222-222222222222',
-    activeDekId: '33333333-3333-4333-8333-333333333333',
     keyRing: {
+      id: '11111111-1111-4111-8111-111111111111',
+      activeDekId: '33333333-3333-4333-8333-333333333333',
       plaintextSchemaVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
       encryptionParams: { iv: bytesBase64(12), tagBits: 128 },
       ciphertext: bytesBase64(48),
     },
     mek: {
+      id: '22222222-2222-4222-8222-222222222222',
       kdfAlgorithm: 'argon2id',
       kdfParams: {
         memorySize: 65536,
@@ -118,14 +118,14 @@ describe('/api/e2ee/key-ring', () => {
     const created = await create.json();
     expect(created).toMatchObject({
       keyRing: {
-        id: payload.keyRingId,
+        id: payload.keyRing.id,
         userId: 'e2ee-user-1',
-        activeDekId: payload.activeDekId,
+        activeDekId: payload.keyRing.activeDekId,
         revision: 1,
       },
       wrappers: [
         expect.objectContaining({
-          id: payload.wrappingId,
+          id: payload.mek.id,
           userId: 'e2ee-user-1',
           method: 'password',
         }),
@@ -150,7 +150,7 @@ describe('/api/e2ee/key-ring', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...validPayload(),
-        keyRingId: crypto.randomUUID(),
+        keyRing: { ...validPayload().keyRing, id: crypto.randomUUID() },
       }),
     });
 
@@ -165,7 +165,10 @@ describe('/api/e2ee/key-ring', () => {
       body: JSON.stringify(first),
     });
 
-    const second = { ...validPayload(), keyRingId: crypto.randomUUID() };
+    const second = {
+      ...validPayload(),
+      keyRing: { ...validPayload().keyRing, id: crypto.randomUUID() },
+    };
     await req('/api/e2ee/key-ring', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -178,14 +181,14 @@ describe('/api/e2ee/key-ring', () => {
       .from(keyRing)
       .where(eq(keyRing.userId, 'e2ee-user-1'));
     expect(keyRings).toHaveLength(1);
-    expect(keyRings[0].id).toBe(first.keyRingId);
+    expect(keyRings[0].id).toBe(first.keyRing.id);
 
     const wrappers = await db
       .select()
       .from(keyRingWrapping)
       .where(eq(keyRingWrapping.userId, 'e2ee-user-1'));
     expect(wrappers).toHaveLength(1);
-    expect(wrappers[0].id).toBe(first.wrappingId);
+    expect(wrappers[0].id).toBe(first.mek.id);
   });
 
   it('rejects invalid payloads', async () => {
@@ -202,13 +205,18 @@ describe('/api/e2ee/key-ring', () => {
   });
 
   it('rejects frontend-provided IDs that are not UUIDs', async () => {
-    for (const field of ['keyRingId', 'wrappingId', 'activeDekId'] as const) {
+    const p = validPayload();
+    const cases = [
+      { ...p, keyRing: { ...p.keyRing, id: 'not-a-uuid' } },
+      { ...p, mek: { ...p.mek, id: 'not-a-uuid' } },
+      { ...p, keyRing: { ...p.keyRing, activeDekId: 'not-a-uuid' } },
+    ];
+    for (const payload of cases) {
       const res = await req('/api/e2ee/key-ring', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...validPayload(), [field]: 'not-a-uuid' }),
+        body: JSON.stringify(payload),
       });
-
       expect(res.status).toBe(400);
     }
   });
@@ -221,7 +229,7 @@ describe('/api/e2ee/key-ring', () => {
       body: JSON.stringify(payload),
     });
 
-    const changePayload = validChangePayload(payload.wrappingId);
+    const changePayload = validChangePayload(payload.mek.id);
     const res = await req('/api/e2ee/key-ring/change-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -234,8 +242,8 @@ describe('/api/e2ee/key-ring', () => {
     expect(get.status).toBe(200);
     const profile: SerializedKeyRingProfile = await get.json();
     expect(profile.keyRing).toMatchObject({
-      id: payload.keyRingId,
-      activeDekId: payload.activeDekId,
+      id: payload.keyRing.id,
+      activeDekId: payload.keyRing.activeDekId,
       revision: 1,
       ciphertext: payload.keyRing.ciphertext,
     });
@@ -257,7 +265,7 @@ describe('/api/e2ee/key-ring', () => {
       .from(keyRing)
       .where(eq(keyRing.userId, 'e2ee-user-1'));
     expect(rows).toHaveLength(1);
-    expect(rows[0].id).toBe(payload.keyRingId);
+    expect(rows[0].id).toBe(payload.keyRing.id);
     expect(rows[0].revision).toBe(1);
   });
 
@@ -279,7 +287,7 @@ describe('/api/e2ee/key-ring', () => {
     expect(res.status).toBe(200);
     const profile: SerializedKeyRingProfile = await res.json();
     expect(profile.keyRing).toMatchObject({
-      id: payload.keyRingId,
+      id: payload.keyRing.id,
       activeDekId: updatePayload.activeDekId,
       revision: 2,
       encryptionAlgorithm: updatePayload.encryptionAlgorithm,
@@ -287,7 +295,7 @@ describe('/api/e2ee/key-ring', () => {
       ciphertext: updatePayload.ciphertext,
     });
     expect(profile.wrappers).toEqual([
-      expect.objectContaining({ id: payload.wrappingId }),
+      expect.objectContaining({ id: payload.mek.id }),
     ]);
   });
 
@@ -379,7 +387,7 @@ describe('/api/e2ee/key-ring', () => {
           eq(keyRingWrapping.status, 'active'),
         ),
       );
-    expect(active.id).toBe(payload.wrappingId);
+    expect(active.id).toBe(payload.mek.id);
   });
 
   it('rejects invalid password change payloads', async () => {
@@ -394,7 +402,7 @@ describe('/api/e2ee/key-ring', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        ...validChangePayload(payload.wrappingId),
+        ...validChangePayload(payload.mek.id),
         wrappingParams: { iv: bytesBase64(8), tagBits: 128 },
       }),
     });

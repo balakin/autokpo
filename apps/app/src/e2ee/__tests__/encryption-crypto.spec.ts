@@ -19,9 +19,9 @@ function makeRecord(
 ): SerializedKeyRingProfile {
   return {
     keyRing: {
-      id: request.keyRingId,
+      id: request.keyRing.id,
       userId,
-      activeDekId: request.activeDekId,
+      activeDekId: request.keyRing.activeDekId,
       revision: 1,
       plaintextSchemaVersion: 1,
       encryptionAlgorithm: 'aes-256-gcm',
@@ -32,7 +32,7 @@ function makeRecord(
     },
     wrappers: [
       {
-        id: request.wrappingId,
+        id: request.mek.id,
         userId,
         method: 'password',
         kdfAlgorithm: request.mek.kdfAlgorithm,
@@ -124,7 +124,7 @@ describe('encryption crypto helpers', () => {
       makeRecord(request),
     );
 
-    expect(unwrapped.activeDekId).toBe(request.activeDekId);
+    expect(unwrapped.activeDekId).toBe(request.keyRing.activeDekId);
     expect(unwrapped.activeDek).toHaveLength(32);
   });
 
@@ -192,7 +192,7 @@ describe('encryption crypto helpers', () => {
       await createKeyRingProfilePayload('user-1', 'password');
 
     const first = await createRotatedKeyRingPayload({
-      keyRingId: request.keyRingId,
+      keyRingId: request.keyRing.id,
       userId: 'user-1',
       mek,
       currentRevision: 1,
@@ -202,7 +202,7 @@ describe('encryption crypto helpers', () => {
     const firstRetiredAt = first.deks[activeDekId].retiredAt;
 
     const second = await createRotatedKeyRingPayload({
-      keyRingId: request.keyRingId,
+      keyRingId: request.keyRing.id,
       userId: 'user-1',
       mek,
       currentRevision: 2,

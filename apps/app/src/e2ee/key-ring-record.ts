@@ -44,16 +44,16 @@ export const serializedKeyRingProfileSchema = z.object({
 });
 
 export const createKeyRingProfileRequestSchema = z.object({
-  keyRingId: z.string(),
-  wrappingId: z.string(),
-  activeDekId: z.string(),
   keyRing: z.object({
+    id: z.string(),
+    activeDekId: z.string(),
     plaintextSchemaVersion: z.literal(1),
     encryptionAlgorithm: z.literal('aes-256-gcm'),
     encryptionParams: aesGcmParamsV1Schema,
     ciphertext: z.string(),
   }),
   mek: z.object({
+    id: z.string(),
     kdfAlgorithm: z.literal('argon2id'),
     kdfParams: kdfParamsV1Schema,
     kdfSalt: z.string(),

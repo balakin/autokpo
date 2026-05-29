@@ -91,10 +91,9 @@ export async function createKeyRingProfilePayload(
     revision: 1,
     deks: { [activeDekId]: initialDekEntry },
     request: {
-      keyRingId,
-      wrappingId,
-      activeDekId,
       keyRing: {
+        id: keyRingId,
+        activeDekId,
         plaintextSchemaVersion: 1,
         encryptionAlgorithm: 'aes-256-gcm',
         encryptionParams: {
@@ -104,6 +103,7 @@ export async function createKeyRingProfilePayload(
         ciphertext: bytesToBase64(keyRingCiphertext),
       },
       mek: {
+        id: wrappingId,
         kdfAlgorithm: 'argon2id',
         kdfParams: KDF_PARAMS_V1,
         kdfSalt: bytesToBase64(salt),

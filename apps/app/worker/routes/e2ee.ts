@@ -236,19 +236,17 @@ function parseCreateBody(body: unknown) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
   const value = body as Record<string, unknown>;
-  if (
-    typeof value.keyRingId !== 'string' ||
-    typeof value.wrappingId !== 'string' ||
-    typeof value.activeDekId !== 'string' ||
-    !isSafeId(value.keyRingId) ||
-    !isSafeId(value.wrappingId) ||
-    !isSafeId(value.activeDekId)
-  ) {
-    return Response.json({ code: 'invalid_payload' }, { status: 400 });
-  }
 
   const keyRingBlock = value.keyRing as Record<string, unknown> | null;
   if (!keyRingBlock || typeof keyRingBlock !== 'object') {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+  if (
+    typeof keyRingBlock.id !== 'string' ||
+    typeof keyRingBlock.activeDekId !== 'string' ||
+    !isSafeId(keyRingBlock.id) ||
+    !isSafeId(keyRingBlock.activeDekId)
+  ) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
   if (keyRingBlock.plaintextSchemaVersion !== 1) {
@@ -267,6 +265,9 @@ function parseCreateBody(body: unknown) {
 
   const mekBlock = value.mek as Record<string, unknown> | null;
   if (!mekBlock || typeof mekBlock !== 'object') {
+    return Response.json({ code: 'invalid_payload' }, { status: 400 });
+  }
+  if (typeof mekBlock.id !== 'string' || !isSafeId(mekBlock.id)) {
     return Response.json({ code: 'invalid_payload' }, { status: 400 });
   }
   if (
@@ -307,9 +308,9 @@ function parseCreateBody(body: unknown) {
   }
 
   return {
-    keyRingId: value.keyRingId,
-    wrappingId: value.wrappingId,
-    activeDekId: value.activeDekId,
+    keyRingId: keyRingBlock.id,
+    wrappingId: mekBlock.id,
+    activeDekId: keyRingBlock.activeDekId,
     plaintextSchemaVersion: 1 as const,
     encryptionParams,
     wrappingParams,

@@ -161,7 +161,9 @@ beforeEach(() => {
   });
   fetchKeyRingProfileMock.mockRejectedValue(notFoundError());
   createKeyRingProfilePayloadMock.mockResolvedValue({
-    request: { keyRingId: 'key-ring-1' } as CreateKeyRingProfileRequest,
+    request: {
+      keyRing: { id: 'key-ring-1' },
+    } as unknown as CreateKeyRingProfileRequest,
     mek: new Uint8Array(32),
     activeDek,
     activeDekId: 'dek-1',
@@ -284,7 +286,7 @@ describe('EncryptionGate', () => {
       'secret123',
     );
     expect(createKeyRingProfileMock).toHaveBeenCalledWith({
-      keyRingId: 'key-ring-1',
+      keyRing: { id: 'key-ring-1' },
     });
   });
 

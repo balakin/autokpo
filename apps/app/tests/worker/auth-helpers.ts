@@ -9,7 +9,6 @@ import { getAuthOptions } from '../../worker/auth-options';
 import { getDb } from '../../worker/db';
 import {
   account,
-  rateLimit,
   session,
   user,
   verification,
@@ -25,6 +24,30 @@ const TEST_GITHUB_CLIENT_SECRET = 'test-github-client-secret';
 const TEST_RESEND_API_KEY = 'test-resend-api-key';
 const TEST_RESEND_FROM_EMAIL = 'AutoKPO <autokpo@resend.dev>';
 
+export const syncRateLimitMock = vi.fn<RateLimit['limit']>(() =>
+  Promise.resolve({ success: true }),
+);
+export const e2eeRateLimitMock = vi.fn<RateLimit['limit']>(() =>
+  Promise.resolve({ success: true }),
+);
+export const exchangeRatesRateLimitMock = vi.fn<RateLimit['limit']>(() =>
+  Promise.resolve({ success: true }),
+);
+export const authRateLimitMock = vi.fn<RateLimit['limit']>(() =>
+  Promise.resolve({ success: true }),
+);
+
+export function resetRateLimitMocks() {
+  syncRateLimitMock.mockReset();
+  syncRateLimitMock.mockResolvedValue({ success: true });
+  e2eeRateLimitMock.mockReset();
+  e2eeRateLimitMock.mockResolvedValue({ success: true });
+  exchangeRatesRateLimitMock.mockReset();
+  exchangeRatesRateLimitMock.mockResolvedValue({ success: true });
+  authRateLimitMock.mockReset();
+  authRateLimitMock.mockResolvedValue({ success: true });
+}
+
 export const workerTestEnv = {
   ...env,
   APP_URL: TEST_APP_URL,
@@ -33,6 +56,10 @@ export const workerTestEnv = {
   GOOGLE_CLIENT_SECRET: TEST_GOOGLE_CLIENT_SECRET,
   RESEND_API_KEY: TEST_RESEND_API_KEY,
   RESEND_FROM_EMAIL: TEST_RESEND_FROM_EMAIL,
+  SYNC_RATE_LIMITER: { limit: syncRateLimitMock },
+  E2EE_RATE_LIMITER: { limit: e2eeRateLimitMock },
+  EXCHANGE_RATES_RATE_LIMITER: { limit: exchangeRatesRateLimitMock },
+  AUTH_RATE_LIMITER: { limit: authRateLimitMock },
 } as Env;
 
 const db = getDb(workerTestEnv.DB);
@@ -119,10 +146,10 @@ export async function createAuthAccount(accountData: {
 }
 
 export async function clearAuthData() {
+  resetRateLimitMocks();
   await db.delete(session);
   await db.delete(account);
   await db.delete(verification);
-  await db.delete(rateLimit);
   await db.delete(user);
 }
 

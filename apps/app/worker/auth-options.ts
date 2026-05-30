@@ -172,13 +172,7 @@ export function getAuthOptions({
       },
     },
     rateLimit: {
-      enabled: true,
-      storage: 'database',
-      window: 60,
-      max: 60,
-      customRules: {
-        '/email-otp/send-verification-otp': { window: 300, max: 5 },
-      },
+      enabled: false,
     },
     session: {
       freshAge: 0,

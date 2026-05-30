@@ -1,12 +1,17 @@
+import { eq } from 'drizzle-orm';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   clearAuthData,
+  createAuthAccount,
+  db,
   getAuthHeaders,
   workerTestEnv,
 } from '../../tests/worker/auth-helpers';
 import { flushWaitUntil, mockCtx } from '../../tests/worker/request-helpers';
+import { account, session } from '../db/schema/auth';
 import app from '../main';
+import { MAX_AUTH_BODY_BYTES } from '../payload-limits';
 
 const CAPTCHA_TEST_TOKEN = 'test-captcha-token';
 
@@ -42,10 +47,47 @@ async function otpSendRequest(email: string) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'cf-connecting-ip': '203.0.113.10',
       'x-captcha-response': CAPTCHA_TEST_TOKEN,
     },
     body: JSON.stringify({ email, type: 'sign-in' }),
   });
+}
+
+async function captureOtp(email: string, userAgent?: string): Promise<string> {
+  let otp: string | null = null;
+  const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(
+    captchaFetchMock((_input, init) => {
+      const body = JSON.parse(
+        typeof init?.body === 'string' ? init.body : '{}',
+      ) as { text?: string; html?: string };
+      const match = (body.text ?? body.html ?? '').match(/\b(\d{6})\b/);
+      otp = match?.[1] ?? null;
+      return Promise.resolve(new Response('{}', { status: 200 }));
+    }),
+  );
+
+  try {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'cf-connecting-ip': '203.0.113.10',
+      'x-captcha-response': CAPTCHA_TEST_TOKEN,
+    };
+    if (userAgent) headers['User-Agent'] = userAgent;
+
+    const res = await authRequest('/api/auth/email-otp/send-verification-otp', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ email, type: 'sign-in' }),
+    });
+    await flushWaitUntil();
+    expect(res.status).toBe(200);
+  } finally {
+    fetchSpy.mockRestore();
+  }
+
+  expect(otp).toBeTruthy();
+  return otp ?? '';
 }
 
 type AuthSessionPayload = {
@@ -87,29 +129,14 @@ describe('email otp auth', () => {
   });
 
   it('creates cookie session after successful verification', async () => {
-    let otp: string | null = null;
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(
-      captchaFetchMock((_input, init) => {
-        const body = JSON.parse(
-          typeof init?.body === 'string' ? init.body : '{}',
-        ) as { text?: string; html?: string };
-        const match = (body.text ?? body.html ?? '').match(/\b(\d{6})\b/);
-        otp = match?.[1] ?? null;
-        return Promise.resolve(new Response('{}', { status: 200 }));
-      }),
-    );
-
-    try {
-      await otpSendRequest('otp-session@example.com');
-      await flushWaitUntil();
-    } finally {
-      fetchSpy.mockRestore();
-    }
-    expect(otp).toBeTruthy();
+    const otp = await captureOtp('otp-session@example.com');
 
     const signInRes = await authRequest('/api/auth/sign-in/email-otp', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'cf-connecting-ip': '203.0.113.10',
+      },
       body: JSON.stringify({
         email: 'otp-session@example.com',
         otp,
@@ -175,5 +202,227 @@ describe('email otp auth', () => {
     } finally {
       fetchSpy.mockRestore();
     }
+  });
+
+  it('falls back to the source locale for unsupported account-deleted locale headers', async () => {
+    const authHeaders = await getAuthHeaders('delete-locale-user');
+    const headers = new Headers(authHeaders);
+    headers.set('Content-Type', 'application/json');
+    headers.set('Origin', 'http://localhost:5173');
+    headers.set('X-Preferred-Locale', 'not-supported'.repeat(10));
+
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response('{}', { status: 200 }));
+
+    try {
+      const res = await authRequest('/api/auth/delete-user', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ callbackURL: '/goodbye' }),
+      });
+      await flushWaitUntil();
+
+      expect(res.status).toBe(200);
+      const init = fetchSpy.mock.calls[0]?.[1];
+      if (typeof init?.body !== 'string') {
+        throw new Error('Expected Resend request body to be a string.');
+      }
+      const body = JSON.parse(init.body) as { subject?: string };
+      expect(body.subject).toBe('Vaš AutoKPO nalog je obrisan');
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it('returns 413 before Better Auth when auth body exceeds limit', async () => {
+    const res = await authRequest('/api/auth/sign-in/email-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: `${'a'.repeat(MAX_AUTH_BODY_BYTES)}@x.test`,
+      }),
+    });
+
+    expect(res.status).toBe(413);
+    await expect(res.json()).resolves.toEqual({ code: 'payload_too_large' });
+  });
+
+  it('rejects oversized auth emails before OTP side effects', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(
+        captchaFetchMock(() =>
+          Promise.resolve(new Response('{}', { status: 200 })),
+        ),
+      );
+
+    try {
+      const res = await otpSendRequest(`${'a'.repeat(245)}@example.com`);
+
+      expect(res.status).toBe(400);
+      expect(fetchSpy).not.toHaveBeenCalledWith(
+        'https://api.resend.com/emails',
+        expect.anything(),
+      );
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it('allows required auth endpoints to reach Better Auth', async () => {
+    const authHeaders = await getAuthHeaders('allowlist-user');
+    const cookie = authHeaders.get('cookie') ?? '';
+
+    const checks: Array<[string, RequestInit, number]> = [
+      [
+        '/api/auth/get-session',
+        { method: 'GET', headers: { Cookie: cookie } },
+        200,
+      ],
+      ['/api/auth/callback/google', { method: 'GET' }, 302],
+      ['/api/auth/callback/github', { method: 'GET' }, 302],
+      ['/api/auth/sign-out', { method: 'POST' }, 200],
+      ['/api/auth/delete-user', { method: 'POST' }, 400],
+      [
+        '/api/auth/list-sessions',
+        { method: 'GET', headers: { Cookie: cookie } },
+        200,
+      ],
+      ['/api/auth/revoke-session', { method: 'POST' }, 400],
+      ['/api/auth/revoke-other-sessions', { method: 'POST' }, 401],
+      [
+        '/api/auth/list-accounts',
+        { method: 'GET', headers: { Cookie: cookie } },
+        200,
+      ],
+    ];
+
+    for (const [path, init, blockedStatus] of checks) {
+      const res = await authRequest(path, init);
+      expect(res.status, path).toBe(blockedStatus);
+    }
+  });
+
+  it('hides representative unused Better Auth endpoints', async () => {
+    const paths = [
+      '/api/auth/sign-in/email',
+      '/api/auth/update-user',
+      '/api/auth/link-social',
+      '/api/auth/email-otp/reset-password',
+      '/api/auth/revoke-sessions',
+    ];
+
+    for (const path of paths) {
+      const res = await authRequest(path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}',
+      });
+      expect(res.status, path).toBe(404);
+      expect(await res.text()).toBe('Not Found');
+    }
+  });
+
+  it('keeps the stricter OTP send rate limit', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(
+        captchaFetchMock(() =>
+          Promise.resolve(new Response('{}', { status: 200 })),
+        ),
+      );
+
+    try {
+      const statuses: number[] = [];
+      for (let i = 0; i < 6; i += 1) {
+        const res = await authRequest(
+          '/api/auth/email-otp/send-verification-otp',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'cf-connecting-ip': '203.0.113.99',
+              'x-captcha-response': CAPTCHA_TEST_TOKEN,
+            },
+            body: JSON.stringify({
+              email: `rate-${i}@example.com`,
+              type: 'sign-in',
+            }),
+          },
+        );
+        statuses.push(res.status);
+      }
+
+      expect(statuses.slice(0, 5)).toEqual([200, 200, 200, 200, 200]);
+      expect(statuses[5]).toBe(429);
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it('does not persist oversized user agent raw and bounds IP metadata', async () => {
+    const longUserAgent = `Browser/${'x'.repeat(2000)}`;
+    const otp = await captureOtp('metadata@example.com', longUserAgent);
+
+    const signInRes = await authRequest('/api/auth/sign-in/email-otp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'cf-connecting-ip': '203.0.113.42',
+        'User-Agent': longUserAgent,
+      },
+      body: JSON.stringify({ email: 'metadata@example.com', otp }),
+    });
+
+    expect(signInRes.status).toBe(200);
+    const rows = await db.select().from(session);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.userAgent).not.toBe(longUserAgent);
+    expect(rows[0]?.userAgent).toHaveLength(1024);
+    expect(rows[0]?.ipAddress?.length ?? 0).toBeLessThanOrEqual(128);
+  });
+
+  it('account hook persists only identity fields and null token values', async () => {
+    const authHeaders = await getAuthHeaders('account-hook-user');
+    const cookie = authHeaders.get('cookie') ?? '';
+
+    const res = await authRequest('/api/auth/list-accounts', {
+      method: 'GET',
+      headers: { Cookie: cookie },
+    });
+    expect(res.status).toBe(200);
+
+    await createAuthAccount({
+      id: 'oauth-account-row',
+      accountId: 'provider-account-id',
+      providerId: 'google',
+      userId: 'account-hook-user',
+      accessToken: 'provider-access-token',
+      refreshToken: 'provider-refresh-token',
+      idToken: 'provider-id-token',
+      scope: 'openid email profile',
+      accessTokenExpiresAt: new Date(Date.now() + 60_000),
+      refreshTokenExpiresAt: new Date(Date.now() + 120_000),
+      password: 'should-not-persist',
+    });
+
+    const [row] = await db
+      .select()
+      .from(account)
+      .where(eq(account.id, 'oauth-account-row'));
+
+    expect(row).toMatchObject({
+      providerId: 'google',
+      accountId: 'provider-account-id',
+      userId: 'account-hook-user',
+      accessToken: null,
+      refreshToken: null,
+      idToken: null,
+      scope: null,
+      accessTokenExpiresAt: null,
+      refreshTokenExpiresAt: null,
+      password: null,
+    });
   });
 });

@@ -21,7 +21,7 @@ The worker SHALL configure Better Auth rate limiting explicitly for all auth end
 
 ### Requirement: Unused Better Auth endpoints are not reachable
 
-The worker SHALL expose only Better Auth endpoints required by current app flows. Requests to unused Better Auth password, password reset, email verification, account update, account linking, account unlinking, and unused email-OTP auxiliary endpoints SHALL NOT reach the Better Auth handler.
+The worker SHALL disable unused Better Auth password, password reset, email verification, account update, account linking, account unlinking, and unused email-OTP auxiliary endpoints using Better Auth configuration.
 
 #### Scenario: Used auth endpoint is allowed
 
@@ -31,7 +31,7 @@ The worker SHALL expose only Better Auth endpoints required by current app flows
 #### Scenario: Unused auth endpoint is hidden
 
 - **WHEN** a client requests an unused Better Auth endpoint, such as `POST /api/auth/sign-in/email`, `POST /api/auth/update-user`, or `POST /api/auth/link-social`
-- **THEN** the worker SHALL reject the request before it reaches Better Auth
+- **THEN** Better Auth SHALL reject the request as not found through disabled route configuration
 - **AND** the response SHALL NOT disclose an enabled auth flow for that endpoint
 
 #### Scenario: OAuth callbacks for configured providers remain reachable
@@ -41,7 +41,7 @@ The worker SHALL expose only Better Auth endpoints required by current app flows
 
 ### Requirement: Auth input fields are bounded before persistence-sensitive processing
 
-The worker SHALL bound small user-controlled auth inputs before they can create persistent auth records or trigger side effects. Email inputs used for auth SHALL be trimmed and limited to 254 characters. App-specific auth headers such as `X-Preferred-Locale` SHALL be allowlisted to supported locales before use. Captcha response headers SHALL be rejected when they are obviously oversized.
+The worker SHALL bound small user-controlled auth inputs before they can create persistent auth records or trigger side effects. Email inputs used for email OTP side effects SHALL be trimmed and limited to 254 characters. App-specific auth headers such as `X-Preferred-Locale` SHALL be allowlisted to supported locales before use.
 
 #### Scenario: Oversized email is rejected
 
@@ -52,11 +52,6 @@ The worker SHALL bound small user-controlled auth inputs before they can create 
 
 - **WHEN** a client sends an unsupported or oversized `X-Preferred-Locale` header on an auth request
 - **THEN** the worker SHALL use the default source locale instead of the raw header value
-
-#### Scenario: Oversized captcha response is rejected
-
-- **WHEN** a client sends an auth request with an obviously oversized `x-captcha-response` header
-- **THEN** the worker SHALL reject the request before invoking Turnstile validation or sending an OTP
 
 ### Requirement: Persisted auth session metadata is bounded
 

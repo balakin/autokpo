@@ -28,13 +28,13 @@ OAuth token persistence is already minimized by nulling token fields in an accou
 
 ## Decisions
 
-### Use an app-level auth endpoint allowlist plus Better Auth `disabledPaths`
+### Use Better Auth `disabledPaths` for unused endpoints
 
-The Worker will gate `/api/auth/*` requests before calling Better Auth. The allowlist will include only the methods and paths the app currently needs. Unknown or unused auth endpoints will return 404 without reaching Better Auth.
+The Worker will keep auth routing simple: CSRF, auth body limit, then Better Auth. Unused Better Auth routes will be blocked with Better Auth `disabledPaths`.
 
-Better Auth `disabledPaths` will also be configured for known unused Better Auth routes such as email/password, password reset, email verification, account update, account linking/unlinking, and unused email-OTP auxiliary flows. This provides defense-in-depth if the app-level allowlist is changed later.
+`disabledPaths` will be configured for known unused Better Auth routes such as email/password, password reset, email verification, account update, account linking/unlinking, and unused email-OTP auxiliary flows.
 
-Alternative considered: rely only on Better Auth `disabledPaths`. This is weaker because Better Auth documents a denylist, not a positive allowlist, and newly introduced Better Auth endpoints could remain reachable until explicitly added to the denylist.
+Alternative considered: an app-level positive allowlist. This gives a smaller surface but makes `main.ts` more complex and risks breaking Better Auth internal/provider flows. The implementation favors simplicity and Better Auth's supported route-disabling mechanism.
 
 ### Add a 16 KiB auth body limit before Better Auth
 
@@ -68,13 +68,13 @@ Alternative considered: rely on Cloudflare's total header limit. Cloudflare limi
 
 ### Validate small app-specific inputs at the auth boundary
 
-Email values used in auth flows will be trimmed and capped to 254 characters. The preferred-locale header will be treated as an allowlist rather than arbitrary text. Captcha response handling will reject obviously oversized values before deeper auth processing where practical.
+Email values used in auth flows will be trimmed and capped to 254 characters where the app controls the email OTP side effect. The preferred-locale header will be treated as an allowlist rather than arbitrary text.
 
 Alternative considered: rely on UI validation. UI validation is helpful but cannot protect the Worker from direct requests.
 
 ## Risks / Trade-offs
 
-- App-level allowlist blocks a Better Auth internal path needed by a flow → Cover every supported auth flow with worker tests and include OAuth callback methods explicitly.
+- Better Auth `disabledPaths` misses a newly added unused route → Add regression tests for representative unused routes and review auth routes during Better Auth upgrades.
 - Better Auth changes endpoint paths in an upgrade → Tests fail during dependency updates; allowlist and `disabledPaths` are updated together.
 - 16 KiB body limit is too small for a provider/library edge case → Keep the limit as a named constant and adjust only with a failing regression test or documented need.
 - Removing token encryption exposes plaintext if the nulling hook regresses → Add tests that inspect persisted account rows after OAuth sign-in and assert token fields remain `null`.
@@ -83,15 +83,14 @@ Alternative considered: rely on UI validation. UI validation is helpful but cann
 
 ## Migration Plan
 
-1. Add auth hardening constants and middleware/gating around `/api/auth/*`.
+1. Add auth hardening constants and body-limit middleware around `/api/auth/*`.
 2. Configure Better Auth global rate limiting and disabled paths.
 3. Update account/session database hooks and remove OAuth token encryption.
 4. Add focused worker tests for each security boundary.
 5. Run targeted auth tests, then full app test/build checks.
 
-Rollback is straightforward: remove the auth allowlist/body-limit middleware and restore the previous Better Auth config. No data migration is expected because the desired persisted values are already compatible with existing nullable columns.
+Rollback is straightforward: remove the auth body-limit middleware and restore the previous Better Auth config. No data migration is expected because the desired persisted values are already compatible with existing nullable columns.
 
 ## Open Questions
 
 - Should `ipAddress` tracking be disabled entirely, or retained with a small bound for Account settings? The default proposal is to retain bounded metadata unless implementation confirms disabling is simpler and acceptable.
-- Should the auth allowlist return 404 for blocked endpoints or 405 for method mismatches? The default proposal is 404 to avoid advertising unused auth surface.

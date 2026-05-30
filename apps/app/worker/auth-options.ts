@@ -9,6 +9,48 @@ import type { ExecutionContext } from 'hono';
 import { DISPOSABLE_EMAIL_DOMAINS } from './disposable-email-blocklist';
 
 const TURNSTILE_TEST_SECRET = '1x0000000000000000000000000000000AA';
+const DEFAULT_LOCALE = 'sr-Latn';
+const SUPPORTED_LOCALES = new Set(['sr-Latn', 'en', 'ru']);
+const MAX_AUTH_EMAIL_LENGTH = 254;
+const MAX_SESSION_USER_AGENT_LENGTH = 1024;
+const MAX_SESSION_IP_ADDRESS_LENGTH = 128;
+
+const DISABLED_AUTH_PATHS = [
+  '/sign-in/email',
+  '/sign-up/email',
+  '/request-password-reset',
+  '/reset-password',
+  '/send-verification-email',
+  '/verify-email',
+  '/change-password',
+  '/change-email',
+  '/update-user',
+  '/set-password',
+  '/revoke-sessions',
+  '/link-social',
+  '/unlink-account',
+  '/email-otp/check-verification-otp',
+  '/email-otp/verify-email',
+  '/email-otp/request-password-reset',
+  '/email-otp/reset-password',
+  '/email-otp/request-email-change',
+  '/email-otp/change-email',
+  '/forget-password/email-otp',
+];
+
+type AccountCreateData = {
+  id: string;
+  accountId: string;
+  providerId: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type SessionMetadata = {
+  userAgent?: string | null;
+  ipAddress?: string | null;
+};
 
 type SocialAuthOptions = {
   clientId: string;
@@ -41,6 +83,7 @@ export function getAuthOptions({
   turnstileSecretKey,
 }: AuthOptionsInput) {
   return {
+    disabledPaths: DISABLED_AUTH_PATHS,
     socialProviders: {
       google: {
         ...google,
@@ -62,29 +105,79 @@ export function getAuthOptions({
       },
       updateAccountOnSignIn: false,
       storeStateStrategy: 'cookie',
-      encryptOAuthTokens: true,
     },
     databaseHooks: {
       account: {
         create: {
-          // Null out all OAuth tokens before the account row is persisted.
-          // better-auth's hook merges result.data on top of the original — explicit
-          // nulls are required to overwrite token fields; omitting them leaves the
-          // originals intact.
-          before(account) {
+          // Persist only identity-linking account fields and explicit nulls for
+          // token/credential columns. Better Auth merges hook data over the
+          // original object, so explicit nulls are required for every sensitive
+          // column in the schema.
+          before(account: AccountCreateData) {
             return Promise.resolve({
               data: {
-                ...account,
+                id: account.id,
+                accountId: account.accountId,
+                providerId: account.providerId,
+                userId: account.userId,
                 accessToken: null,
                 refreshToken: null,
                 idToken: null,
                 scope: null,
                 accessTokenExpiresAt: null,
                 refreshTokenExpiresAt: null,
+                password: null,
+                createdAt: account.createdAt,
+                updatedAt: account.updatedAt,
               },
             });
           },
         },
+        update: {
+          before() {
+            return Promise.resolve({
+              data: {
+                accessToken: null,
+                refreshToken: null,
+                idToken: null,
+                scope: null,
+                accessTokenExpiresAt: null,
+                refreshTokenExpiresAt: null,
+                password: null,
+              },
+            });
+          },
+        },
+      },
+      session: {
+        create: {
+          before(session: SessionMetadata) {
+            return Promise.resolve({
+              data: normalizeSessionMetadata(session),
+            });
+          },
+        },
+        update: {
+          before(session: SessionMetadata) {
+            return Promise.resolve({
+              data: normalizeSessionMetadata(session),
+            });
+          },
+        },
+      },
+    },
+    advanced: {
+      ipAddress: {
+        ipAddressHeaders: ['cf-connecting-ip', 'x-forwarded-for'],
+      },
+    },
+    rateLimit: {
+      enabled: true,
+      storage: 'database',
+      window: 60,
+      max: 60,
+      customRules: {
+        '/email-otp/send-verification-otp': { window: 300, max: 5 },
       },
     },
     session: {
@@ -92,18 +185,13 @@ export function getAuthOptions({
       expiresIn: 60 * 24 * 60 * 60,
       updateAge: 7 * 24 * 60 * 60,
     },
-    rateLimit: {
-      storage: 'database',
-      customRules: {
-        '/email-otp/send-verification-otp': { window: 300, max: 5 },
-      },
-    },
     user: {
       deleteUser: {
         enabled: true,
         afterDelete(user: { email: string }, request: Request | undefined) {
-          const locale =
-            request?.headers.get('X-Preferred-Locale') ?? 'sr-Latn';
+          const locale = getSupportedLocale(
+            request?.headers.get('X-Preferred-Locale'),
+          );
           executionCtx.waitUntil(
             accountDeletedEmailConfig.sendEmail(user.email, locale),
           );
@@ -126,19 +214,53 @@ export function getAuthOptions({
             return Promise.resolve();
           }
 
-          const domain = email.split('@')[1]?.toLowerCase();
+          const normalizedEmail = email.trim();
+          if (normalizedEmail.length > MAX_AUTH_EMAIL_LENGTH) {
+            throw new APIError('BAD_REQUEST', {
+              message: 'Email address is too long.',
+            });
+          }
+
+          const domain = normalizedEmail.split('@')[1]?.toLowerCase();
           if (domain && DISPOSABLE_EMAIL_DOMAINS.has(domain)) {
             throw new APIError('BAD_REQUEST', {
               message: 'Email domain not allowed.',
             });
           }
 
-          const locale =
-            ctx?.request?.headers.get('X-Preferred-Locale') ?? 'sr-Latn';
-          executionCtx.waitUntil(emailOtpConfig.sendEmail(email, otp, locale));
+          const locale = getSupportedLocale(
+            ctx?.request?.headers.get('X-Preferred-Locale'),
+          );
+          executionCtx.waitUntil(
+            emailOtpConfig.sendEmail(normalizedEmail, otp, locale),
+          );
           return Promise.resolve();
         },
       }),
     ],
   } satisfies Parameters<typeof betterAuth>[0];
+}
+
+function normalizeSessionMetadata(session: SessionMetadata): SessionMetadata {
+  return {
+    userAgent: boundOptionalString(
+      session.userAgent,
+      MAX_SESSION_USER_AGENT_LENGTH,
+    ),
+    ipAddress: boundOptionalString(
+      session.ipAddress,
+      MAX_SESSION_IP_ADDRESS_LENGTH,
+    ),
+  };
+}
+
+function boundOptionalString(value: unknown, maxLength: number): string | null {
+  if (typeof value !== 'string') return null;
+  if (!value) return null;
+  return value.slice(0, maxLength);
+}
+
+function getSupportedLocale(locale: string | null | undefined): string {
+  if (!locale || locale.length > 16) return DEFAULT_LOCALE;
+  return SUPPORTED_LOCALES.has(locale) ? locale : DEFAULT_LOCALE;
 }

@@ -6,13 +6,15 @@ Define data minimization rules for social OAuth sign-ins to prevent token leakag
 
 ### Requirement: Social sign-in stores only identity-linking fields in account table
 
-After a social OAuth sign-in or sign-up, the fields `accessToken`, `refreshToken`, `idToken`, `scope`, `accessTokenExpiresAt`, and `refreshTokenExpiresAt` in the `account` table SHALL always be `null`. The columns remain in the schema (better-auth requires them) but SHALL never contain real token values.
+After a social OAuth sign-in or sign-up, the fields `accessToken`, `refreshToken`, `idToken`, `scope`, `accessTokenExpiresAt`, `refreshTokenExpiresAt`, and `password` in the `account` table SHALL always be `null`. The columns remain in the schema (better-auth requires them) but SHALL never contain real token or credential values.
+
+The worker SHALL construct persisted account data from an explicit allowlist of identity-linking fields instead of spreading provider account data into the database hook result. Because OAuth tokens are never persisted, the worker SHALL NOT enable Better Auth OAuth token encryption for these discarded token values.
 
 #### Scenario: New user signs in via Google
 
 - **WHEN** a new user completes the Google OAuth flow for the first time
 - **THEN** an `account` row is created with `providerId = "google"` and a valid `accountId`
-- **AND** `accessToken`, `refreshToken`, `idToken`, `scope`, `accessTokenExpiresAt`, `refreshTokenExpiresAt` are all `null`
+- **AND** `accessToken`, `refreshToken`, `idToken`, `scope`, `accessTokenExpiresAt`, `refreshTokenExpiresAt`, and `password` are all `null`
 
 #### Scenario: Returning user signs in via Google
 
@@ -24,7 +26,12 @@ After a social OAuth sign-in or sign-up, the fields `accessToken`, `refreshToken
 
 - **WHEN** a new user completes the GitHub OAuth flow for the first time
 - **THEN** an `account` row is created with `providerId = "github"` and a valid `accountId`
-- **AND** `accessToken`, `refreshToken`, `idToken`, `scope`, `accessTokenExpiresAt`, `refreshTokenExpiresAt` are all `null`
+- **AND** `accessToken`, `refreshToken`, `idToken`, `scope`, `accessTokenExpiresAt`, `refreshTokenExpiresAt`, and `password` are all `null`
+
+#### Scenario: Unexpected account fields are not persisted by the hook
+
+- **WHEN** Better Auth provides additional provider account fields during account creation
+- **THEN** the account create hook SHALL persist only explicitly allowlisted identity-linking fields and explicit nulls for token or credential fields
 
 ### Requirement: Social sign-in does not populate name or image in user table
 

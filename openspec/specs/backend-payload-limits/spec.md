@@ -40,3 +40,23 @@ The Worker SHALL define shared encrypted payload size constants used by non-auth
 
 - **WHEN** the E2EE routes validate key-ring ciphertext, KDF salt, or wrapped MEK ciphertext sizes
 - **THEN** they SHALL use the same constants as the corresponding key-ring database size constraints
+
+### Requirement: Auth endpoints enforce a 16 KiB pre-parse body limit
+
+The Worker SHALL reject `/api/auth/*` request bodies larger than 16 KiB before Better Auth parses the request body. Requests rejected by this limit SHALL receive HTTP 413. Requests within the limit SHALL preserve existing Better Auth request handling behavior.
+
+#### Scenario: Oversized auth body is rejected before Better Auth
+
+- **WHEN** a client sends a request to `/api/auth/*` with a request body larger than 16 KiB
+- **THEN** the Worker SHALL reject the request with HTTP 413
+- **AND** Better Auth SHALL NOT process the request
+
+#### Scenario: Normal auth body reaches Better Auth
+
+- **WHEN** a client sends a supported auth request with a body at or below 16 KiB
+- **THEN** the Worker SHALL allow Better Auth to process the request normally
+
+#### Scenario: Auth GET requests remain unaffected
+
+- **WHEN** a client sends a supported auth `GET` request without a request body
+- **THEN** the Worker SHALL preserve the existing Better Auth behavior for that endpoint

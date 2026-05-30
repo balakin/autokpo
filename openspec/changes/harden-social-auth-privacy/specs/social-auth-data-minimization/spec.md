@@ -2,7 +2,7 @@
 
 ### Requirement: Social sign-in stores only identity-linking fields in account table
 
-After a social OAuth sign-in or sign-up, the `account` table row SHALL contain only the fields required for identity linking: `id`, `accountId`, `providerId`, `userId`, `createdAt`, `updatedAt`. The fields `accessToken`, `refreshToken`, `idToken`, `scope`, `accessTokenExpiresAt`, and `refreshTokenExpiresAt` SHALL always be `null` after any social sign-in operation.
+After a social OAuth sign-in or sign-up, the fields `accessToken`, `refreshToken`, `idToken`, `scope`, `accessTokenExpiresAt`, and `refreshTokenExpiresAt` in the `account` table SHALL always be `null`. The columns remain in the schema (better-auth requires them) but SHALL never contain real token values.
 
 #### Scenario: New user signs in via Google
 
@@ -59,7 +59,7 @@ During a social OAuth flow, the OAuth state payload SHALL be stored in an AES-en
 
 ### Requirement: Google OAuth requests minimal scopes
 
-The Google OAuth authorization request SHALL request only `openid` and `https://www.googleapis.com/auth/userinfo.email` scopes. The `profile` scope SHALL NOT be requested.
+The Google OAuth authorization request SHALL request only `openid` and `email` scopes. The `profile` scope SHALL NOT be requested.
 
 #### Scenario: User initiates Google sign-in
 

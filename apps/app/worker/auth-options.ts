@@ -41,10 +41,50 @@ export function getAuthOptions({
   turnstileSecretKey,
 }: AuthOptionsInput) {
   return {
-    socialProviders: { google, github },
+    socialProviders: {
+      google: {
+        ...google,
+        disableDefaultScope: true,
+        scope: ['openid', 'email'],
+        disableIdTokenSignIn: true,
+        overrideUserInfoOnSignIn: false,
+        mapProfileToUser: () => ({ name: '', image: undefined }),
+      },
+      github: {
+        ...github,
+        overrideUserInfoOnSignIn: false,
+        mapProfileToUser: () => ({ name: '', image: undefined }),
+      },
+    },
     account: {
       accountLinking: {
         enabled: false,
+      },
+      updateAccountOnSignIn: false,
+      storeStateStrategy: 'cookie',
+      encryptOAuthTokens: true,
+    },
+    databaseHooks: {
+      account: {
+        create: {
+          // Null out all OAuth tokens before the account row is persisted.
+          // better-auth's hook merges result.data on top of the original — explicit
+          // nulls are required to overwrite token fields; omitting them leaves the
+          // originals intact.
+          before(account) {
+            return Promise.resolve({
+              data: {
+                ...account,
+                accessToken: null,
+                refreshToken: null,
+                idToken: null,
+                scope: null,
+                accessTokenExpiresAt: null,
+                refreshTokenExpiresAt: null,
+              },
+            });
+          },
+        },
       },
     },
     session: {

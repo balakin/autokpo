@@ -158,32 +158,31 @@ describe('buildAccountExport', () => {
       data: {
         user: {
           id: 'user-1',
-          name: 'Ana Anić',
           email: 'ana@example.com',
           emailVerified: true,
-          image: 'https://example.com/avatar.png',
           createdAt: new Date('2025-01-15T10:00:00.000Z'),
         },
       },
     });
     mockListAccounts.mockResolvedValue({
-      data: [{ providerId: 'github' }],
+      data: [{ providerId: 'github', accountId: '12345' }],
     });
 
     const result = await buildAccountExport();
 
     expect(result.account).toMatchObject({
-      name: 'Ana Anić',
       email: 'ana@example.com',
       emailVerified: true,
-      image: 'https://example.com/avatar.png',
       createdAt: '2025-01-15T10:00:00.000Z',
     });
-    expect(result.providers).toEqual(['github']);
+    expect(result.account).not.toHaveProperty('name');
+    expect(result.account).not.toHaveProperty('image');
+    expect(result.providers).toEqual([{ name: 'github', accountId: '12345' }]);
     expect(typeof result.exportedAt).toBe('string');
+    expect(result.schemaVersion).toBe(1);
   });
 
-  it('falls back to nulls when optional fields are missing', async () => {
+  it('falls back to null createdAt when not available', async () => {
     mockGetSession.mockResolvedValue({
       data: {
         user: {
@@ -197,9 +196,19 @@ describe('buildAccountExport', () => {
 
     const result = await buildAccountExport();
 
-    expect(result.account.name).toBeNull();
-    expect(result.account.image).toBeNull();
     expect(result.account.createdAt).toBeNull();
+    expect(result.providers).toEqual([]);
+  });
+
+  it('omits providers where accountId is missing', async () => {
+    mockGetSession.mockResolvedValue({
+      data: { user: { email: 'x@x.com', emailVerified: false } },
+    });
+    mockListAccounts.mockResolvedValue({
+      data: [{ providerId: 'google' }],
+    });
+
+    const result = await buildAccountExport();
     expect(result.providers).toEqual([]);
   });
 

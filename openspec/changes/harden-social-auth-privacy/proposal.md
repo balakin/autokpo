@@ -10,7 +10,7 @@ Social OAuth flows currently store unnecessary personal data (name, avatar URL) 
 - **Google**: `disableIdTokenSignIn: true` — One Tap / direct ID token submission path disabled (unused)
 - **Account config**: `updateAccountOnSignIn: false` — prevents token re-writes to the `account` table on every re-login
 - **Account config**: `storeStateStrategy: "cookie"` — OAuth state stored in an encrypted cookie instead of the `verification` table, eliminating ephemeral DB rows during every OAuth flow
-- **databaseHooks**: `account.create.before` whitelist — only `{ id, accountId, providerId, userId, createdAt, updatedAt }` are persisted; all token fields are dropped at the DB layer regardless of what better-auth writes
+- **databaseHooks**: `account.create.before` explicitly nulls all token fields (`accessToken`, `refreshToken`, `idToken`, `scope`, `accessTokenExpiresAt`, `refreshTokenExpiresAt`) before the row is written; `encryptOAuthTokens: true` provides a safety net for any future token fields
 
 ## Capabilities
 

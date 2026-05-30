@@ -30,13 +30,13 @@ All database writes in better-auth go through `createWithHooks`/`updateWithHooks
 
 ## Decisions
 
-### 1. `databaseHooks` whitelist over blacklist
+### 1. `databaseHooks` explicit nulls + `encryptOAuthTokens`
 
-**Decision**: Use `account.create.before` with an explicit allowlist `{ id, accountId, providerId, userId, createdAt, updatedAt }` rather than nulling individual fields.
+**Decision**: Use `account.create.before` to explicitly null all token fields (`accessToken`, `refreshToken`, `idToken`, `scope`, `accessTokenExpiresAt`, `refreshTokenExpiresAt`), combined with `encryptOAuthTokens: true` as a safety net.
 
-**Rationale**: A whitelist is future-proof — any token field better-auth adds in a future version is dropped automatically. A blacklist requires updating the hook whenever better-auth's account schema grows.
+**Rationale**: `createWithHooks` applies hook results as `{ ...originalData, ...result.data }` — a merge, not a replace. A whitelist (returning only allowed keys) silently fails: omitted fields survive from the original data. Explicit nulls are the only way to overwrite token fields. `encryptOAuthTokens: true` provides defense-in-depth for any token field better-auth adds in a future version that our explicit list doesn't cover — those would be encrypted rather than plaintext.
 
-**Alternative considered**: `encryptOAuthTokens: true` as a safety net alongside nulling. Rejected — unnecessary complexity when the whitelist already drops unknown fields entirely.
+**Alternative considered**: Whitelist approach — returning only `{ id, accountId, providerId, userId, createdAt, updatedAt }`. Rejected after verifying `with-hooks.mjs` source: the merge semantics mean omitted keys are preserved from the original, so the whitelist has no effect on token fields.
 
 ### 2. `updateAccountOnSignIn: false` alongside the create hook
 
@@ -60,7 +60,7 @@ All database writes in better-auth go through `createWithHooks`/`updateWithHooks
 
 ### 5. Google minimal scopes + `disableIdTokenSignIn`
 
-**Decision**: `disableDefaultScope: true` + `scope: ["openid", "https://www.googleapis.com/auth/userinfo.email"]`, and `disableIdTokenSignIn: true`.
+**Decision**: `disableDefaultScope: true` + `scope: ["openid", "email"]`, and `disableIdTokenSignIn: true`.
 
 **Rationale**: Default Google scopes include `profile` which causes Google to return `name` and `picture` in the ID token. Removing `profile` from the wire means Google never sends this data. `disableIdTokenSignIn` closes the One Tap / direct client ID token submission path — this flow is not used anywhere in the codebase.
 

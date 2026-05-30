@@ -25,26 +25,34 @@ The system SHALL allow a signed-in online user to download their server-side acc
 The exported JSON SHALL contain the following top-level fields:
 
 - `exportedAt`: ISO 8601 timestamp string of when the export was generated
+- `schemaVersion`: integer version of the export format (currently `1`)
 - `account`: object with:
-  - `name`: string or null
   - `email`: string or null
   - `emailVerified`: boolean
-  - `image`: string URL or null
   - `createdAt`: ISO 8601 timestamp string or null
-- `providers`: array of OAuth provider ID strings (e.g. `["github"]`)
+- `providers`: array of objects with:
+  - `name`: OAuth provider ID string (e.g. `"github"`, `"google"`)
+  - `accountId`: the provider-assigned account ID (e.g. Google `sub`, GitHub numeric user ID)
 
 #### Scenario: Exported account contains profile fields
 
 - **WHEN** the export completes successfully
-- **THEN** the JSON SHALL include the user's name, email, emailVerified status, image URL, and account creation timestamp
+- **THEN** the JSON SHALL include the user's email, emailVerified status, and account creation timestamp
+- **AND** the JSON SHALL NOT include `name` or `image` fields
 
-#### Scenario: Providers list reflects linked OAuth accounts
+#### Scenario: Providers list reflects linked OAuth accounts with their IDs
 
 - **WHEN** the user has one or more OAuth providers linked
-- **THEN** `providers` SHALL be an array of the provider ID strings for each linked account
+- **THEN** `providers` SHALL be an array of `{ name, id }` objects, one per linked account
+- **AND** `id` SHALL be the provider-assigned account identifier stored in the `account` table
 
 #### Scenario: Export degrades gracefully on missing fields
 
-- **WHEN** optional fields (name, image, createdAt) are not available from the auth client
+- **WHEN** optional fields (createdAt) are not available from the auth client
 - **THEN** those fields SHALL be `null` in the exported JSON
 - **AND** the download SHALL still be triggered
+
+#### Scenario: Provider entry is omitted when accountId is not returned
+
+- **WHEN** a linked account entry does not include an `accountId` field
+- **THEN** that entry SHALL be excluded from the `providers` array

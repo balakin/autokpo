@@ -1,4 +1,8 @@
-## ADDED Requirements
+## Purpose
+
+Defines the Cloudflare Worker runtime configuration, API routes, database bindings, and infrastructure requirements for the autokpo application backend.
+
+## Requirements
 
 ### Requirement: Cloudflare Worker entry point
 

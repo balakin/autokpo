@@ -9,6 +9,7 @@ import { getAuthOptions } from '../../worker/auth-options';
 import { getDb } from '../../worker/db';
 import {
   account,
+  rateLimit,
   session,
   user,
   verification,
@@ -100,9 +101,29 @@ export async function getAuthHeaders(userId: string): Promise<Headers> {
   return ctx.test.getAuthHeaders({ userId });
 }
 
+export async function createAuthAccount(accountData: {
+  id: string;
+  accountId: string;
+  providerId: string;
+  userId: string;
+  accessToken?: string | null;
+  refreshToken?: string | null;
+  idToken?: string | null;
+  scope?: string | null;
+  accessTokenExpiresAt?: Date | null;
+  refreshTokenExpiresAt?: Date | null;
+  password?: string | null;
+}) {
+  const ctx = await testAuth.$context;
+  return ctx.internalAdapter.createAccount(accountData);
+}
+
 export async function clearAuthData() {
   await db.delete(session);
   await db.delete(account);
   await db.delete(verification);
+  await db.delete(rateLimit);
   await db.delete(user);
 }
+
+export { db };

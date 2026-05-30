@@ -11,14 +11,13 @@ export interface StateExport {
 
 export interface AccountExport {
   exportedAt: string;
+  schemaVersion: number;
   account: {
-    name: string | null;
     email: string | null;
     emailVerified: boolean;
-    image: string | null;
     createdAt: string | null;
   };
-  providers: string[];
+  providers: { name: string; accountId: string }[];
 }
 
 export function downloadJson(filename: string, data: unknown): void {
@@ -66,24 +65,25 @@ export async function buildAccountExport(): Promise<AccountExport> {
   const accounts = Array.isArray(accountsResult.data)
     ? accountsResult.data
     : [];
-  const providers = accounts
-    .map((a: unknown) => {
-      if (a && typeof a === 'object' && 'providerId' in a) {
-        return typeof (a as Record<string, unknown>).providerId === 'string'
-          ? ((a as Record<string, unknown>).providerId as string)
-          : null;
+  const providers = accounts.flatMap((a: unknown) => {
+    if (a && typeof a === 'object') {
+      const rec = a as Record<string, unknown>;
+      if (
+        typeof rec.providerId === 'string' &&
+        typeof rec.accountId === 'string'
+      ) {
+        return [{ name: rec.providerId, accountId: rec.accountId }];
       }
-      return null;
-    })
-    .filter((p): p is string => p !== null);
+    }
+    return [];
+  });
 
   return {
     exportedAt: new Date().toISOString(),
+    schemaVersion: 1,
     account: {
-      name: u?.name ?? null,
       email: u?.email ?? null,
       emailVerified: u?.emailVerified ?? false,
-      image: u?.image ?? null,
       createdAt,
     },
     providers,

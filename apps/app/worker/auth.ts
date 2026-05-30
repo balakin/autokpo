@@ -1,6 +1,6 @@
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { betterAuth } from 'better-auth';
-import type { Context, ExecutionContext } from 'hono';
+import type { ExecutionContext } from 'hono';
 
 import { getAuthOptions } from './auth-options';
 import { getDb } from './db';
@@ -12,13 +12,17 @@ type SessionUser = {
   id: string;
 };
 
-type Session = {
+export type Session = {
   user: SessionUser;
 };
 
-export async function getSession(
-  c: Context<{ Bindings: Env }>,
-): Promise<Session | null> {
+type SessionContext = {
+  env: Env;
+  executionCtx: ExecutionContext;
+  req: { raw: Request };
+};
+
+export async function getSession(c: SessionContext): Promise<Session | null> {
   const auth = getAuth(c.env, c.executionCtx);
   const session = await auth.api.getSession({
     headers: c.req.raw.headers,
@@ -36,7 +40,7 @@ export function unauthorizedResponse() {
 }
 
 export async function requireSession(
-  c: Context<{ Bindings: Env }>,
+  c: SessionContext,
 ): Promise<Session | Response> {
   const session = await getSession(c);
   if (!session) {

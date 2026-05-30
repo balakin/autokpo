@@ -1,7 +1,7 @@
 import { and, eq, isNull } from 'drizzle-orm';
 import { Hono } from 'hono';
 
-import { requireSession } from '../auth';
+import type { WorkerHonoEnv } from '../context';
 import { getDb } from '../db';
 import { assertExists } from '../db/assert';
 import {
@@ -10,9 +10,13 @@ import {
   type KeyRingRow,
   type KeyRingWrappingRow,
 } from '../db/schema';
+import { requireAuth } from '../middleware/auth';
+import { payloadLimit } from '../middleware/payload-limit';
+import { rateLimitRouteGroup } from '../middleware/rate-limit';
 import {
   AES_GCM_IV_BYTES,
   KDF_SALT_BYTES,
+  MAX_E2EE_BODY_BYTES,
   MAX_KEY_RING_CIPHERTEXT_BYTES,
   WRAPPED_MEK_CIPHERTEXT_BYTES,
   maxBase64Length,
@@ -34,11 +38,17 @@ const WRAPPED_MEK_CIPHERTEXT_BASE64_LENGTH = maxBase64Length(
 );
 const AES_GCM_IV_BASE64_LENGTH = maxBase64Length(AES_GCM_IV_BYTES);
 
-export const e2eeRouter = new Hono<{ Bindings: Env }>();
+export const e2eeRouter = new Hono<WorkerHonoEnv>();
+
+e2eeRouter.use(
+  '*',
+  payloadLimit(MAX_E2EE_BODY_BYTES),
+  requireAuth,
+  rateLimitRouteGroup('e2ee'),
+);
 
 e2eeRouter.get('/key-ring', async (c) => {
-  const session = await requireSession(c);
-  if (session instanceof Response) return session;
+  const session = c.get('session');
 
   const db = getDb(c.env.DB);
   const [[keyRingRow], [wrapping]] = await db.batch([
@@ -68,8 +78,7 @@ e2eeRouter.get('/key-ring', async (c) => {
 });
 
 e2eeRouter.post('/key-ring', async (c) => {
-  const session = await requireSession(c);
-  if (session instanceof Response) return session;
+  const session = c.get('session');
 
   if (c.req.header('Content-Type') !== 'application/json') {
     return c.json({ code: 'unsupported_content_type' }, 415);
@@ -118,8 +127,7 @@ e2eeRouter.post('/key-ring', async (c) => {
 });
 
 e2eeRouter.put('/key-ring', async (c) => {
-  const session = await requireSession(c);
-  if (session instanceof Response) return session;
+  const session = c.get('session');
 
   if (c.req.header('Content-Type') !== 'application/json') {
     return c.json({ code: 'unsupported_content_type' }, 415);
@@ -185,8 +193,7 @@ e2eeRouter.put('/key-ring', async (c) => {
 });
 
 e2eeRouter.post('/key-ring/change-password', async (c) => {
-  const session = await requireSession(c);
-  if (session instanceof Response) return session;
+  const session = c.get('session');
 
   if (c.req.header('Content-Type') !== 'application/json') {
     return c.json({ code: 'unsupported_content_type' }, 415);

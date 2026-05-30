@@ -1,48 +1,29 @@
 import { Hono } from 'hono';
-import { bodyLimit } from 'hono/body-limit';
 
 import { authHandler } from './auth';
-import { csrfMiddleware } from './csrf';
-import {
-  MAX_AUTH_BODY_BYTES,
-  MAX_E2EE_BODY_BYTES,
-  MAX_SYNC_BODY_BYTES,
-} from './payload-limits';
+import type { WorkerHonoEnv } from './context';
+import { csrfMiddleware } from './middleware/csrf';
+import { payloadLimit } from './middleware/payload-limit';
+import { authRateLimiter } from './middleware/rate-limit';
+import { MAX_AUTH_BODY_BYTES } from './payload-limits';
 import { e2eeRouter } from './routes/e2ee';
 import { exchangeRatesRouter } from './routes/exchange-rates';
 import { syncRouter } from './routes/sync';
 
-const app = new Hono<{ Bindings: Env }>();
+const app = new Hono<WorkerHonoEnv>();
 
 app.use('*', csrfMiddleware());
 
-const payloadTooLarge = () =>
-  Response.json({ code: 'payload_too_large' }, { status: 413 });
-
-app.use(
+app.on(
+  ['GET', 'POST'],
   '/api/auth/*',
-  bodyLimit({ maxSize: MAX_AUTH_BODY_BYTES, onError: payloadTooLarge }),
-);
-
-app.on(['GET', 'POST'], '/api/auth/*', (c) =>
-  authHandler(c.req.raw, c.env, c.executionCtx),
-);
-
-app.use(
-  '/api/e2ee/*',
-  bodyLimit({ maxSize: MAX_E2EE_BODY_BYTES, onError: payloadTooLarge }),
-);
-app.use(
-  '/api/sync',
-  bodyLimit({ maxSize: MAX_SYNC_BODY_BYTES, onError: payloadTooLarge }),
-);
-app.use(
-  '/api/sync/*',
-  bodyLimit({ maxSize: MAX_SYNC_BODY_BYTES, onError: payloadTooLarge }),
+  authRateLimiter(),
+  payloadLimit(MAX_AUTH_BODY_BYTES),
+  (c) => authHandler(c.req.raw, c.env, c.executionCtx),
 );
 
 app.route('/api/e2ee', e2eeRouter);
-app.route('/api', exchangeRatesRouter);
+app.route('/api/exchange-rates', exchangeRatesRouter);
 app.route('/api/sync', syncRouter);
 
 export default app;

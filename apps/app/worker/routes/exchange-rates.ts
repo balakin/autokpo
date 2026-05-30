@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
 
-import { requireSession } from '../auth';
+import type { WorkerHonoEnv } from '../context';
+import { requireAuth } from '../middleware/auth';
+import { rateLimitRouteGroup } from '../middleware/rate-limit';
 
 const KURS_BASE = 'https://kurs.resenje.org/api/v1';
 
@@ -17,12 +19,11 @@ function upstreamStatus(status: number): 404 | 502 {
   return status === 404 ? 404 : 502;
 }
 
-const router = new Hono<{ Bindings: Env }>();
+const router = new Hono<WorkerHonoEnv>();
 
-router.get('/exchange-rates/currencies', async (c) => {
-  const auth = await requireSession(c);
-  if (auth instanceof Response) return auth;
+router.use('*', requireAuth, rateLimitRouteGroup('exchange-rates'));
 
+router.get('/currencies', async (c) => {
   const cacheKey = new Request('https://cache.local/exchange-rates/currencies');
   const cached = await caches.default.match(cacheKey);
   if (cached) return cached;
@@ -53,10 +54,7 @@ router.get('/exchange-rates/currencies', async (c) => {
   return response;
 });
 
-router.get('/exchange-rates/rate', async (c) => {
-  const auth = await requireSession(c);
-  if (auth instanceof Response) return auth;
-
+router.get('/rate', async (c) => {
   const currency = c.req.query('currency');
   const date = c.req.query('date');
 

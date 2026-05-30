@@ -2,11 +2,18 @@ import { and, eq, exists, gt, gte, lte, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
-import { requireSession } from '../auth';
+import type { WorkerHonoEnv } from '../context';
 import { getDb } from '../db';
 import { assertCondition, assertExists } from '../db/assert';
 import { keyRing, syncRecord } from '../db/schema';
-import { MAX_SYNC_CIPHERTEXT_BYTES, maxBase64Length } from '../payload-limits';
+import { requireAuth } from '../middleware/auth';
+import { payloadLimit } from '../middleware/payload-limit';
+import { rateLimitRouteGroup } from '../middleware/rate-limit';
+import {
+  MAX_SYNC_BODY_BYTES,
+  MAX_SYNC_CIPHERTEXT_BYTES,
+  maxBase64Length,
+} from '../payload-limits';
 
 const SOFT_CAP_ROWS = 200;
 const SOFT_CAP_BYTES = 2 * 1024 * 1024;
@@ -31,7 +38,14 @@ const encEnvelopeSchema = z.object({
 const pushBodySchema = encEnvelopeSchema;
 const compactBodySchema = encEnvelopeSchema;
 
-const router = new Hono<{ Bindings: Env }>();
+const router = new Hono<WorkerHonoEnv>();
+
+router.use(
+  '*',
+  payloadLimit(MAX_SYNC_BODY_BYTES),
+  requireAuth,
+  rateLimitRouteGroup('sync'),
+);
 
 function codeResponse(code: string, status: number): Response {
   return Response.json({ code }, { status });
@@ -48,8 +62,7 @@ function getLocalUserId(c: {
 }
 
 router.get('/', async (c) => {
-  const session = await requireSession(c);
-  if (session instanceof Response) return session;
+  const session = c.get('session');
   const localUserId = getLocalUserId(c);
   if (localUserId instanceof Response) return localUserId;
   if (localUserId !== session.user.id) {
@@ -143,8 +156,7 @@ router.get('/', async (c) => {
 });
 
 router.post('/', async (c) => {
-  const session = await requireSession(c);
-  if (session instanceof Response) return session;
+  const session = c.get('session');
   const localUserId = getLocalUserId(c);
   if (localUserId instanceof Response) return localUserId;
   if (localUserId !== session.user.id) {
@@ -290,8 +302,7 @@ router.post('/', async (c) => {
 });
 
 router.post('/compact', async (c) => {
-  const session = await requireSession(c);
-  if (session instanceof Response) return session;
+  const session = c.get('session');
   const localUserId = getLocalUserId(c);
   if (localUserId instanceof Response) return localUserId;
   if (localUserId !== session.user.id) {

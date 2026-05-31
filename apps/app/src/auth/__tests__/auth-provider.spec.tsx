@@ -1,10 +1,11 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { use } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AuthContext } from '../auth-context';
-import { AuthProvider } from '../auth-provider';
+import { SessionSync } from '../session-sync';
+import { useAuth } from '../use-auth';
+import { SESSION_QUERY_KEY } from '../use-session-query';
 
 const signOutMock = vi.hoisted(() => vi.fn());
 const getSessionMock = vi.hoisted(() => vi.fn());
@@ -16,21 +17,56 @@ vi.mock('../auth-client', () => ({
   },
 }));
 
+vi.mock('../../e2ee/cleanup', () => ({
+  clearLocalEncryptionUnlockMaterial: vi.fn(),
+}));
+
+vi.mock('../../pwa/clear-protected-caches', () => ({
+  clearProtectedCaches: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('../session-broadcast', () => ({
+  broadcastSessionChange: vi.fn(),
+  subscribeToSessionChanges: vi.fn().mockReturnValue(() => {}),
+}));
+
+function makeQueryClient(initialUserId?: string | null) {
+  const qc = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
+  if (initialUserId !== undefined) {
+    qc.setQueryData(
+      SESSION_QUERY_KEY,
+      initialUserId
+        ? { id: initialUserId, email: 'u@example.com', sessionId: null }
+        : null,
+    );
+  }
+  return qc;
+}
+
 function Harness() {
-  const auth = use(AuthContext);
-  if (!auth) throw new Error('missing auth context');
+  const { user, logout } = useAuth();
   return (
     <>
-      <span data-testid="userId">{auth.user?.id ?? 'null'}</span>
-      <span data-testid="email">{auth.user?.email ?? 'null'}</span>
-      <button onClick={() => void auth.logout()}>logout</button>
+      <span data-testid="userId">{user?.id ?? 'null'}</span>
+      <span data-testid="email">{user?.email ?? 'null'}</span>
+      <button onClick={() => void logout()}>logout</button>
     </>
   );
 }
 
-describe('AuthProvider', () => {
+function TestApp({ queryClient }: { queryClient: QueryClient }) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SessionSync />
+      <Harness />
+    </QueryClientProvider>
+  );
+}
+
+describe('useAuth + SessionSync', () => {
   beforeEach(() => {
-    localStorage.clear();
     signOutMock.mockReset();
     getSessionMock.mockReset();
     signOutMock.mockResolvedValue(undefined);
@@ -41,110 +77,52 @@ describe('AuthProvider', () => {
     vi.restoreAllMocks();
   });
 
-  it('initializes signed out when no remembered user', () => {
-    getSessionMock.mockImplementation(() => new Promise(() => {}));
-    render(
-      <AuthProvider>
-        <Harness />
-      </AuthProvider>,
-    );
+  it('reads session from React Query cache', () => {
+    const queryClient = makeQueryClient('cached-user');
+    render(<TestApp queryClient={queryClient} />);
+    expect(screen.getByTestId('userId')).toHaveTextContent('cached-user');
+  });
+
+  it('returns null user when no session in cache', () => {
+    const queryClient = makeQueryClient(null);
+    render(<TestApp queryClient={queryClient} />);
     expect(screen.getByTestId('userId')).toHaveTextContent('null');
   });
 
-  it('initializes signed in from remembered user in localStorage', () => {
-    getSessionMock.mockImplementation(() => new Promise(() => {}));
-    localStorage.setItem(
-      'autokpo:session',
-      JSON.stringify({
-        userId: 'remembered-user',
-        email: 'remembered@example.com',
-      }),
-    );
-    render(
-      <AuthProvider>
-        <Harness />
-      </AuthProvider>,
-    );
-    expect(screen.getByTestId('userId')).toHaveTextContent('remembered-user');
-    expect(screen.getByTestId('email')).toHaveTextContent(
-      'remembered@example.com',
-    );
-  });
-
-  it('refreshSession updates userId', async () => {
+  it('session query fetches and updates userId', async () => {
     getSessionMock.mockResolvedValue({
       data: {
-        user: {
-          id: 'user-1',
-          email: 'user-1@example.com',
-        },
+        user: { id: 'user-1', email: 'user-1@example.com' },
+        session: { id: 'session-1', token: 'tok-1' },
       },
     });
-    render(
-      <AuthProvider>
-        <Harness />
-      </AuthProvider>,
-    );
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, gcTime: 0 } },
+    });
+    render(<TestApp queryClient={queryClient} />);
     await waitFor(() =>
       expect(screen.getByTestId('userId')).toHaveTextContent('user-1'),
     );
-    expect(localStorage.getItem('autokpo:session')).toBe(
-      JSON.stringify({
-        userId: 'user-1',
-        email: 'user-1@example.com',
-      }),
-    );
   });
 
-  it('logout clears remembered user', async () => {
+  it('logout clears React Query session cache', async () => {
     const user = userEvent.setup();
-    localStorage.setItem(
-      'autokpo:session',
-      JSON.stringify({
-        userId: 'remembered-user',
-        email: 'remembered@example.com',
-      }),
-    );
-    render(
-      <AuthProvider>
-        <Harness />
-      </AuthProvider>,
-    );
+    const queryClient = makeQueryClient('remembered-user');
+    render(<TestApp queryClient={queryClient} />);
 
     await user.click(screen.getByText('logout'));
     await waitFor(() => expect(signOutMock).toHaveBeenCalledTimes(1));
 
-    expect(localStorage.getItem('autokpo:session')).toBeNull();
+    expect(queryClient.getQueryData(SESSION_QUERY_KEY)).toBeNull();
   });
+});
 
-  it('reacts to cross-tab storage updates', () => {
-    getSessionMock.mockImplementation(() => new Promise(() => {}));
-    render(
-      <AuthProvider>
-        <Harness />
-      </AuthProvider>,
-    );
+describe('SessionSync via BroadcastChannel', () => {
+  it('exposes subscribeToSessionChanges for cross-tab updates', async () => {
+    const { subscribeToSessionChanges } = await import('../session-broadcast');
+    const queryClient = makeQueryClient(null);
+    render(<TestApp queryClient={queryClient} />);
 
-    act(() => {
-      localStorage.setItem(
-        'autokpo:session',
-        JSON.stringify({
-          userId: 'leader-user',
-          email: 'leader@example.com',
-        }),
-      );
-      window.dispatchEvent(
-        new StorageEvent('storage', {
-          key: 'autokpo:session',
-          newValue: JSON.stringify({
-            userId: 'leader-user',
-            email: 'leader@example.com',
-          }),
-        }),
-      );
-    });
-
-    expect(screen.getByTestId('userId')).toHaveTextContent('leader-user');
-    expect(screen.getByTestId('email')).toHaveTextContent('leader@example.com');
+    expect(subscribeToSessionChanges).toHaveBeenCalled();
   });
 });

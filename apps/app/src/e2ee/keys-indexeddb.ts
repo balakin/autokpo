@@ -24,39 +24,11 @@ const aesGcmParamsSchema = z.object({
 const DB_NAME = 'autokpo-e2ee';
 const DB_VERSION = 1;
 
-const STORE_KEY_RING = 'key_ring';
-const STORE_WRAPPER = 'wrapper';
 const STORE_LOCAL_WRAPPER = 'local_wrapper';
 
 // ---------------------------------------------------------------------------
 // Schemas and inferred record types
 // ---------------------------------------------------------------------------
-
-const keyRingRecordSchema = z.object({
-  userId: z.string(),
-  keyRingId: z.string(),
-  activeDekId: z.string(),
-  revision: z.number().int().positive(),
-  plaintextSchemaVersion: z.literal(1),
-  encryptionAlgorithm: z.literal('aes-256-gcm'),
-  encryptionParams: aesGcmParamsSchema,
-  ciphertext: z.string(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-});
-
-const wrapperRecordSchema = z.object({
-  userId: z.string(),
-  method: z.literal('password'),
-  wrappingId: z.string(),
-  ciphertext: uint8ArraySchema,
-  wrappingAlgorithm: z.literal('aes-256-gcm'),
-  wrappingParams: aesGcmParamsSchema,
-  kdfAlgorithm: z.literal('argon2id'),
-  kdfParams: kdfParamsV1Schema,
-  kdfSalt: uint8ArraySchema,
-  createdAt: z.string(),
-});
 
 const cryptoKeySchema = z.custom<CryptoKey>((v) =>
   typeof CryptoKey !== 'undefined'
@@ -91,8 +63,6 @@ const localWrapperRecordPinSchema = z.object({
   failedAttempts: z.number().int(),
 });
 
-export type KeyRingRecord = z.infer<typeof keyRingRecordSchema>;
-export type WrapperRecord = z.infer<typeof wrapperRecordSchema>;
 export type LocalWrapperRecordLdk = z.infer<typeof localWrapperRecordLdkSchema>;
 export type LocalWrapperRecordPin = z.infer<typeof localWrapperRecordPinSchema>;
 export type LocalWrapperRecord = LocalWrapperRecordLdk | LocalWrapperRecordPin;
@@ -108,15 +78,6 @@ export class KeysIndexeddb {
 
   constructor() {
     this.whenReady = openDatabase(DB_NAME, DB_VERSION, (db) => {
-      if (!db.objectStoreNames.contains(STORE_KEY_RING)) {
-        db.createObjectStore(STORE_KEY_RING, { keyPath: 'userId' });
-      }
-      if (!db.objectStoreNames.contains(STORE_WRAPPER)) {
-        const wrapperStore = db.createObjectStore(STORE_WRAPPER, {
-          keyPath: 'userId',
-        });
-        wrapperStore.createIndex('wrappingId', 'wrappingId', { unique: true });
-      }
       if (!db.objectStoreNames.contains(STORE_LOCAL_WRAPPER)) {
         db.createObjectStore(STORE_LOCAL_WRAPPER, { keyPath: 'userId' });
       }
@@ -128,40 +89,6 @@ export class KeysIndexeddb {
   close(): void {
     this.db?.close();
     this.db = null;
-  }
-
-  async readKeyRing(userId: string): Promise<KeyRingRecord | null> {
-    const db = await this.requireDb();
-    const raw = await withStore(db, STORE_KEY_RING, 'readonly', (store) =>
-      requestToPromise<unknown>(store.get(userId)),
-    );
-    if (raw === undefined) return null;
-    const result = keyRingRecordSchema.safeParse(raw);
-    return result.success ? result.data : null;
-  }
-
-  async writeKeyRing(record: KeyRingRecord): Promise<void> {
-    const db = await this.requireDb();
-    await withStore(db, STORE_KEY_RING, 'readwrite', (store) =>
-      requestToPromise(store.put(record)),
-    );
-  }
-
-  async readWrapper(userId: string): Promise<WrapperRecord | null> {
-    const db = await this.requireDb();
-    const raw = await withStore(db, STORE_WRAPPER, 'readonly', (store) =>
-      requestToPromise<unknown>(store.get(userId)),
-    );
-    if (raw === undefined) return null;
-    const result = wrapperRecordSchema.safeParse(raw);
-    return result.success ? result.data : null;
-  }
-
-  async writeWrapper(record: WrapperRecord): Promise<void> {
-    const db = await this.requireDb();
-    await withStore(db, STORE_WRAPPER, 'readwrite', (store) =>
-      requestToPromise(store.put(record)),
-    );
   }
 
   async readLocalWrapper(userId: string): Promise<LocalWrapperRecord | null> {

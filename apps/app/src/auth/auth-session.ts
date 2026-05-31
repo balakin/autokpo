@@ -1,65 +1,6 @@
-import { clearLocalEncryptionUnlockMaterial } from '../e2ee/cleanup';
 import { getStoredLocale } from '../i18n/locale-storage';
 
 import { authClient } from './auth-client';
-
-export const SESSION_KEY = 'autokpo:session';
-const LEGACY_SESSION_KEY = 'autokpo:remembered-local-user';
-
-export type StoredSession = {
-  userId: string;
-  email: string | null;
-};
-
-function isStoredSession(value: unknown): value is StoredSession {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
-  const maybe = value as Partial<StoredSession>;
-  return (
-    typeof maybe.userId === 'string' &&
-    (typeof maybe.email === 'string' || maybe.email === null)
-  );
-}
-
-export function readStoredSession(): StoredSession | null {
-  const raw = localStorage.getItem(SESSION_KEY);
-  if (raw) {
-    try {
-      const parsed = JSON.parse(raw) as unknown;
-      if (isStoredSession(parsed)) {
-        return parsed;
-      }
-    } catch {
-      localStorage.removeItem(SESSION_KEY);
-      return null;
-    }
-
-    localStorage.removeItem(SESSION_KEY);
-    return null;
-  }
-
-  const legacyUserId = localStorage.getItem(LEGACY_SESSION_KEY);
-  if (!legacyUserId) {
-    return null;
-  }
-
-  const migratedSession: StoredSession = {
-    userId: legacyUserId,
-    email: null,
-  };
-  localStorage.setItem(SESSION_KEY, JSON.stringify(migratedSession));
-  localStorage.removeItem(LEGACY_SESSION_KEY);
-  return migratedSession;
-}
-
-export function writeStoredSession(session: StoredSession | null): void {
-  if (!session) {
-    localStorage.removeItem(SESSION_KEY);
-    return;
-  }
-  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-}
 
 export function ensureNoAuthError(result: unknown): void {
   if (!result || typeof result !== 'object') {
@@ -134,34 +75,7 @@ export async function verifyEmailOtpSession(
   ensureNoAuthError(result);
 }
 
-export async function refreshSession(): Promise<string | null> {
-  const previousSession = readStoredSession();
-  const session = await authClient.getSession();
-  const nextUser = session.data?.user;
-  if (!nextUser?.id) {
-    if (previousSession?.userId) {
-      clearLocalEncryptionUnlockMaterial(previousSession.userId);
-    }
-    writeStoredSession(null);
-    return null;
-  }
-
-  if (previousSession?.userId && previousSession.userId !== nextUser.id) {
-    clearLocalEncryptionUnlockMaterial(previousSession.userId);
-  }
-
-  writeStoredSession({
-    userId: nextUser.id,
-    email: nextUser.email ?? null,
-  });
-  return nextUser.id;
-}
-
 export async function logoutSession(): Promise<void> {
-  const previousSession = readStoredSession();
-  await authClient.signOut();
-  if (previousSession?.userId) {
-    clearLocalEncryptionUnlockMaterial(previousSession.userId);
-  }
-  writeStoredSession(null);
+  const result = await authClient.signOut();
+  ensureNoAuthError(result);
 }

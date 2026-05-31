@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
@@ -12,7 +13,14 @@ vi.mock('../auth-client', () => ({
   authClient: { getSession: getSessionMock },
 }));
 
+vi.mock('../../e2ee/cleanup', () => ({
+  clearLocalEncryptionUnlockMaterial: vi.fn(),
+}));
+
 function setup(initialEntry = '/sign-in/oauth/google/callback') {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
   const router = createMemoryRouter(
     [
       {
@@ -25,9 +33,11 @@ function setup(initialEntry = '/sign-in/oauth/google/callback') {
     { initialEntries: [initialEntry] },
   );
   render(
-    <I18nWrapper>
-      <RouterProvider router={router} />
-    </I18nWrapper>,
+    <QueryClientProvider client={queryClient}>
+      <I18nWrapper>
+        <RouterProvider router={router} />
+      </I18nWrapper>
+    </QueryClientProvider>,
   );
 }
 

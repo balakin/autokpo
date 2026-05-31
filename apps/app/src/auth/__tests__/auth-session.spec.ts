@@ -1,13 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
-  type StoredSession,
-  SESSION_KEY,
+  ensureNoAuthError,
   logoutSession,
-  readStoredSession,
-  refreshSession,
   startOAuthFlow,
-  writeStoredSession,
 } from '../auth-session';
 
 const getSessionMock = vi.hoisted(() => vi.fn());
@@ -26,7 +22,6 @@ vi.mock('../auth-client', () => ({
 }));
 
 beforeEach(() => {
-  localStorage.clear();
   getSessionMock.mockReset();
   signInSocialMock.mockReset();
   signInEmailOtpMock.mockReset();
@@ -38,37 +33,23 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('readStoredSession', () => {
-  it('returns null when nothing stored', () => {
-    expect(readStoredSession()).toBeNull();
+describe('ensureNoAuthError', () => {
+  it('does not throw on undefined', () => {
+    expect(() => ensureNoAuthError(undefined)).not.toThrow();
   });
 
-  it('returns the stored session object', () => {
-    const session: StoredSession = {
-      userId: 'user-abc',
-      email: 'user@example.com',
-    };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    expect(readStoredSession()).toEqual(session);
+  it('does not throw on success result', () => {
+    expect(() => ensureNoAuthError({ data: { userId: 'u1' } })).not.toThrow();
   });
 
-  it('migrates the legacy key', () => {
-    localStorage.setItem('autokpo:remembered-local-user', 'legacy-user');
-
-    expect(readStoredSession()).toEqual({
-      userId: 'legacy-user',
-      email: null,
-    });
-    expect(localStorage.getItem('autokpo:remembered-local-user')).toBeNull();
+  it('throws on string error', () => {
+    expect(() => ensureNoAuthError({ error: 'bad' })).toThrow('bad');
   });
-});
 
-describe('writeStoredSession', () => {
-  it('writes json session', () => {
-    writeStoredSession({ userId: 'u1', email: 'u@example.com' });
-    expect(localStorage.getItem(SESSION_KEY)).toBe(
-      JSON.stringify({ userId: 'u1', email: 'u@example.com' }),
-    );
+  it('throws on object error with message', () => {
+    expect(() =>
+      ensureNoAuthError({ error: { message: 'Auth failed' } }),
+    ).toThrow('Auth failed');
   });
 });
 
@@ -94,45 +75,12 @@ describe('startOAuthFlow', () => {
   });
 });
 
-describe('refreshSession', () => {
-  it('stores and returns session user id', async () => {
-    getSessionMock.mockResolvedValue({
-      data: {
-        user: {
-          id: 'google-user',
-          email: 'google@example.com',
-          image: 'https://img.example.com/google.png',
-        },
-      },
-    });
-
-    await expect(refreshSession()).resolves.toBe('google-user');
-    expect(localStorage.getItem(SESSION_KEY)).toBe(
-      JSON.stringify({
-        userId: 'google-user',
-        email: 'google@example.com',
-      }),
-    );
-  });
-
-  it('clears stored user and returns null when signed out', async () => {
-    localStorage.setItem(
-      SESSION_KEY,
-      JSON.stringify({ userId: 'old-user', email: null }),
-    );
-    getSessionMock.mockResolvedValue({ data: null });
-
-    await expect(refreshSession()).resolves.toBeNull();
-    expect(localStorage.getItem(SESSION_KEY)).toBeNull();
-  });
-});
-
 describe('requestEmailOtpSession', () => {
   it('requests sign-in otp for email', async () => {
     sendVerificationOtpMock.mockResolvedValue(undefined);
-    const { requestEmailOtpSession } = await import('../auth-session');
+    const { requestEmailOtpSession: req } = await import('../auth-session');
 
-    await requestEmailOtpSession('user@example.com', 'test-captcha-token');
+    await req('user@example.com', 'test-captcha-token');
 
     expect(sendVerificationOtpMock).toHaveBeenCalledWith({
       email: 'user@example.com',
@@ -150,9 +98,9 @@ describe('requestEmailOtpSession', () => {
 describe('verifyEmailOtpSession', () => {
   it('verifies otp sign-in', async () => {
     signInEmailOtpMock.mockResolvedValue(undefined);
-    const { verifyEmailOtpSession } = await import('../auth-session');
+    const { verifyEmailOtpSession: verify } = await import('../auth-session');
 
-    await verifyEmailOtpSession('user@example.com', '123456');
+    await verify('user@example.com', '123456');
 
     expect(signInEmailOtpMock).toHaveBeenCalledWith({
       email: 'user@example.com',
@@ -162,11 +110,14 @@ describe('verifyEmailOtpSession', () => {
 });
 
 describe('logoutSession', () => {
-  it('calls signOut and clears stored user', async () => {
-    localStorage.setItem(SESSION_KEY, 'user-abc');
-    signOutMock.mockResolvedValue(undefined);
+  it('calls signOut', async () => {
+    signOutMock.mockResolvedValue({ data: { success: true } });
     await logoutSession();
     expect(signOutMock).toHaveBeenCalledTimes(1);
-    expect(localStorage.getItem(SESSION_KEY)).toBeNull();
+  });
+
+  it('throws when signOut fails', async () => {
+    signOutMock.mockResolvedValue({ error: { message: 'Network error' } });
+    await expect(logoutSession()).rejects.toThrow('Network error');
   });
 });

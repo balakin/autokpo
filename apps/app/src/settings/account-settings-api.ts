@@ -1,12 +1,7 @@
 import { authClient } from '../auth/auth-client';
-import { ensureNoAuthError, writeStoredSession } from '../auth/auth-session';
+import { ensureNoAuthError } from '../auth/auth-session';
+import { cleanupSignedOutSession } from '../auth/session-cleanup';
 import { getStoredLocale } from '../i18n/locale-storage';
-
-export interface AccountProfile {
-  id: string;
-  name: string | null;
-  email: string | null;
-}
 
 export interface AccountSession {
   id: string;
@@ -15,7 +10,6 @@ export interface AccountSession {
   userAgent: string | null;
   createdAt: number | null;
   expiresAt: number | null;
-  isCurrent: boolean;
 }
 
 interface BetterAuthSessionLike {
@@ -31,24 +25,7 @@ interface BetterAuthSessionLike {
 export { buildAccountExport } from './export';
 export type { AccountExport } from './export';
 
-export async function fetchAccountProfile(): Promise<AccountProfile> {
-  const session = await authClient.getSession({
-    query: { disableCookieCache: true },
-  });
-  const user = session.data?.user;
-
-  if (!user?.id) {
-    throw new Error('Account session is not available.');
-  }
-
-  return {
-    id: user.id,
-    name: user.name ?? null,
-    email: user.email ?? null,
-  };
-}
-
-export async function deleteAccount(): Promise<void> {
+export async function deleteAccount(userId: string): Promise<void> {
   const result = await authClient.deleteUser({
     fetchOptions: {
       headers: { 'X-Preferred-Locale': getStoredLocale() },
@@ -56,22 +33,13 @@ export async function deleteAccount(): Promise<void> {
   });
 
   ensureNoAuthError(result);
-  writeStoredSession(null);
-  window.location.assign('/goodbye');
+  await cleanupSignedOutSession(userId);
 }
 
 export async function fetchAccountSessions(): Promise<AccountSession[]> {
-  const [currentSessionResult, sessionsResult] = await Promise.all([
-    authClient.getSession({ query: { disableCookieCache: true } }),
-    authClient.listSessions(),
-  ]);
+  const sessionsResult = await authClient.listSessions();
 
-  ensureNoAuthError(currentSessionResult);
   ensureNoAuthError(sessionsResult);
-
-  const currentSession = readSessionFromResult(currentSessionResult);
-  const currentSessionId = getString(currentSession?.id);
-  const currentSessionToken = getString(currentSession?.token);
 
   return readSessionsFromResult(sessionsResult).map((session, index) => {
     const id = getString(session.id) ?? `session-${index}`;
@@ -86,9 +54,6 @@ export async function fetchAccountSessions(): Promise<AccountSession[]> {
       userAgent: getString(session.userAgent),
       createdAt,
       expiresAt,
-      isCurrent:
-        (!!currentSessionId && id === currentSessionId) ||
-        (!!currentSessionToken && token === currentSessionToken),
     };
   });
 }
@@ -103,21 +68,6 @@ export async function revokeOtherAccountSessions(): Promise<void> {
   const result = await authClient.revokeOtherSessions();
 
   ensureNoAuthError(result);
-}
-
-function readSessionFromResult(result: unknown): BetterAuthSessionLike | null {
-  if (!result || typeof result !== 'object' || !('data' in result)) {
-    return null;
-  }
-
-  const data = result.data;
-  if (!data || typeof data !== 'object') return null;
-
-  if ('session' in data && data.session && typeof data.session === 'object') {
-    return data.session;
-  }
-
-  return data;
 }
 
 function readSessionsFromResult(result: unknown): BetterAuthSessionLike[] {

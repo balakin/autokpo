@@ -10,7 +10,7 @@ import {
   type RouteObject,
 } from 'react-router';
 import { TopBarActionsProvider } from 'src/app-shell/top-bar-actions';
-import { AuthContext } from 'src/auth/auth-context';
+import { SESSION_QUERY_KEY } from 'src/auth/use-session-query';
 import type { Book } from 'src/books/book-schema';
 import { DocContext, YArray, YDoc, YMap } from 'src/crdt';
 import { SyncMetadataProvider } from 'src/crdt/sync-metadata-provider';
@@ -228,7 +228,7 @@ export async function renderWithProviders(
   );
 
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+    defaultOptions: { queries: { retry: false } },
   });
 
   localStorage.setItem('autokpo:locale', 'sr-Latn');
@@ -236,27 +236,21 @@ export async function renderWithProviders(
   let result: ReturnType<typeof render>;
   // eslint-disable-next-line testing-library/no-unnecessary-act
   await act(async () => {
+    queryClient.setQueryData(SESSION_QUERY_KEY, {
+      id: TEST_USER_ID,
+      email: 'test@example.com',
+      sessionId: null,
+    });
     result = render(
       <QueryClientProvider client={queryClient}>
         <I18nProvider i18n={i18n}>
           <DocContext value={doc}>
             <SyncMetadataProvider userId={TEST_USER_ID}>
               <LocaleProvider>
-                <AuthContext
-                  value={{
-                    user: {
-                      id: TEST_USER_ID,
-                      email: 'test@example.com',
-                    },
-                    refresh: () => Promise.resolve(TEST_USER_ID),
-                    logout: () => Promise.resolve(),
-                  }}
-                >
-                  <TopBarActionsProvider>
-                    <Toast.Provider />
-                    <RouterProvider router={router} />
-                  </TopBarActionsProvider>
-                </AuthContext>
+                <TopBarActionsProvider>
+                  <Toast.Provider />
+                  <RouterProvider router={router} />
+                </TopBarActionsProvider>
               </LocaleProvider>
             </SyncMetadataProvider>
           </DocContext>

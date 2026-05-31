@@ -1,22 +1,19 @@
 import { Button, Card, Spinner } from '@heroui/react';
 import { Trans } from '@lingui/react/macro';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useReducer, useState, type ReactNode } from 'react';
 
-import { aesGcmDecrypt } from './aes-gcm';
-import { base64ToBytes } from './base64';
 import { EncryptionContext } from './encryption-context';
 import {
   createKeyRingProfilePayload,
   decryptKeyRingWithMek,
   type DecryptedKeyRing,
   type DekEntry,
-  EncryptionUnlockError,
   generateLdk,
   unwrapKeyRingProfile,
   unwrapMekWithLdk,
   unwrapMekWithPin,
   wrapMekWithLdk,
-  wrappedMekAad,
 } from './encryption-crypto';
 import {
   createInitialEncryptionGateState,
@@ -25,24 +22,18 @@ import {
 import { EncryptionSetupScreen } from './encryption-setup-screen';
 import { EncryptionShell } from './encryption-shell';
 import { EncryptionUnlockScreen } from './encryption-unlock-screen';
-import { deriveKek } from './kdf';
 import {
   createKeyRingProfile,
-  fetchKeyRingProfile,
   KeyRingConflictError,
   KeyRingNotFoundError,
   updateKeyRingProfile,
 } from './key-ring-api';
-import type {
-  SerializedKeyRingProfile,
-  UpdateKeyRingRequest,
-} from './key-ring-record';
 import {
-  KeysIndexeddb,
-  type KeyRingRecord,
-  type LocalWrapperRecordPin,
-  type WrapperRecord,
-} from './keys-indexeddb';
+  cacheKeyRingProfile,
+  keyRingProfileQueryOptions,
+} from './key-ring-query';
+import type { UpdateKeyRingRequest } from './key-ring-record';
+import { KeysIndexeddb, type LocalWrapperRecordPin } from './keys-indexeddb';
 import { PinUnlockScreen } from './pin-unlock-screen';
 
 type EncryptionGateProps = {
@@ -59,6 +50,7 @@ export function EncryptionGate({ userId, children }: EncryptionGateProps) {
 }
 
 function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
+  const queryClient = useQueryClient();
   const [store, setStore] = useState<KeysIndexeddb | null>(null);
   const [pinWrapper, setPinWrapper] = useState<LocalWrapperRecordPin | null>(
     null,
@@ -91,33 +83,20 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
     let cancelled = false;
 
     async function check() {
-      let keyRingRecord: KeyRingRecord;
+      let profile;
 
       try {
-        const profile = await fetchKeyRingProfile();
-        if (cancelled) return;
-        const kr = keyRingRecordFromProfile(profile, userId);
-        const wr = wrapperRecordFromProfile(profile, userId);
-        await s.writeKeyRing(kr);
-        if (wr) await s.writeWrapper(wr);
-        keyRingRecord = kr;
+        profile = await queryClient.fetchQuery(
+          keyRingProfileQueryOptions(userId),
+        );
       } catch (error: unknown) {
         if (cancelled) return;
         if (isKeyRingNotFoundError(error)) {
           dispatch({ type: 'check-missing' });
           return;
         }
-        if (isNetworkLikeError(error)) {
-          const cached = await s.readKeyRing(userId);
-          if (!cached) {
-            dispatch({ type: 'check-failed' });
-            return;
-          }
-          keyRingRecord = cached;
-        } else {
-          dispatch({ type: 'check-failed' });
-          return;
-        }
+        dispatch({ type: 'check-failed' });
+        return;
       }
 
       if (cancelled) return;
@@ -132,15 +111,12 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
             userId,
             localWrapper.wrapperId,
           );
-          const decrypted = await decryptKeyRingWithMek(mek, {
-            ...keyRingRecord,
-            id: keyRingRecord.keyRingId,
-          });
+          const decrypted = await decryptKeyRingWithMek(mek, profile.keyRing);
           if (cancelled) return;
           dispatch({
             type: 'unlocked',
             mek,
-            keyRingId: keyRingRecord.keyRingId,
+            keyRingId: profile.keyRing.id,
             ...toUnlockedAction(decrypted),
           });
           return;
@@ -164,7 +140,7 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
     return () => {
       cancelled = true;
     };
-  }, [session.status, userId, store]);
+  }, [session.status, userId, store, queryClient]);
 
   async function setup(password: string) {
     if (!store) return;
@@ -173,9 +149,7 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
       const { request, mek, activeDek, activeDekId, revision, deks } =
         await createKeyRingProfilePayload(userId, password);
       const profile = await createKeyRingProfile(request);
-      await store.writeKeyRing(keyRingRecordFromProfile(profile, userId));
-      const wr = wrapperRecordFromProfile(profile, userId);
-      if (wr) await store.writeWrapper(wr);
+      await cacheKeyRingProfile(queryClient, userId, profile);
       await storeLdkWrapper(store, mek, userId);
       dispatch({
         type: 'unlocked',
@@ -195,52 +169,17 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
     if (!store) return;
     dispatch({ type: 'unlock-submitted' });
     try {
-      let profile: SerializedKeyRingProfile | null = null;
-      try {
-        profile = await fetchKeyRingProfile();
-      } catch (error) {
-        if (!isNetworkLikeError(error)) throw error;
-      }
+      const profile = await queryClient.fetchQuery(
+        keyRingProfileQueryOptions(userId),
+      );
 
-      let mek: Uint8Array;
-      let activeDek: Uint8Array;
-      let activeDekId: string;
-      let keyRingId: string;
-      let keyRingRevision: number;
-      let deks: Record<string, DekEntry>;
-
-      if (profile) {
-        await store.writeKeyRing(keyRingRecordFromProfile(profile, userId));
-        const wr = wrapperRecordFromProfile(profile, userId);
-        if (wr) await store.writeWrapper(wr);
-        keyRingId = profile.keyRing.id;
-        ({
-          mek,
-          activeDek,
-          activeDekId,
-          revision: keyRingRevision,
-          deks,
-        } = await unwrapKeyRingProfile(password, profile));
-      } else {
-        const keyRingRecord = await store.readKeyRing(userId);
-        const wrapperRecord = await store.readWrapper(userId);
-        if (!keyRingRecord || !wrapperRecord) {
-          throw new Error('No cached key ring available');
-        }
-        keyRingId = keyRingRecord.keyRingId;
-        ({
-          mek,
-          activeDek,
-          activeDekId,
-          revision: keyRingRevision,
-          deks,
-        } = await unlockWithLocalRecords(
-          password,
-          userId,
-          keyRingRecord,
-          wrapperRecord,
-        ));
-      }
+      const {
+        mek,
+        activeDek,
+        activeDekId,
+        revision: keyRingRevision,
+        deks,
+      } = await unwrapKeyRingProfile(password, profile);
 
       await storeLdkWrapper(store, mek, userId);
       dispatch({
@@ -248,7 +187,7 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
         mek,
         activeDek,
         activeDekId,
-        keyRingId,
+        keyRingId: profile.keyRing.id,
         keyRingRevision,
         deks,
       });
@@ -262,20 +201,18 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
     dispatch({ type: 'unlock-submitted' });
     try {
       const mek = await unwrapMekWithPin(pinWrapper, pin);
-      const keyRingRecord = await store.readKeyRing(userId);
-      if (!keyRingRecord) throw new EncryptionUnlockError();
+      const profile = await queryClient.fetchQuery(
+        keyRingProfileQueryOptions(userId),
+      );
       const { activeDek, activeDekId, revision, deks } =
-        await decryptKeyRingWithMek(mek, {
-          ...keyRingRecord,
-          id: keyRingRecord.keyRingId,
-        });
+        await decryptKeyRingWithMek(mek, profile.keyRing);
       await store.updatePinFailedAttempts(userId, 0);
       dispatch({
         type: 'unlocked',
         mek,
         activeDek,
         activeDekId,
-        keyRingId: keyRingRecord.keyRingId,
+        keyRingId: profile.keyRing.id,
         keyRingRevision: revision,
         deks,
       });
@@ -294,10 +231,11 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
   }
 
   async function refreshKeyRingProfileCache() {
-    if (!store || !gateState.mek)
-      throw new Error('Key ring store is not ready');
-    const profile = await fetchKeyRingProfile();
-    await writeProfileToCache(store, profile, userId);
+    if (!gateState.mek) throw new Error('Key ring store is not ready');
+    const profile = await queryClient.fetchQuery({
+      ...keyRingProfileQueryOptions(userId),
+      staleTime: 0,
+    });
     const decrypted = await decryptKeyRingWithMek(
       gateState.mek,
       profile.keyRing,
@@ -312,10 +250,9 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
   }
 
   async function updateKeyRingProfileCache(request: UpdateKeyRingRequest) {
-    if (!store) throw new Error('Key ring store is not ready');
     try {
       const profile = await updateKeyRingProfile(request);
-      await writeProfileToCache(store, profile, userId);
+      await cacheKeyRingProfile(queryClient, userId, profile);
       if (gateState.mek) {
         const decrypted = await decryptKeyRingWithMek(
           gateState.mek,
@@ -331,23 +268,13 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
       return profile;
     } catch (error) {
       if (isKeyRingConflictError(error)) {
-        const profile = await fetchKeyRingProfile();
-        await writeProfileToCache(store, profile, userId);
+        await queryClient.fetchQuery({
+          ...keyRingProfileQueryOptions(userId),
+          staleTime: 0,
+        });
       }
       throw error;
     }
-  }
-
-  async function writeProfileToCache(
-    targetStore: KeysIndexeddb,
-    profile: SerializedKeyRingProfile,
-    targetUserId: string,
-  ) {
-    await targetStore.writeKeyRing(
-      keyRingRecordFromProfile(profile, targetUserId),
-    );
-    const wr = wrapperRecordFromProfile(profile, targetUserId);
-    if (wr) await targetStore.writeWrapper(wr);
   }
 
   if (
@@ -470,78 +397,6 @@ function EncryptionGateLoading() {
   );
 }
 
-function keyRingRecordFromProfile(
-  profile: SerializedKeyRingProfile,
-  userId: string,
-): KeyRingRecord {
-  return {
-    userId,
-    keyRingId: profile.keyRing.id,
-    activeDekId: profile.keyRing.activeDekId,
-    revision: profile.keyRing.revision,
-    plaintextSchemaVersion: profile.keyRing.plaintextSchemaVersion,
-    encryptionAlgorithm: profile.keyRing.encryptionAlgorithm,
-    encryptionParams: {
-      iv: base64ToBytes(profile.keyRing.encryptionParams.iv),
-      tagBits: profile.keyRing.encryptionParams.tagBits,
-    },
-    ciphertext: profile.keyRing.ciphertext,
-    createdAt: profile.keyRing.createdAt,
-    updatedAt: profile.keyRing.updatedAt,
-  };
-}
-
-function wrapperRecordFromProfile(
-  profile: SerializedKeyRingProfile,
-  userId: string,
-): WrapperRecord | null {
-  const wrapper = profile.wrappers.find((w) => w.method === 'password');
-  if (!wrapper) return null;
-  return {
-    userId,
-    method: 'password',
-    wrappingId: wrapper.id,
-    ciphertext: base64ToBytes(wrapper.ciphertext),
-    wrappingAlgorithm: 'aes-256-gcm',
-    wrappingParams: {
-      iv: base64ToBytes(wrapper.wrappingParams.iv),
-      tagBits: wrapper.wrappingParams.tagBits,
-    },
-    kdfAlgorithm: 'argon2id',
-    kdfParams: wrapper.kdfParams,
-    kdfSalt: base64ToBytes(wrapper.kdfSalt),
-    createdAt: wrapper.createdAt,
-  };
-}
-
-async function unlockWithLocalRecords(
-  password: string,
-  userId: string,
-  keyRingRecord: KeyRingRecord,
-  wrapperRecord: WrapperRecord,
-): Promise<{ mek: Uint8Array } & DecryptedKeyRing> {
-  try {
-    const kek = await deriveKek(
-      password,
-      wrapperRecord.kdfSalt,
-      wrapperRecord.kdfParams,
-    );
-    const mek = await aesGcmDecrypt({
-      keyBytes: kek,
-      params: wrapperRecord.wrappingParams,
-      ciphertext: wrapperRecord.ciphertext,
-      aad: wrappedMekAad(userId, wrapperRecord.wrappingId, 'password'),
-    });
-    const decrypted = await decryptKeyRingWithMek(mek, {
-      ...keyRingRecord,
-      id: keyRingRecord.keyRingId,
-    });
-    return { mek, ...decrypted };
-  } catch {
-    throw new EncryptionUnlockError();
-  }
-}
-
 function toUnlockedAction(decrypted: DecryptedKeyRing): {
   activeDek: Uint8Array;
   activeDekId: string;
@@ -596,8 +451,4 @@ function isKeyRingConflictError(error: unknown): error is KeyRingConflictError {
     error instanceof KeyRingConflictError ||
     (error instanceof Error && error.name === 'KeyRingConflictError')
   );
-}
-
-function isNetworkLikeError(error: unknown): boolean {
-  return error instanceof TypeError || !navigator.onLine;
 }

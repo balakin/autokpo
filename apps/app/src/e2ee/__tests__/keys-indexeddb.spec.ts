@@ -3,10 +3,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { KDF_PARAMS_V1 } from '../key-ring-record';
 import {
   KeysIndexeddb,
-  type KeyRingRecord,
   type LocalWrapperRecord,
   type LocalWrapperRecordPin,
-  type WrapperRecord,
 } from '../keys-indexeddb';
 
 const USER_ID = 'user-1';
@@ -23,36 +21,6 @@ function makeStore(): KeysIndexeddb {
 afterEach(() => {
   instances.splice(0).forEach((s) => s.close());
 });
-
-function makeKeyRingRecord(userId = USER_ID): KeyRingRecord {
-  return {
-    userId,
-    keyRingId: 'kr-1',
-    activeDekId: 'dek-1',
-    revision: 1,
-    plaintextSchemaVersion: 1 as const,
-    encryptionAlgorithm: 'aes-256-gcm',
-    encryptionParams: { iv: new Uint8Array(12).fill(10), tagBits: 128 },
-    ciphertext: 'base64ciphertext==',
-    createdAt: '2026-01-01T00:00:00.000Z',
-    updatedAt: '2026-01-01T00:00:00.000Z',
-  };
-}
-
-function makeWrapperRecord(userId = USER_ID): WrapperRecord {
-  return {
-    userId,
-    method: 'password',
-    wrappingId: 'w-1',
-    ciphertext: new Uint8Array(48).fill(1),
-    wrappingAlgorithm: 'aes-256-gcm',
-    wrappingParams: { iv: new Uint8Array(12).fill(2), tagBits: 128 },
-    kdfAlgorithm: 'argon2id',
-    kdfParams: KDF_PARAMS_V1,
-    kdfSalt: new Uint8Array(16).fill(3),
-    createdAt: '2026-01-01T00:00:00.000Z',
-  };
-}
 
 async function makeLdkRecord(userId = USER_ID): Promise<LocalWrapperRecord> {
   const ldk = await crypto.subtle.generateKey(
@@ -94,60 +62,6 @@ async function makePinRecord(userId = USER_ID): Promise<LocalWrapperRecordPin> {
     failedAttempts: 0,
   };
 }
-
-describe('KeysIndexeddb — key_ring store', () => {
-  it('returns null for a missing userId', async () => {
-    const store = makeStore();
-    await store.whenReady;
-    expect(await store.readKeyRing(USER_ID)).toBeNull();
-  });
-
-  it('round-trips a key ring record', async () => {
-    const store = makeStore();
-    const record = makeKeyRingRecord();
-    await store.writeKeyRing(record);
-    expect(await store.readKeyRing(USER_ID)).toEqual(record);
-  });
-
-  it('isolates records by userId', async () => {
-    const store = makeStore();
-    await store.writeKeyRing(makeKeyRingRecord(USER_ID));
-    expect(await store.readKeyRing(OTHER_USER_ID)).toBeNull();
-  });
-
-  it('overwrites an existing record on put', async () => {
-    const store = makeStore();
-    await store.writeKeyRing(makeKeyRingRecord());
-    const updated = { ...makeKeyRingRecord(), activeDekId: 'dek-2' };
-    await store.writeKeyRing(updated);
-    expect(await store.readKeyRing(USER_ID)).toEqual(updated);
-  });
-});
-
-describe('KeysIndexeddb — wrapper store', () => {
-  it('returns null for a missing userId', async () => {
-    const store = makeStore();
-    await store.whenReady;
-    expect(await store.readWrapper(USER_ID)).toBeNull();
-  });
-
-  it('round-trips a wrapper record with Uint8Array fields', async () => {
-    const store = makeStore();
-    const record = makeWrapperRecord();
-    await store.writeWrapper(record);
-    const stored = await store.readWrapper(USER_ID);
-    expect(stored).toEqual(record);
-    expect(stored?.ciphertext).toBeInstanceOf(Uint8Array);
-    expect(stored?.wrappingParams.iv).toBeInstanceOf(Uint8Array);
-    expect(stored?.kdfSalt).toBeInstanceOf(Uint8Array);
-  });
-
-  it('isolates records by userId', async () => {
-    const store = makeStore();
-    await store.writeWrapper(makeWrapperRecord(USER_ID));
-    expect(await store.readWrapper(OTHER_USER_ID)).toBeNull();
-  });
-});
 
 describe('KeysIndexeddb — local_wrapper store', () => {
   it('returns null for a missing userId', async () => {
@@ -228,17 +142,13 @@ describe('KeysIndexeddb — local_wrapper store', () => {
 });
 
 describe('KeysIndexeddb — clearSessionData', () => {
-  it('deletes only the local_wrapper record for the userId', async () => {
+  it('deletes the local_wrapper record for the userId', async () => {
     const store = makeStore();
-    await store.writeKeyRing(makeKeyRingRecord());
-    await store.writeWrapper(makeWrapperRecord());
     await store.writeLocalWrapper(await makeLdkRecord());
 
     await store.clearSessionData(USER_ID);
 
     expect(await store.readLocalWrapper(USER_ID)).toBeNull();
-    expect(await store.readKeyRing(USER_ID)).not.toBeNull();
-    expect(await store.readWrapper(USER_ID)).not.toBeNull();
   });
 
   it('does not delete records for other users', async () => {

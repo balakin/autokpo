@@ -8,78 +8,80 @@ import {
 } from '../account-settings-api';
 
 const mockDeleteUser = vi.fn<(options: unknown) => Promise<unknown>>();
-const mockGetSession = vi.fn<() => Promise<unknown>>();
 const mockListSessions = vi.fn<() => Promise<unknown>>();
 const mockRevokeSession = vi.fn<(payload: unknown) => Promise<unknown>>();
 const mockRevokeOtherSessions = vi.fn<() => Promise<unknown>>();
-const mockLocationAssign = vi.fn<(url: string) => void>();
+const mockClearProtectedCaches = vi.fn<() => Promise<void>>();
+const mockClearLocalEncryptionUnlockMaterial =
+  vi.fn<(userId: string) => void>();
+const mockBroadcastSessionChange = vi.fn<(userId: string | null) => void>();
 
 vi.mock('../../auth/auth-client', () => ({
   authClient: {
     deleteUser: (options: unknown) => mockDeleteUser(options),
-    getSession: () => mockGetSession(),
     listSessions: () => mockListSessions(),
     revokeSession: (payload: unknown) => mockRevokeSession(payload),
     revokeOtherSessions: () => mockRevokeOtherSessions(),
   },
 }));
 
+vi.mock('../../pwa/clear-protected-caches', () => ({
+  clearProtectedCaches: () => mockClearProtectedCaches(),
+}));
+
+vi.mock('../../e2ee/cleanup', () => ({
+  clearLocalEncryptionUnlockMaterial: (userId: string) =>
+    mockClearLocalEncryptionUnlockMaterial(userId),
+}));
+
+vi.mock('../../auth/session-broadcast', () => ({
+  broadcastSessionChange: (userId: string | null) =>
+    mockBroadcastSessionChange(userId),
+}));
+
 describe('account settings API', () => {
   beforeEach(() => {
     mockDeleteUser.mockReset();
     mockDeleteUser.mockResolvedValue({ data: { success: true } });
-    mockGetSession.mockReset();
-    mockGetSession.mockResolvedValue({
-      data: { session: { id: 'current-session', token: 'current-token' } },
-    });
     mockListSessions.mockReset();
     mockListSessions.mockResolvedValue({ data: [] });
     mockRevokeSession.mockReset();
     mockRevokeSession.mockResolvedValue({ data: { success: true } });
     mockRevokeOtherSessions.mockReset();
     mockRevokeOtherSessions.mockResolvedValue({ data: { success: true } });
-    mockLocationAssign.mockReset();
-    vi.stubGlobal('location', {
-      ...window.location,
-      assign: mockLocationAssign,
-    });
-    localStorage.clear();
+    mockClearProtectedCaches.mockReset();
+    mockClearProtectedCaches.mockResolvedValue(undefined);
+    mockClearLocalEncryptionUnlockMaterial.mockReset();
+    mockBroadcastSessionChange.mockReset();
     localStorage.setItem('autokpo:locale', 'en');
   });
 
-  it('deletes the account, clears the stored session, and reloads to goodbye', async () => {
-    localStorage.setItem(
-      'autokpo:session',
-      JSON.stringify({ userId: 'user-1', email: null, image: null }),
-    );
-
-    await deleteAccount();
+  it('deletes the account, clears protected caches, clears local key material, and broadcasts logout', async () => {
+    await deleteAccount('user-1');
 
     expect(mockDeleteUser).toHaveBeenCalledWith({
       fetchOptions: {
         headers: { 'X-Preferred-Locale': 'en' },
       },
     });
-    expect(localStorage.getItem('autokpo:session')).toBeNull();
-    expect(mockLocationAssign).toHaveBeenCalledWith('/goodbye');
+    expect(mockClearProtectedCaches).toHaveBeenCalledTimes(1);
+    expect(mockClearLocalEncryptionUnlockMaterial).toHaveBeenCalledWith(
+      'user-1',
+    );
+    expect(mockBroadcastSessionChange).toHaveBeenCalledWith(null);
   });
 
-  it('does not clear storage or reload when deletion fails', async () => {
-    localStorage.setItem(
-      'autokpo:session',
-      JSON.stringify({ userId: 'user-1', email: null, image: null }),
-    );
+  it('does not clear caches or broadcast when deletion fails', async () => {
     mockDeleteUser.mockResolvedValue({ error: { message: 'Nope' } });
 
-    await expect(deleteAccount()).rejects.toThrow('Nope');
+    await expect(deleteAccount('user-1')).rejects.toThrow('Nope');
 
-    expect(localStorage.getItem('autokpo:session')).toBe(
-      JSON.stringify({ userId: 'user-1', email: null, image: null }),
-    );
-    expect(mockLocationAssign).not.toHaveBeenCalled();
+    expect(mockClearProtectedCaches).not.toHaveBeenCalled();
+    expect(mockClearLocalEncryptionUnlockMaterial).not.toHaveBeenCalled();
+    expect(mockBroadcastSessionChange).not.toHaveBeenCalled();
   });
 
-  it('normalizes account sessions and marks the current session', async () => {
+  it('normalizes account sessions', async () => {
     mockListSessions.mockResolvedValue({
       data: [
         {
@@ -106,7 +108,6 @@ describe('account settings API', () => {
         userAgent: 'Chrome on Linux',
         createdAt: Date.parse('2026-05-01T08:00:00.000Z'),
         expiresAt: Date.parse('2026-06-01T10:00:00.000Z'),
-        isCurrent: true,
       },
       {
         id: 'other-session',
@@ -115,7 +116,6 @@ describe('account settings API', () => {
         userAgent: null,
         createdAt: null,
         expiresAt: null,
-        isCurrent: false,
       },
     ]);
   });

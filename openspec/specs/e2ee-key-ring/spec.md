@@ -109,33 +109,39 @@ The system SHALL unlock encryption by deriving the KEK locally, unwrapping the M
 
 ### Requirement: Key ring cache stores encrypted profile only
 
-The system SHALL cache only the encrypted key-ring profile locally. The cache SHALL contain encrypted key-ring metadata/ciphertext and active wrapper metadata/ciphertext, and SHALL NOT contain plaintext MEK, plaintext DEK, or plaintext key-ring JSON. The cache SHALL be stored in the `key_ring` and `wrapper` IndexedDB object stores in the `autokpo-e2ee` database, replacing the previous localStorage cache.
+The system SHALL cache only the encrypted key-ring profile locally. The cache SHALL contain encrypted key-ring metadata/ciphertext and active wrapper metadata/ciphertext, and SHALL NOT contain plaintext MEK, plaintext DEK, or plaintext key-ring JSON. The durable offline cache SHALL be the service-worker-cached `GET /api/e2ee/key-ring` response rather than `key_ring` and `wrapper` IndexedDB object stores.
 
-#### Scenario: Successful fetch updates encrypted cache
+The `cacheKeyRingProfile` helper SHALL update both the React Query cache for the active tab and the named service-worker runtime cache so the Workbox NetworkFirst fallback stays warm for offline use. The `keyRingProfileQueryOptions(userId)` factory SHALL scope the query key per authenticated user.
 
-- **WHEN** the backend returns a key-ring profile
-- **THEN** the system SHALL write the encrypted key-ring record to the `key_ring` IndexedDB object store for the authenticated user
-- **AND** the system SHALL write the password wrapper fields to the `wrapper` IndexedDB object store for the authenticated user
-- **AND** the cached records SHALL include the encrypted key ring and active wrapper needed for a later unlock attempt
+The E2EE IndexedDB database SHALL NOT maintain remote encrypted `key_ring` or password `wrapper` object stores. It SHALL keep only local unlock material such as `local_wrapper` records.
 
-#### Scenario: Network-unavailable unlock may use encrypted cache
+#### Scenario: Successful fetch or mutation seeds encrypted runtime cache
+
+- **WHEN** the backend returns a successful key-ring profile response from `GET /api/e2ee/key-ring`
+- **OR** a mutation (setup, unlock, password change) produces an updated key-ring profile
+- **THEN** the app SHALL update the React Query key-ring cache via `cacheKeyRingProfile`
+- **AND** the app SHALL seed the named key-ring service-worker runtime cache via `cacheKeyRingProfile`
+- **AND** the app SHALL NOT write the encrypted key-ring record to a `key_ring` IndexedDB object store
+- **AND** the app SHALL NOT write the password wrapper fields to a `wrapper` IndexedDB object store
+
+#### Scenario: Network-unavailable unlock may use encrypted runtime cache
 
 - **WHEN** the backend key-ring endpoint is unavailable due to offline or network failure
-- **AND** a cached encrypted key-ring record exists in IndexedDB for the authenticated user
-- **THEN** the system MAY use the cached encrypted record for unlock
-- **AND** the user SHALL still provide the encryption password to unwrap the MEK if no LDK is present
+- **AND** a cached successful `GET /api/e2ee/key-ring` response exists in the service-worker key-ring runtime cache
+- **THEN** the shared key-ring query (`networkMode: 'offlineFirst'`) SHALL receive the cached response from the service worker
+- **AND** the user SHALL still provide the encryption password to unwrap the MEK if no LDK or PIN local wrapper is present
 
-#### Scenario: Non-network backend results do not fall back to cache
+#### Scenario: Non-network backend results do not fall back to stale app IndexedDB cache
 
 - **WHEN** the backend key-ring request returns an authentication, not-found, conflict, validation, or contract error
-- **THEN** the system SHALL NOT use the local encrypted IndexedDB cache as a fallback for that result
+- **THEN** the system SHALL NOT use a removed local encrypted IndexedDB key-ring cache as a fallback for that result
+- **AND** the encryption gate SHALL dispatch a `check-failed` or `check-missing` action rather than attempting to read stale local records
 
-#### Scenario: Password wrapper is cached locally after first unlock
+#### Scenario: Password wrapper is not persisted in IndexedDB after first unlock
 
 - **WHEN** the user successfully unlocks encryption with a password
-- **AND** the `wrapper` IndexedDB store is empty for that user
-- **THEN** the system SHALL persist the password wrapper fields from the server response into the `wrapper` store
-- **AND** subsequent offline unlock attempts SHALL use the locally cached `wrapper` record
+- **THEN** the system SHALL NOT persist the server password wrapper fields into a `wrapper` IndexedDB store
+- **AND** subsequent offline unlock attempts SHALL obtain encrypted profile and wrapper data from the service-worker-cached key-ring GET response or fail if unavailable
 
 ### Requirement: Key ring AAD binds ciphertext to user and active DEK
 
@@ -223,13 +229,14 @@ The change-password endpoint SHALL validate the submitted wrapper's public struc
 
 ### Requirement: Client refetches key-ring profile after password change
 
-After a successful password change, the client SHALL refetch the key-ring profile through the existing key-ring fetch path so the local encrypted cache stores the new active password wrapper.
+After a successful password change, the client SHALL refetch the key-ring profile through the shared key-ring fetch path (`queryClient.fetchQuery` with `staleTime: 0`) so the React Query cache and service-worker runtime cache observe the new active password wrapper. After successful mutations (setup, unlock with new profile), the client SHALL seed the key-ring cache via `cacheKeyRingProfile`.
 
 #### Scenario: Successful change refreshes cached server wrapper
 
 - **WHEN** the change-password endpoint returns success
 - **THEN** the client SHALL request the latest key-ring profile
-- **AND** the client SHALL update the local encrypted key-ring and password wrapper cache from the fetched profile
+- **AND** the client SHALL update the shared key-ring query data from the fetched profile
+- **AND** the service worker SHALL be able to update the named key-ring runtime cache from the successful GET response
 - **AND** the client SHALL leave the local unlock wrapper unchanged
 
 #### Scenario: Refetch failure uses existing error handling
@@ -428,3 +435,20 @@ The backend SHALL bound key-ring and password-wrapper payloads at the request, b
 
 - **WHEN** code attempts to persist a `key_ring_wrapping` row whose `kdf_salt` or `ciphertext` byte length does not equal the configured fixed byte length for that field
 - **THEN** the database SHALL reject the write
+
+### Requirement: Key-ring fetches share a query cache
+
+The encryption gate and unlock flows SHALL fetch the key-ring profile through a shared React Query query (`keyRingProfileQueryOptions(userId)`) so a recent successful gate check can be reused during unlock without a duplicate GET. The query SHALL use a bounded freshness window (five minutes), `networkMode: 'offlineFirst'`, and a userId-scoped query key (`['key-ring-profile', userId]`). The query preserves the service-worker NetworkFirst cache as the durable offline fallback after reload. After successful mutations, `cacheKeyRingProfile` SHALL update both the React Query cache and the named service-worker runtime cache.
+
+#### Scenario: Unlock reuses recent gate key-ring fetch
+
+- **WHEN** the encryption gate recently fetched the key-ring profile successfully
+- **AND** the user submits the unlock form within the key-ring query freshness window
+- **THEN** unlock SHALL use the cached query data without issuing a duplicate network GET
+
+#### Scenario: Reloaded offline unlock uses service-worker cache
+
+- **WHEN** the app reloads while offline
+- **AND** the in-memory query cache is empty
+- **AND** the service worker has a cached successful key-ring profile response
+- **THEN** the shared key-ring fetch path SHALL be able to receive the cached response from the service worker

@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useImperativeHandle } from 'react';
@@ -6,14 +7,13 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 import { I18nWrapper, LocationDisplay } from 'tests/render-helpers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AuthContext } from '../auth-context';
 import { AuthEmailContext } from '../auth-email-context';
 import { EmailAuthPage } from '../email-auth-page';
+import { SESSION_QUERY_KEY } from '../use-session-query';
 
 const signInEmailOtpMock = vi.hoisted(() => vi.fn());
 const sendVerificationOtpMock = vi.hoisted(() => vi.fn());
 const getSessionMock = vi.hoisted(() => vi.fn());
-const refreshMock = vi.hoisted(() => vi.fn());
 
 vi.mock('../auth-client', () => ({
   authClient: {
@@ -21,6 +21,10 @@ vi.mock('../auth-client', () => ({
     signIn: { emailOtp: signInEmailOtpMock },
     emailOtp: { sendVerificationOtp: sendVerificationOtpMock },
   },
+}));
+
+vi.mock('../../e2ee/cleanup', () => ({
+  clearLocalEncryptionUnlockMaterial: vi.fn(),
 }));
 
 vi.mock('../hidden-turnstile', () => ({
@@ -35,13 +39,13 @@ vi.mock('../hidden-turnstile', () => ({
 }));
 
 const emailContext = { email: 'user@example.com', setEmail: vi.fn() };
-const authContext = {
-  user: null,
-  refresh: refreshMock,
-  logout: vi.fn(),
-};
 
 function setup(initialCooldown?: number) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
+  queryClient.setQueryData(SESSION_QUERY_KEY, null);
+
   const router = createMemoryRouter(
     [
       {
@@ -54,13 +58,13 @@ function setup(initialCooldown?: number) {
     { initialEntries: ['/sign-in/code'] },
   );
   render(
-    <AuthContext value={authContext}>
+    <QueryClientProvider client={queryClient}>
       <AuthEmailContext value={emailContext}>
         <I18nWrapper>
           <RouterProvider router={router} />
         </I18nWrapper>
       </AuthEmailContext>
-    </AuthContext>,
+    </QueryClientProvider>,
   );
 }
 
@@ -69,10 +73,14 @@ describe('EmailAuthPage', () => {
     signInEmailOtpMock.mockReset();
     sendVerificationOtpMock.mockReset();
     getSessionMock.mockReset();
-    refreshMock.mockReset();
     signInEmailOtpMock.mockResolvedValue(undefined);
     sendVerificationOtpMock.mockResolvedValue(undefined);
-    refreshMock.mockResolvedValue('user-1');
+    getSessionMock.mockResolvedValue({
+      data: {
+        user: { id: 'user-1', email: null },
+        session: { token: 'tok-1' },
+      },
+    });
   });
 
   it('verifies otp and navigates to /dashboard', async () => {
@@ -87,7 +95,6 @@ describe('EmailAuthPage', () => {
         otp: '123456',
       }),
     );
-    expect(refreshMock).toHaveBeenCalledTimes(1);
     await waitFor(() =>
       expect(screen.getByLabelText('current-location')).toHaveTextContent(
         '/dashboard',

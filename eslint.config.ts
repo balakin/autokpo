@@ -52,6 +52,15 @@ export default defineConfig([
       'import-x/export': 'off',
       'import-x/no-named-as-default': 'off',
       'import-x/no-named-as-default-member': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
+        },
+      ],
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/consistent-type-exports': 'error',
     },

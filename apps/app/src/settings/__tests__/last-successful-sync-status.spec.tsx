@@ -64,17 +64,21 @@ describe('LastSuccessfulSyncStatus', () => {
     expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 30000);
   });
 
-  it('does not schedule recalculation for sync older than one day', async () => {
+  it('shows absolute date for sync older than one day', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-05-01T12:00:00.000Z'));
     mockUseSyncMetadata.mockReturnValue(Date.parse('2026-04-29T11:00:00.000Z'));
-    const setTimeoutSpy = vi.spyOn(window, 'setTimeout');
 
     await renderWithProviders(<LastSuccessfulSyncStatus />, {
       route: '/settings',
     });
 
-    expect(setTimeoutSpy).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(/Poslednja uspešna sinhronizacija:/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Poslednja uspešna sinhronizacija:/).textContent,
+    ).toMatch(/Apr 29, 2026/);
   });
 
   it('never shows future phrasing when timestamp is slightly ahead', async () => {

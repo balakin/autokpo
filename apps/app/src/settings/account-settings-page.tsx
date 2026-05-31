@@ -37,12 +37,10 @@ import { useLocale } from '../i18n/use-locale';
 import {
   buildAccountExport,
   deleteAccount,
-  fetchAccountProfile,
   fetchAccountSessions,
   revokeAccountSession,
   revokeOtherAccountSessions,
   type AccountSession,
-  type AccountProfile,
 } from './account-settings-api';
 import { downloadJson, exportFilename } from './export';
 
@@ -52,14 +50,7 @@ export function AccountSettingsPage() {
   const queryClient = useQueryClient();
   const dirty = useSyncMetadata((state) => state.dirty);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const accountQueryKey = ['account-settings', 'profile', auth.user?.id];
   const sessionsQueryKey = ['account-settings', 'sessions', auth.user?.id];
-  const accountQuery = useQuery({
-    queryKey: accountQueryKey,
-    queryFn: fetchAccountProfile,
-    enabled: isOnline && !!auth.user,
-    staleTime: 5 * 60 * 1000,
-  });
   const sessionsQuery = useQuery({
     queryKey: sessionsQueryKey,
     queryFn: fetchAccountSessions,
@@ -71,10 +62,7 @@ export function AccountSettingsPage() {
     queryClient.invalidateQueries({ queryKey: sessionsQueryKey });
 
   if (!isOnline) return <AccountOfflineCard />;
-  if (accountQuery.isPending) return <AccountLoadingSkeleton />;
-  if (accountQuery.isError) return <AccountErrorCard />;
-
-  const account = accountQuery.data;
+  if (!auth.user) return null;
 
   return (
     <>
@@ -90,7 +78,7 @@ export function AccountSettingsPage() {
           </Card.Header>
           <Card.Content>
             <AccountProfileSection
-              account={account}
+              user={auth.user}
               dirty={dirty}
               onDeleteRequest={() => setShowDeleteConfirm(true)}
             />
@@ -112,51 +100,12 @@ export function AccountSettingsPage() {
       </div>
 
       <DeleteAccountModal
-        account={account}
+        user={auth.user}
         isOnline={isOnline}
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
       />
     </>
-  );
-}
-
-function AccountLoadingSkeleton() {
-  return (
-    <Card>
-      <Card.Header>
-        <Card.Title>
-          <Trans>Podešavanja naloga</Trans>
-        </Card.Title>
-      </Card.Header>
-      <Card.Content className="overflow-hidden">
-        <span className="sr-only">
-          <Trans>Učitavanje podataka naloga…</Trans>
-        </span>
-        <section className="rounded-2xl border border-separator/70 bg-surface px-4 py-3 shadow-xs">
-          <div className="flex items-center gap-4">
-            <Skeleton
-              animationType="none"
-              className="size-10 shrink-0 rounded-full"
-            />
-            <div className="min-w-0 flex-1 space-y-3">
-              <Skeleton
-                animationType="none"
-                className="h-3 w-16 rounded-full"
-              />
-              <Skeleton
-                animationType="none"
-                className="h-4 w-44 max-w-full rounded-full"
-              />
-            </div>
-          </div>
-          <div className="mt-3 flex gap-2">
-            <Skeleton animationType="none" className="h-6 w-20 rounded-full" />
-            <Skeleton animationType="none" className="h-6 w-28 rounded-full" />
-          </div>
-        </section>
-      </Card.Content>
-    </Card>
   );
 }
 
@@ -193,31 +142,6 @@ function AccountOfflineCard() {
   );
 }
 
-function AccountErrorCard() {
-  return (
-    <Card>
-      <Card.Header>
-        <Card.Title>
-          <Trans>Podešavanja naloga</Trans>
-        </Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <Alert status="danger">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Title>
-              <Trans>Nije moguće učitati nalog</Trans>
-            </Alert.Title>
-            <Alert.Description>
-              <Trans>Proverite internet vezu i pokušajte ponovo kasnije.</Trans>
-            </Alert.Description>
-          </Alert.Content>
-        </Alert>
-      </Card.Content>
-    </Card>
-  );
-}
-
 interface AccountSessionsCardProps {
   sessions: AccountSession[];
   isLoading: boolean;
@@ -233,11 +157,17 @@ function AccountSessionsCard({
 }: AccountSessionsCardProps) {
   const { t } = useLingui();
   const { locale } = useLocale();
+  const { user } = useAuth();
+  const currentSessionId = user?.sessionId ?? null;
   const sortedSessions = [...sessions].sort((a, b) => {
-    if (a.isCurrent === b.isCurrent) return 0;
-    return a.isCurrent ? -1 : 1;
+    const aIsCurrent = a.id === currentSessionId;
+    const bIsCurrent = b.id === currentSessionId;
+    if (aIsCurrent === bIsCurrent) return 0;
+    return aIsCurrent ? -1 : 1;
   });
-  const otherSessions = sortedSessions.filter((session) => !session.isCurrent);
+  const otherSessions = sortedSessions.filter(
+    (session) => session.id !== currentSessionId,
+  );
   const hasOtherSessions = otherSessions.length > 0;
   const revokeSessionMutation = useMutation({
     mutationFn: revokeAccountSession,
@@ -282,6 +212,7 @@ function AccountSessionsCard({
                 <AccountSessionRow
                   key={session.id}
                   session={session}
+                  isCurrent={session.id === currentSessionId}
                   locale={locale}
                   isPending={
                     revokeSessionMutation.isPending &&
@@ -369,6 +300,7 @@ function AccountSessionsError() {
 
 interface AccountSessionRowProps {
   session: AccountSession;
+  isCurrent: boolean;
   locale: Locale;
   isPending: boolean;
   onRevoke: () => void;
@@ -376,6 +308,7 @@ interface AccountSessionRowProps {
 
 function AccountSessionRow({
   session,
+  isCurrent,
   locale,
   isPending,
   onRevoke,
@@ -393,13 +326,13 @@ function AccountSessionRow({
         <div className="min-w-0 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-sm font-semibold text-foreground">
-              {session.isCurrent ? (
+              {isCurrent ? (
                 <Trans>Trenutna sesija</Trans>
               ) : (
                 <Trans>Druga sesija</Trans>
               )}
             </p>
-            {session.isCurrent ? (
+            {isCurrent ? (
               <Chip size="sm" variant="soft" color="success">
                 <LuCircleCheck className="size-3.5" />
                 <Trans>Trenutna sesija</Trans>
@@ -454,7 +387,7 @@ function AccountSessionRow({
         </div>
       </div>
 
-      {!session.isCurrent ? (
+      {!isCurrent ? (
         <Button
           variant="danger-soft"
           className="w-full sm:w-auto"
@@ -568,21 +501,21 @@ function AccountDataExportCard() {
 }
 
 interface DeleteAccountModalProps {
-  account: AccountProfile;
+  user: { id: string; email: string | null };
   isOnline: boolean;
   isOpen: boolean;
   onClose: () => void;
 }
 
 function DeleteAccountModal({
-  account,
+  user,
   isOnline,
   isOpen,
   onClose,
 }: DeleteAccountModalProps) {
   const { t } = useLingui();
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
-  const accountEmail = account.email ?? '';
+  const accountEmail = user.email ?? '';
   const canConfirmDelete =
     isOnline && accountEmail.length > 0 && deleteConfirmation === accountEmail;
 
@@ -636,7 +569,7 @@ function DeleteAccountModal({
                   <Trans>Za potvrdu unesite email adresu naloga:</Trans>
                 </p>
                 <p className="font-mono font-semibold text-foreground">
-                  {account.email ?? account.id}
+                  {user.email ?? user.id}
                 </p>
               </div>
 
@@ -684,13 +617,13 @@ function DeleteAccountModal({
 }
 
 interface AccountProfileSectionProps {
-  account: AccountProfile;
+  user: { id: string; email: string | null };
   dirty: boolean;
   onDeleteRequest: () => void;
 }
 
 function AccountProfileSection({
-  account,
+  user,
   dirty,
   onDeleteRequest,
 }: AccountProfileSectionProps) {
@@ -704,8 +637,8 @@ function AccountProfileSection({
           aria-label={t`Promena avatara trenutno nije dostupna`}
         >
           <UserAvatar
-            userId={account.id}
-            email={account.email}
+            userId={user.id}
+            email={user.email}
             image={null}
             size="md"
             className="size-10 transition-transform group-hover:scale-105"
@@ -716,7 +649,7 @@ function AccountProfileSection({
             <Trans>Nalog</Trans>
           </p>
           <p className="truncate text-sm font-semibold text-foreground">
-            {account.email ?? account.id}
+            {user.email ?? user.id}
           </p>
         </div>
       </div>

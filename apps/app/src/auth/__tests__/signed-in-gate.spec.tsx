@@ -1,17 +1,21 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { LocationDisplay } from 'tests/render-helpers';
 import { describe, expect, it } from 'vitest';
 
-import { AuthContext } from '../auth-context';
 import { SignedInGate } from '../signed-in-gate';
+import { SESSION_QUERY_KEY } from '../use-session-query';
 
-function makeAuth(userId: string | null) {
-  return {
-    user: userId === null ? null : { id: userId, email: null, image: null },
-    refresh: () => Promise.resolve(userId),
-    logout: () => Promise.resolve(),
-  };
+function makeQueryClient(userId: string | null) {
+  const qc = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
+  qc.setQueryData(
+    SESSION_QUERY_KEY,
+    userId ? { id: userId, email: null, sessionId: null } : null,
+  );
+  return qc;
 }
 
 function setup(userId: string | null) {
@@ -30,9 +34,9 @@ function setup(userId: string | null) {
     { initialEntries: ['/protected'] },
   );
   render(
-    <AuthContext value={makeAuth(userId)}>
+    <QueryClientProvider client={makeQueryClient(userId)}>
       <RouterProvider router={router} />
-    </AuthContext>,
+    </QueryClientProvider>,
   );
 }
 

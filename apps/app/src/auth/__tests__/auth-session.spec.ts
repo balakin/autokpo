@@ -5,7 +5,6 @@ import {
   SESSION_KEY,
   logoutSession,
   readStoredSession,
-  refreshSession,
   startOAuthFlow,
   writeStoredSession,
 } from '../auth-session';
@@ -47,27 +46,22 @@ describe('readStoredSession', () => {
     const session: StoredSession = {
       userId: 'user-abc',
       email: 'user@example.com',
+      sessionId: 'session-xyz',
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
     expect(readStoredSession()).toEqual(session);
-  });
-
-  it('migrates the legacy key', () => {
-    localStorage.setItem('autokpo:remembered-local-user', 'legacy-user');
-
-    expect(readStoredSession()).toEqual({
-      userId: 'legacy-user',
-      email: null,
-    });
-    expect(localStorage.getItem('autokpo:remembered-local-user')).toBeNull();
   });
 });
 
 describe('writeStoredSession', () => {
   it('writes json session', () => {
-    writeStoredSession({ userId: 'u1', email: 'u@example.com' });
+    writeStoredSession({
+      userId: 'u1',
+      email: 'u@example.com',
+      sessionId: null,
+    });
     expect(localStorage.getItem(SESSION_KEY)).toBe(
-      JSON.stringify({ userId: 'u1', email: 'u@example.com' }),
+      JSON.stringify({ userId: 'u1', email: 'u@example.com', sessionId: null }),
     );
   });
 });
@@ -91,39 +85,6 @@ describe('startOAuthFlow', () => {
       callbackURL: '/sign-in/oauth/github/callback',
       errorCallbackURL: '/sign-in/oauth/github/callback',
     });
-  });
-});
-
-describe('refreshSession', () => {
-  it('stores and returns session user id', async () => {
-    getSessionMock.mockResolvedValue({
-      data: {
-        user: {
-          id: 'google-user',
-          email: 'google@example.com',
-          image: 'https://img.example.com/google.png',
-        },
-      },
-    });
-
-    await expect(refreshSession()).resolves.toBe('google-user');
-    expect(localStorage.getItem(SESSION_KEY)).toBe(
-      JSON.stringify({
-        userId: 'google-user',
-        email: 'google@example.com',
-      }),
-    );
-  });
-
-  it('clears stored user and returns null when signed out', async () => {
-    localStorage.setItem(
-      SESSION_KEY,
-      JSON.stringify({ userId: 'old-user', email: null }),
-    );
-    getSessionMock.mockResolvedValue({ data: null });
-
-    await expect(refreshSession()).resolves.toBeNull();
-    expect(localStorage.getItem(SESSION_KEY)).toBeNull();
   });
 });
 
@@ -163,10 +124,23 @@ describe('verifyEmailOtpSession', () => {
 
 describe('logoutSession', () => {
   it('calls signOut and clears stored user', async () => {
-    localStorage.setItem(SESSION_KEY, 'user-abc');
-    signOutMock.mockResolvedValue(undefined);
+    localStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({ userId: 'user-abc', email: null, sessionId: null }),
+    );
+    signOutMock.mockResolvedValue({ data: { success: true } });
     await logoutSession();
     expect(signOutMock).toHaveBeenCalledTimes(1);
     expect(localStorage.getItem(SESSION_KEY)).toBeNull();
+  });
+
+  it('does not clear stored user when signOut fails', async () => {
+    localStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({ userId: 'user-abc', email: null, sessionId: null }),
+    );
+    signOutMock.mockResolvedValue({ error: { message: 'Network error' } });
+    await expect(logoutSession()).rejects.toThrow('Network error');
+    expect(localStorage.getItem(SESSION_KEY)).not.toBeNull();
   });
 });

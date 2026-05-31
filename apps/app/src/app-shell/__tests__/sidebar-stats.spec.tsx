@@ -1,6 +1,8 @@
 import { Toast } from '@heroui/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, within } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
+import { SESSION_QUERY_KEY } from 'src/auth/use-session-query';
 import {
   getTestDoc,
   I18nWrapper,
@@ -10,12 +12,21 @@ import {
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { DocContext } from '../../crdt/doc-context';
+import { SyncMetadataProvider } from '../../crdt/sync-metadata-provider';
 import { AppShell } from '../app-shell';
 
 const TODAY_YEAR = new Date().getFullYear();
 
 function renderAppShell() {
   const doc = getTestDoc();
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
+  queryClient.setQueryData(SESSION_QUERY_KEY, {
+    id: 'test-user',
+    email: null,
+    sessionId: null,
+  });
   const router = createMemoryRouter(
     [
       {
@@ -30,12 +41,16 @@ function renderAppShell() {
     { initialEntries: ['/dashboard'] },
   );
   render(
-    <DocContext value={doc}>
-      <I18nWrapper>
-        <Toast.Provider />
-        <RouterProvider router={router} />
-      </I18nWrapper>
-    </DocContext>,
+    <QueryClientProvider client={queryClient}>
+      <DocContext value={doc}>
+        <SyncMetadataProvider userId="test-user">
+          <I18nWrapper>
+            <Toast.Provider />
+            <RouterProvider router={router} />
+          </I18nWrapper>
+        </SyncMetadataProvider>
+      </DocContext>
+    </QueryClientProvider>,
   );
 }
 

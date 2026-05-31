@@ -49,7 +49,7 @@ export function buildStateExport(ydoc: TypedDoc): StateExport {
 
 export async function buildAccountExport(): Promise<AccountExport> {
   const [sessionResult, accountsResult] = await Promise.all([
-    authClient.getSession({ query: { disableCookieCache: true } }),
+    authClient.getSession(),
     authClient.listAccounts(),
   ]);
 

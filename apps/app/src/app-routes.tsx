@@ -1,12 +1,12 @@
 import { Navigate, Outlet, redirect, type RouteObject } from 'react-router';
 
-import { AuthProvider } from './auth';
 import { AuthEmailProvider } from './auth/auth-email-provider';
 import { AuthEntry } from './auth/auth-entry';
 import { readStoredSession } from './auth/auth-session';
 import { EmailAuthPage } from './auth/email-auth-page';
 import { GoodbyePage } from './auth/goodbye-page';
 import { OAuthCallback } from './auth/oauth-callback';
+import { SessionSync } from './auth/session-sync';
 import { SignedInGate } from './auth/signed-in-gate';
 import { SignedOutGate } from './auth/signed-out-gate';
 import {
@@ -31,9 +31,10 @@ export function createAppRoutes(): RouteObject[] {
     },
     {
       element: (
-        <AuthProvider>
+        <>
+          <SessionSync />
           <Outlet />
-        </AuthProvider>
+        </>
       ),
       children: [
         {

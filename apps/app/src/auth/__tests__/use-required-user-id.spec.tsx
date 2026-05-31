@@ -1,8 +1,20 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { AuthContext } from '../auth-context';
 import { useRequiredUserId } from '../use-required-user-id';
+import { SESSION_QUERY_KEY } from '../use-session-query';
+
+function makeQueryClient(userId: string | null) {
+  const qc = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
+  qc.setQueryData(
+    SESSION_QUERY_KEY,
+    userId ? { id: userId, email: null, sessionId: null } : null,
+  );
+  return qc;
+}
 
 function RequiredUserHarness() {
   const userId = useRequiredUserId();
@@ -12,19 +24,9 @@ function RequiredUserHarness() {
 describe('useRequiredUserId', () => {
   it('returns user id when signed in', () => {
     render(
-      <AuthContext
-        value={{
-          user: {
-            id: 'required-user',
-            email: 'required@example.com',
-          },
-
-          refresh: () => Promise.resolve('required-user'),
-          logout: () => Promise.resolve(),
-        }}
-      >
+      <QueryClientProvider client={makeQueryClient('required-user')}>
         <RequiredUserHarness />
-      </AuthContext>,
+      </QueryClientProvider>,
     );
 
     expect(screen.getByText('required-user')).toBeInTheDocument();
@@ -33,16 +35,9 @@ describe('useRequiredUserId', () => {
   it('throws when user is missing', () => {
     expect(() =>
       render(
-        <AuthContext
-          value={{
-            user: null,
-
-            refresh: () => Promise.resolve(null),
-            logout: () => Promise.resolve(),
-          }}
-        >
+        <QueryClientProvider client={makeQueryClient(null)}>
           <RequiredUserHarness />
-        </AuthContext>,
+        </QueryClientProvider>,
       ),
     ).toThrow('useRequiredUserId must be used when user is signed in.');
   });

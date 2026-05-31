@@ -1,12 +1,13 @@
 import { I18nProvider } from '@lingui/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../i18n/i18n';
-import { AuthContext } from '../auth-context';
 import { GoodbyePage } from '../goodbye-page';
 import { SignedOutGate } from '../signed-out-gate';
+import { SESSION_QUERY_KEY } from '../use-session-query';
 
 vi.mock('../../i18n/use-locale', () => ({
   useLocale: () => ({ locale: 'sr-Latn', setLocale: vi.fn() }),
@@ -16,15 +17,19 @@ vi.mock('../../settings/use-theme', () => ({
   useTheme: () => ({ theme: 'system', setTheme: vi.fn() }),
 }));
 
-function makeAuth(userId: string | null) {
-  return {
-    user: userId === null ? null : { id: userId, email: null, image: null },
-    refresh: () => Promise.resolve(userId),
-    logout: () => Promise.resolve(),
-  };
+function makeQueryClient(userId: string | null) {
+  const qc = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
+  qc.setQueryData(
+    SESSION_QUERY_KEY,
+    userId ? { id: userId, email: null, sessionId: null } : null,
+  );
+  return qc;
 }
 
 function setup(userId: string | null) {
+  const queryClient = makeQueryClient(userId);
   const router = createMemoryRouter(
     [
       {
@@ -34,11 +39,9 @@ function setup(userId: string | null) {
       {
         path: '/goodbye',
         element: (
-          <AuthContext value={makeAuth(userId)}>
-            <SignedOutGate>
-              <GoodbyePage />
-            </SignedOutGate>
-          </AuthContext>
+          <SignedOutGate>
+            <GoodbyePage />
+          </SignedOutGate>
         ),
       },
     ],
@@ -46,9 +49,11 @@ function setup(userId: string | null) {
   );
 
   return render(
-    <I18nProvider i18n={i18n}>
-      <RouterProvider router={router} />
-    </I18nProvider>,
+    <QueryClientProvider client={queryClient}>
+      <I18nProvider i18n={i18n}>
+        <RouterProvider router={router} />
+      </I18nProvider>
+    </QueryClientProvider>,
   );
 }
 

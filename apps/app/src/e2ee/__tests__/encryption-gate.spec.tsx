@@ -1,9 +1,10 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { I18nWrapper } from '../../../tests/app/render-helpers';
-import { AuthContext } from '../../auth/auth-context';
+import { SESSION_QUERY_KEY } from '../../auth/use-session-query';
 import { useEncryptionContext } from '../encryption-context';
 import { EncryptionGate } from '../encryption-gate';
 import { KDF_PARAMS_V1 } from '../key-ring-record';
@@ -119,22 +120,28 @@ function notFoundError(): Error {
   return error;
 }
 
+function makeQueryClient(userId = 'user-1') {
+  const qc = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
+  qc.setQueryData(SESSION_QUERY_KEY, {
+    userId,
+    email: 'user@example.com',
+    sessionId: null,
+  });
+  return qc;
+}
+
 function renderGate(userId = 'user-1') {
   localStorage.setItem('autokpo:locale', 'sr-Latn');
   render(
-    <I18nWrapper>
-      <AuthContext
-        value={{
-          user: { id: userId, email: 'user@example.com' },
-          refresh: () => Promise.resolve(userId),
-          logout: () => Promise.resolve(),
-        }}
-      >
+    <QueryClientProvider client={makeQueryClient(userId)}>
+      <I18nWrapper>
         <EncryptionGate userId={userId}>
           <div>protected content</div>
         </EncryptionGate>
-      </AuthContext>
-    </I18nWrapper>,
+      </I18nWrapper>
+    </QueryClientProvider>,
   );
 }
 
@@ -364,19 +371,13 @@ describe('EncryptionGate', () => {
 
     localStorage.setItem('autokpo:locale', 'sr-Latn');
     const { rerender } = render(
-      <I18nWrapper>
-        <AuthContext
-          value={{
-            user: { id: 'user-1', email: 'user@example.com' },
-            refresh: () => Promise.resolve('user-1'),
-            logout: () => Promise.resolve(),
-          }}
-        >
+      <QueryClientProvider client={makeQueryClient('user-1')}>
+        <I18nWrapper>
           <EncryptionGate userId="user-1">
             <div>protected content</div>
           </EncryptionGate>
-        </AuthContext>
-      </I18nWrapper>,
+        </I18nWrapper>
+      </QueryClientProvider>,
     );
 
     await user.type(
@@ -392,19 +393,13 @@ describe('EncryptionGate', () => {
     fetchKeyRingProfileMock.mockRejectedValue(notFoundError());
 
     rerender(
-      <I18nWrapper>
-        <AuthContext
-          value={{
-            user: { id: 'user-2', email: 'user@example.com' },
-            refresh: () => Promise.resolve('user-2'),
-            logout: () => Promise.resolve(),
-          }}
-        >
+      <QueryClientProvider client={makeQueryClient('user-2')}>
+        <I18nWrapper>
           <EncryptionGate userId="user-2">
             <div>protected content</div>
           </EncryptionGate>
-        </AuthContext>
-      </I18nWrapper>,
+        </I18nWrapper>
+      </QueryClientProvider>,
     );
 
     expect(screen.queryByText('protected content')).not.toBeInTheDocument();
@@ -446,20 +441,14 @@ describe('EncryptionGate', () => {
 
     localStorage.setItem('autokpo:locale', 'sr-Latn');
     render(
-      <I18nWrapper>
-        <AuthContext
-          value={{
-            user: { id: 'user-1', email: 'user@example.com' },
-            refresh: () => Promise.resolve('user-1'),
-            logout: () => Promise.resolve(),
-          }}
-        >
+      <QueryClientProvider client={makeQueryClient('user-1')}>
+        <I18nWrapper>
           <EncryptionGate userId="user-1">
             <ContextCapture />
             <div>protected content</div>
           </EncryptionGate>
-        </AuthContext>
-      </I18nWrapper>,
+        </I18nWrapper>
+      </QueryClientProvider>,
     );
 
     await user.type(
@@ -493,20 +482,14 @@ describe('EncryptionGate', () => {
 
     localStorage.setItem('autokpo:locale', 'sr-Latn');
     render(
-      <I18nWrapper>
-        <AuthContext
-          value={{
-            user: { id: 'user-1', email: 'user@example.com' },
-            refresh: () => Promise.resolve('user-1'),
-            logout: () => Promise.resolve(),
-          }}
-        >
+      <QueryClientProvider client={makeQueryClient('user-1')}>
+        <I18nWrapper>
           <EncryptionGate userId="user-1">
             <ContextCapture />
             <div>protected content</div>
           </EncryptionGate>
-        </AuthContext>
-      </I18nWrapper>,
+        </I18nWrapper>
+      </QueryClientProvider>,
     );
     await user.type(
       await screen.findByLabelText(/Šifra za šifrovanje/i),
@@ -553,20 +536,14 @@ describe('EncryptionGate', () => {
 
     localStorage.setItem('autokpo:locale', 'sr-Latn');
     render(
-      <I18nWrapper>
-        <AuthContext
-          value={{
-            user: { id: 'user-1', email: 'user@example.com' },
-            refresh: () => Promise.resolve('user-1'),
-            logout: () => Promise.resolve(),
-          }}
-        >
+      <QueryClientProvider client={makeQueryClient('user-1')}>
+        <I18nWrapper>
           <EncryptionGate userId="user-1">
             <ContextCapture />
             <div>protected content</div>
           </EncryptionGate>
-        </AuthContext>
-      </I18nWrapper>,
+        </I18nWrapper>
+      </QueryClientProvider>,
     );
     await user.type(
       await screen.findByLabelText(/Šifra za šifrovanje/i),

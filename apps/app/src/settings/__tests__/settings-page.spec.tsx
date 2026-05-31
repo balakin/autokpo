@@ -9,13 +9,6 @@ import { GeneralSettingsPage } from '../general-settings-page';
 import { SettingsPage } from '../settings-page';
 
 const mockDeleteAccount = vi.fn<() => Promise<void>>();
-const mockFetchAccountProfile = vi.fn<
-  () => Promise<{
-    id: string;
-    name: string | null;
-    email: string | null;
-  }>
->();
 const mockFetchAccountSessions = vi.fn<
   () => Promise<
     Array<{
@@ -25,7 +18,6 @@ const mockFetchAccountSessions = vi.fn<
       userAgent: string | null;
       createdAt: number | null;
       expiresAt: number | null;
-      isCurrent: boolean;
     }>
   >
 >();
@@ -40,7 +32,6 @@ const mockUseSyncMetadata = vi.fn<
 vi.mock('../account-settings-api', () => ({
   buildAccountExport: vi.fn().mockResolvedValue({}),
   deleteAccount: () => mockDeleteAccount(),
-  fetchAccountProfile: () => mockFetchAccountProfile(),
   fetchAccountSessions: () => mockFetchAccountSessions(),
   revokeAccountSession: (token: string) => mockRevokeAccountSession(token),
   revokeOtherAccountSessions: () => mockRevokeOtherAccountSessions(),
@@ -55,7 +46,11 @@ vi.mock('../export', () => ({
 
 vi.mock('../../auth/use-auth', () => ({
   useAuth: () => ({
-    user: { id: 'test-user', email: 'test@example.com' },
+    user: {
+      id: 'test-user',
+      email: 'test@example.com',
+      sessionId: 'current-session',
+    },
     logout: vi.fn(),
   }),
 }));
@@ -94,12 +89,6 @@ beforeEach(() => {
   mockUseSyncMetadata.mockReset();
   mockUseSyncMetadata.mockReturnValue(null);
   mockUseOnline.mockReturnValue(true);
-  mockFetchAccountProfile.mockReset();
-  mockFetchAccountProfile.mockResolvedValue({
-    id: 'test-user',
-    name: 'Test User',
-    email: 'test@example.com',
-  });
   mockFetchAccountSessions.mockReset();
   mockFetchAccountSessions.mockResolvedValue([
     {
@@ -110,7 +99,6 @@ beforeEach(() => {
         'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36',
       createdAt: Date.parse('2026-04-30T10:00:00.000Z'),
       expiresAt: Date.parse('2026-06-01T10:00:00.000Z'),
-      isCurrent: true,
     },
     {
       id: 'other-session',
@@ -120,7 +108,6 @@ beforeEach(() => {
         'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
       createdAt: Date.parse('2026-04-29T10:00:00.000Z'),
       expiresAt: Date.parse('2026-06-01T09:00:00.000Z'),
-      isCurrent: false,
     },
   ]);
   mockRevokeAccountSession.mockReset();
@@ -325,7 +312,7 @@ describe('SettingsPage', () => {
     expect(screen.queryByText('Tema')).not.toBeInTheDocument();
   });
 
-  it('does not query account profile while offline', async () => {
+  it('does not query sessions while offline', async () => {
     mockUseOnline.mockReturnValue(false);
 
     await renderSettings('/settings/account');
@@ -333,19 +320,16 @@ describe('SettingsPage', () => {
     expect(
       screen.getByText('Podešavanja naloga nisu dostupna offline'),
     ).toBeInTheDocument();
-    expect(mockFetchAccountProfile).not.toHaveBeenCalled();
     expect(mockFetchAccountSessions).not.toHaveBeenCalled();
   });
 
-  it('queries and shows account profile while online', async () => {
+  it('shows account profile from auth', async () => {
     await renderSettings('/settings/account');
 
-    expect(await screen.findByText('test@example.com')).toBeInTheDocument();
+    expect(screen.getByText('test@example.com')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Obriši nalog' }),
     ).toBeInTheDocument();
-    expect(screen.queryByText('Test User')).not.toBeInTheDocument();
-    expect(mockFetchAccountProfile).toHaveBeenCalledTimes(1);
   });
 
   it('shows account sessions with metadata and without raw tokens', async () => {
@@ -372,7 +356,6 @@ describe('SettingsPage', () => {
         userAgent: null,
         createdAt: null,
         expiresAt: null,
-        isCurrent: true,
       },
     ]);
 
@@ -404,7 +387,6 @@ describe('SettingsPage', () => {
           'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
         createdAt: Date.parse('2026-04-29T10:00:00.000Z'),
         expiresAt: Date.parse('2026-06-01T09:00:00.000Z'),
-        isCurrent: false,
       },
       {
         id: 'current-session',
@@ -414,7 +396,6 @@ describe('SettingsPage', () => {
           'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36',
         createdAt: Date.parse('2026-04-30T10:00:00.000Z'),
         expiresAt: Date.parse('2026-06-01T10:00:00.000Z'),
-        isCurrent: true,
       },
     ]);
 
@@ -490,7 +471,6 @@ describe('SettingsPage', () => {
           'Mozilla/5.0 (X11; Linux x86_64; rv:150.0) Gecko/20100101 Firefox/150.0',
         createdAt: null,
         expiresAt: null,
-        isCurrent: true,
       },
     ]);
 

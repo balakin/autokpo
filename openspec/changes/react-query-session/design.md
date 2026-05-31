@@ -49,19 +49,24 @@ The `window.storage` event listener that syncs session changes across tabs needs
 
 ### 5. `auth.refresh()` uses `queryClient.fetchQuery`
 
-`email-auth-page.tsx` calls `auth.refresh()` and reads the returned `userId`. `queryClient.invalidateQueries` only schedules a refetch and does not return data. `queryClient.fetchQuery({ queryKey: ['session'], staleTime: 0 })` forces a fresh fetch and returns the result synchronously — the userId can then be extracted and returned, preserving the existing `refresh()` contract.
+`email-auth-page.tsx` calls `auth.refresh()` and reads the returned `userId`. `queryClient.invalidateQueries` only schedules a refetch and does not return data. `queryClient.fetchQuery({ ...sessionQueryOptions, staleTime: 0 })` forces a fresh fetch and returns the result — the userId can then be extracted and returned, preserving the existing `refresh()` contract.
 
-### 6. `fetchAccountProfile` reads from cache; no `disableCookieCache`
+`oauth-callback.tsx` calls `queryClient.fetchQuery` directly (not `auth.refresh()`) to avoid dep-array instability: `auth` is a new object each render, while `queryClient` is a stable ref.
 
-`fetchAccountProfile` called `authClient.getSession({ disableCookieCache: true })` to bypass the server-side cookie cache for a guaranteed-fresh DB read. For displaying name/email on the settings page, stale-while-revalidate is acceptable. `fetchAccountProfile` will read `queryClient.getQueryData(['session'])` instead — no extra network call, and the account settings query's `staleTime: 5 * 60 * 1000` ensures background revalidation.
+### 6. `fetchAccountProfile` deleted; settings page reads from `auth.user`
 
-`fetchAccountSessions` still calls `authClient.listSessions()` for the sessions list, but drops its `getSession` call — the current session token for the "is current" check comes from the `['session']` cache.
+`fetchAccountProfile` called `authClient.getSession({ disableCookieCache: true })` and drove a dedicated `['account-settings', 'profile']` query with its own loading skeleton. Since `useAuth()` already exposes `user` from the session query, the settings page reads profile data directly from `auth.user` — no separate fetch, no loading state, no `AccountProfile` interface needed.
+
+`fetchAccountSessions` drops its parallel `getSession` call entirely. The `isCurrent` field is removed from `AccountSession` — computing it required fetching the current session, which is now redundant given the session query already exists. Callers that need to identify the current session can compare against `auth.user.sessionId`.
+
+`export.ts` keeps its `authClient.getSession()` call because `emailVerified` and `createdAt` are not available in the `SessionData` cache shape. Only `disableCookieCache: true` is removed — stale-while-revalidate is acceptable for an export snapshot.
 
 ## Risks / Trade-offs
 
-- **`initialData` always stale** → always triggers one background fetch on startup. This is intentional (session validation), but means one network call always happens. Acceptable — same as today's `useEffect` in `AuthProvider`.
-- **`fetchAccountProfile` shows data as fresh as the session cache** → if a user changes their name in another browser and opens settings within the 5-min stale window, they'll see the old name. Low impact — the session query background-refetches on mount anyway.
-- **`SessionSync` mount point** → must be placed in a component that is always mounted while the user is in the app. Needs confirmation of the right shell component during implementation.
+- **`initialData` always stale** → always triggers one background fetch on startup. This is intentional (session validation), but means one network call always happens. Acceptable — same as today's `useEffect` in `AuthProvider`. `initialDataUpdatedAt: 0` ensures this.
+- **`retry: false` on the session query** → a transient network failure clears the session display rather than retrying. Intentional: `fetchSession` has side effects (writes localStorage, clears encryption material) that must not be retried blindly.
+- **`isCurrent` removed from `AccountSession`** → callers that needed to highlight the current session must now compare against `auth.user.sessionId`. Low impact — the field was only used in the sessions list UI.
+- **`SessionSync` mount point** → placed in `AppShell`, which is always mounted while the user is in the app.
 
 ## Migration Plan
 
@@ -69,7 +74,7 @@ The `window.storage` event listener that syncs session changes across tabs needs
 2. Rewrite `use-auth.ts` to consume the new hook
 3. Remove `AuthProvider` from `main.tsx`, add `SessionSync` to shell
 4. Delete `auth-provider.tsx`, `auth-context.ts`
-5. Simplify `account-settings-api.ts` and `export.ts`
+5. Delete `fetchAccountProfile` from `account-settings-api.ts`; update settings page to read from `auth.user`; drop `fetchAccountSessions` parallel session fetch and `isCurrent` field; remove `disableCookieCache` from `export.ts`
 6. Delete `refreshSession()` from `auth-session.ts`, update `oauth-callback.tsx`
 
 Each step is independently deployable. No data migrations required.

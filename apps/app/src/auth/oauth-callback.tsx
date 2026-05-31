@@ -1,9 +1,10 @@
 import { Button, Spinner } from '@heroui/react';
 import { Trans } from '@lingui/react/macro';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 
-import { refreshSession } from './auth-session';
+import { sessionQueryOptions } from './use-session-query';
 
 const PROVIDER_NAMES: Record<string, string> = {
   google: 'Google',
@@ -23,6 +24,7 @@ type CallbackState = { status: 'loading' } | { status: 'error'; code: string };
 
 export function OAuthCallback() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { provider } = useParams<{ provider: string }>();
   const [searchParams] = useSearchParams();
   const [state, setState] = useState<CallbackState>(() => {
@@ -37,14 +39,16 @@ export function OAuthCallback() {
       return;
     }
 
-    void refreshSession().then((userId) => {
-      if (!userId) {
-        setState({ status: 'error', code: 'missing_session' });
-        return;
-      }
-      void navigate('/dashboard', { replace: true });
-    });
-  }, [navigate, state.status]);
+    void queryClient
+      .fetchQuery({ ...sessionQueryOptions, staleTime: 0 })
+      .then((data) => {
+        if (!data?.id) {
+          setState({ status: 'error', code: 'missing_session' });
+          return;
+        }
+        void navigate('/dashboard', { replace: true });
+      });
+  }, [navigate, queryClient, state.status]);
 
   if (state.status === 'loading') {
     return (

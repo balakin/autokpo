@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router';
@@ -11,6 +12,10 @@ const getSessionMock = vi.hoisted(() => vi.fn());
 const signedInAppRenderMock = vi.hoisted(() => vi.fn());
 const dashboardRenderMock = vi.hoisted(() => vi.fn());
 const unwrapKeyRingProfileMock = vi.hoisted(() => vi.fn());
+
+vi.mock('../e2ee/cleanup', () => ({
+  clearLocalEncryptionUnlockMaterial: vi.fn(),
+}));
 
 vi.mock('../auth/auth-client', () => ({
   authClient: {
@@ -60,14 +65,19 @@ vi.mock('../e2ee/encryption-crypto', () => ({
 }));
 
 function renderRouter(initialEntry: string) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
   const router = createMemoryRouter(createAppRoutes(), {
     initialEntries: [initialEntry],
   });
 
   render(
-    <I18nWrapper>
-      <RouterProvider router={router} />
-    </I18nWrapper>,
+    <QueryClientProvider client={queryClient}>
+      <I18nWrapper>
+        <RouterProvider router={router} />
+      </I18nWrapper>
+    </QueryClientProvider>,
   );
 }
 
@@ -156,7 +166,7 @@ describe('router bundle boundaries', () => {
       JSON.stringify({
         userId: 'user-1',
         email: 'user@example.com',
-        image: null,
+        sessionId: null,
       }),
     );
 
@@ -176,7 +186,7 @@ describe('router bundle boundaries', () => {
       JSON.stringify({
         userId: 'user-1',
         email: 'user@example.com',
-        image: null,
+        sessionId: null,
       }),
     );
     cacheRecord();

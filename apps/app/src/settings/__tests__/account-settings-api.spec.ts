@@ -8,7 +8,6 @@ import {
 } from '../account-settings-api';
 
 const mockDeleteUser = vi.fn<(options: unknown) => Promise<unknown>>();
-const mockGetSession = vi.fn<() => Promise<unknown>>();
 const mockListSessions = vi.fn<() => Promise<unknown>>();
 const mockRevokeSession = vi.fn<(payload: unknown) => Promise<unknown>>();
 const mockRevokeOtherSessions = vi.fn<() => Promise<unknown>>();
@@ -17,7 +16,6 @@ const mockLocationAssign = vi.fn<(url: string) => void>();
 vi.mock('../../auth/auth-client', () => ({
   authClient: {
     deleteUser: (options: unknown) => mockDeleteUser(options),
-    getSession: () => mockGetSession(),
     listSessions: () => mockListSessions(),
     revokeSession: (payload: unknown) => mockRevokeSession(payload),
     revokeOtherSessions: () => mockRevokeOtherSessions(),
@@ -28,10 +26,6 @@ describe('account settings API', () => {
   beforeEach(() => {
     mockDeleteUser.mockReset();
     mockDeleteUser.mockResolvedValue({ data: { success: true } });
-    mockGetSession.mockReset();
-    mockGetSession.mockResolvedValue({
-      data: { session: { id: 'current-session', token: 'current-token' } },
-    });
     mockListSessions.mockReset();
     mockListSessions.mockResolvedValue({ data: [] });
     mockRevokeSession.mockReset();
@@ -50,7 +44,7 @@ describe('account settings API', () => {
   it('deletes the account, clears the stored session, and reloads to goodbye', async () => {
     localStorage.setItem(
       'autokpo:session',
-      JSON.stringify({ userId: 'user-1', email: null, image: null }),
+      JSON.stringify({ userId: 'user-1', email: null, sessionId: null }),
     );
 
     await deleteAccount();
@@ -67,19 +61,19 @@ describe('account settings API', () => {
   it('does not clear storage or reload when deletion fails', async () => {
     localStorage.setItem(
       'autokpo:session',
-      JSON.stringify({ userId: 'user-1', email: null, image: null }),
+      JSON.stringify({ userId: 'user-1', email: null, sessionId: null }),
     );
     mockDeleteUser.mockResolvedValue({ error: { message: 'Nope' } });
 
     await expect(deleteAccount()).rejects.toThrow('Nope');
 
     expect(localStorage.getItem('autokpo:session')).toBe(
-      JSON.stringify({ userId: 'user-1', email: null, image: null }),
+      JSON.stringify({ userId: 'user-1', email: null, sessionId: null }),
     );
     expect(mockLocationAssign).not.toHaveBeenCalled();
   });
 
-  it('normalizes account sessions and marks the current session', async () => {
+  it('normalizes account sessions', async () => {
     mockListSessions.mockResolvedValue({
       data: [
         {
@@ -106,7 +100,6 @@ describe('account settings API', () => {
         userAgent: 'Chrome on Linux',
         createdAt: Date.parse('2026-05-01T08:00:00.000Z'),
         expiresAt: Date.parse('2026-06-01T10:00:00.000Z'),
-        isCurrent: true,
       },
       {
         id: 'other-session',
@@ -115,7 +108,6 @@ describe('account settings API', () => {
         userAgent: null,
         createdAt: null,
         expiresAt: null,
-        isCurrent: false,
       },
     ]);
   });

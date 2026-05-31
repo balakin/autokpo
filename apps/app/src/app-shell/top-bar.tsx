@@ -3,7 +3,7 @@ import { useLingui } from '@lingui/react/macro';
 import { LuMenu } from 'react-icons/lu';
 import { useLocation, useParams } from 'react-router';
 
-import { UserProfileButton } from '../auth/user-profile-button';
+import { ProfilePopover } from '../auth/profile-popover';
 import { bookSelectors } from '../books/book-selectors';
 import { useYDoc } from '../crdt';
 
@@ -69,7 +69,7 @@ export function TopBar({ onMenuPress }: TopBarProps) {
 
       {/* Portal target — route components render their actions here via TopBarActionsSlot */}
       <div ref={portalRef} className="flex items-center gap-2" />
-      <UserProfileButton />
+      <ProfilePopover />
     </header>
   );
 }

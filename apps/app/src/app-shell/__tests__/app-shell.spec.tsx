@@ -1,11 +1,12 @@
 import { Toast } from '@heroui/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
+import { SESSION_QUERY_KEY } from 'src/auth/use-session-query';
 import { I18nWrapper } from 'tests/render-helpers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AuthContext } from '../../auth/auth-context';
 import { DocContext } from '../../crdt/doc-context';
 import { SyncMetadataProvider } from '../../crdt/sync-metadata-provider';
 import { YDoc } from '../../crdt/y';
@@ -40,23 +41,25 @@ function renderAppShell(initialPath = '/dashboard') {
     ],
     { initialEntries: [`/${initialPath.replace(/^\//, '')}`] },
   );
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
+  queryClient.setQueryData(SESSION_QUERY_KEY, {
+    id: 'test-user',
+    email: 'test@example.com',
+    sessionId: null,
+  });
   return render(
-    <DocContext value={new YDoc()}>
-      <AuthContext
-        value={{
-          user: { id: 'test-user', email: 'test@example.com' },
-          refresh: () => Promise.resolve('test-user'),
-          logout: () => Promise.resolve(),
-        }}
-      >
+    <QueryClientProvider client={queryClient}>
+      <DocContext value={new YDoc()}>
         <SyncMetadataProvider userId="test-user">
           <I18nWrapper>
             <Toast.Provider />
             <RouterProvider router={router} />
           </I18nWrapper>
         </SyncMetadataProvider>
-      </AuthContext>
-    </DocContext>,
+      </DocContext>
+    </QueryClientProvider>,
   );
 }
 

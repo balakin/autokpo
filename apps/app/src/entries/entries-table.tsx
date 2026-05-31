@@ -2,7 +2,7 @@ import { AlertDialog, Button, EmptyState, Table, Tooltip } from '@heroui/react';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { LuInbox, LuPencil, LuTrash } from 'react-icons/lu';
 
-import { formatCurrency, formatDate } from '../formatters';
+import { formatCurrency, formatDate } from '../utils/formatters';
 
 import type { KpoEntry } from './entries-schema';
 import { EntryModal } from './entry-modal';

@@ -45,6 +45,7 @@ Feature specs, architecture decisions, and design rationale live in `openspec/`.
 - **Styling**: use `tailwind-variants` (`tv`) for component variants. Use `slots` API for multi-part components, `slot({ class: className })` for composition. Split long class strings with `+` concatenation for readability.
 - **React Compiler**: enabled — do not hand-write `useMemo` / `useCallback`.
 - **Tests**: every feature ships with a Vitest + React Testing Library test using `renderWithProviders` from `tests/render-helpers.tsx`. For Yjs-backed domains, test selectors and mutations with direct unit tests, and keep UI integration tests wired to real Yjs-seeded state; do not mock selector or mutation modules in UI tests.
+- **Module structure**: every concern lives in its own folder under `src/`. Files inside a module are flat — no nested subfolders within a module. Two exceptions: `__tests__/` (co-located tests for that module) and an optional `index.ts` public entrypoint barrel. The `src/` root is reserved for `index.css`, `main.tsx`, `constants.ts`, and `vite-env.d.ts`. Never create `src/__tests__/` — any file that needs tests must live in a named module folder.
 - **HeroUI v3 beta**: compound component API (`Card.Header`, `Card.Content`, …). v2 patterns are incompatible and training data is stale. Before writing or modifying any HeroUI component you **MUST**:
   1. `mcp__heroui-react__list_components` — confirm it exists in v3.
   2. `mcp__heroui-react__get_component_docs` — API, props, usage.

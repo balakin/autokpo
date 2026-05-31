@@ -5,8 +5,8 @@ import { Outlet, RouterProvider, createMemoryRouter } from 'react-router';
 import { I18nWrapper } from 'tests/render-helpers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { SESSION_QUERY_KEY } from '../auth/use-session-query';
-import type { SerializedKeyRingProfile } from '../e2ee/key-ring-record';
+import { SESSION_QUERY_KEY } from '../../auth/use-session-query';
+import type { SerializedKeyRingProfile } from '../../e2ee/key-ring-record';
 import { appRoutes } from '../router';
 
 const getSessionMock = vi.hoisted(() => vi.fn());
@@ -14,11 +14,11 @@ const signedInAppRenderMock = vi.hoisted(() => vi.fn());
 const dashboardRenderMock = vi.hoisted(() => vi.fn());
 const unwrapKeyRingProfileMock = vi.hoisted(() => vi.fn());
 
-vi.mock('../e2ee/cleanup', () => ({
+vi.mock('../../e2ee/cleanup', () => ({
   clearLocalEncryptionUnlockMaterial: vi.fn(),
 }));
 
-vi.mock('../auth/auth-client', () => ({
+vi.mock('../../auth/auth-client', () => ({
   authClient: {
     getSession: getSessionMock,
     signIn: {
@@ -39,14 +39,14 @@ vi.mock('../signed-in-app', () => ({
   },
 }));
 
-vi.mock('../dashboard/dashboard-page', () => ({
+vi.mock('../../dashboard/dashboard-page', () => ({
   DashboardPage: () => {
     dashboardRenderMock();
     return <div>Lazy dashboard</div>;
   },
 }));
 
-vi.mock('../e2ee/encryption-crypto', () => ({
+vi.mock('../../e2ee/encryption-crypto', () => ({
   createKeyRingProfilePayload: vi.fn(),
   unwrapKeyRingProfile: unwrapKeyRingProfileMock,
   generateLdk: vi.fn().mockResolvedValue({}),

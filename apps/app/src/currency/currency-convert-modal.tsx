@@ -21,8 +21,8 @@ import CurrencyInput from 'react-currency-input-field';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
-import { formatCurrency, formatFullCurrency } from '../formatters';
 import { useLocale } from '../i18n/use-locale';
+import { formatCurrency, formatFullCurrency } from '../utils/formatters';
 
 import { convertToRsd } from './convert-to-rsd';
 import { useCurrencies, useExchangeRate } from './use-exchange-rates';

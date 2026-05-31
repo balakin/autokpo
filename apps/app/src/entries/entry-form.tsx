@@ -19,8 +19,8 @@ import CurrencyInput from 'react-currency-input-field';
 import { useForm, useWatch, Controller } from 'react-hook-form';
 import { LuArrowLeftRight } from 'react-icons/lu';
 
-import { belgradeToday } from '../belgrade-date';
 import { CurrencyConvertModal } from '../currency/currency-convert-modal';
+import { belgradeToday } from '../utils/belgrade-date';
 
 import {
   type KpoEntry,

@@ -1,7 +1,7 @@
 import { View, Text } from '@react-pdf/renderer';
 
 import { type KpoEntry } from '../entries/entries-schema';
-import { formatCurrency, formatDate } from '../formatters';
+import { formatCurrency, formatDate } from '../utils/formatters';
 
 import { styles } from './styles';
 

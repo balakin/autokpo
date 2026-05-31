@@ -1,7 +1,7 @@
 import { Suspense, lazy, type ComponentType, type ReactNode } from 'react';
 
-import { PageLoadingSkeleton } from './app-shell/page-loading-skeleton';
-import { LazyChunkErrorBoundary } from './lazy-chunk-error-boundary';
+import { PageLoadingSkeleton } from '../app-shell/page-loading-skeleton';
+import { LazyChunkErrorBoundary } from '../utils/lazy-chunk-error-boundary';
 
 const SignedInAppChunk = lazy(() =>
   import('./signed-in-app').then(({ SignedInApp }) => ({
@@ -10,36 +10,36 @@ const SignedInAppChunk = lazy(() =>
 );
 
 const DashboardPageChunk = lazyRouteComponent(() =>
-  import('./dashboard/dashboard-page').then(
+  import('../dashboard/dashboard-page').then(
     ({ DashboardPage }) => DashboardPage,
   ),
 );
 const BookLibraryChunk = lazyRouteComponent(() =>
-  import('./books/book-library').then(({ BookLibrary }) => BookLibrary),
+  import('../books/book-library').then(({ BookLibrary }) => BookLibrary),
 );
 const BookScopeChunk = lazyRouteComponent(() =>
-  import('./books/book-scope').then(({ BookScope }) => BookScope),
+  import('../books/book-scope').then(({ BookScope }) => BookScope),
 );
 const SettingsPageChunk = lazyRouteComponent(() =>
-  import('./settings/settings-page').then(({ SettingsPage }) => SettingsPage),
+  import('../settings/settings-page').then(({ SettingsPage }) => SettingsPage),
 );
 const GeneralSettingsPageChunk = lazyRouteComponent(() =>
-  import('./settings/general-settings-page').then(
+  import('../settings/general-settings-page').then(
     ({ GeneralSettingsPage }) => GeneralSettingsPage,
   ),
 );
 const AccountSettingsPageChunk = lazyRouteComponent(() =>
-  import('./settings/account-settings-page').then(
+  import('../settings/account-settings-page').then(
     ({ AccountSettingsPage }) => AccountSettingsPage,
   ),
 );
 const SecuritySettingsPageChunk = lazyRouteComponent(() =>
-  import('./settings/security-settings-page').then(
+  import('../settings/security-settings-page').then(
     ({ SecuritySettingsPage }) => SecuritySettingsPage,
   ),
 );
 const HelpPageChunk = lazyRouteComponent(() =>
-  import('./help/help-page').then(({ HelpPage }) => HelpPage),
+  import('../help/help-page').then(({ HelpPage }) => HelpPage),
 );
 
 export function LazySignedInApp() {

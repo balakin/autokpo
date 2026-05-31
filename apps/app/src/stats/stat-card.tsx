@@ -3,7 +3,7 @@ import { Trans } from '@lingui/react/macro';
 import type { ReactNode } from 'react';
 import { cx } from 'tailwind-variants';
 
-import { formatFullCurrency } from '../formatters';
+import { formatFullCurrency } from '../utils/formatters';
 
 interface StatCardProps {
   label: string;

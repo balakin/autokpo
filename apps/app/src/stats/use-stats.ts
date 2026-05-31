@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import { belgradeToday } from '../belgrade-date';
 import { bookSelectors } from '../books/book-selectors';
 import { useYDoc } from '../crdt';
+import { belgradeToday } from '../utils/belgrade-date';
 
 import { computeStats } from './compute';
 import type { Stats } from './compute';

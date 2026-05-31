@@ -11,7 +11,7 @@ import { useLingui } from '@lingui/react/macro';
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 
-import { digitsOnly } from '../formatters';
+import { digitsOnly } from '../utils/formatters';
 
 import {
   createEntityProfileSchema,

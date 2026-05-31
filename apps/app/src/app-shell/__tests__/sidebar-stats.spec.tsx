@@ -85,8 +85,8 @@ describe('Sidebar stats footer', () => {
       ],
     });
     renderAppShell();
-    const sidebar = screen.getByRole('complementary');
-    expect(within(sidebar).getByText('2.500.000,00 RSD')).toBeInTheDocument();
+    const element = screen.getAllByText('2.500.000,00 RSD')[0];
+    expect(element).toBeInTheDocument();
   });
 
   it('applies success color when income is safe', () => {

@@ -10,7 +10,7 @@ import {
   workerTestEnv,
 } from '../../tests/worker/auth-helpers';
 import { flushWaitUntil, mockCtx } from '../../tests/worker/request-helpers';
-import { account, session } from '../db/schema/auth';
+import { account } from '../db/schema/auth';
 import app from '../main';
 import { MAX_AUTH_BODY_BYTES } from '../payload-limits';
 
@@ -97,6 +97,8 @@ type AuthSessionPayload = {
   };
   session?: {
     userId?: string;
+    userAgent?: string | null;
+    ipAddress?: string | null;
   };
 };
 
@@ -376,11 +378,17 @@ describe('email otp auth', () => {
     });
 
     expect(signInRes.status).toBe(200);
-    const rows = await db.select().from(session);
-    expect(rows).toHaveLength(1);
-    expect(rows[0]?.userAgent).not.toBe(longUserAgent);
-    expect(rows[0]?.userAgent).toHaveLength(1024);
-    expect(rows[0]?.ipAddress?.length ?? 0).toBeLessThanOrEqual(128);
+    const cookie = signInRes.headers.get('set-cookie') ?? '';
+    const sessionRes = await authRequest('/api/auth/get-session', {
+      headers: { Cookie: cookie },
+    });
+    expect(sessionRes.status).toBe(200);
+    const sessionPayload: AuthSessionPayload = await sessionRes.json();
+    expect(sessionPayload.session?.userAgent).not.toBe(longUserAgent);
+    expect(sessionPayload.session?.userAgent).toHaveLength(1024);
+    expect(sessionPayload.session?.ipAddress?.length ?? 0).toBeLessThanOrEqual(
+      128,
+    );
   });
 
   it('account hook persists only identity fields and null token values', async () => {

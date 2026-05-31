@@ -63,6 +63,12 @@ function getAuth(env: Env, executionCtx: ExecutionContext) {
       provider: 'sqlite',
       schema,
     }),
+    secondaryStorage: {
+      get: (key) => env.AUTH_KV.get(key),
+      set: (key, value, ttl) =>
+        env.AUTH_KV.put(key, value, ttl ? { expirationTtl: ttl } : undefined),
+      delete: (key) => env.AUTH_KV.delete(key),
+    },
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.APP_URL,
     ...getAuthOptions({

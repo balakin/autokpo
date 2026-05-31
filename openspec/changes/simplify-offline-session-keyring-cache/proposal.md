@@ -5,14 +5,14 @@ The app currently keeps overlapping offline session and key-ring caches in `loca
 ## What Changes
 
 - Remove the deprecated `/avatars/*` service-worker runtime cache.
-- Add explicit NetworkFirst service-worker runtime caches for the exact auth session GET endpoint and `GET /api/e2ee/key-ring`.
+- Add explicit NetworkFirst service-worker runtime caches for `/api/auth/get-session` and `GET /api/e2ee/key-ring`.
 - Treat online server responses as authoritative while allowing cached session/key-ring responses to enable local offline mode.
 - Remove session persistence from `localStorage`; session loading becomes asynchronous and gated before signed-in/signed-out route decisions.
 - Replace session cross-tab `storage` event propagation with BroadcastChannel notifications for login and logout/session changes.
 - **BREAKING**: Drop IndexedDB persistence for remote encrypted key-ring records and password wrapper records; the app is unreleased, so no migration is required.
 - Keep only local unlock wrappers/keys in the E2EE IndexedDB database.
-- Fetch the key-ring profile through React Query with a short freshness window to avoid duplicate unlock-time GETs while retaining the service worker as the durable offline fallback.
-- Clear named protected runtime caches after successful online logout and on login/session user-boundary changes.
+- Fetch the key-ring profile through React Query (`keyRingProfileQueryOptions(userId)` with userId-scoped query key, five-minute freshness, `networkMode: 'offlineFirst'`) to avoid duplicate unlock-time GETs while retaining the service worker as the durable offline fallback. The `cacheKeyRingProfile` helper actively seeds both the React Query cache and the service-worker runtime cache after mutations.
+- Clear named protected runtime caches after successful online logout.
 
 ## Capabilities
 
@@ -23,7 +23,7 @@ The app currently keeps overlapping offline session and key-ring caches in `loca
 ### Modified Capabilities
 
 - `pwa-offline`: Remove the deprecated avatar runtime cache and specify protected API runtime cache behavior.
-- `user-auth`: Replace remembered localStorage session bootstrapping and storage-event sync with an async auth gate and BroadcastChannel session notifications.
+- `user-auth`: Replace remembered localStorage session bootstrapping and storage-event sync with an async auth gate (`SignedInGate`, `SignedOutGate`, `AuthStateRedirect`) and BroadcastChannel session notifications consumed by `SessionSync` at the app root.
 - `e2ee-key-ring`: Move the encrypted key-ring/profile offline fallback from IndexedDB records to the service-worker-cached GET response and React Query fetch path.
 - `local-device-key`: Update logout/local-wrapper expectations now that remote key-ring and wrapper IndexedDB records no longer exist.
 

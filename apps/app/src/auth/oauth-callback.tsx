@@ -1,9 +1,10 @@
 import { Button, Spinner } from '@heroui/react';
 import { Trans } from '@lingui/react/macro';
-import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 
+import { broadcastSessionChange } from './session-broadcast';
 import { sessionQueryOptions } from './use-session-query';
 
 const PROVIDER_NAMES: Record<string, string> = {
@@ -20,37 +21,32 @@ const KNOWN_ERROR_CODES = new Set([
   'missing_session',
 ]);
 
-type CallbackState = { status: 'loading' } | { status: 'error'; code: string };
-
 export function OAuthCallback() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { provider } = useParams<{ provider: string }>();
   const [searchParams] = useSearchParams();
-  const [state, setState] = useState<CallbackState>(() => {
-    const errorCode = searchParams.get('error');
-    return errorCode
-      ? { status: 'error', code: errorCode }
-      : { status: 'loading' };
+  const urlError = searchParams.get('error');
+
+  const sessionQuery = useQuery({
+    ...sessionQueryOptions,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    enabled: urlError === null,
   });
 
+  const errorCode =
+    urlError ??
+    (sessionQuery.status === 'success' && !sessionQuery.data?.id
+      ? 'missing_session'
+      : null);
+
   useEffect(() => {
-    if (state.status === 'error') {
-      return;
-    }
+    if (sessionQuery.status !== 'success' || !sessionQuery.data?.id) return;
+    broadcastSessionChange(sessionQuery.data);
+    void navigate('/dashboard', { replace: true });
+  }, [navigate, sessionQuery.data, sessionQuery.status]);
 
-    void queryClient
-      .fetchQuery({ ...sessionQueryOptions, staleTime: 0 })
-      .then((data) => {
-        if (!data?.id) {
-          setState({ status: 'error', code: 'missing_session' });
-          return;
-        }
-        void navigate('/dashboard', { replace: true });
-      });
-  }, [navigate, queryClient, state.status]);
-
-  if (state.status === 'loading') {
+  if (errorCode === null) {
     return (
       <div className="flex min-h-screen items-center justify-center p-6">
         <Spinner size="lg" />
@@ -59,7 +55,6 @@ export function OAuthCallback() {
   }
 
   const providerName = provider ? PROVIDER_NAMES[provider] : undefined;
-  const errorCode = state.code;
   const showErrorCode = !KNOWN_ERROR_CODES.has(errorCode);
 
   return (

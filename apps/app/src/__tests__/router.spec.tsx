@@ -5,8 +5,9 @@ import { Outlet, RouterProvider, createMemoryRouter } from 'react-router';
 import { I18nWrapper } from 'tests/render-helpers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { SESSION_QUERY_KEY } from '../auth/use-session-query';
 import type { SerializedKeyRingProfile } from '../e2ee/key-ring-record';
-import { createAppRoutes } from '../router';
+import { appRoutes } from '../router';
 
 const getSessionMock = vi.hoisted(() => vi.fn());
 const signedInAppRenderMock = vi.hoisted(() => vi.fn());
@@ -64,11 +65,20 @@ vi.mock('../e2ee/encryption-crypto', () => ({
   },
 }));
 
-function renderRouter(initialEntry: string) {
+function renderRouter(
+  initialEntry: string,
+  sessionUserId: string | null = null,
+) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 } },
   });
-  const router = createMemoryRouter(createAppRoutes(), {
+  queryClient.setQueryData(
+    SESSION_QUERY_KEY,
+    sessionUserId
+      ? { id: sessionUserId, email: 'user@example.com', sessionId: null }
+      : null,
+  );
+  const router = createMemoryRouter(appRoutes, {
     initialEntries: [initialEntry],
   });
 
@@ -119,13 +129,6 @@ function makeRecord(userId = 'user-1'): SerializedKeyRingProfile {
   };
 }
 
-function cacheRecord(record = makeRecord()) {
-  localStorage.setItem(
-    `autokpo:e2ee:key-ring:${record.keyRing.userId}`,
-    JSON.stringify(record),
-  );
-}
-
 describe('router bundle boundaries', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -153,24 +156,15 @@ describe('router bundle boundaries', () => {
   });
 
   it('redirects a signed-out protected-route visit before loading signed-in app', async () => {
-    renderRouter('/dashboard');
+    renderRouter('/dashboard', null);
 
     expect(await screen.findByText('Dobrodošli')).toBeInTheDocument();
     expect(signedInAppRenderMock).not.toHaveBeenCalled();
     expect(dashboardRenderMock).not.toHaveBeenCalled();
   });
 
-  it('shows encryption setup before loading signed-in app for remembered signed-in user', async () => {
-    localStorage.setItem(
-      'autokpo:session',
-      JSON.stringify({
-        userId: 'user-1',
-        email: 'user@example.com',
-        sessionId: null,
-      }),
-    );
-
-    renderRouter('/dashboard');
+  it('shows encryption setup before loading signed-in app for signed-in user without profile', async () => {
+    renderRouter('/dashboard', 'user-1');
 
     expect(
       await screen.findByText('Podesite šifru za šifrovanje'),
@@ -179,22 +173,13 @@ describe('router bundle boundaries', () => {
     expect(dashboardRenderMock).not.toHaveBeenCalled();
   });
 
-  it('loads signed-in app and dashboard route for unlocked remembered user', async () => {
+  it('loads signed-in app and dashboard route for unlocked signed-in user', async () => {
     const user = userEvent.setup();
-    localStorage.setItem(
-      'autokpo:session',
-      JSON.stringify({
-        userId: 'user-1',
-        email: 'user@example.com',
-        sessionId: null,
-      }),
-    );
-    cacheRecord();
     vi.mocked(fetch).mockImplementation(() =>
       Promise.resolve(Response.json(makeRecord())),
     );
 
-    renderRouter('/dashboard');
+    renderRouter('/dashboard', 'user-1');
 
     await user.type(
       await screen.findByLabelText(/Šifra za šifrovanje/i),

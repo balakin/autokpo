@@ -2,12 +2,12 @@
 
 ### Requirement: LDK is deleted on logout
 
-The system SHALL delete the `local_wrapper` record for the authenticated user from IndexedDB on logout. The E2EE IndexedDB database SHALL NOT contain remote `wrapper` or `key_ring` records to preserve on logout; encrypted key-ring/profile fallback is handled by protected service-worker runtime caches.
+The system SHALL delete the `local_wrapper` record for the authenticated user from IndexedDB on logout via the async `clearLocalEncryptionUnlockMaterial` helper. The E2EE IndexedDB database SHALL NOT contain remote `wrapper` or `key_ring` records to preserve on logout; encrypted key-ring/profile fallback is handled by protected service-worker runtime caches seeded by `cacheKeyRingProfile`.
 
 #### Scenario: Logout removes local_wrapper
 
 - **WHEN** the user logs out
-- **THEN** the system SHALL delete the `local_wrapper` record for that userId from IndexedDB
+- **THEN** `cleanupSignedOutSession` SHALL call `clearLocalEncryptionUnlockMaterial(userId)`, which awaits the IndexedDB `clearSessionData` operation
 - **AND** a later authenticated session SHALL require the encryption password before auto-unlock is restored
 
 #### Scenario: Next session after logout requires password

@@ -10,6 +10,10 @@ type SignedOutGateProps = {
 export function SignedOutGate({ children }: SignedOutGateProps) {
   const auth = useAuth();
 
+  if (auth.isPending) {
+    return null;
+  }
+
   if (auth.user) {
     return <Navigate to="/dashboard" replace />;
   }

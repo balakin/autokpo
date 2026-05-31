@@ -1,56 +1,6 @@
-import { clearLocalEncryptionUnlockMaterial } from '../e2ee/cleanup';
 import { getStoredLocale } from '../i18n/locale-storage';
 
 import { authClient } from './auth-client';
-
-export const SESSION_KEY = 'autokpo:session';
-
-export type StoredSession = {
-  userId: string;
-  email: string | null;
-  sessionId: string | null;
-};
-
-function isStoredSession(value: unknown): value is StoredSession {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
-  const maybe = value as Partial<StoredSession>;
-  return (
-    typeof maybe.userId === 'string' &&
-    (typeof maybe.email === 'string' || maybe.email === null) &&
-    (typeof maybe.sessionId === 'string' ||
-      maybe.sessionId === null ||
-      maybe.sessionId === undefined)
-  );
-}
-
-export function readStoredSession(): StoredSession | null {
-  const raw = localStorage.getItem(SESSION_KEY);
-  if (!raw) {
-    return null;
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (isStoredSession(parsed)) {
-      return parsed;
-    }
-  } catch {
-    // fall through
-  }
-
-  localStorage.removeItem(SESSION_KEY);
-  return null;
-}
-
-export function writeStoredSession(session: StoredSession | null): void {
-  if (!session) {
-    localStorage.removeItem(SESSION_KEY);
-    return;
-  }
-  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-}
 
 export function ensureNoAuthError(result: unknown): void {
   if (!result || typeof result !== 'object') {
@@ -126,11 +76,6 @@ export async function verifyEmailOtpSession(
 }
 
 export async function logoutSession(): Promise<void> {
-  const previousSession = readStoredSession();
   const result = await authClient.signOut();
   ensureNoAuthError(result);
-  if (previousSession?.userId) {
-    clearLocalEncryptionUnlockMaterial(previousSession.userId);
-  }
-  writeStoredSession(null);
 }

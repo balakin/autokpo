@@ -10,6 +10,10 @@ type SignedInGateProps = {
 export function SignedInGate({ children }: SignedInGateProps) {
   const auth = useAuth();
 
+  if (auth.isPending) {
+    return null;
+  }
+
   if (auth.user === null) {
     return <Navigate to="/sign-in" replace />;
   }

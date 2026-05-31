@@ -1,12 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
-  type StoredSession,
-  SESSION_KEY,
+  ensureNoAuthError,
   logoutSession,
-  readStoredSession,
   startOAuthFlow,
-  writeStoredSession,
 } from '../auth-session';
 
 const getSessionMock = vi.hoisted(() => vi.fn());
@@ -25,7 +22,6 @@ vi.mock('../auth-client', () => ({
 }));
 
 beforeEach(() => {
-  localStorage.clear();
   getSessionMock.mockReset();
   signInSocialMock.mockReset();
   signInEmailOtpMock.mockReset();
@@ -37,32 +33,23 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('readStoredSession', () => {
-  it('returns null when nothing stored', () => {
-    expect(readStoredSession()).toBeNull();
+describe('ensureNoAuthError', () => {
+  it('does not throw on undefined', () => {
+    expect(() => ensureNoAuthError(undefined)).not.toThrow();
   });
 
-  it('returns the stored session object', () => {
-    const session: StoredSession = {
-      userId: 'user-abc',
-      email: 'user@example.com',
-      sessionId: 'session-xyz',
-    };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    expect(readStoredSession()).toEqual(session);
+  it('does not throw on success result', () => {
+    expect(() => ensureNoAuthError({ data: { userId: 'u1' } })).not.toThrow();
   });
-});
 
-describe('writeStoredSession', () => {
-  it('writes json session', () => {
-    writeStoredSession({
-      userId: 'u1',
-      email: 'u@example.com',
-      sessionId: null,
-    });
-    expect(localStorage.getItem(SESSION_KEY)).toBe(
-      JSON.stringify({ userId: 'u1', email: 'u@example.com', sessionId: null }),
-    );
+  it('throws on string error', () => {
+    expect(() => ensureNoAuthError({ error: 'bad' })).toThrow('bad');
+  });
+
+  it('throws on object error with message', () => {
+    expect(() =>
+      ensureNoAuthError({ error: { message: 'Auth failed' } }),
+    ).toThrow('Auth failed');
   });
 });
 
@@ -91,9 +78,9 @@ describe('startOAuthFlow', () => {
 describe('requestEmailOtpSession', () => {
   it('requests sign-in otp for email', async () => {
     sendVerificationOtpMock.mockResolvedValue(undefined);
-    const { requestEmailOtpSession } = await import('../auth-session');
+    const { requestEmailOtpSession: req } = await import('../auth-session');
 
-    await requestEmailOtpSession('user@example.com', 'test-captcha-token');
+    await req('user@example.com', 'test-captcha-token');
 
     expect(sendVerificationOtpMock).toHaveBeenCalledWith({
       email: 'user@example.com',
@@ -111,9 +98,9 @@ describe('requestEmailOtpSession', () => {
 describe('verifyEmailOtpSession', () => {
   it('verifies otp sign-in', async () => {
     signInEmailOtpMock.mockResolvedValue(undefined);
-    const { verifyEmailOtpSession } = await import('../auth-session');
+    const { verifyEmailOtpSession: verify } = await import('../auth-session');
 
-    await verifyEmailOtpSession('user@example.com', '123456');
+    await verify('user@example.com', '123456');
 
     expect(signInEmailOtpMock).toHaveBeenCalledWith({
       email: 'user@example.com',
@@ -123,24 +110,14 @@ describe('verifyEmailOtpSession', () => {
 });
 
 describe('logoutSession', () => {
-  it('calls signOut and clears stored user', async () => {
-    localStorage.setItem(
-      SESSION_KEY,
-      JSON.stringify({ userId: 'user-abc', email: null, sessionId: null }),
-    );
+  it('calls signOut', async () => {
     signOutMock.mockResolvedValue({ data: { success: true } });
     await logoutSession();
     expect(signOutMock).toHaveBeenCalledTimes(1);
-    expect(localStorage.getItem(SESSION_KEY)).toBeNull();
   });
 
-  it('does not clear stored user when signOut fails', async () => {
-    localStorage.setItem(
-      SESSION_KEY,
-      JSON.stringify({ userId: 'user-abc', email: null, sessionId: null }),
-    );
+  it('throws when signOut fails', async () => {
     signOutMock.mockResolvedValue({ error: { message: 'Network error' } });
     await expect(logoutSession()).rejects.toThrow('Network error');
-    expect(localStorage.getItem(SESSION_KEY)).not.toBeNull();
   });
 });

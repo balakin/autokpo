@@ -28,7 +28,7 @@ msgstr "{0, plural, one {# запись} few {# записи} many {# запис
 msgid "{0, plural, one {Knjiga sadrži # unos. Ovu radnju nije moguće poništiti.} few {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.} many {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.} other {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.}}"
 msgstr "{0, plural, one {Книга содержит # запись. Это действие невозможно отменить.} few {Книга содержит # записи. Это действие невозможно отменить.} many {Книга содержит # записей. Это действие невозможно отменить.} other {Книга содержит # записи. Это действие невозможно отменить.}}"
 
-#: src/auth/oauth-callback.tsx:70
+#: src/auth/oauth-callback.tsx:65
 msgid "{providerName} prijava nije bila uspešna."
 msgstr "Вход через {providerName} не выполнен."
 
@@ -143,7 +143,7 @@ msgstr "Добавить запись"
 msgid "Doprinesite projektu"
 msgstr "Внести вклад"
 
-#: src/auth/oauth-callback.tsx:118
+#: src/auth/oauth-callback.tsx:113
 msgid "Došlo je do greške. Pokušajte ponovo."
 msgstr "Произошла ошибка. Попробуйте снова."
 
@@ -151,7 +151,7 @@ msgstr "Произошла ошибка. Попробуйте снова."
 msgid "Dostupno je ažuriranje"
 msgstr "Доступно обновление"
 
-#: src/settings/account-settings-page.tsx:332
+#: src/settings/account-settings-page.tsx:334
 msgid "Druga sesija"
 msgstr "Другая сессия"
 
@@ -160,7 +160,7 @@ msgid "Duplikat"
 msgstr "Дубликат"
 
 #: src/auth/email-form.tsx:68
-#: src/settings/account-settings-page.tsx:578
+#: src/settings/account-settings-page.tsx:586
 msgid "Email adresa"
 msgstr "Адрес электронной почты"
 
@@ -199,19 +199,19 @@ msgstr "У вас есть локальные изменения, которые
 msgid "Imate nesačuvane izmene. Da li zaista želite da napustite stranicu?"
 msgstr "У вас есть несохранённые изменения. Вы уверены, что хотите покинуть страницу?"
 
-#: src/settings/account-settings-page.tsx:347
+#: src/settings/account-settings-page.tsx:349
 msgid "IP adresa"
 msgstr "IP-адрес"
 
-#: src/settings/account-settings-page.tsx:350
+#: src/settings/account-settings-page.tsx:352
 msgid "IP adresa nije dostupna"
 msgstr "IP-адрес недоступен"
 
-#: src/settings/account-settings-page.tsx:377
+#: src/settings/account-settings-page.tsx:379
 msgid "Ističe"
 msgstr "Истекает"
 
-#: src/settings/account-settings-page.tsx:380
+#: src/settings/account-settings-page.tsx:382
 msgid "Ističe:"
 msgstr "Истекает:"
 
@@ -259,7 +259,7 @@ msgstr "Сумма в иностранной валюте"
 msgid "Izvezi podatke"
 msgstr "Экспорт данных"
 
-#: src/settings/account-settings-page.tsx:496
+#: src/settings/account-settings-page.tsx:498
 msgid "Izvezi podatke naloga"
 msgstr "Экспорт данных аккаунта"
 
@@ -331,11 +331,11 @@ msgstr "Пользователь не вошел в систему."
 msgid "KPO unosi"
 msgstr "Записи КПО"
 
-#: src/settings/account-settings-page.tsx:365
+#: src/settings/account-settings-page.tsx:367
 msgid "Kreirana"
 msgstr "Создана"
 
-#: src/settings/account-settings-page.tsx:368
+#: src/settings/account-settings-page.tsx:370
 msgid "Kreirana:"
 msgstr "Создана:"
 
@@ -369,7 +369,7 @@ msgstr "Вы можете повторно отправить код через 
 
 #: src/auth/profile-popover.tsx:68
 #: src/e2ee/encryption-profile-popover.tsx:63
-#: src/settings/account-settings-page.tsx:649
+#: src/settings/account-settings-page.tsx:657
 #: src/settings/settings-page.tsx:49
 msgid "Nalog"
 msgstr "Аккаунт"
@@ -378,7 +378,7 @@ msgstr "Аккаунт"
 msgid "Nalog je obrisan"
 msgstr "Аккаунт удалён"
 
-#: src/auth/oauth-callback.tsx:95
+#: src/auth/oauth-callback.tsx:90
 msgid "Nalog sa ovom email adresom već postoji. Prijavite se putem jednokratnog koda na email."
 msgstr "Аккаунт с таким адресом электронной почты уже существует. Войдите с помощью одноразового кода, отправленного на вашу почту."
 
@@ -403,11 +403,11 @@ msgid "Nazad"
 msgstr "Назад"
 
 #: src/auth/goodbye-page.tsx:39
-#: src/auth/oauth-callback.tsx:85
+#: src/auth/oauth-callback.tsx:80
 msgid "Nazad na prijavu"
 msgstr "Вернуться к входу"
 
-#: src/e2ee/encryption-gate.tsx:392
+#: src/e2ee/encryption-gate.tsx:319
 msgid "Ne možemo da proverimo šifrovanje"
 msgstr "Не удалось проверить шифрование"
 
@@ -424,7 +424,7 @@ msgstr "Неверный формат даты"
 msgid "Neke funkcionalnosti mogu biti nedostupne dok se ponovo ne povežete."
 msgstr "Некоторые функции могут быть недоступны до восстановления соединения."
 
-#: src/settings/account-settings-page.tsx:228
+#: src/settings/account-settings-page.tsx:230
 msgid "Nema drugih aktivnih sesija."
 msgstr "Других активных сессий нет."
 
@@ -437,7 +437,7 @@ msgid "Nema unetih stavki"
 msgstr "Нет записей"
 
 #: src/auth/profile-popover.tsx:92
-#: src/settings/account-settings-page.tsx:666
+#: src/settings/account-settings-page.tsx:674
 msgid "Nesinhronizovano"
 msgstr "Не синхронизировано"
 
@@ -445,24 +445,24 @@ msgstr "Не синхронизировано"
 msgid "Nezavršeno"
 msgstr "Не завершено"
 
-#: src/settings/account-settings-page.tsx:370
-#: src/settings/account-settings-page.tsx:382
+#: src/settings/account-settings-page.tsx:372
+#: src/settings/account-settings-page.tsx:384
 msgid "nije dostupna"
 msgstr "недоступна"
 
-#: src/settings/account-settings-page.tsx:526
+#: src/settings/account-settings-page.tsx:534
 msgid "Nije moguće obrisati nalog. Proverite internet vezu i pokušajte ponovo."
 msgstr "Не удалось удалить аккаунт. Проверьте подключение к интернету и попробуйте снова."
 
-#: src/settings/account-settings-page.tsx:189
+#: src/settings/account-settings-page.tsx:191
 msgid "Nije moguće odjaviti ostale sesije. Pokušajte ponovo."
 msgstr "Не удалось завершить другие сессии. Попробуйте снова."
 
-#: src/settings/account-settings-page.tsx:179
+#: src/settings/account-settings-page.tsx:181
 msgid "Nije moguće odjaviti sesiju. Pokušajte ponovo."
 msgstr "Не удалось завершить сессию. Попробуйте снова."
 
-#: src/settings/account-settings-page.tsx:474
+#: src/settings/account-settings-page.tsx:476
 msgid "Nije moguće preuzeti podatke naloga. Proverite internet vezu i pokušajte ponovo."
 msgstr "Не удалось загрузить данные аккаунта. Проверьте интернет-соединение и попробуйте снова."
 
@@ -470,7 +470,7 @@ msgstr "Не удалось загрузить данные аккаунта. П
 msgid "Nije moguće promeniti šifru. Pokušajte ponovo."
 msgstr "Не удалось изменить пароль. Повторите попытку."
 
-#: src/settings/account-settings-page.tsx:291
+#: src/settings/account-settings-page.tsx:293
 msgid "Nije moguće učitati sesije"
 msgstr "Не удалось загрузить сессии"
 
@@ -523,12 +523,12 @@ msgstr "Удалить"
 msgid "Obriši knjigu za {year}"
 msgstr "Удалить книгу за {year}"
 
-#: src/settings/account-settings-page.tsx:609
-#: src/settings/account-settings-page.tsx:682
+#: src/settings/account-settings-page.tsx:617
+#: src/settings/account-settings-page.tsx:690
 msgid "Obriši nalog"
 msgstr "Удалить аккаунт"
 
-#: src/settings/account-settings-page.tsx:551
+#: src/settings/account-settings-page.tsx:559
 msgid "Obriši nalog?"
 msgstr "Удалить аккаунт?"
 
@@ -577,8 +577,8 @@ msgstr "Для выхода требуется интернет. Если сро
 msgid "Odjavi ipak"
 msgstr "Все равно выйти"
 
-#: src/settings/account-settings-page.tsx:397
-#: src/settings/account-settings-page.tsx:400
+#: src/settings/account-settings-page.tsx:399
+#: src/settings/account-settings-page.tsx:402
 msgid "Odjavi ovu sesiju"
 msgstr "Завершить эту сессию"
 
@@ -587,7 +587,7 @@ msgstr "Завершить эту сессию"
 msgid "Odjavi se"
 msgstr "Выйти"
 
-#: src/settings/account-settings-page.tsx:240
+#: src/settings/account-settings-page.tsx:242
 msgid "Odjavi sve ostale sesije"
 msgstr "Завершить все другие сессии"
 
@@ -600,7 +600,7 @@ msgid "Omiljene knjige"
 msgstr "Избранные книги"
 
 #: src/auth/profile-popover.tsx:80
-#: src/settings/account-settings-page.tsx:660
+#: src/settings/account-settings-page.tsx:668
 msgid "Online"
 msgstr "Онлайн"
 
@@ -632,7 +632,7 @@ msgstr "Обновить приложение"
 msgid "Osvežite aplikaciju da biste koristili najnoviju verziju."
 msgstr "Обновите приложение, чтобы использовать последнюю версию."
 
-#: src/auth/oauth-callback.tsx:102
+#: src/auth/oauth-callback.tsx:97
 msgid "Otkazali ste prijavu. Pokušajte ponovo."
 msgstr "Вы отменили вход. Попробуйте снова."
 
@@ -645,7 +645,7 @@ msgstr "Вы отменили вход. Попробуйте снова."
 #: src/entity-profiles/entity-profile-preview.tsx:59
 #: src/entries/entries-table.tsx:145
 #: src/entries/entry-modal.tsx:66
-#: src/settings/account-settings-page.tsx:601
+#: src/settings/account-settings-page.tsx:609
 #: src/settings/security-settings-page.tsx:512
 #: src/settings/security-settings-page.tsx:620
 #: src/settings/security-settings-page.tsx:828
@@ -683,15 +683,15 @@ msgstr "Открыть меню"
 msgid "Ova godina"
 msgstr "Этот год"
 
-#: src/settings/account-settings-page.tsx:120
+#: src/settings/account-settings-page.tsx:122
 msgid "Ova podešavanja zahtevaju internet vezu."
 msgstr "Для этих настроек требуется подключение к интернету."
 
-#: src/settings/account-settings-page.tsx:564
+#: src/settings/account-settings-page.tsx:572
 msgid "Ova radnja se ne može opozvati."
 msgstr "Это действие невозможно отменить."
 
-#: src/settings/account-settings-page.tsx:557
+#: src/settings/account-settings-page.tsx:565
 msgid "Ova radnja trajno briše vaš AutoKPO nalog i sve sinhronizovane podatke. Lokalni podaci na ovom uređaju biće uklonjeni nakon odjave."
 msgstr "Это действие навсегда удалит ваш аккаунт AutoKPO и все синхронизированные данные. Локальные данные на этом устройстве будут удалены после выхода."
 
@@ -774,12 +774,12 @@ msgid "Podešavanja"
 msgstr "Настройки"
 
 #: src/auth/profile-popover.tsx:110
-#: src/settings/account-settings-page.tsx:73
-#: src/settings/account-settings-page.tsx:117
+#: src/settings/account-settings-page.tsx:75
+#: src/settings/account-settings-page.tsx:119
 msgid "Podešavanja naloga"
 msgstr "Настройки аккаунта"
 
-#: src/settings/account-settings-page.tsx:130
+#: src/settings/account-settings-page.tsx:132
 msgid "Podešavanja naloga nisu dostupna offline"
 msgstr "Настройки аккаунта недоступны офлайн"
 
@@ -805,7 +805,7 @@ msgstr "Неверный PIN. Осталось попыток: {remaining}."
 msgid "Pogrešna šifra. Pokušajte ponovo."
 msgstr "Неверный пароль. Повторите попытку."
 
-#: src/e2ee/encryption-gate.tsx:408
+#: src/e2ee/encryption-gate.tsx:335
 msgid "Pokušaj ponovo"
 msgstr "Попробовать снова"
 
@@ -903,11 +903,11 @@ msgstr "Подтвердите изменение пароля"
 msgid "Potvrdite šifru"
 msgstr "Подтвердите пароль"
 
-#: src/settings/account-settings-page.tsx:76
+#: src/settings/account-settings-page.tsx:78
 msgid "Pregled podataka povezanih sa vašim nalogom."
 msgstr "Просмотр данных, связанных с вашим аккаунтом."
 
-#: src/settings/account-settings-page.tsx:200
+#: src/settings/account-settings-page.tsx:202
 msgid "Pregledajte aktivne prijave na drugim uređajima."
 msgstr "Просмотрите активные входы на других устройствах."
 
@@ -919,7 +919,7 @@ msgstr "Скачанный документ является черновико�
 msgid "Preuzmi PDF"
 msgstr "Скачать PDF"
 
-#: src/settings/account-settings-page.tsx:486
+#: src/settings/account-settings-page.tsx:488
 msgid "Preuzmite kopiju podataka vašeg naloga."
 msgstr "Скачайте копию данных вашего аккаунта."
 
@@ -947,11 +947,11 @@ msgstr "Войти через GitHub"
 msgid "Prijava Google"
 msgstr "Войти через Google"
 
-#: src/auth/oauth-callback.tsx:72
+#: src/auth/oauth-callback.tsx:67
 msgid "Prijava nije uspela."
 msgstr "Вход не выполнен."
 
-#: src/auth/oauth-callback.tsx:116
+#: src/auth/oauth-callback.tsx:111
 msgid "Prijava nije završena. Pokušajte ponovo."
 msgstr "Вход не был завершён. Попробуйте снова."
 
@@ -984,8 +984,8 @@ msgstr "Профиль"
 msgid "Profil je sačuvan"
 msgstr "Профиль сохранён"
 
-#: src/settings/account-settings-page.tsx:636
-#: src/settings/account-settings-page.tsx:637
+#: src/settings/account-settings-page.tsx:644
+#: src/settings/account-settings-page.tsx:645
 msgid "Promena avatara trenutno nije dostupna"
 msgstr "Смена аватара сейчас недоступна"
 
@@ -1006,11 +1006,11 @@ msgstr "Измените мастер-пароль. Данные не будут
 msgid "Promenite šifru za šifrovanje"
 msgstr "Изменить пароль шифрования"
 
-#: src/settings/account-settings-page.tsx:294
+#: src/settings/account-settings-page.tsx:296
 msgid "Proverite internet vezu i pokušajte ponovo kasnije."
 msgstr "Проверьте подключение к интернету и попробуйте позже."
 
-#: src/e2ee/encryption-gate.tsx:395
+#: src/e2ee/encryption-gate.tsx:322
 msgid "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
 msgstr "Проверьте подключение к интернету и попробуйте снова. Мы не будем создавать новый ключ, пока не проверим существующую настройку учётной записи."
 
@@ -1055,15 +1055,15 @@ msgstr "Составил"
 msgid "Sedište"
 msgstr "Юридический адрес"
 
-#: src/auth/oauth-callback.tsx:113
+#: src/auth/oauth-callback.tsx:108
 msgid "Sesija je istekla. Pokušajte ponovo."
 msgstr "Сессия истекла. Попробуйте снова."
 
-#: src/settings/account-settings-page.tsx:175
+#: src/settings/account-settings-page.tsx:177
 msgid "Sesija je odjavljena."
 msgstr "Сессия завершена."
 
-#: src/settings/account-settings-page.tsx:197
+#: src/settings/account-settings-page.tsx:199
 msgid "Sesije"
 msgstr "Сессии"
 
@@ -1116,7 +1116,7 @@ msgid "Šifrovanje"
 msgstr "Шифрование"
 
 #: src/auth/profile-popover.tsx:97
-#: src/settings/account-settings-page.tsx:671
+#: src/settings/account-settings-page.tsx:679
 msgid "Sinhronizovano"
 msgstr "Синхронизировано"
 
@@ -1133,7 +1133,7 @@ msgstr "Синхронизировать сейчас"
 msgid "Sistemska"
 msgstr "Системная"
 
-#: src/settings/account-settings-page.tsx:185
+#: src/settings/account-settings-page.tsx:187
 msgid "Sve ostale sesije su odjavljene."
 msgstr "Все другие сессии завершены."
 
@@ -1176,8 +1176,8 @@ msgstr "Тёмная"
 msgid "Tema"
 msgstr "Тема"
 
-#: src/settings/account-settings-page.tsx:330
-#: src/settings/account-settings-page.tsx:338
+#: src/settings/account-settings-page.tsx:332
+#: src/settings/account-settings-page.tsx:340
 msgid "Trenutna sesija"
 msgstr "Текущая сессия"
 
@@ -1189,7 +1189,7 @@ msgstr "Текущий пароль"
 msgid "Trenutni jezik: {localeName}"
 msgstr "Текущий язык: {localeName}"
 
-#: src/settings/account-settings-page.tsx:255
+#: src/settings/account-settings-page.tsx:257
 msgid "Učitavanje sesija…"
 msgstr "Загрузка сессий…"
 
@@ -1255,11 +1255,11 @@ msgstr "Записи"
 msgid "upravo sada"
 msgstr "только что"
 
-#: src/settings/account-settings-page.tsx:356
+#: src/settings/account-settings-page.tsx:358
 msgid "Uređaj"
 msgstr "Устройство"
 
-#: src/settings/account-settings-page.tsx:359
+#: src/settings/account-settings-page.tsx:361
 msgid "Uređaj nije poznat"
 msgstr "Устройство неизвестно"
 
@@ -1296,11 +1296,11 @@ msgstr "Вы не в сети"
 msgid "Vaš AutoKPO nalog i sinhronizovani podaci su trajno uklonjeni."
 msgstr "Ваш аккаунт AutoKPO и синхронизированные данные удалены навсегда."
 
-#: src/auth/oauth-callback.tsx:106
+#: src/auth/oauth-callback.tsx:101
 msgid "Vaš nalog nema javnu email adresu. Prijavite se putem jednokratnog koda na email."
 msgstr "У вашего аккаунта нет публичного адреса электронной почты. Войдите через одноразовый код."
 
-#: src/settings/account-settings-page.tsx:483
+#: src/settings/account-settings-page.tsx:485
 msgid "Vaši podaci"
 msgstr "Ваши данные"
 
@@ -1318,11 +1318,11 @@ msgstr "Вероятно, доступна новая версия. Обнови
 msgid "Vrednost ne može biti negativna"
 msgstr "Значение не может быть отрицательным"
 
-#: src/settings/account-settings-page.tsx:569
+#: src/settings/account-settings-page.tsx:577
 msgid "Za potvrdu unesite email adresu naloga:"
 msgstr "Для подтверждения введите адрес электронной почты аккаунта:"
 
-#: src/settings/account-settings-page.tsx:133
+#: src/settings/account-settings-page.tsx:135
 msgid "Za pregled i izmenu naloga potrebna je internet veza. Opšta podešavanja aplikacije ostaju dostupna bez interneta."
 msgstr "Для просмотра и изменения аккаунта требуется подключение к интернету. Общие настройки приложения остаются доступны без интернета."
 

@@ -1,9 +1,11 @@
-import { queryOptions, useQuery } from '@tanstack/react-query';
-
-import { clearLocalEncryptionUnlockMaterial } from '../e2ee/cleanup';
+import {
+  queryOptions,
+  useQuery,
+  type QueryClient,
+  type QueryFunctionContext,
+} from '@tanstack/react-query';
 
 import { authClient } from './auth-client';
-import { readStoredSession, writeStoredSession } from './auth-session';
 
 export const SESSION_QUERY_KEY = ['session'] as const;
 
@@ -16,51 +18,37 @@ export type SessionData = {
 export const sessionQueryOptions = queryOptions({
   queryKey: SESSION_QUERY_KEY,
   queryFn: fetchSession,
+  staleTime: 5 * 60 * 1000,
+  networkMode: 'offlineFirst',
+  retry: false,
 });
 
 export function useSessionQuery() {
-  return useQuery({
-    ...sessionQueryOptions,
-    networkMode: 'offlineFirst',
-    initialData: (): SessionData | null => {
-      const stored = readStoredSession();
-      if (!stored) return null;
-      return {
-        id: stored.userId,
-        email: stored.email,
-        sessionId: stored.sessionId,
-      };
-    },
-    initialDataUpdatedAt: 0,
-    staleTime: 5 * 60 * 1000,
-    retry: false,
+  return useQuery(sessionQueryOptions);
+}
+
+export function clearQueryCacheOnSignOut(queryClient: QueryClient): void {
+  queryClient.setQueryData(SESSION_QUERY_KEY, null);
+  queryClient.removeQueries({
+    predicate: (q) => q.queryKey[0] !== SESSION_QUERY_KEY[0],
   });
 }
 
-async function fetchSession(): Promise<SessionData | null> {
-  const previousSession = readStoredSession();
-  const result = await authClient.getSession();
+async function fetchSession({
+  signal,
+}: QueryFunctionContext<
+  typeof SESSION_QUERY_KEY
+>): Promise<SessionData | null> {
+  const result = await authClient.getSession({ fetchOptions: { signal } });
   const user = result.data?.user;
 
   if (!user?.id) {
-    if (previousSession?.userId) {
-      clearLocalEncryptionUnlockMaterial(previousSession.userId);
-    }
-    writeStoredSession(null);
     return null;
   }
-
-  if (previousSession?.userId && previousSession.userId !== user.id) {
-    clearLocalEncryptionUnlockMaterial(previousSession.userId);
-  }
-
-  const sessionId = result.data?.session?.id ?? null;
-
-  writeStoredSession({ userId: user.id, email: user.email ?? null, sessionId });
 
   return {
     id: user.id,
     email: user.email ?? null,
-    sessionId,
+    sessionId: result.data?.session?.id ?? null,
   };
 }

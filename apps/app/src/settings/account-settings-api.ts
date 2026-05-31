@@ -1,5 +1,6 @@
 import { authClient } from '../auth/auth-client';
-import { ensureNoAuthError, writeStoredSession } from '../auth/auth-session';
+import { ensureNoAuthError } from '../auth/auth-session';
+import { cleanupSignedOutSession } from '../auth/session-cleanup';
 import { getStoredLocale } from '../i18n/locale-storage';
 
 export interface AccountSession {
@@ -24,7 +25,7 @@ interface BetterAuthSessionLike {
 export { buildAccountExport } from './export';
 export type { AccountExport } from './export';
 
-export async function deleteAccount(): Promise<void> {
+export async function deleteAccount(userId: string): Promise<void> {
   const result = await authClient.deleteUser({
     fetchOptions: {
       headers: { 'X-Preferred-Locale': getStoredLocale() },
@@ -32,8 +33,7 @@ export async function deleteAccount(): Promise<void> {
   });
 
   ensureNoAuthError(result);
-  writeStoredSession(null);
-  window.location.assign('/goodbye');
+  await cleanupSignedOutSession(userId);
 }
 
 export async function fetchAccountSessions(): Promise<AccountSession[]> {

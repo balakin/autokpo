@@ -2,19 +2,19 @@
 
 ### Requirement: Protected session and key-ring GETs use NetworkFirst runtime caches
 
-The service worker SHALL runtime-cache only the authenticated session read endpoint and `GET /api/e2ee/key-ring` as protected API runtime caches. Each protected cache SHALL use a NetworkFirst strategy, SHALL use a stable named cache, and SHALL store only successful `200` responses.
+The service worker SHALL runtime-cache only `/api/auth/get-session` and `GET /api/e2ee/key-ring` as protected API runtime caches. Each protected cache SHALL use a NetworkFirst strategy, SHALL use a stable named cache, and SHALL store only successful `200` responses.
 
 The service worker SHALL NOT broadly runtime-cache `/api/*`, SHALL NOT runtime-cache sync endpoints, and SHALL NOT runtime-cache arbitrary auth endpoints beyond the exact session read endpoint.
 
 #### Scenario: Online session request uses server response
 
-- **WHEN** the browser requests the auth session endpoint while the network is available
+- **WHEN** the browser requests `/api/auth/get-session` while the network is available
 - **THEN** the service worker SHALL return the network response
 - **AND** if the response status is `200`, the service worker SHALL update the named auth-session runtime cache
 
 #### Scenario: Offline session request uses cached local identity
 
-- **WHEN** the browser requests the auth session endpoint while the network is unavailable
+- **WHEN** the browser requests `/api/auth/get-session` while the network is unavailable
 - **AND** a successful session response was previously cached
 - **THEN** the service worker SHALL return the cached session response
 
@@ -37,7 +37,7 @@ The service worker SHALL NOT broadly runtime-cache `/api/*`, SHALL NOT runtime-c
 
 ### Requirement: Protected runtime caches are cleared on auth boundaries
 
-The application SHALL clear the named auth-session and key-ring runtime caches after successful online logout and when a login or session refresh observes a different authenticated user. The application SHALL clear these caches by cache name rather than by enumerating broad request URL patterns.
+The application SHALL clear the named auth-session and key-ring runtime caches after successful online logout. The application SHALL clear these caches by cache name via `cleanupSignedOutSession` and `clearProtectedCaches`.
 
 #### Scenario: Successful logout clears protected runtime caches
 
@@ -45,14 +45,16 @@ The application SHALL clear the named auth-session and key-ring runtime caches a
 - **THEN** the application SHALL delete the named auth-session runtime cache
 - **AND** the application SHALL delete the named key-ring runtime cache
 
-#### Scenario: Login or user switch clears previous protected caches
+#### Scenario: Login or user switch updates protected caches naturally
 
 - **WHEN** the application observes a login or a session user id change from one user to another
-- **THEN** the application SHALL delete the named auth-session runtime cache
-- **AND** the application SHALL delete the named key-ring runtime cache
+- **THEN** the session query SHALL be updated with the new user data
+- **AND** the encryption gate SHALL re-mount with the new user id and fetch its key-ring profile through the user-scoped query
+- **AND** the protected runtime caches SHALL be updated through subsequent online fetches for the new user's session and key-ring
 
-#### Scenario: Offline logout is not performed
+#### Scenario: Offline logout fails without clearing caches
 
 - **WHEN** the browser is offline
 - **AND** the user attempts to log out
-- **THEN** the application SHALL NOT complete the logout cleanup flow as if the server session was cleared
+- **THEN** the `authClient.signOut()` fetch SHALL fail
+- **AND** the application SHALL NOT complete the logout cleanup flow (cache clearing, local wrapper deletion, query cache clearing) as if the server session was cleared

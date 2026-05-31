@@ -2,7 +2,7 @@
 
 ### Requirement: Remembered local user enables optimistic local boot
 
-The system SHALL NOT persist authenticated session data in `localStorage` for startup bootstrapping. On startup, the session query SHALL fetch the current session asynchronously. While the session query is pending, auth-dependent route gates SHALL render a loading state and SHALL NOT decide that the user is signed in or signed out.
+The system SHALL NOT persist authenticated session data in `localStorage` for startup bootstrapping. On startup, the session query SHALL fetch the current session asynchronously via `sessionQueryOptions` (which configures `staleTime: 5 min`, `networkMode: 'offlineFirst'`, `retry: false`). While the session query is pending, auth-dependent route gates SHALL render null (loading) and SHALL NOT decide that the user is signed in or signed out.
 
 When the browser is online, the server session response SHALL be authoritative. When the browser is offline and the service worker has a cached successful session response, the cached response MAY identify the last-known local user for offline local mode. The cached offline session SHALL NOT be treated as proof of current server authorization.
 
@@ -30,9 +30,9 @@ When the browser is online, the server session response SHALL be authoritative. 
 - **THEN** the app SHALL transition to the signed-out state
 - **AND** the app SHALL clear local auth and encryption residue required by logout cleanup
 
-### Requirement: Auth state propagates across tabs via storage events
+### Requirement: Auth state propagates across tabs via BroadcastChannel
 
-The auth provider SHALL propagate login and logout/session changes across tabs using BroadcastChannel messages rather than `localStorage` storage events. A tab that receives a session-change message SHALL invalidate or update its session query and apply the same auth-boundary cleanup rules as the initiating tab.
+The auth provider SHALL propagate login and logout/session changes across tabs using BroadcastChannel messages rather than `localStorage` storage events. The `SessionSync` component rendered at the app root SHALL subscribe to session-change messages and update or clear the session query in the receiving tab. A tab that receives a session-change message SHALL update or clear its session query and apply the same auth-boundary cleanup rules as the initiating tab.
 
 #### Scenario: Sign-in in another tab updates auth state
 
@@ -47,54 +47,51 @@ The auth provider SHALL propagate login and logout/session changes across tabs u
 
 ### Requirement: Logout and auth-session loss clear local residue
 
-The system SHALL provide an online logout flow that clears the authenticated session and removes local user-specific residue from the device, including encryption session material and protected service-worker runtime caches. The same encryption-session cleanup SHALL run when auth refresh reports no authenticated user, when the resolved authenticated session changes to a different user, and when the app receives an authoritative sync auth rejection (`401 unauthorized` or `409 local_user_mismatch`).
+The system SHALL provide an online logout flow (`useAuth.logout()`) that clears the authenticated session, removes local user-specific residue from the device (encryption session material, protected service-worker runtime caches, and all non-session React Query cache entries), and broadcasts the logout to other tabs. The `cleanupSignedOutSession` helper SHALL perform the service-worker cache clearing and local wrapper deletion; `clearQueryCacheOnSignOut` SHALL reset the session query and remove all other cached queries.
 
 Logout SHALL be restricted while offline for this change; the app SHALL NOT pretend that the remote server session was cleared when it cannot complete the logout request.
 
 #### Scenario: Explicit logout clears local residue
 
 - **WHEN** the signed-in user chooses the logout action while online
-- **THEN** the app clears the authenticated session
-- **AND** removes user-specific sync metadata and Yjs IndexedDB state
-- **AND** clears encryption session material
+- **THEN** `useAuth.logout()` SHALL call `authClient.signOut()`, then `cleanupSignedOutSession(userId)`, then `clearQueryCacheOnSignOut(queryClient)`
+- **AND** the app clears the authenticated session
+- **AND** clears encryption session material for the previous user
 - **AND** clears named protected service-worker runtime caches
+- **AND** clears all non-session React Query cache entries
 - **AND** broadcasts the logout/session change to other tabs
 - **AND** returns to the signed-out flow
-
-#### Scenario: Auth rejection triggers logout cleanup
-
-- **WHEN** the sync client receives `401 unauthorized` or `409 local_user_mismatch`
-- **THEN** the app runs the same logout cleanup flow as explicit logout
 
 #### Scenario: Auth refresh loses session
 
 - **WHEN** auth refresh reports no authenticated user from an online server response
-- **THEN** the app clears the resolved authenticated session
-- **AND** clears encryption session material
-- **AND** clears named protected service-worker runtime caches
+- **THEN** the app SHALL clear the resolved authenticated session
+- **AND** the session query SHALL be set to null
+- **AND** the session change SHALL be broadcast to other tabs
 
 #### Scenario: Resolved session changes to another user
 
 - **WHEN** the app observes the resolved authenticated session change to a different user id
-- **THEN** the app updates the authenticated user state
-- **AND** clears encryption session material for the previous user
-- **AND** clears named protected service-worker runtime caches
+- **THEN** the app SHALL update the authenticated user state
+- **AND** the encryption gate SHALL re-mount with the new user id, fetching the appropriate key-ring profile through the user-scoped query
 
-#### Scenario: Offline logout is blocked
+#### Scenario: Offline logout fails without side effects
 
 - **WHEN** the browser is offline
 - **AND** the signed-in user chooses the logout action
-- **THEN** the app SHALL NOT complete local logout cleanup as if the remote session was cleared
+- **THEN** the `authClient.signOut()` fetch SHALL fail
+- **AND** the error SHALL prevent `cleanupSignedOutSession` and `clearQueryCacheOnSignOut` from running
+- **AND** the app SHALL NOT complete local logout cleanup as if the remote session was cleared
 
 ### Requirement: Navigation guards protect signed-in and signed-out routes
 
-The route graph SHALL use `SignedInGate` and `SignedOutGate` components to enforce auth state on route groups. The route graph SHALL be created by `createAppRoutes()` and composed into the browser router from `router.tsx`.
+The route graph SHALL use `SignedInGate` and `SignedOutGate` components to enforce auth state on route groups. The route graph SHALL be defined as the `appRoutes` array in `app-routes.tsx` and composed into the browser router by `createRouter()` from `router.tsx`.
 
 - `SignedInGate` SHALL render a loading state while the session query is unresolved, redirect signed-out users to `/sign-in`, and allow signed-in users to continue.
 - `SignedOutGate` SHALL render a loading state while the session query is unresolved, redirect signed-in users to `/dashboard`, and allow signed-out users to continue.
 - The signed-out route group (`/sign-in`, `/sign-in/code`, `/goodbye`) SHALL be wrapped in both `SignedOutGate` and `AuthEmailProvider`.
 - The signed-in application shell SHALL only be loaded after `SignedInGate` determines that the session user is present and the encryption gate determines that encrypted data is ready for the current auth session.
-- The catch-all route SHALL wait for resolved session state before redirecting to `/dashboard` for signed-in users or `/sign-in` for signed-out users.
+- The catch-all route (`*`) SHALL use `AuthStateRedirect`, which renders null while the session query is pending and redirects to `/dashboard` for signed-in users or `/sign-in` for signed-out users once resolved.
 
 #### Scenario: Signed-out user is redirected before signed-in app loads
 

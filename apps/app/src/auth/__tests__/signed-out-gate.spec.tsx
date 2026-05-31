@@ -7,18 +7,20 @@ import { describe, expect, it } from 'vitest';
 import { SignedOutGate } from '../signed-out-gate';
 import { SESSION_QUERY_KEY } from '../use-session-query';
 
-function makeQueryClient(userId: string | null) {
+function makeQueryClient(userId: string | null | undefined) {
   const qc = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 } },
   });
-  qc.setQueryData(
-    SESSION_QUERY_KEY,
-    userId ? { id: userId, email: null, sessionId: null } : null,
-  );
+  if (userId !== undefined) {
+    qc.setQueryData(
+      SESSION_QUERY_KEY,
+      userId ? { id: userId, email: null, sessionId: null } : null,
+    );
+  }
   return qc;
 }
 
-function setup(userId: string | null) {
+function setup(userId: string | null | undefined) {
   const router = createMemoryRouter(
     [
       {
@@ -52,5 +54,11 @@ describe('SignedOutGate', () => {
       '/dashboard',
     );
     expect(screen.queryByText('public content')).not.toBeInTheDocument();
+  });
+
+  it('renders nothing while session is pending', () => {
+    setup(undefined);
+    expect(screen.queryByText('public content')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('current-location')).not.toBeInTheDocument();
   });
 });

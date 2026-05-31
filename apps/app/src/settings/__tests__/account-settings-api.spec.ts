@@ -11,7 +11,10 @@ const mockDeleteUser = vi.fn<(options: unknown) => Promise<unknown>>();
 const mockListSessions = vi.fn<() => Promise<unknown>>();
 const mockRevokeSession = vi.fn<(payload: unknown) => Promise<unknown>>();
 const mockRevokeOtherSessions = vi.fn<() => Promise<unknown>>();
-const mockLocationAssign = vi.fn<(url: string) => void>();
+const mockClearProtectedCaches = vi.fn<() => Promise<void>>();
+const mockClearLocalEncryptionUnlockMaterial =
+  vi.fn<(userId: string) => void>();
+const mockBroadcastSessionChange = vi.fn<(userId: string | null) => void>();
 
 vi.mock('../../auth/auth-client', () => ({
   authClient: {
@@ -20,6 +23,20 @@ vi.mock('../../auth/auth-client', () => ({
     revokeSession: (payload: unknown) => mockRevokeSession(payload),
     revokeOtherSessions: () => mockRevokeOtherSessions(),
   },
+}));
+
+vi.mock('../../pwa/clear-protected-caches', () => ({
+  clearProtectedCaches: () => mockClearProtectedCaches(),
+}));
+
+vi.mock('../../e2ee/cleanup', () => ({
+  clearLocalEncryptionUnlockMaterial: (userId: string) =>
+    mockClearLocalEncryptionUnlockMaterial(userId),
+}));
+
+vi.mock('../../auth/session-broadcast', () => ({
+  broadcastSessionChange: (userId: string | null) =>
+    mockBroadcastSessionChange(userId),
 }));
 
 describe('account settings API', () => {
@@ -32,45 +49,36 @@ describe('account settings API', () => {
     mockRevokeSession.mockResolvedValue({ data: { success: true } });
     mockRevokeOtherSessions.mockReset();
     mockRevokeOtherSessions.mockResolvedValue({ data: { success: true } });
-    mockLocationAssign.mockReset();
-    vi.stubGlobal('location', {
-      ...window.location,
-      assign: mockLocationAssign,
-    });
-    localStorage.clear();
+    mockClearProtectedCaches.mockReset();
+    mockClearProtectedCaches.mockResolvedValue(undefined);
+    mockClearLocalEncryptionUnlockMaterial.mockReset();
+    mockBroadcastSessionChange.mockReset();
     localStorage.setItem('autokpo:locale', 'en');
   });
 
-  it('deletes the account, clears the stored session, and reloads to goodbye', async () => {
-    localStorage.setItem(
-      'autokpo:session',
-      JSON.stringify({ userId: 'user-1', email: null, sessionId: null }),
-    );
-
-    await deleteAccount();
+  it('deletes the account, clears protected caches, clears local key material, and broadcasts logout', async () => {
+    await deleteAccount('user-1');
 
     expect(mockDeleteUser).toHaveBeenCalledWith({
       fetchOptions: {
         headers: { 'X-Preferred-Locale': 'en' },
       },
     });
-    expect(localStorage.getItem('autokpo:session')).toBeNull();
-    expect(mockLocationAssign).toHaveBeenCalledWith('/goodbye');
+    expect(mockClearProtectedCaches).toHaveBeenCalledTimes(1);
+    expect(mockClearLocalEncryptionUnlockMaterial).toHaveBeenCalledWith(
+      'user-1',
+    );
+    expect(mockBroadcastSessionChange).toHaveBeenCalledWith(null);
   });
 
-  it('does not clear storage or reload when deletion fails', async () => {
-    localStorage.setItem(
-      'autokpo:session',
-      JSON.stringify({ userId: 'user-1', email: null, sessionId: null }),
-    );
+  it('does not clear caches or broadcast when deletion fails', async () => {
     mockDeleteUser.mockResolvedValue({ error: { message: 'Nope' } });
 
-    await expect(deleteAccount()).rejects.toThrow('Nope');
+    await expect(deleteAccount('user-1')).rejects.toThrow('Nope');
 
-    expect(localStorage.getItem('autokpo:session')).toBe(
-      JSON.stringify({ userId: 'user-1', email: null, sessionId: null }),
-    );
-    expect(mockLocationAssign).not.toHaveBeenCalled();
+    expect(mockClearProtectedCaches).not.toHaveBeenCalled();
+    expect(mockClearLocalEncryptionUnlockMaterial).not.toHaveBeenCalled();
+    expect(mockBroadcastSessionChange).not.toHaveBeenCalled();
   });
 
   it('normalizes account sessions', async () => {

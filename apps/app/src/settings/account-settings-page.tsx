@@ -25,8 +25,10 @@ import {
   LuWifi,
   LuWifiOff,
 } from 'react-icons/lu';
+import { useNavigate } from 'react-router';
 
 import { useAuth } from '../auth/use-auth';
+import { clearQueryCacheOnSignOut } from '../auth/use-session-query';
 import { UserAvatar } from '../auth/user-avatar';
 import { useSyncMetadata } from '../crdt';
 import { useOnline } from '../hooks/use-online';
@@ -514,13 +516,19 @@ function DeleteAccountModal({
   onClose,
 }: DeleteAccountModalProps) {
   const { t } = useLingui();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const accountEmail = user.email ?? '';
   const canConfirmDelete =
     isOnline && accountEmail.length > 0 && deleteConfirmation === accountEmail;
 
   const deleteMutation = useMutation({
-    mutationFn: deleteAccount,
+    mutationFn: () => deleteAccount(user.id),
+    onSuccess: () => {
+      clearQueryCacheOnSignOut(queryClient);
+      void navigate('/goodbye');
+    },
     onError: () => {
       toast.danger(
         t`Nije moguće obrisati nalog. Proverite internet vezu i pokušajte ponovo.`,

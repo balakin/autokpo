@@ -7,12 +7,7 @@ import { expect, vi } from 'vitest';
 
 import { getAuthOptions } from '../../worker/auth-options';
 import { getDb } from '../../worker/db';
-import {
-  account,
-  session,
-  user,
-  verification,
-} from '../../worker/db/schema/auth';
+import { account, user } from '../../worker/db/schema/auth';
 import * as schema from '../../worker/db/schema/auth';
 
 export const TEST_APP_URL = 'http://localhost:5173';
@@ -87,6 +82,16 @@ const testAuth = betterAuth({
     provider: 'sqlite',
     schema,
   }),
+  secondaryStorage: {
+    get: (key) => workerTestEnv.AUTH_KV.get(key),
+    set: (key, value, ttl) =>
+      workerTestEnv.AUTH_KV.put(
+        key,
+        value,
+        ttl ? { expirationTtl: ttl } : undefined,
+      ),
+    delete: (key) => workerTestEnv.AUTH_KV.delete(key),
+  },
   secret: TEST_BETTER_AUTH_SECRET,
   baseURL: TEST_APP_URL,
   ...authOptions,
@@ -147,9 +152,7 @@ export async function createAuthAccount(accountData: {
 
 export async function clearAuthData() {
   resetRateLimitMocks();
-  await db.delete(session);
   await db.delete(account);
-  await db.delete(verification);
   await db.delete(user);
 }
 

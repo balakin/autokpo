@@ -174,6 +174,9 @@ export function getAuthOptions({
     rateLimit: {
       enabled: false,
     },
+    verification: {
+      storeInDatabase: true,
+    },
     session: {
       freshAge: 0,
       expiresIn: 60 * 24 * 60 * 60,

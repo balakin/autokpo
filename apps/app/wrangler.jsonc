@@ -17,6 +17,12 @@
       "migrations_dir": "./worker/db/migrations",
     },
   ],
+  "kv_namespaces": [
+    {
+      "binding": "AUTH_KV",
+      "id": "PLACEHOLDER_SET_VIA_WRANGLER_KV_CREATE",
+    },
+  ],
   "ratelimits": [
     {
       "name": "SYNC_RATE_LIMITER",
@@ -62,6 +68,12 @@
           "database_name": "autokpo-production",
           "database_id": "PLACEHOLDER_SET_VIA_WRANGLER_D1_CREATE",
           "migrations_dir": "./worker/db/migrations",
+        },
+      ],
+      "kv_namespaces": [
+        {
+          "binding": "AUTH_KV",
+          "id": "PLACEHOLDER_SET_VIA_WRANGLER_KV_CREATE",
         },
       ],
       "ratelimits": [

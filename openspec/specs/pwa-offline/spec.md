@@ -43,27 +43,6 @@ The system SHALL register a service worker on app startup that precaches the app
 - **WHEN** the app starts in production mode
 - **THEN** it registers the service worker through `virtual:pwa-register/react` without a parallel manual `navigator.serviceWorker.register('/sw.js')` path
 
-### Requirement: Avatar images are cached for offline display
-
-The service worker SHALL runtime-cache same-origin `/avatars/*` image responses so previously viewed profile images remain visible while offline. The application SHALL clear the SW `'avatars'` cache on logout before signaling session removal to other tabs, ensuring no avatar data persists after sign-out.
-
-#### Scenario: Viewed avatar remains available offline
-
-- **WHEN** the app has successfully loaded a same-origin `/avatars/{randomUUID}` image while online
-- **AND** the browser later loses network connectivity
-- **THEN** the service worker SHALL be able to serve the cached avatar response for the same URL
-
-#### Scenario: Avatar cache is cleared on logout
-
-- **WHEN** the user signs out
-- **THEN** the application SHALL delete the SW `'avatars'` cache before writing the session removal to localStorage
-- **AND** subsequent requests for any `/avatars/*` URL SHALL NOT be served from the previous session's cached data
-
-#### Scenario: Avatar cache ignores failed responses
-
-- **WHEN** a `/avatars/{randomUUID}` request returns a non-success response
-- **THEN** the service worker SHALL NOT store that response as a reusable avatar image
-
 ### Requirement: Prompted app updates
 
 The system SHALL detect when a new service worker version is available and prompt the user before activating it over active clients. The system SHALL NOT automatically reload pages or activate the waiting worker while users are actively running the current app version. After any tab explicitly accepts an update and the new service worker becomes the controller, all controlled AutoKPO tabs SHALL reload so the leader/follower tab set converges to the same app version.
@@ -148,3 +127,18 @@ The system SHALL display a visual indicator when the user is offline.
 
 - **WHEN** the app detects the browser is online
 - **THEN** the offline indicator banner is not displayed
+
+### Requirement: Protected API runtime caches are explicit
+
+The PWA service worker SHALL define runtime caches only for protected API GET endpoints whose offline semantics are intentional. The protected runtime caches SHALL be separate from the app-shell precache and SHALL NOT change the navigation fallback denylist for `/api/*` routes.
+
+#### Scenario: Protected API runtime caches do not provide navigation fallback
+
+- **WHEN** the service worker receives a navigation request for `/api/*`
+- **THEN** the request SHALL still be excluded from navigation fallback caching
+- **AND** protected API runtime caching SHALL apply only to matching non-navigation GET requests
+
+#### Scenario: Sync endpoint is not runtime-cached
+
+- **WHEN** the service worker receives a request for `/api/sync`
+- **THEN** the service worker SHALL NOT serve the response from a runtime API cache

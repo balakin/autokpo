@@ -30,7 +30,7 @@ When the browser is online, the server session response SHALL be authoritative. 
 - **THEN** the app SHALL transition to the signed-out state
 - **AND** the app SHALL clear local auth and encryption residue required by logout cleanup
 
-### Requirement: Auth state propagates across tabs via BroadcastChannel
+### Requirement: Auth state propagates across tabs via storage events
 
 The auth provider SHALL propagate login and logout/session changes across tabs using BroadcastChannel messages rather than `localStorage` storage events. The `SessionSync` component rendered at the app root SHALL subscribe to session-change messages and update or clear the session query in the receiving tab. A tab that receives a session-change message SHALL update or clear its session query and apply the same auth-boundary cleanup rules as the initiating tab.
 

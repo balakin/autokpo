@@ -28,18 +28,18 @@ The social auth callback route SHALL be `/sign-in/oauth/:provider/callback`, whe
 
 The system SHALL expose this parameterized route handled by the `SocialAuthCallback` component. On arrival the component SHALL:
 
-- Show a loading indicator while calling `refreshSession()` to fetch and persist the server session.
+- Show a loading indicator while the session query fetches and validates the server session.
 - On success redirect to `/dashboard`.
-- On failure (either an `error` query param present in the URL, or `refreshSession()` returning `null`) display a provider-aware error heading with a code and a back-to-sign-in action.
+- On failure (either an `error` query param present in the URL, or the session query resolving with no authenticated user) display a provider-aware error heading with a code and a back-to-sign-in action.
 
-The callback state SHALL use a unified `{ status: 'error'; code: string }` shape for all failure cases. When `refreshSession()` returns `null` the component SHALL use the synthetic code `missing_session`.
+The callback state SHALL use a unified `{ status: 'error'; code: string }` shape for all failure cases. When the session query resolves with no authenticated user the component SHALL use the synthetic code `missing_session`.
 
 For the recognized error code `account_not_linked`, the component SHALL display a localized message explaining that an account with that email already exists and directing the user to sign in via email OTP instead (rather than displaying the raw code string).
 
 #### Scenario: Successful OAuth redirect completes sign-in
 
 - **WHEN** the provider redirects the browser to `/sign-in/oauth/:provider/callback` without an `error` query param and the server session is valid
-- **THEN** `refreshSession()` persists the user id and the browser navigates to `/dashboard`
+- **THEN** the session query persists the user id and the browser navigates to `/dashboard`
 
 #### Scenario: OAuth error param shows provider-aware failure screen
 
@@ -47,7 +47,7 @@ For the recognized error code `account_not_linked`, the component SHALL display 
 - **THEN** the component displays a failure heading that includes the resolved provider display name (e.g. "GitHub prijava nije bila uspešna.")
 - **AND** the component displays the error code from the query param
 - **AND** the component shows a back-to-sign-in button
-- **AND** `refreshSession()` is NOT called
+- **AND** the session query is NOT fetched
 
 #### Scenario: account_not_linked error shows collision-specific message
 
@@ -58,7 +58,7 @@ For the recognized error code `account_not_linked`, the component SHALL display 
 
 #### Scenario: Missing session after redirect shows provider-aware failure screen with synthetic code
 
-- **WHEN** the OAuth redirect lands on `/sign-in/oauth/:provider/callback` without an error param but `refreshSession()` returns `null`
+- **WHEN** the OAuth redirect lands on `/sign-in/oauth/:provider/callback` without an error param but the session query resolves with no authenticated user
 - **THEN** the component displays a failure heading that includes the resolved provider display name
 - **AND** the component displays the code `missing_session`
 - **AND** the component shows a back-to-sign-in button
@@ -70,9 +70,9 @@ For the recognized error code `account_not_linked`, the component SHALL display 
 
 ### Requirement: Remembered local user enables optimistic local boot
 
-The system SHALL persist the last successfully authenticated local user id in `localStorage` under the key `autokpo:remembered-local-user` and use it only as a startup hint for reopening local device state. The remembered local user id SHALL NOT be treated as an authentication credential.
+The system SHALL persist the last successfully authenticated local user id in `localStorage` under the key `autokpo:session` and use it only as a startup hint for reopening local device state. The remembered local user id SHALL NOT be treated as an authentication credential.
 
-On mount the auth provider SHALL also call `refreshSession()` asynchronously to verify the cookie session and update (or clear) the remembered user id. This runs after the synchronous startup read — it does not block local state from opening.
+On startup the session query SHALL use the stored session as `initialData` and immediately fire a background fetch to verify the cookie session and update (or clear) the stored session. This runs after the synchronous startup read — it does not block local state from opening.
 
 #### Scenario: Startup reopens local state from remembered user
 
@@ -82,7 +82,7 @@ On mount the auth provider SHALL also call `refreshSession()` asynchronously to 
 #### Scenario: Stale remembered user cleared on startup verification
 
 - **WHEN** the app starts with a remembered local user id but the cookie session is gone or belongs to a different user
-- **THEN** `refreshSession()` resolves with `null`, clears the remembered local user id, and the app transitions to the signed-out state
+- **THEN** the session query background fetch resolves with no user, clears the stored session, and the app transitions to the signed-out state
 
 #### Scenario: No remembered user starts signed out
 

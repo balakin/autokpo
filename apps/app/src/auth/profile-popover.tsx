@@ -149,16 +149,16 @@ export function ProfilePopover() {
               className="size-full"
             />
           </Button>
-          <Drawer.Backdrop>
+          <Drawer.Backdrop variant="transparent">
             <Drawer.Content
               placement="right"
               className="w-screen max-w-none p-0"
             >
               <Drawer.Dialog
                 aria-label={t`Profil`}
-                className="size-full  max-w-full rounded-none bg-background p-0"
+                className="size-full max-w-full rounded-none bg-background p-0"
               >
-                <div className="flex h-14 items-center justify-between border-b border-separator px-5">
+                <div className="flex min-h-14 items-center justify-between border-b border-separator px-5">
                   <Drawer.Heading className="text-base font-semibold">
                     <Trans>Profil</Trans>
                   </Drawer.Heading>

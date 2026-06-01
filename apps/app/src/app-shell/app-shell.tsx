@@ -15,7 +15,7 @@ export function AppShell() {
   return (
     <RouterProvider navigate={(...args) => void navigate(...args)}>
       <TopBarActionsProvider>
-        <div className="flex h-screen overflow-hidden">
+        <div className="flex h-svh overflow-hidden">
           <aside
             className="hidden w-60 shrink-0 flex-col lg:flex"
             aria-label="Sidebar"

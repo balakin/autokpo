@@ -19,12 +19,7 @@ msgid "{0, plural, one {# knjiga} few {# knjige} many {# knjiga} other {# knjiga
 msgstr "{0, plural, one {# book} other {# books}}"
 
 #. placeholder {0}: book.entryCount
-#: src/books/book-library.tsx:134
-msgid "{0, plural, one {# unos} few {# unosa} many {# unosa} other {# unosa}}"
-msgstr "{0, plural, one {# entry} other {# entries}}"
-
-#. placeholder {0}: book.entryCount
-#: src/books/book-library.tsx:190
+#: src/books/book-library.tsx:181
 msgid "{0, plural, one {Knjiga sadrži # unos. Ovu radnju nije moguće poništiti.} few {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.} many {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.} other {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.}}"
 msgstr "{0, plural, one {The book contains # entry. This action cannot be undone.} few {The book contains # entries. This action cannot be undone.} many {The book contains # entries. This action cannot be undone.} other {The book contains # entries. This action cannot be undone.}}"
 
@@ -130,7 +125,7 @@ msgstr "Welcome"
 msgid "Dodaj"
 msgstr "Add"
 
-#: src/books/book-library.tsx:158
+#: src/books/book-library.tsx:149
 msgid "Dodaj u omiljene za {year}"
 msgstr "Add {year} to favorites"
 
@@ -263,8 +258,8 @@ msgstr "Export data"
 msgid "Izvezi podatke naloga"
 msgstr "Export account data"
 
-#: src/auth/auth-shell.tsx:47
-#: src/e2ee/encryption-shell.tsx:47
+#: src/auth/auth-shell.tsx:58
+#: src/e2ee/encryption-shell.tsx:58
 msgid "Izvorni kod"
 msgstr "Source code"
 
@@ -504,7 +499,7 @@ msgstr "New entry"
 msgid "O projektu"
 msgstr "About"
 
-#: src/books/book-library.tsx:185
+#: src/books/book-library.tsx:176
 msgid "Obrisati knjigu za {year}?"
 msgstr "Delete book for {year}?"
 
@@ -512,14 +507,14 @@ msgstr "Delete book for {year}?"
 msgid "Obrisati unos?"
 msgstr "Delete entry?"
 
-#: src/books/book-library.tsx:208
+#: src/books/book-library.tsx:199
 #: src/entries/entries-table.tsx:115
 #: src/entries/entries-table.tsx:120
 #: src/entries/entries-table.tsx:152
 msgid "Obriši"
 msgstr "Delete"
 
-#: src/books/book-library.tsx:175
+#: src/books/book-library.tsx:166
 msgid "Obriši knjigu za {year}"
 msgstr "Delete book for {year}"
 
@@ -638,7 +633,7 @@ msgstr "You cancelled the sign-in. Please try again."
 
 #: src/auth/profile-popover.tsx:218
 #: src/books/add-book-modal.tsx:163
-#: src/books/book-library.tsx:201
+#: src/books/book-library.tsx:192
 #: src/currency/currency-convert-modal.tsx:281
 #: src/e2ee/set-pin-modal.tsx:92
 #: src/e2ee/set-pin-modal.tsx:148
@@ -670,7 +665,7 @@ msgstr "Unlock data for this session."
 msgid "Otkriveni duplikati knjiga"
 msgstr "Duplicate books detected"
 
-#: src/books/book-library.tsx:150
+#: src/books/book-library.tsx:141
 msgid "Otvori"
 msgstr "Open"
 
@@ -1193,7 +1188,7 @@ msgstr "Current language: {localeName}"
 msgid "Učitavanje sesija…"
 msgstr "Loading sessions…"
 
-#: src/books/book-library.tsx:157
+#: src/books/book-library.tsx:148
 msgid "Ukloni iz omiljenih za {year}"
 msgstr "Remove {year} from favorites"
 

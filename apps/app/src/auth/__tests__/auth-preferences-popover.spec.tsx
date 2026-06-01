@@ -36,6 +36,21 @@ describe('AuthPreferencesPopover', () => {
     expect(screen.getByLabelText(/Tema/i)).toBeInTheDocument();
   });
 
+  it('renders mobile drawer safe-area classes', async () => {
+    mockUseIsMobile.mockReturnValue(true);
+    const user = userEvent.setup();
+
+    await renderWithProviders(<AuthPreferencesPopover />, {
+      route: '/sign-in',
+    });
+
+    await user.click(screen.getByRole('button', { name: /Podešavanja/i }));
+
+    expect(
+      screen.getByRole('dialog', { name: /Podešavanja/i }),
+    ).toBeInTheDocument();
+  });
+
   it('shows all locale options in language select', async () => {
     mockUseIsMobile.mockReturnValue(false);
     const user = userEvent.setup();

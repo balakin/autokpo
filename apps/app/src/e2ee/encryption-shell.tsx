@@ -10,17 +10,10 @@ type EncryptionShellProps = {
 
 export function EncryptionShell({ children }: EncryptionShellProps) {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,color-mix(in_oklch,var(--accent)_24%,transparent),transparent_34%),radial-gradient(circle_at_85%_10%,color-mix(in_oklch,var(--success)_14%,transparent),transparent_30%)]"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-[linear-gradient(var(--border)_1px,transparent_1px),linear-gradient(90deg,var(--border)_1px,transparent_1px)] bg-size-[44px_44px] opacity-[0.07]"
-      />
+    <div className="relative flex min-h-svh flex-col overflow-x-clip bg-background text-foreground">
+      <div aria-hidden="true" className="grid-background" />
 
-      <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col p-4 sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col p-4 sm:px-6 lg:px-8">
         <header className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <span className="text-2xl font-bold tracking-tight">AutoKPO</span>
@@ -32,7 +25,25 @@ export function EncryptionShell({ children }: EncryptionShellProps) {
         </header>
 
         <main className="flex flex-1 items-center justify-center py-8 lg:py-12">
-          {children}
+          <div className="relative w-full max-w-md">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-24 -left-24 size-80"
+              style={{
+                background:
+                  'radial-gradient(circle, color-mix(in oklch, var(--accent) 20%, transparent) 0%, transparent 70%)',
+              }}
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-24 -bottom-24 size-80"
+              style={{
+                background:
+                  'radial-gradient(circle, color-mix(in oklch, var(--success) 15%, transparent) 0%, transparent 70%)',
+              }}
+            />
+            {children}
+          </div>
         </main>
 
         <footer className="py-4 text-center text-xs text-muted">

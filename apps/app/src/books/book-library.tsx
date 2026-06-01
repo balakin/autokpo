@@ -130,15 +130,6 @@ function BookRow({ book }: { book: BookLibraryRow }) {
           <span className={incomeColor({ color })}>
             {formatFullCurrency(book.income)}
           </span>
-          <span className="text-sm text-muted">
-            <Plural
-              value={book.entryCount}
-              one="# unos"
-              few="# unosa"
-              many="# unosa"
-              other="# unosa"
-            />
-          </span>
         </div>
       </Card.Header>
       <Card.Footer className="flex-row justify-between gap-2">

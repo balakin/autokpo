@@ -92,7 +92,7 @@ export function AuthPreferencesPopover() {
     return (
       <Drawer isOpen={open} onOpenChange={setOpen}>
         {trigger}
-        <Drawer.Backdrop>
+        <Drawer.Backdrop variant="transparent">
           <Drawer.Content placement="right" className="w-screen max-w-none p-0">
             <Drawer.Dialog
               aria-label={t`Podešavanja`}

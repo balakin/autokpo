@@ -1,5 +1,5 @@
 import type { Book } from 'src/books/book-schema';
-import { yAxisTickFormatter } from 'src/formatters';
+import { yAxisTickFormatter } from 'src/utils/formatters';
 import { renderWithProviders } from 'tests/render-helpers';
 import { beforeEach, describe, expect, it } from 'vitest';
 

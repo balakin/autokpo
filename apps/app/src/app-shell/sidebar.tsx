@@ -13,9 +13,9 @@ import { Link, useLocation } from 'react-router';
 import { tv } from 'tailwind-variants';
 
 import { ANNUAL_LIMIT, ROLLING_LIMIT } from '../constants';
-import { formatFullCurrency } from '../formatters';
 import { thresholdColor } from '../stats/threshold';
 import { useStats } from '../stats/use-stats';
+import { formatFullCurrency } from '../utils/formatters';
 
 const navLink = tv({
   base: 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',

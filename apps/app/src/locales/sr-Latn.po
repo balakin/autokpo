@@ -411,7 +411,7 @@ msgstr "Nazad na prijavu"
 msgid "Ne možemo da proverimo šifrovanje"
 msgstr "Ne možemo da proverimo šifrovanje"
 
-#: src/lazy-chunk-error-boundary.tsx:46
+#: src/utils/lazy-chunk-error-boundary.tsx:46
 msgid "Ne možemo da učitamo ovaj deo aplikacije"
 msgstr "Ne možemo da učitamo ovaj deo aplikacije"
 
@@ -624,7 +624,7 @@ msgstr "Ostanite"
 msgid "Osveži"
 msgstr "Osveži"
 
-#: src/lazy-chunk-error-boundary.tsx:59
+#: src/utils/lazy-chunk-error-boundary.tsx:59
 msgid "Osveži aplikaciju"
 msgstr "Osveži aplikaciju"
 
@@ -1308,7 +1308,7 @@ msgstr "Vaši podaci"
 msgid "Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje se izvodi iz vaše lozinke <0>Argon2id</0> algoritmom, a svi podaci se šifruju <1>AES-256-GCM</1> algoritmom. Server nikada ne vidi vaše podatke u čitljivom obliku."
 msgstr "Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje se izvodi iz vaše lozinke <0>Argon2id</0> algoritmom, a svi podaci se šifruju <1>AES-256-GCM</1> algoritmom. Server nikada ne vidi vaše podatke u čitljivom obliku."
 
-#: src/lazy-chunk-error-boundary.tsx:49
+#: src/utils/lazy-chunk-error-boundary.tsx:49
 msgid "Verovatno je dostupna nova verzija. Osvežite aplikaciju da biste nastavili."
 msgstr "Verovatno je dostupna nova verzija. Osvežite aplikaciju da biste nastavili."
 

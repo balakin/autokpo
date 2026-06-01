@@ -5,7 +5,7 @@ import { env } from 'cloudflare:workers';
 import type { ExecutionContext } from 'hono';
 import { expect, vi } from 'vitest';
 
-import { getAuthOptions } from '../../worker/auth-options';
+import { getAuthOptions } from '../../worker/auth/auth-options';
 import { getDb } from '../../worker/db';
 import { account, user } from '../../worker/db/schema/auth';
 import * as schema from '../../worker/db/schema/auth';

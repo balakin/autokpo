@@ -1,13 +1,14 @@
 import { Navigate, Outlet, type RouteObject } from 'react-router';
 
-import { AuthEmailProvider } from './auth/auth-email-provider';
-import { AuthEntry } from './auth/auth-entry';
-import { AuthStateRedirect } from './auth/auth-state-redirect';
-import { EmailAuthPage } from './auth/email-auth-page';
-import { GoodbyePage } from './auth/goodbye-page';
-import { OAuthCallback } from './auth/oauth-callback';
-import { SignedInGate } from './auth/signed-in-gate';
-import { SignedOutGate } from './auth/signed-out-gate';
+import { AuthEmailProvider } from '../auth/auth-email-provider';
+import { AuthEntry } from '../auth/auth-entry';
+import { AuthStateRedirect } from '../auth/auth-state-redirect';
+import { EmailAuthPage } from '../auth/email-auth-page';
+import { GoodbyePage } from '../auth/goodbye-page';
+import { OAuthCallback } from '../auth/oauth-callback';
+import { SignedInGate } from '../auth/signed-in-gate';
+import { SignedOutGate } from '../auth/signed-out-gate';
+
 import {
   AccountSettingsPage,
   BookLibrary,

@@ -3,7 +3,7 @@ import { betterAuth } from 'better-auth';
 import type { BaseSQLiteDatabase } from 'drizzle-orm/sqlite-core';
 import type { ExecutionContext } from 'hono';
 
-import { getAuthOptions } from './worker/auth-options';
+import { getAuthOptions } from './worker/auth/auth-options';
 
 // CLI-only config for `pnpm auth:generate`.
 // Uses a mock DB so the better-auth CLI can run in Node.js

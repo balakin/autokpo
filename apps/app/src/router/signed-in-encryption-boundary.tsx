@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
-import { useRequiredUserId } from './auth/use-required-user-id';
-import { EncryptionGate } from './e2ee';
+import { useRequiredUserId } from '../auth/use-required-user-id';
+import { EncryptionGate } from '../e2ee';
 
 export function SignedInEncryptionBoundary({
   children,

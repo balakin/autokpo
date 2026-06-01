@@ -411,7 +411,7 @@ msgstr "Back to sign in"
 msgid "Ne možemo da proverimo šifrovanje"
 msgstr "We can't check encryption"
 
-#: src/lazy-chunk-error-boundary.tsx:46
+#: src/utils/lazy-chunk-error-boundary.tsx:46
 msgid "Ne možemo da učitamo ovaj deo aplikacije"
 msgstr "We can't load this part of the app"
 
@@ -624,7 +624,7 @@ msgstr "Stay"
 msgid "Osveži"
 msgstr "Reload"
 
-#: src/lazy-chunk-error-boundary.tsx:59
+#: src/utils/lazy-chunk-error-boundary.tsx:59
 msgid "Osveži aplikaciju"
 msgstr "Reload app"
 
@@ -1308,7 +1308,7 @@ msgstr "Your data"
 msgid "Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje se izvodi iz vaše lozinke <0>Argon2id</0> algoritmom, a svi podaci se šifruju <1>AES-256-GCM</1> algoritmom. Server nikada ne vidi vaše podatke u čitljivom obliku."
 msgstr "Your data is end-to-end encrypted. The encryption key is derived from your password using the <0>Argon2id</0> algorithm, and all data is encrypted using the <1>AES-256-GCM</1> algorithm. The server never sees your data in readable form."
 
-#: src/lazy-chunk-error-boundary.tsx:49
+#: src/utils/lazy-chunk-error-boundary.tsx:49
 msgid "Verovatno je dostupna nova verzija. Osvežite aplikaciju da biste nastavili."
 msgstr "A new version is probably available. Reload the app to continue."
 

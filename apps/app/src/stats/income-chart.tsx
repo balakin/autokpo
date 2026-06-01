@@ -12,7 +12,7 @@ import {
 
 import type { StatsBookProjection } from '../books/book-selectors';
 import { ANNUAL_LIMIT } from '../constants';
-import { formatFullCurrency, yAxisTickFormatter } from '../formatters';
+import { formatFullCurrency, yAxisTickFormatter } from '../utils/formatters';
 
 function readChartColors() {
   const style = getComputedStyle(document.documentElement);

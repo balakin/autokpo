@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { belgradeToday } from '../belgrade-date';
+import { belgradeToday } from '../utils/belgrade-date';
 
 import { fetchCurrencies, fetchRate } from './exchange-rates-api';
 

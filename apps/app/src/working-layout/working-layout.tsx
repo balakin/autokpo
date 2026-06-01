@@ -24,13 +24,13 @@ import { EntriesTable } from '../entries/entries-table';
 import { EntryModal } from '../entries/entry-modal';
 import { entryMutations } from '../entries/entry-mutations';
 import { entrySelectors } from '../entries/entry-selectors';
-import { formatFullCurrency } from '../formatters';
 import { DownloadPdfButton } from '../pdf/download-pdf-button';
 import { signatureMutations } from '../signatures/signature-mutations';
 import { SignaturePreview } from '../signatures/signature-preview';
 import type { Signature } from '../signatures/signature-schema';
 import { signatureSelectors } from '../signatures/signature-selectors';
 import { thresholdColor } from '../stats/threshold';
+import { formatFullCurrency } from '../utils/formatters';
 
 function BookIncomeProgress({ entries }: { entries: KpoEntry[] }) {
   const { t } = useLingui();

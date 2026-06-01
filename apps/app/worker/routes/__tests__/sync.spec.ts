@@ -1,21 +1,24 @@
 import { eq } from 'drizzle-orm';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { clearAuthData, workerTestEnv } from '../../tests/worker/auth-helpers';
+import {
+  clearAuthData,
+  workerTestEnv,
+} from '../../../tests/worker/auth-helpers';
 import {
   makeAuthHeaders,
   mergeHeaders,
   mockCtx,
   type SessionState,
-} from '../../tests/worker/request-helpers';
-import { getDb } from '../db';
-import { keyRing, syncRecord } from '../db/schema';
-import app from '../main';
+} from '../../../tests/worker/request-helpers';
+import app from '../../app/app';
 import {
   MAX_SYNC_BODY_BYTES,
   MAX_SYNC_CIPHERTEXT_BYTES,
   maxBase64Length,
-} from '../payload-limits';
+} from '../../constants';
+import { getDb } from '../../db';
+import { keyRing, syncRecord } from '../../db/schema';
 
 const sessionState: SessionState = { userId: 'user-1', headers: null };
 const authHeaders = makeAuthHeaders(sessionState);

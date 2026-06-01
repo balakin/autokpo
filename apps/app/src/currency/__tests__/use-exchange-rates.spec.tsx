@@ -4,12 +4,12 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { type ReactNode } from 'react';
 import { describe, expect, it, vi, afterEach } from 'vitest';
 
-import { belgradeToday } from '../../belgrade-date';
+import { belgradeToday } from '../../utils/belgrade-date';
 import { fetchCurrencies, fetchRate } from '../exchange-rates-api';
 import { useCurrencies, useExchangeRate } from '../use-exchange-rates';
 
 vi.mock('../exchange-rates-api');
-vi.mock('../../belgrade-date');
+vi.mock('../../utils/belgrade-date');
 
 afterEach(() => {
   vi.clearAllMocks();

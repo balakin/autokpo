@@ -7,10 +7,10 @@ import { Link } from 'react-router';
 import { bookSelectors, type FavoriteBookLink } from '../books/book-selectors';
 import { ANNUAL_LIMIT, ROLLING_LIMIT } from '../constants';
 import { useYDoc } from '../crdt';
-import { formatDateLong, formatFullCurrency } from '../formatters';
 import { AllTimeTotalCard, StatCard } from '../stats/stat-card';
 import { thresholdColor } from '../stats/threshold';
 import { useStats } from '../stats/use-stats';
+import { formatDateLong, formatFullCurrency } from '../utils/formatters';
 
 const IncomeChart = lazy(() => import('../stats/income-chart'));
 

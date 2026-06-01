@@ -8,11 +8,11 @@ import {
   db,
   getAuthHeaders,
   workerTestEnv,
-} from '../../tests/worker/auth-helpers';
-import { flushWaitUntil, mockCtx } from '../../tests/worker/request-helpers';
-import { account } from '../db/schema/auth';
-import app from '../main';
-import { MAX_AUTH_BODY_BYTES } from '../payload-limits';
+} from '../../../tests/worker/auth-helpers';
+import { flushWaitUntil, mockCtx } from '../../../tests/worker/request-helpers';
+import app from '../../app/app';
+import { MAX_AUTH_BODY_BYTES } from '../../constants';
+import { account } from '../../db/schema/auth';
 
 const CAPTCHA_TEST_TOKEN = 'test-captcha-token';
 

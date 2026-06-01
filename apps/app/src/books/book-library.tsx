@@ -14,8 +14,8 @@ import { tv } from 'tailwind-variants';
 import { TopBarActionsSlot } from '../app-shell/top-bar-actions';
 import { ANNUAL_LIMIT } from '../constants';
 import { useDoc, useYDoc } from '../crdt';
-import { formatFullCurrency } from '../formatters';
 import { thresholdColor } from '../stats/threshold';
+import { formatFullCurrency } from '../utils/formatters';
 
 import { AddBookModal } from './add-book-modal';
 import { bookMutations } from './book-mutations';

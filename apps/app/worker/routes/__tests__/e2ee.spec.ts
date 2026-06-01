@@ -1,24 +1,27 @@
 import { and, eq } from 'drizzle-orm';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import type { SerializedKeyRingProfile } from '../../src/e2ee/key-ring-record';
-import { clearAuthData, workerTestEnv } from '../../tests/worker/auth-helpers';
+import type { SerializedKeyRingProfile } from '../../../src/e2ee/key-ring-record';
+import {
+  clearAuthData,
+  workerTestEnv,
+} from '../../../tests/worker/auth-helpers';
 import {
   makeAuthHeaders,
   mergeHeaders,
   mockCtx,
   type SessionState,
-} from '../../tests/worker/request-helpers';
-import { getDb } from '../db';
-import { keyRing, keyRingWrapping } from '../db/schema';
-import app from '../main';
+} from '../../../tests/worker/request-helpers';
+import app from '../../app/app';
 import {
   KDF_SALT_BYTES,
   MAX_E2EE_BODY_BYTES,
   MAX_KEY_RING_CIPHERTEXT_BYTES,
   WRAPPED_MEK_CIPHERTEXT_BYTES,
   maxBase64Length,
-} from '../payload-limits';
+} from '../../constants';
+import { getDb } from '../../db';
+import { keyRing, keyRingWrapping } from '../../db/schema';
 
 const sessionState: SessionState = { userId: 'e2ee-user-1', headers: null };
 const authHeaders = makeAuthHeaders(sessionState);

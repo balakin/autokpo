@@ -1,9 +1,8 @@
 import { msg } from '@lingui/core/macro';
 import { Resend } from 'resend';
 
-import OtpEmail from '../emails/otp-email';
-
-import { createI18n, isWorkerLocale } from './i18n';
+import OtpEmail from '../../emails/otp-email';
+import { createI18n, isWorkerLocale } from '../i18n/i18n';
 
 export async function sendOtpEmail(
   apiKey: string,

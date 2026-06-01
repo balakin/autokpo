@@ -2,10 +2,10 @@ import { CalendarDate } from '@internationalized/date';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 
 import 'src/i18n/i18n';
-import { belgradeToday } from '../../belgrade-date';
+import { belgradeToday } from '../../utils/belgrade-date';
 import { createKpoEntrySchema, createEntryFormSchema } from '../entries-schema';
 
-vi.mock('../../belgrade-date');
+vi.mock('../../utils/belgrade-date');
 
 const TODAY = '2025-04-25';
 const YEAR = 2025;

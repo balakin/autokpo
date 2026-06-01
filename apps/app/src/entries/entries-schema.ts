@@ -2,7 +2,7 @@ import { CalendarDate, parseDate } from '@internationalized/date';
 import { t } from '@lingui/core/macro';
 import { z } from 'zod';
 
-import { belgradeToday } from '../belgrade-date';
+import { belgradeToday } from '../utils/belgrade-date';
 
 export type KpoEntry = z.infer<ReturnType<typeof createKpoEntrySchema>>;
 

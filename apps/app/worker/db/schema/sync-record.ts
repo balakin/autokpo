@@ -9,7 +9,7 @@ import {
   uniqueIndex,
 } from 'drizzle-orm/sqlite-core';
 
-import { MAX_SYNC_CIPHERTEXT_BYTES } from '../../payload-limits';
+import { MAX_SYNC_CIPHERTEXT_BYTES } from '../../constants';
 
 import { user } from './auth';
 

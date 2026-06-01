@@ -7,11 +7,11 @@ import {
   syncRateLimitMock,
   authRateLimitMock,
   workerTestEnv,
-} from '../../tests/worker/auth-helpers';
-import { mockCtx } from '../../tests/worker/request-helpers';
-import { getDb } from '../db';
-import { keyRing } from '../db/schema';
-import app from '../main';
+} from '../../../tests/worker/auth-helpers';
+import { mockCtx } from '../../../tests/worker/request-helpers';
+import { getDb } from '../../db';
+import { keyRing } from '../../db/schema';
+import app from '../app';
 
 describe('worker', () => {
   afterEach(async () => {

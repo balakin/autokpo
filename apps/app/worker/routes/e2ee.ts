@@ -1,6 +1,14 @@
 import { and, eq, isNull } from 'drizzle-orm';
 import { Hono } from 'hono';
 
+import {
+  AES_GCM_IV_BYTES,
+  KDF_SALT_BYTES,
+  MAX_E2EE_BODY_BYTES,
+  MAX_KEY_RING_CIPHERTEXT_BYTES,
+  WRAPPED_MEK_CIPHERTEXT_BYTES,
+  maxBase64Length,
+} from '../constants';
 import type { WorkerHonoEnv } from '../context';
 import { getDb } from '../db';
 import { assertExists } from '../db/assert';
@@ -10,17 +18,9 @@ import {
   type KeyRingRow,
   type KeyRingWrappingRow,
 } from '../db/schema';
-import { requireAuth } from '../middleware/auth';
-import { payloadLimit } from '../middleware/payload-limit';
-import { rateLimitRouteGroup } from '../middleware/rate-limit';
-import {
-  AES_GCM_IV_BYTES,
-  KDF_SALT_BYTES,
-  MAX_E2EE_BODY_BYTES,
-  MAX_KEY_RING_CIPHERTEXT_BYTES,
-  WRAPPED_MEK_CIPHERTEXT_BYTES,
-  maxBase64Length,
-} from '../payload-limits';
+import { requireAuth } from '../middlewares/auth';
+import { payloadLimit } from '../middlewares/payload-limit';
+import { rateLimitRouteGroup } from '../middlewares/rate-limit';
 
 const KDF_PARAMS_V1 = {
   memorySize: 65536,

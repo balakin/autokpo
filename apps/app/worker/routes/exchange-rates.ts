@@ -1,8 +1,8 @@
 import { Hono } from 'hono';
 
 import type { WorkerHonoEnv } from '../context';
-import { requireAuth } from '../middleware/auth';
-import { rateLimitRouteGroup } from '../middleware/rate-limit';
+import { requireAuth } from '../middlewares/auth';
+import { rateLimitRouteGroup } from '../middlewares/rate-limit';
 
 const KURS_BASE = 'https://kurs.resenje.org/api/v1';
 

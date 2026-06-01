@@ -5,9 +5,9 @@ import {
   clearAuthData,
   getAuthHeaders,
   workerTestEnv,
-} from '../../tests/worker/auth-helpers';
-import { mockCtx } from '../../tests/worker/request-helpers';
-import app from '../main';
+} from '../../../tests/worker/auth-helpers';
+import { mockCtx } from '../../../tests/worker/request-helpers';
+import app from '../../app/app';
 
 async function post(headers: HeadersInit) {
   return app.request(

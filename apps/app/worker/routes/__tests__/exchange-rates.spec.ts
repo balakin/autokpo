@@ -1,13 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { clearAuthData, workerTestEnv } from '../../tests/worker/auth-helpers';
+import {
+  clearAuthData,
+  workerTestEnv,
+} from '../../../tests/worker/auth-helpers';
 import {
   makeAuthHeaders,
   mergeHeaders,
   mockCtx,
   type SessionState,
-} from '../../tests/worker/request-helpers';
-import app from '../main';
+} from '../../../tests/worker/request-helpers';
+import app from '../../app/app';
 
 const sessionState: SessionState = { userId: 'user-1', headers: null };
 const authHeaders = makeAuthHeaders(sessionState);

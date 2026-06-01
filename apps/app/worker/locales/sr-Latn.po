@@ -13,28 +13,28 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: worker/send-account-deleted-email.tsx:29
+#: worker/auth/send-account-deleted-email.tsx:28
 msgid "Hvala što ste koristili AutoKPO. Prijatno!"
 msgstr "Hvala što ste koristili AutoKPO. Prijatno!"
 
-#: worker/send-otp-email.tsx:32
+#: worker/auth/send-otp-email.tsx:31
 msgid "Kod važi 5 minuta. Ako niste tražili ovaj kod, ignorišite ovu poruku."
 msgstr "Kod važi 5 minuta. Ako niste tražili ovaj kod, ignorišite ovu poruku."
 
-#: worker/send-otp-email.tsx:29
+#: worker/auth/send-otp-email.tsx:28
 msgid "Koristite sledeći kod za prijavu na vaš AutoKPO nalog:"
 msgstr "Koristite sledeći kod za prijavu na vaš AutoKPO nalog:"
 
-#: worker/send-otp-email.tsx:22
-#: worker/send-otp-email.tsx:27
+#: worker/auth/send-otp-email.tsx:21
+#: worker/auth/send-otp-email.tsx:26
 msgid "Vaš AutoKPO kod za prijavu"
 msgstr "Vaš AutoKPO kod za prijavu"
 
-#: worker/send-account-deleted-email.tsx:21
-#: worker/send-account-deleted-email.tsx:25
+#: worker/auth/send-account-deleted-email.tsx:20
+#: worker/auth/send-account-deleted-email.tsx:24
 msgid "Vaš AutoKPO nalog je obrisan"
 msgstr "Vaš AutoKPO nalog je obrisan"
 
-#: worker/send-account-deleted-email.tsx:27
+#: worker/auth/send-account-deleted-email.tsx:26
 msgid "Vaš AutoKPO nalog je obrisan. Nalog i sinhronizovani podaci povezani sa ovom email adresom su trajno uklonjeni."
 msgstr "Vaš AutoKPO nalog je obrisan. Nalog i sinhronizovani podaci povezani sa ovom email adresom su trajno uklonjeni."

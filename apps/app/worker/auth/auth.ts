@@ -2,9 +2,10 @@ import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { betterAuth } from 'better-auth';
 import type { ExecutionContext } from 'hono';
 
+import { getDb } from '../db';
+import * as schema from '../db/schema/auth';
+
 import { getAuthOptions } from './auth-options';
-import { getDb } from './db';
-import * as schema from './db/schema/auth';
 import { sendAccountDeletedEmail } from './send-account-deleted-email';
 import { sendOtpEmail } from './send-otp-email';
 

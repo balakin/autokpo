@@ -1,6 +1,6 @@
 import type { MiddlewareHandler } from 'hono';
 
-import { requireSession } from '../auth';
+import { requireSession } from '../auth/auth';
 import type { WorkerHonoEnv } from '../context';
 
 export const requireAuth: MiddlewareHandler<WorkerHonoEnv> = async (

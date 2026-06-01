@@ -14,7 +14,7 @@ import {
   KDF_SALT_BYTES,
   MAX_KEY_RING_CIPHERTEXT_BYTES,
   WRAPPED_MEK_CIPHERTEXT_BYTES,
-} from '../../payload-limits';
+} from '../../constants';
 
 import { user } from './auth';
 

@@ -1,8 +1,8 @@
 import { setupI18n } from '@lingui/core';
 
-import { messages as en } from './locales/en.po';
-import { messages as ru } from './locales/ru.po';
-import { messages as srLatn } from './locales/sr-Latn.po';
+import { messages as en } from '../locales/en.po';
+import { messages as ru } from '../locales/ru.po';
+import { messages as srLatn } from '../locales/sr-Latn.po';
 
 export const WORKER_LOCALES = ['sr-Latn', 'en', 'ru'] as const;
 export type WorkerLocale = (typeof WORKER_LOCALES)[number];

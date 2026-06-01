@@ -2,18 +2,18 @@ import { and, eq, exists, gt, gte, lte, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
-import type { WorkerHonoEnv } from '../context';
-import { getDb } from '../db';
-import { assertCondition, assertExists } from '../db/assert';
-import { keyRing, syncRecord } from '../db/schema';
-import { requireAuth } from '../middleware/auth';
-import { payloadLimit } from '../middleware/payload-limit';
-import { rateLimitRouteGroup } from '../middleware/rate-limit';
 import {
   MAX_SYNC_BODY_BYTES,
   MAX_SYNC_CIPHERTEXT_BYTES,
   maxBase64Length,
-} from '../payload-limits';
+} from '../constants';
+import type { WorkerHonoEnv } from '../context';
+import { getDb } from '../db';
+import { assertCondition, assertExists } from '../db/assert';
+import { keyRing, syncRecord } from '../db/schema';
+import { requireAuth } from '../middlewares/auth';
+import { payloadLimit } from '../middlewares/payload-limit';
+import { rateLimitRouteGroup } from '../middlewares/rate-limit';
 
 const SOFT_CAP_ROWS = 200;
 const SOFT_CAP_BYTES = 2 * 1024 * 1024;

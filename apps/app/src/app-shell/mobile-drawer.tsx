@@ -35,7 +35,7 @@ export function MobileDrawer({ isOpen, onOpenChange }: MobileDrawerProps) {
       <Drawer.Content placement="left">
         <Drawer.Dialog
           aria-label={t`Navigacija`}
-          className="size-full max-w-full bg-sidebar-bg p-0"
+          className="size-full max-w-full bg-background p-0"
         >
           <Sidebar
             onNavigate={() => onOpenChange(false)}

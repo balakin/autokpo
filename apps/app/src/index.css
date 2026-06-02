@@ -213,30 +213,6 @@ body,
   }
 }
 
-/* Sidebar — darker than main background for contrast (light) */
-:root,
-[data-theme='light'] {
-  --sidebar-bg: oklch(0.935 0.008 240);
-  --sidebar-fg: oklch(0.2 0.015 260);
-  --sidebar-muted: oklch(0.5 0.02 250);
-  --sidebar-border: oklch(0.88 0.01 240);
-  --sidebar-item-hover: oklch(0.9 0.012 240);
-  --sidebar-active-fg: oklch(1 0 0);
-  --sidebar-active-bg: oklch(0.6 0.1 245);
-}
-
-/* Sidebar — lighter surface to contrast with main content (dark) */
-.dark,
-[data-theme='dark'] {
-  --sidebar-bg: oklch(0.18 0.015 255);
-  --sidebar-fg: oklch(0.95 0.005 260);
-  --sidebar-muted: oklch(0.68 0.015 260);
-  --sidebar-border: oklch(0.24 0.02 255);
-  --sidebar-item-hover: oklch(0.24 0.025 255);
-  --sidebar-active-fg: oklch(1 0 0);
-  --sidebar-active-bg: oklch(0.52 0.08 245);
-}
-
 /* ── Drawer slide animations ────────────────────────────────────────────
    Enter: keyframe animations fire on fresh DOM mount — the dialog is
    unmounted when closed and remounted on open, so no @starting-style needed.
@@ -372,16 +348,7 @@ body,
   }
 }
 
-/* Make sidebar colors available to Tailwind */
 @theme inline {
-  --color-sidebar-bg: var(--sidebar-bg);
-  --color-sidebar-fg: var(--sidebar-fg);
-  --color-sidebar-muted: var(--sidebar-muted);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-item-hover: var(--sidebar-item-hover);
-  --color-sidebar-active-fg: var(--sidebar-active-fg);
-  --color-sidebar-active-bg: var(--sidebar-active-bg);
-
   /* HeroUI accent soft colors for secondary buttons */
   --color-accent-soft: var(--accent-soft);
   --color-accent-soft-foreground: var(--accent-soft-foreground);

@@ -149,7 +149,7 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
       const { request, mek, activeDek, activeDekId, revision, deks } =
         await createKeyRingProfilePayload(userId, password);
       const profile = await createKeyRingProfile(request);
-      await cacheKeyRingProfile(queryClient, userId, profile);
+      cacheKeyRingProfile(queryClient, userId, profile);
       await storeLdkWrapper(store, mek, userId);
       dispatch({
         type: 'unlocked',
@@ -252,7 +252,7 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
   async function updateKeyRingProfileCache(request: UpdateKeyRingRequest) {
     try {
       const profile = await updateKeyRingProfile(request);
-      await cacheKeyRingProfile(queryClient, userId, profile);
+      cacheKeyRingProfile(queryClient, userId, profile);
       if (gateState.mek) {
         const decrypted = await decryptKeyRingWithMek(
           gateState.mek,

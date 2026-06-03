@@ -9,10 +9,6 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 import { version } from './package.json';
-import {
-  AUTH_SESSION_CACHE_NAME,
-  E2EE_KEY_RING_CACHE_NAME,
-} from './src/pwa/sw-cache-names';
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -83,8 +79,6 @@ const buildOnlyPlugins = (): PluginOption[] => [
         start_url: '/',
         scope: '/',
         display: 'standalone',
-        background_color: undefined,
-        theme_color: undefined,
         lang: undefined,
         categories: ['business', 'finance', 'productivity'],
         icons: [
@@ -105,28 +99,6 @@ const buildOnlyPlugins = (): PluginOption[] => [
       workbox: {
         navigateFallback: 'index.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/__debug/],
-        runtimeCaching: [
-          {
-            urlPattern: /^\/api\/auth\/get-session$/,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: AUTH_SESSION_CACHE_NAME,
-              cacheableResponse: {
-                statuses: [200],
-              },
-            },
-          },
-          {
-            urlPattern: /^\/api\/e2ee\/key-ring$/,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: E2EE_KEY_RING_CACHE_NAME,
-              cacheableResponse: {
-                statuses: [200],
-              },
-            },
-          },
-        ],
         globPatterns: [
           '**/*.{js,css,html,ico,png,svg,woff2,ttf,txt,webmanifest}',
         ],

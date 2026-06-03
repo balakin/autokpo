@@ -85,7 +85,47 @@ Alternatives considered:
 
 Rollback is straightforward: revert the UI markup/CSS/meta changes. No persisted data or API migrations are involved.
 
+### Remove dedicated sidebar color tokens
+
+The custom `--sidebar-*` CSS variables and their `@theme inline` registrations were removed. Sidebar surfaces, text, and borders now use the same standard design tokens (`bg-background`, `text-foreground`, `text-muted`, `border-border`) as the rest of the app. The active nav item uses `bg-accent`/`text-accent-foreground`.
+
+Alternatives considered:
+
+- Keep separate tokens for a distinct sidebar palette: adds per-token maintenance burden and the visual contrast was not required by design.
+
+### Fix app-shell layout for mobile scroll
+
+The desktop `h-screen overflow-hidden` pattern prevents page-level scrolling; on mobile this caused content to be clipped. The fix scopes `lg:h-dvh lg:overflow-hidden` to the desktop breakpoint and makes the main content area scroll naturally on mobile. The top bar is pinned with `fixed inset-x-0 top-0` on mobile and `lg:static` on desktop so it stays visible during scroll. The main content adds `pt-14` on mobile to compensate.
+
+Alternatives considered:
+
+- Scroll inside the `<main>` on all widths: keeps the constraint but the fixed-top-bar pattern is simpler to reason about on mobile.
+
+### Use CSS keyframe slide animations for all drawers
+
+HeroUI v3's default drawer transitions are opacity-based and look weak on mobile. All drawers now use enter/exit keyframe animations that slide the panel in from and out to its placement edge. The implementation hooks into React Aria's `getAnimations()` exit-gate pattern (`_drawer-exit-gate` on backdrop and content) so the component waits for the animation before unmounting. Reduced-motion disables these with `animation: none !important`.
+
+### Cap dashboard stat grid at two columns
+
+The `lg:grid-cols-4` stat-card grid is too dense on tablets (768–1024 px). Capping at `sm:grid-cols-2` makes each card readable at any common phone or tablet width without losing information.
+
+### Replace custom Settings tab navigation with HeroUI Tabs
+
+The previous pill-style tab nav was built from `<Link>` elements styled with `tailwind-variants`. HeroUI `Tabs` handles keyboard navigation, `aria-selected`, and route-based `selectedKey` out of the box, reducing bespoke code. The component wraps the same React Router `href` links inside `Tabs.Tab`.
+
+### Remove draft warning Alert from working layout
+
+The Alert warned that downloaded PDFs are drafts. This was redundant with the document itself and added noise to every book page visit. It was removed; the regulation note belongs in documentation or the download flow, not as a persistent page banner.
+
+### Refactor AuthShell/EncryptionShell background to use grid-background utility
+
+Both shells had inline Tailwind arbitrary-value classes for the grid pattern (`bg-[linear-gradient(...)]`). These were extracted to a `@utility grid-background` class in `index.css`, removing duplication and enabling IDE completion. The decorative radial gradient blobs were moved to absolutely-positioned siblings flanking the form card rather than covering the full viewport.
+
+### Make entity profile and signature preview grids responsive
+
+Both detail grids were fixed-column (`grid-cols-3` and `grid-cols-2`). On narrow screens labels and values collided. Changed to single-column on mobile with breakpoint expansion (`sm:grid-cols-2`, `lg:grid-cols-3`).
+
 ## Open Questions
 
-- Should the book entry count remain visible on wide desktop cards, or should it be removed consistently from all library cards? The proposal currently favors removing it from the visible card entirely.
-- Should safe-area utilities be named generically for any future full-screen overlay, or specifically for Drawer usage?
+- (Resolved) The book entry count is removed from all library cards, not just narrow viewports.
+- (Resolved) The `grid-background` utility is named generically and can be reused by any shell-level layout.

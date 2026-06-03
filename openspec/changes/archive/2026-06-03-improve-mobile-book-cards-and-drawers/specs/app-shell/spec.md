@@ -4,7 +4,7 @@
 
 The system SHALL render a left sidebar with the "AutoKPO" logo text, three navigation items, and a version footer. The sidebar SHALL be 240px wide on desktop and rendered as a full-screen HeroUI Drawer on mobile. The drawer SHALL include a visible close button (× icon) in the top-right corner so users can dismiss it without tapping the backdrop. The mobile drawer surface SHALL be safe-area aware: its background SHALL extend through iOS unsafe/dead-zone regions, and its interactive content SHALL be padded away from unsafe screen edges.
 
-All sidebar and nav-item colors SHALL be expressed as Tailwind utility classes using the registered sidebar design tokens (`bg-sidebar-bg`, `text-sidebar-fg`, `text-sidebar-muted`, `border-sidebar-border`, `bg-sidebar-item-hover`, `bg-sidebar-active-bg`, `text-sidebar-active-fg`). No inline `style` props or external CSS class names (`.sidebar-nav-item`, `.sidebar-nav-item--active`) SHALL be used.
+All sidebar and nav-item colors SHALL be expressed as standard Tailwind utility classes using the main design tokens (`bg-background`, `text-foreground`, `text-muted`, `border-border`). No dedicated sidebar color tokens, inline `style` props, or external CSS class names SHALL be used.
 
 #### Scenario: Desktop sidebar is always visible
 
@@ -77,3 +77,36 @@ All sidebar and nav-item colors SHALL be expressed as Tailwind utility classes u
 
 - **WHEN** the app runs in Vite development mode (`mode === 'development'`)
 - **THEN** the version badge SHALL display the version with a `-dev` suffix (e.g. `v1.2.0-dev`)
+
+### Requirement: Top bar is fixed on mobile, static on desktop
+
+The top bar SHALL be positioned `fixed` at the top of the viewport on mobile so it remains visible during page scroll. On desktop (`lg` breakpoint and above) the top bar SHALL be `static` and participate in normal document flow. The main content area SHALL have `padding-top` on mobile to prevent content from being hidden behind the fixed bar.
+
+#### Scenario: Mobile top bar stays at top during scroll
+
+- **WHEN** the viewport is below the `lg` breakpoint and the user scrolls the page
+- **THEN** the top bar SHALL remain fixed at the top of the viewport
+
+#### Scenario: Desktop top bar is in document flow
+
+- **WHEN** the viewport is at or above the `lg` breakpoint
+- **THEN** the top bar SHALL be positioned statically and the layout SHALL use `h-dvh` with `overflow-hidden` to contain sidebar and content
+
+### Requirement: Drawer slide animations
+
+All HeroUI Drawers SHALL use CSS keyframe enter/exit animations instead of HeroUI's default opacity/slide transitions. The enter animation SHALL slide the panel in from its edge; the exit SHALL slide it back out. The `prefers-reduced-motion` media query SHALL disable these animations.
+
+#### Scenario: Drawer slides in on open
+
+- **WHEN** a Drawer is opened
+- **THEN** the dialog panel SHALL slide in from its placement edge (right, left, bottom, or top) using the corresponding CSS keyframe animation
+
+#### Scenario: Drawer slides out on close
+
+- **WHEN** a Drawer is dismissed
+- **THEN** the dialog panel SHALL slide back toward its placement edge before the component unmounts
+
+#### Scenario: Animations are suppressed for reduced motion
+
+- **WHEN** the user has `prefers-reduced-motion: reduce` set
+- **THEN** drawer enter and exit animations SHALL be disabled

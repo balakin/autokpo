@@ -129,8 +129,8 @@ msgstr "Добавить"
 msgid "Dodaj u omiljene za {year}"
 msgstr "Добавить {year} в избранное"
 
-#: src/working-layout/working-layout.tsx:175
-#: src/working-layout/working-layout.tsx:179
+#: src/working-layout/working-layout.tsx:154
+#: src/working-layout/working-layout.tsx:158
 msgid "Dodaj unos"
 msgstr "Добавить запись"
 
@@ -172,9 +172,9 @@ msgstr "GNU Affero General Public License v3.0"
 msgid "Godina"
 msgstr "Год"
 
-#: src/working-layout/working-layout.tsx:49
-#: src/working-layout/working-layout.tsx:65
-#: src/working-layout/working-layout.tsx:72
+#: src/working-layout/working-layout.tsx:41
+#: src/working-layout/working-layout.tsx:57
+#: src/working-layout/working-layout.tsx:64
 msgid "Godišnji prihod"
 msgstr "Годовой доход"
 
@@ -322,7 +322,7 @@ msgid "Korisnik nije prijavljen."
 msgstr "Пользователь не вошел в систему."
 
 #: src/entries/entries-table.tsx:29
-#: src/working-layout/working-layout.tsx:171
+#: src/working-layout/working-layout.tsx:150
 msgid "KPO unosi"
 msgstr "Записи КПО"
 
@@ -342,7 +342,7 @@ msgstr "Лицензия"
 msgid "Limit: {annualLimitFormatted} (<0>čl. 42 ZPDGa</0>)"
 msgstr "Лимит: {annualLimitFormatted} (<0>ст. 42 ЗПДГа</0>)"
 
-#: src/working-layout/working-layout.tsx:79
+#: src/working-layout/working-layout.tsx:71
 msgid "Limit: {limitFormatted} (<0>čl. 42 ZPDGa</0>)"
 msgstr "Лимит: {limitFormatted} (<0>ст. 42 ЗПДГа</0>)"
 
@@ -860,7 +860,7 @@ msgstr "Задайте PIN-код"
 #: src/setup-wizard/start-step.tsx:43
 #: src/setup-wizard/wizard-stepper.tsx:34
 #: src/signatures/signature-preview.tsx:27
-#: src/working-layout/working-layout.tsx:159
+#: src/working-layout/working-layout.tsx:138
 msgid "Potpis"
 msgstr "Подпись"
 
@@ -905,10 +905,6 @@ msgstr "Просмотр данных, связанных с вашим акка
 #: src/settings/account-settings-page.tsx:202
 msgid "Pregledajte aktivne prijave na drugim uređajima."
 msgstr "Просмотрите активные входы на других устройствах."
-
-#: src/working-layout/working-layout.tsx:138
-msgid "Preuzeti dokument je nacrt. Obavezno ga potpišite i overite pečatom (Član 13, stav 2 Pravilnika o poslovnim knjigama)."
-msgstr "Скачанный документ является черновиком. Вы должны его подписать и заверить печатью (Статья 13, пункт 2 Правил ведения деловых книг)."
 
 #: src/pdf/download-pdf-button.tsx:27
 msgid "Preuzmi PDF"
@@ -971,7 +967,7 @@ msgstr "Применить"
 #: src/e2ee/encryption-profile-popover.tsx:171
 #: src/setup-wizard/start-step.tsx:31
 #: src/setup-wizard/wizard-stepper.tsx:29
-#: src/working-layout/working-layout.tsx:155
+#: src/working-layout/working-layout.tsx:134
 msgid "Profil"
 msgstr "Профиль"
 
@@ -1036,7 +1032,7 @@ msgstr "Подождите немного и попробуйте снова."
 msgid "Sačuvaj"
 msgstr "Сохранить"
 
-#: src/working-layout/working-layout.tsx:149
+#: src/working-layout/working-layout.tsx:128
 msgid "Sadržaj knjige"
 msgstr "Содержание книги"
 
@@ -1242,7 +1238,7 @@ msgstr "Введите текущий PIN-код для подтверждени
 msgid "Unesite trenutnu šifru da biste nastavili."
 msgstr "Введите текущий пароль, чтобы продолжить."
 
-#: src/working-layout/working-layout.tsx:151
+#: src/working-layout/working-layout.tsx:130
 msgid "Unosi"
 msgstr "Записи"
 

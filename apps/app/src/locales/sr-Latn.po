@@ -129,8 +129,8 @@ msgstr "Dodaj"
 msgid "Dodaj u omiljene za {year}"
 msgstr "Dodaj u omiljene za {year}"
 
-#: src/working-layout/working-layout.tsx:175
-#: src/working-layout/working-layout.tsx:179
+#: src/working-layout/working-layout.tsx:154
+#: src/working-layout/working-layout.tsx:158
 msgid "Dodaj unos"
 msgstr "Dodaj unos"
 
@@ -172,9 +172,9 @@ msgstr "GNU Affero General Public License v3.0"
 msgid "Godina"
 msgstr "Godina"
 
-#: src/working-layout/working-layout.tsx:49
-#: src/working-layout/working-layout.tsx:65
-#: src/working-layout/working-layout.tsx:72
+#: src/working-layout/working-layout.tsx:41
+#: src/working-layout/working-layout.tsx:57
+#: src/working-layout/working-layout.tsx:64
 msgid "Godišnji prihod"
 msgstr "Godišnji prihod"
 
@@ -322,7 +322,7 @@ msgid "Korisnik nije prijavljen."
 msgstr "Korisnik nije prijavljen."
 
 #: src/entries/entries-table.tsx:29
-#: src/working-layout/working-layout.tsx:171
+#: src/working-layout/working-layout.tsx:150
 msgid "KPO unosi"
 msgstr "KPO unosi"
 
@@ -342,7 +342,7 @@ msgstr "Licenca"
 msgid "Limit: {annualLimitFormatted} (<0>čl. 42 ZPDGa</0>)"
 msgstr "Limit: {annualLimitFormatted} (<0>čl. 42 ZPDGa</0>)"
 
-#: src/working-layout/working-layout.tsx:79
+#: src/working-layout/working-layout.tsx:71
 msgid "Limit: {limitFormatted} (<0>čl. 42 ZPDGa</0>)"
 msgstr "Limit: {limitFormatted} (<0>čl. 42 ZPDGa</0>)"
 
@@ -860,7 +860,7 @@ msgstr "Postavite PIN kod"
 #: src/setup-wizard/start-step.tsx:43
 #: src/setup-wizard/wizard-stepper.tsx:34
 #: src/signatures/signature-preview.tsx:27
-#: src/working-layout/working-layout.tsx:159
+#: src/working-layout/working-layout.tsx:138
 msgid "Potpis"
 msgstr "Potpis"
 
@@ -905,10 +905,6 @@ msgstr "Pregled podataka povezanih sa vašim nalogom."
 #: src/settings/account-settings-page.tsx:202
 msgid "Pregledajte aktivne prijave na drugim uređajima."
 msgstr "Pregledajte aktivne prijave na drugim uređajima."
-
-#: src/working-layout/working-layout.tsx:138
-msgid "Preuzeti dokument je nacrt. Obavezno ga potpišite i overite pečatom (Član 13, stav 2 Pravilnika o poslovnim knjigama)."
-msgstr "Preuzeti dokument je nacrt. Obavezno ga potpišite i overite pečatom (Član 13, stav 2 Pravilnika o poslovnim knjigama)."
 
 #: src/pdf/download-pdf-button.tsx:27
 msgid "Preuzmi PDF"
@@ -971,7 +967,7 @@ msgstr "Primeni"
 #: src/e2ee/encryption-profile-popover.tsx:171
 #: src/setup-wizard/start-step.tsx:31
 #: src/setup-wizard/wizard-stepper.tsx:29
-#: src/working-layout/working-layout.tsx:155
+#: src/working-layout/working-layout.tsx:134
 msgid "Profil"
 msgstr "Profil"
 
@@ -1036,7 +1032,7 @@ msgstr "Sačekajte trenutak i pokušajte ponovo."
 msgid "Sačuvaj"
 msgstr "Sačuvaj"
 
-#: src/working-layout/working-layout.tsx:149
+#: src/working-layout/working-layout.tsx:128
 msgid "Sadržaj knjige"
 msgstr "Sadržaj knjige"
 
@@ -1242,7 +1238,7 @@ msgstr "Unesite trenutni PIN kod da biste potvrdili."
 msgid "Unesite trenutnu šifru da biste nastavili."
 msgstr "Unesite trenutnu šifru da biste nastavili."
 
-#: src/working-layout/working-layout.tsx:151
+#: src/working-layout/working-layout.tsx:130
 msgid "Unosi"
 msgstr "Unosi"
 

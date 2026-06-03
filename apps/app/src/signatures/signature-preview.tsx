@@ -73,7 +73,7 @@ export function SignaturePreview({
       </Card.Header>
       <Card.Content>
         <Surface variant="secondary" className="rounded-xl p-4">
-          <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
             <div>
               <dt className="text-xs font-medium text-muted">
                 <Trans>Sastavio</Trans>

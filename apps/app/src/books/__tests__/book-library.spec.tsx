@@ -122,14 +122,31 @@ describe('BookLibrary', () => {
   });
 
   it('"Obriši" confirmation deletes the book', async () => {
-    seedBook(ID_1);
+    seedBook(ID_1, {
+      entries: [
+        {
+          id: '00000000-0000-4000-8000-000000000099',
+          datumPrometa: '2025-03-01',
+          opisPrometa: 'Test',
+          odProdajeProizvoda: 1_000,
+          odIzvrsenihUsluga: 0,
+        },
+      ],
+    });
     const user = userEvent.setup();
     renderLibrary();
+
+    expect(screen.queryByText(/^1 unos$/)).not.toBeInTheDocument();
 
     await user.click(
       screen.getByRole('button', { name: `Obriši knjigu za 2025` }),
     );
     await screen.findByRole('alertdialog');
+    expect(
+      screen.getByText(
+        'Knjiga sadrži 1 unos. Ovu radnju nije moguće poništiti.',
+      ),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Obriši' }));
 
     expect(

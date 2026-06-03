@@ -1,12 +1,4 @@
-import {
-  Alert,
-  Card,
-  Label,
-  ProgressBar,
-  Tabs,
-  Tooltip,
-  Button,
-} from '@heroui/react';
+import { Card, Label, ProgressBar, Tabs, Tooltip, Button } from '@heroui/react';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { LuPlus } from 'react-icons/lu';
 
@@ -130,23 +122,10 @@ export function WorkingLayout() {
         <DownloadPdfButton />
       </TopBarActionsSlot>
 
-      {/* Draft warning — always visible regardless of active tab */}
-      <Alert status="warning">
-        <Alert.Indicator />
-        <Alert.Content>
-          <Alert.Description>
-            <Trans>
-              Preuzeti dokument je nacrt. Obavezno ga potpišite i overite
-              pečatom (Član 13, stav 2 Pravilnika o poslovnim knjigama).
-            </Trans>
-          </Alert.Description>
-        </Alert.Content>
-      </Alert>
-
       {/* Tab-based navigation: Unosi / Profil / Potpis */}
       <Tabs defaultSelectedKey="unosi">
         <Tabs.ListContainer>
-          <Tabs.List aria-label={t`Sadržaj knjige`}>
+          <Tabs.List aria-label={t`Sadržaj knjige`} className="w-fit">
             <Tabs.Tab id="unosi">
               <Trans>Unosi</Trans>
               <Tabs.Indicator />

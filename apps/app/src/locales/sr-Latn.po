@@ -19,12 +19,7 @@ msgid "{0, plural, one {# knjiga} few {# knjige} many {# knjiga} other {# knjiga
 msgstr "{0, plural, one {# knjiga} few {# knjige} many {# knjiga} other {# knjiga}}"
 
 #. placeholder {0}: book.entryCount
-#: src/books/book-library.tsx:134
-msgid "{0, plural, one {# unos} few {# unosa} many {# unosa} other {# unosa}}"
-msgstr "{0, plural, one {# unos} few {# unosa} many {# unosa} other {# unosa}}"
-
-#. placeholder {0}: book.entryCount
-#: src/books/book-library.tsx:190
+#: src/books/book-library.tsx:181
 msgid "{0, plural, one {Knjiga sadrži # unos. Ovu radnju nije moguće poništiti.} few {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.} many {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.} other {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.}}"
 msgstr "{0, plural, one {Knjiga sadrži # unos. Ovu radnju nije moguće poništiti.} few {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.} many {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.} other {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.}}"
 
@@ -84,7 +79,7 @@ msgstr "Autori"
 msgid "Beta funkcija. Kursevi se preuzimaju sa <0>kurs.resenje.org<1/></0>. Molimo vas da proverite zvanični kurs na sajtu <2>NBS<3/></2> pre primene."
 msgstr "Beta funkcija. Kursevi se preuzimaju sa <0>kurs.resenje.org<1/></0>. Molimo vas da proverite zvanični kurs na sajtu <2>NBS<3/></2> pre primene."
 
-#: src/settings/settings-page.tsx:57
+#: src/settings/settings-page.tsx:32
 msgid "Bezbednost"
 msgstr "Bezbednost"
 
@@ -130,12 +125,12 @@ msgstr "Dobrodošli"
 msgid "Dodaj"
 msgstr "Dodaj"
 
-#: src/books/book-library.tsx:158
+#: src/books/book-library.tsx:149
 msgid "Dodaj u omiljene za {year}"
 msgstr "Dodaj u omiljene za {year}"
 
-#: src/working-layout/working-layout.tsx:175
-#: src/working-layout/working-layout.tsx:179
+#: src/working-layout/working-layout.tsx:154
+#: src/working-layout/working-layout.tsx:158
 msgid "Dodaj unos"
 msgstr "Dodaj unos"
 
@@ -177,9 +172,9 @@ msgstr "GNU Affero General Public License v3.0"
 msgid "Godina"
 msgstr "Godina"
 
-#: src/working-layout/working-layout.tsx:49
-#: src/working-layout/working-layout.tsx:65
-#: src/working-layout/working-layout.tsx:72
+#: src/working-layout/working-layout.tsx:41
+#: src/working-layout/working-layout.tsx:57
+#: src/working-layout/working-layout.tsx:64
 msgid "Godišnji prihod"
 msgstr "Godišnji prihod"
 
@@ -263,8 +258,8 @@ msgstr "Izvezi podatke"
 msgid "Izvezi podatke naloga"
 msgstr "Izvezi podatke naloga"
 
-#: src/auth/auth-shell.tsx:47
-#: src/e2ee/encryption-shell.tsx:47
+#: src/auth/auth-shell.tsx:58
+#: src/e2ee/encryption-shell.tsx:58
 msgid "Izvorni kod"
 msgstr "Izvorni kod"
 
@@ -327,7 +322,7 @@ msgid "Korisnik nije prijavljen."
 msgstr "Korisnik nije prijavljen."
 
 #: src/entries/entries-table.tsx:29
-#: src/working-layout/working-layout.tsx:171
+#: src/working-layout/working-layout.tsx:150
 msgid "KPO unosi"
 msgstr "KPO unosi"
 
@@ -347,7 +342,7 @@ msgstr "Licenca"
 msgid "Limit: {annualLimitFormatted} (<0>čl. 42 ZPDGa</0>)"
 msgstr "Limit: {annualLimitFormatted} (<0>čl. 42 ZPDGa</0>)"
 
-#: src/working-layout/working-layout.tsx:79
+#: src/working-layout/working-layout.tsx:71
 msgid "Limit: {limitFormatted} (<0>čl. 42 ZPDGa</0>)"
 msgstr "Limit: {limitFormatted} (<0>čl. 42 ZPDGa</0>)"
 
@@ -370,7 +365,7 @@ msgstr "Možete poslati kod ponovo za {resendSecondsLeft}s"
 #: src/auth/profile-popover.tsx:68
 #: src/e2ee/encryption-profile-popover.tsx:63
 #: src/settings/account-settings-page.tsx:657
-#: src/settings/settings-page.tsx:49
+#: src/settings/settings-page.tsx:28
 msgid "Nalog"
 msgstr "Nalog"
 
@@ -504,7 +499,7 @@ msgstr "Novi unos"
 msgid "O projektu"
 msgstr "O projektu"
 
-#: src/books/book-library.tsx:185
+#: src/books/book-library.tsx:176
 msgid "Obrisati knjigu za {year}?"
 msgstr "Obrisati knjigu za {year}?"
 
@@ -512,14 +507,14 @@ msgstr "Obrisati knjigu za {year}?"
 msgid "Obrisati unos?"
 msgstr "Obrisati unos?"
 
-#: src/books/book-library.tsx:208
+#: src/books/book-library.tsx:199
 #: src/entries/entries-table.tsx:115
 #: src/entries/entries-table.tsx:120
 #: src/entries/entries-table.tsx:152
 msgid "Obriši"
 msgstr "Obriši"
 
-#: src/books/book-library.tsx:175
+#: src/books/book-library.tsx:166
 msgid "Obriši knjigu za {year}"
 msgstr "Obriši knjigu za {year}"
 
@@ -608,7 +603,7 @@ msgstr "Online"
 msgid "Opis prometa"
 msgstr "Opis prometa"
 
-#: src/settings/settings-page.tsx:41
+#: src/settings/settings-page.tsx:24
 msgid "Opšte"
 msgstr "Opšte"
 
@@ -638,7 +633,7 @@ msgstr "Otkazali ste prijavu. Pokušajte ponovo."
 
 #: src/auth/profile-popover.tsx:218
 #: src/books/add-book-modal.tsx:163
-#: src/books/book-library.tsx:201
+#: src/books/book-library.tsx:192
 #: src/currency/currency-convert-modal.tsx:281
 #: src/e2ee/set-pin-modal.tsx:92
 #: src/e2ee/set-pin-modal.tsx:148
@@ -670,7 +665,7 @@ msgstr "Otključajte podatke za ovu sesiju."
 msgid "Otkriveni duplikati knjiga"
 msgstr "Otkriveni duplikati knjiga"
 
-#: src/books/book-library.tsx:150
+#: src/books/book-library.tsx:141
 msgid "Otvori"
 msgstr "Otvori"
 
@@ -768,8 +763,8 @@ msgstr "Podaci o obvezniku"
 #: src/auth/auth-preferences-popover.tsx:21
 #: src/auth/auth-preferences-popover.tsx:98
 #: src/auth/auth-preferences-popover.tsx:103
-#: src/settings/settings-page.tsx:27
-#: src/settings/settings-page.tsx:32
+#: src/settings/settings-page.tsx:17
+#: src/settings/settings-page.tsx:22
 msgid "Podešavanja"
 msgstr "Podešavanja"
 
@@ -865,7 +860,7 @@ msgstr "Postavite PIN kod"
 #: src/setup-wizard/start-step.tsx:43
 #: src/setup-wizard/wizard-stepper.tsx:34
 #: src/signatures/signature-preview.tsx:27
-#: src/working-layout/working-layout.tsx:159
+#: src/working-layout/working-layout.tsx:138
 msgid "Potpis"
 msgstr "Potpis"
 
@@ -910,10 +905,6 @@ msgstr "Pregled podataka povezanih sa vašim nalogom."
 #: src/settings/account-settings-page.tsx:202
 msgid "Pregledajte aktivne prijave na drugim uređajima."
 msgstr "Pregledajte aktivne prijave na drugim uređajima."
-
-#: src/working-layout/working-layout.tsx:138
-msgid "Preuzeti dokument je nacrt. Obavezno ga potpišite i overite pečatom (Član 13, stav 2 Pravilnika o poslovnim knjigama)."
-msgstr "Preuzeti dokument je nacrt. Obavezno ga potpišite i overite pečatom (Član 13, stav 2 Pravilnika o poslovnim knjigama)."
 
 #: src/pdf/download-pdf-button.tsx:27
 msgid "Preuzmi PDF"
@@ -976,7 +967,7 @@ msgstr "Primeni"
 #: src/e2ee/encryption-profile-popover.tsx:171
 #: src/setup-wizard/start-step.tsx:31
 #: src/setup-wizard/wizard-stepper.tsx:29
-#: src/working-layout/working-layout.tsx:155
+#: src/working-layout/working-layout.tsx:134
 msgid "Profil"
 msgstr "Profil"
 
@@ -1041,7 +1032,7 @@ msgstr "Sačekajte trenutak i pokušajte ponovo."
 msgid "Sačuvaj"
 msgstr "Sačuvaj"
 
-#: src/working-layout/working-layout.tsx:149
+#: src/working-layout/working-layout.tsx:128
 msgid "Sadržaj knjige"
 msgstr "Sadržaj knjige"
 
@@ -1193,7 +1184,7 @@ msgstr "Trenutni jezik: {localeName}"
 msgid "Učitavanje sesija…"
 msgstr "Učitavanje sesija…"
 
-#: src/books/book-library.tsx:157
+#: src/books/book-library.tsx:148
 msgid "Ukloni iz omiljenih za {year}"
 msgstr "Ukloni iz omiljenih za {year}"
 
@@ -1247,7 +1238,7 @@ msgstr "Unesite trenutni PIN kod da biste potvrdili."
 msgid "Unesite trenutnu šifru da biste nastavili."
 msgstr "Unesite trenutnu šifru da biste nastavili."
 
-#: src/working-layout/working-layout.tsx:151
+#: src/working-layout/working-layout.tsx:130
 msgid "Unosi"
 msgstr "Unosi"
 

@@ -46,7 +46,7 @@ export function TopBar({ onMenuPress }: TopBarProps) {
   const { t } = useLingui();
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-separator bg-background px-4">
+    <header className="fixed inset-x-0 top-0 z-10 flex min-h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-4 lg:static lg:inset-auto lg:pt-0">
       <Button
         isIconOnly
         variant="ghost"

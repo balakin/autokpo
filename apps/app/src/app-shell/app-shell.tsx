@@ -15,7 +15,7 @@ export function AppShell() {
   return (
     <RouterProvider navigate={(...args) => void navigate(...args)}>
       <TopBarActionsProvider>
-        <div className="flex h-screen overflow-hidden">
+        <div className="flex lg:h-dvh lg:overflow-hidden">
           <aside
             className="hidden w-60 shrink-0 flex-col lg:flex"
             aria-label="Sidebar"
@@ -30,7 +30,7 @@ export function AppShell() {
 
           <div className="flex min-w-0 flex-1 flex-col">
             <TopBar onMenuPress={() => setIsMobileDrawerOpen(true)} />
-            <main className="flex-1 overflow-auto bg-background">
+            <main className="bg-background pt-14 pb-4 lg:flex-1 lg:overflow-auto lg:py-0">
               <Suspense fallback={<PageLoadingFallback />}>
                 <Outlet />
               </Suspense>
@@ -44,7 +44,7 @@ export function AppShell() {
 
 function PageLoadingFallback() {
   return (
-    <div className="min-h-full bg-background p-4 lg:p-6" aria-busy="true">
+    <div className="flex flex-col gap-6 p-4 lg:p-6" aria-busy="true">
       <PageLoadingSkeleton />
     </div>
   );

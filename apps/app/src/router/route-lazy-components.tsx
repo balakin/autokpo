@@ -88,46 +88,45 @@ export function LazySignedInBoundary({ children }: { children: ReactNode }) {
 
 function SignedInAppFallback() {
   return (
-    <div
-      className="flex h-screen overflow-hidden bg-background"
-      aria-busy="true"
-    >
-      <aside className="hidden w-60 shrink-0 flex-col bg-sidebar-bg text-sidebar-fg lg:flex">
-        <div className="flex h-14 items-center border-b border-sidebar-border px-5">
+    <div className="flex lg:h-dvh lg:overflow-hidden" aria-busy="true">
+      <aside className="hidden w-60 shrink-0 flex-col bg-background text-foreground lg:flex lg:border-r lg:border-border">
+        <div className="flex h-14 items-center border-b border-border px-5">
           <span className="text-2xl font-bold tracking-tight">AutoKPO</span>
         </div>
 
         <nav className="flex flex-1 flex-col gap-2 p-3">
-          <div className="h-10 animate-pulse rounded-lg bg-sidebar-item-hover/70" />
-          <div className="h-10 animate-pulse rounded-lg bg-sidebar-item-hover/70" />
-          <div className="h-10 animate-pulse rounded-lg bg-sidebar-item-hover/55" />
+          <div className="h-10 animate-pulse rounded-lg bg-foreground/10" />
+          <div className="h-10 animate-pulse rounded-lg bg-foreground/10" />
+          <div className="h-10 animate-pulse rounded-lg bg-foreground/7" />
         </nav>
 
         <div className="px-4 py-3">
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-6">
-              <div className="h-3 w-20 animate-pulse rounded-full bg-sidebar-border/70" />
-              <div className="h-3 w-16 animate-pulse rounded-full bg-sidebar-border/70" />
+              <div className="h-3 w-20 animate-pulse rounded-full bg-foreground/10" />
+              <div className="h-3 w-16 animate-pulse rounded-full bg-foreground/10" />
             </div>
             <div className="flex items-center justify-between gap-6">
-              <div className="h-3 w-16 animate-pulse rounded-full bg-sidebar-border/55" />
-              <div className="h-3 w-20 animate-pulse rounded-full bg-sidebar-border/55" />
+              <div className="h-3 w-16 animate-pulse rounded-full bg-foreground/7" />
+              <div className="h-3 w-20 animate-pulse rounded-full bg-foreground/7" />
             </div>
           </div>
         </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-separator bg-background px-4">
-          <div className="size-9  animate-pulse rounded-lg bg-surface-secondary lg:hidden" />
-          <div className="h-4 w-28 animate-pulse rounded-full bg-surface-secondary" />
+        <header className="fixed inset-x-0 top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-4 lg:static lg:inset-auto">
+          <div className="size-9 animate-pulse rounded-lg bg-foreground/10 lg:hidden" />
+          <div className="h-4 w-28 animate-pulse rounded-full bg-foreground/10" />
           <div className="flex flex-1 justify-end gap-2">
-            <div className="size-9  animate-pulse rounded-full bg-surface-secondary" />
+            <div className="size-9 animate-pulse rounded-full bg-foreground/10" />
           </div>
         </header>
 
-        <main className="flex-1 overflow-hidden bg-background p-4 lg:p-6">
-          <PageLoadingSkeleton animated={false} />
+        <main className="bg-background pt-14 pb-4 lg:flex-1 lg:overflow-auto lg:py-0 ">
+          <div className="flex flex-col gap-6 p-4 lg:p-6">
+            <PageLoadingSkeleton animated={false} />
+          </div>
         </main>
       </div>
     </div>

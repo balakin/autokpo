@@ -21,9 +21,9 @@ const navLink = tv({
   base: 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
   variants: {
     active: {
-      true: 'bg-sidebar-active-bg text-sidebar-active-fg hover:bg-sidebar-active-bg hover:text-sidebar-active-fg',
+      true: 'bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground',
       false:
-        'text-sidebar-muted hover:bg-sidebar-item-hover hover:text-sidebar-fg focus-visible:bg-sidebar-item-hover focus-visible:text-sidebar-fg',
+        'text-muted hover:bg-default hover:text-foreground focus-visible:bg-default focus-visible:text-foreground',
     },
   },
 });
@@ -62,10 +62,10 @@ function SidebarStatsFooter() {
   const rollingColor = thresholdColor(stats.last12MonthsIncome, ROLLING_LIMIT);
 
   return (
-    <div className="border-t border-sidebar-border px-4 py-3">
+    <div className="border-t border-border px-4 py-3">
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between gap-2 text-xs">
-          <span className="text-sidebar-muted">
+          <span className="text-muted">
             <Trans>Ova godina</Trans>
           </span>
           <span className={incomeValue({ color: yearColor })}>
@@ -73,7 +73,7 @@ function SidebarStatsFooter() {
           </span>
         </div>
         <div className="flex items-center justify-between gap-2 text-xs">
-          <span className="text-sidebar-muted">
+          <span className="text-muted">
             <Trans>12 meseci</Trans>
           </span>
           <span className={incomeValue({ color: rollingColor })}>
@@ -96,9 +96,9 @@ export function Sidebar({ closeButton, onNavigate }: SidebarProps) {
   }
 
   return (
-    <div className="flex size-full  flex-col bg-sidebar-bg text-sidebar-fg">
+    <div className="flex size-full flex-col bg-background text-foreground lg:border-r lg:border-border">
       {/* Logo */}
-      <div className="flex h-14 items-center justify-between border-b border-sidebar-border px-5">
+      <div className="flex min-h-14 items-center justify-between border-b border-border px-5">
         <span className="text-2xl font-bold tracking-tight">AutoKPO</span>
         {closeButton}
       </div>
@@ -135,7 +135,7 @@ export function Sidebar({ closeButton, onNavigate }: SidebarProps) {
       <SidebarStatsFooter />
 
       {/* Version badge + GitHub link */}
-      <div className="flex items-center justify-between border-t border-sidebar-border p-4">
+      <div className="flex items-center justify-between border-t border-border p-4">
         <Chip size="sm" variant="soft" color="success">
           <LuTag className="size-3" />
           <Chip.Label>v{__APP_VERSION__}</Chip.Label>
@@ -144,7 +144,7 @@ export function Sidebar({ closeButton, onNavigate }: SidebarProps) {
           href="https://github.com/balakin/autokpo"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-xs text-sidebar-muted no-underline hover:text-sidebar-fg"
+          className="flex items-center gap-1.5 text-xs text-muted no-underline hover:text-foreground"
         >
           <span>AGPL-3.0</span>
           <span aria-hidden="true">·</span>

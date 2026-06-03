@@ -21,8 +21,8 @@ vi.mock('../../e2ee/cleanup', () => ({
   clearLocalEncryptionUnlockMaterial: vi.fn(),
 }));
 
-vi.mock('../../pwa/clear-protected-caches', () => ({
-  clearProtectedCaches: vi.fn().mockResolvedValue(undefined),
+vi.mock('../../query-client', () => ({
+  clearQueriesCache: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('../session-broadcast', () => ({

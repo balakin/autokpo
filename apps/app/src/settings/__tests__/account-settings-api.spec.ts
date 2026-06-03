@@ -11,7 +11,7 @@ const mockDeleteUser = vi.fn<(options: unknown) => Promise<unknown>>();
 const mockListSessions = vi.fn<() => Promise<unknown>>();
 const mockRevokeSession = vi.fn<(payload: unknown) => Promise<unknown>>();
 const mockRevokeOtherSessions = vi.fn<() => Promise<unknown>>();
-const mockClearProtectedCaches = vi.fn<() => Promise<void>>();
+const mockClearQueriesCache = vi.fn<() => Promise<void>>();
 const mockClearLocalEncryptionUnlockMaterial =
   vi.fn<(userId: string) => void>();
 const mockBroadcastSessionChange = vi.fn<(userId: string | null) => void>();
@@ -25,8 +25,8 @@ vi.mock('../../auth/auth-client', () => ({
   },
 }));
 
-vi.mock('../../pwa/clear-protected-caches', () => ({
-  clearProtectedCaches: () => mockClearProtectedCaches(),
+vi.mock('../../query-client', () => ({
+  clearQueriesCache: () => mockClearQueriesCache(),
 }));
 
 vi.mock('../../e2ee/cleanup', () => ({
@@ -49,8 +49,8 @@ describe('account settings API', () => {
     mockRevokeSession.mockResolvedValue({ data: { success: true } });
     mockRevokeOtherSessions.mockReset();
     mockRevokeOtherSessions.mockResolvedValue({ data: { success: true } });
-    mockClearProtectedCaches.mockReset();
-    mockClearProtectedCaches.mockResolvedValue(undefined);
+    mockClearQueriesCache.mockReset();
+    mockClearQueriesCache.mockResolvedValue(undefined);
     mockClearLocalEncryptionUnlockMaterial.mockReset();
     mockBroadcastSessionChange.mockReset();
     localStorage.setItem('autokpo:locale', 'en');
@@ -64,7 +64,7 @@ describe('account settings API', () => {
         headers: { 'X-Preferred-Locale': 'en' },
       },
     });
-    expect(mockClearProtectedCaches).toHaveBeenCalledTimes(1);
+    expect(mockClearQueriesCache).toHaveBeenCalledTimes(1);
     expect(mockClearLocalEncryptionUnlockMaterial).toHaveBeenCalledWith(
       'user-1',
     );
@@ -76,7 +76,7 @@ describe('account settings API', () => {
 
     await expect(deleteAccount('user-1')).rejects.toThrow('Nope');
 
-    expect(mockClearProtectedCaches).not.toHaveBeenCalled();
+    expect(mockClearQueriesCache).not.toHaveBeenCalled();
     expect(mockClearLocalEncryptionUnlockMaterial).not.toHaveBeenCalled();
     expect(mockBroadcastSessionChange).not.toHaveBeenCalled();
   });

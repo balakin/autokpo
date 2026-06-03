@@ -1,5 +1,5 @@
 import { clearLocalEncryptionUnlockMaterial } from '../e2ee/cleanup';
-import { clearProtectedCaches } from '../pwa/clear-protected-caches';
+import { clearQueriesCache } from '../query-client';
 
 import { broadcastSessionChange } from './session-broadcast';
 
@@ -7,7 +7,7 @@ export async function cleanupSignedOutSession(
   userId: string | null,
 ): Promise<void> {
   await Promise.all([
-    clearProtectedCaches(),
+    clearQueriesCache(),
     userId ? clearLocalEncryptionUnlockMaterial(userId) : Promise.resolve(),
   ]);
   broadcastSessionChange(null);

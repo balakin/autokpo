@@ -205,7 +205,6 @@ export function useSyncEngine(
   useQuery({
     queryKey: SYNC_QUERY_KEY,
     queryFn: async () => {
-      console.log('Request', SYNC_QUERY_KEY);
       if (!isLeaderRef.current) {
         // Ask the leader tab to pull — followers receive
         // updates via BroadcastChannel instead.

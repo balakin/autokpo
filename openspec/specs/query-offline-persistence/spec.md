@@ -1,4 +1,10 @@
-## ADDED Requirements
+# query-offline-persistence Specification
+
+## Purpose
+
+Define how the application persists React Query cache entries to IndexedDB so that session and key-ring data are available offline across page loads, independent of service worker runtime caching.
+
+## Requirements
 
 ### Requirement: Session and key-ring queries are persisted to IndexedDB
 
@@ -6,12 +12,18 @@ The application SHALL persist the `session` and `key-ring-profile` React Query c
 
 Only the `session` and `key-ring-profile` queries SHALL be included in the persisted cache. No other queries SHALL be serialised to IndexedDB by the persistence layer.
 
-#### Scenario: Restored data is available before network
+#### Scenario: Restored data is available before network (offline)
 
 - **WHEN** the page loads while the browser is offline
 - **AND** valid persisted session and key-ring data exist in IndexedDB (age < 60 days)
 - **THEN** the application SHALL restore both queries from IndexedDB before any `queryFn` is called
 - **AND** components SHALL receive `status: 'success'` with the restored data immediately
+
+#### Scenario: IDB restoration is skipped when online
+
+- **WHEN** the page loads while the browser is online
+- **THEN** `restoreClient` SHALL return `undefined` (no IDB read is performed)
+- **AND** queries SHALL fetch from the network as normal
 
 #### Scenario: Offline query is paused, not failed
 
@@ -54,12 +66,6 @@ The application SHALL delete the persisted IndexedDB cache entry as part of the 
 
 - **WHEN** a signed-in user deletes their account
 - **THEN** the application SHALL delete the persisted cache from IndexedDB
-
-#### Scenario: IDB clear failure does not block sign-out
-
-- **WHEN** the IndexedDB delete operation fails during sign-out
-- **THEN** the sign-out flow SHALL complete (in-memory cache is cleared, session broadcast is sent)
-- **AND** the failure SHALL NOT surface as a user-visible error
 
 ### Requirement: In-memory retention matches session lifetime
 

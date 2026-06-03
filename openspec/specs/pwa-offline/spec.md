@@ -127,18 +127,3 @@ The system SHALL display a visual indicator when the user is offline.
 
 - **WHEN** the app detects the browser is online
 - **THEN** the offline indicator banner is not displayed
-
-### Requirement: Protected API runtime caches are explicit
-
-The PWA service worker SHALL define runtime caches only for protected API GET endpoints whose offline semantics are intentional. The protected runtime caches SHALL be separate from the app-shell precache and SHALL NOT change the navigation fallback denylist for `/api/*` routes.
-
-#### Scenario: Protected API runtime caches do not provide navigation fallback
-
-- **WHEN** the service worker receives a navigation request for `/api/*`
-- **THEN** the request SHALL still be excluded from navigation fallback caching
-- **AND** protected API runtime caching SHALL apply only to matching non-navigation GET requests
-
-#### Scenario: Sync endpoint is not runtime-cached
-
-- **WHEN** the service worker receives a request for `/api/sync`
-- **THEN** the service worker SHALL NOT serve the response from a runtime API cache

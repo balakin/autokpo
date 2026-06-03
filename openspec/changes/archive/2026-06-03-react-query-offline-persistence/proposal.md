@@ -26,9 +26,11 @@ Offline state for the session and key-ring currently depends on Workbox `Network
 ## Impact
 
 - **Dependencies**: add `@tanstack/react-query-persist-client`
-- **`src/main.tsx`**: `QueryClientProvider` → `PersistQueryClientProvider`
-- **`src/pwa/`**: new `query-persister.ts`; delete `sw-cache-names.ts`, `clear-protected-caches.ts`, `__tests__/clear-protected-caches.spec.ts`
-- **`src/auth/session-cleanup.ts`**: replaces `clearProtectedCaches()` with `persister.removeClient()`
-- **`src/auth/use-session-query.ts`**: adds `gcTime`, removes `networkMode`
-- **`src/e2ee/key-ring-query.ts`**: adds `gcTime`, removes `networkMode`, removes CacheStorage write
+- **`src/constants.ts`**: adds `SESSION_LIFETIME_MS = 60 * 24 * 60 * 60 * 1000`
+- **`src/query-client/`**: new module — `query-persister.ts` (IDB persister + `clearQueriesCache` export), `query-client.tsx` (`QueryClientProvider` wrapper around `PersistQueryClientProvider`), `index.ts` (barrel)
+- **`src/main.tsx`**: imports zero-prop `<QueryClientProvider>` from `./query-client` (replaces `@tanstack/react-query` import and inline `new QueryClient()`)
+- **`src/pwa/`**: delete `sw-cache-names.ts`, `clear-protected-caches.ts`, `__tests__/clear-protected-caches.spec.ts`
+- **`src/auth/session-cleanup.ts`**: replaces `clearProtectedCaches()` with `clearQueriesCache()` from `../query-client`
+- **`src/auth/use-session-query.ts`**: adds `gcTime: SESSION_LIFETIME_MS`, removes `networkMode`
+- **`src/e2ee/key-ring-query.ts`**: exports `KEY_RING_PROFILE_QUERY_KEY`; adds `gcTime: SESSION_LIFETIME_MS`, removes `networkMode`; removes CacheStorage write; `cacheKeyRingProfile` becomes synchronous
 - **`apps/app/vite.config.ts`**: removes 2 `runtimeCaching` entries and associated imports

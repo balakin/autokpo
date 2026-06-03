@@ -37,9 +37,19 @@ The persister interface is three methods (`persistClient`, `restoreClient`, `rem
 
 **Alternative considered**: `@tanstack/query-async-storage-persister` with a hand-rolled async storage adapter. Rejected: indirection without benefit — the raw IDB API via existing utils is simpler.
 
-### Decision: Persister as a module singleton
+### Decision: Encapsulate in `src/query-client/` module
 
-`session-cleanup.ts` is called from both React (hook) and non-React (plain async) contexts. Threading the persister through function parameters would require changing both call sites. A module-level singleton (`export const queryPersister = createQueryPersister()`) imported by both `main.tsx` and `session-cleanup.ts` is idiomatic and matches how other singleton resources (auth client) are handled in this codebase.
+The persister, the `QueryClient` instance, and `PersistQueryClientProvider` wiring all belong together. A dedicated `src/query-client/` module owns all three:
+
+- `query-persister.ts` — IDB persister singleton + `clearQueriesCache()` export
+- `query-client.tsx` — zero-prop `QueryClientProvider` wrapper that encapsulates `new QueryClient()` and `PersistQueryClientProvider` setup
+- `index.ts` — barrel exporting `QueryClientProvider` and `clearQueriesCache`
+
+`session-cleanup.ts` imports `clearQueriesCache` from the barrel; `main.tsx` imports the zero-prop `QueryClientProvider`. Neither caller references the persister directly.
+
+### Decision: `SESSION_LIFETIME_MS` constant
+
+The 60-day value is used in three places: `gcTime` on both queries and `maxAge` in `PersistQueryClientProvider`. A single `SESSION_LIFETIME_MS` constant in `src/constants.ts` keeps them in sync and names the intent.
 
 ### Decision: `gcTime: 60 days` on the two persisted queries only
 
@@ -68,19 +78,23 @@ The two `runtimeCaching` Workbox entries, `sw-cache-names.ts`, `clear-protected-
 **Risk: IDB write throttle on high-frequency cache updates**
 → The tanstack persister throttles writes to once per second. Session and key-ring data change rarely (on login and key rotation), so this is a non-issue.
 
-**Risk: `removeClient` silently fails during sign-out**
-→ The persister's `removeClient` is wrapped in try/catch in `session-cleanup.ts`. A failed IDB clear means the next page load restores the old user's data, but the in-memory query cache is cleared by `clearQueryCacheOnSignOut`, so the app will refetch and discover the session is invalid. The stale IDB entry is overwritten on next successful sign-in.
+**Risk: `clearQueriesCache` fails during sign-out**
+→ `clearQueriesCache` is called without a try/catch in `session-cleanup.ts`. An IDB failure will cause `cleanupSignedOutSession` to reject and the sign-out flow to surface an error. In practice, IDB is available in all supported browsers; the risk is accepted.
 
 ## Migration Plan
 
 1. Install `@tanstack/react-query-persist-client`.
-2. Create `src/pwa/query-persister.ts` with the IDB persister singleton.
-3. Swap `QueryClientProvider` for `PersistQueryClientProvider` in `main.tsx`.
-4. Update `sessionQueryOptions` and `keyRingProfileQueryOptions` (add `gcTime`, remove `networkMode`).
-5. Update `session-cleanup.ts` to call `queryPersister.removeClient()`.
-6. Simplify `cacheKeyRingProfile` to only `setQueryData`.
-7. Remove the two `runtimeCaching` entries from `vite.config.ts`.
-8. Delete `sw-cache-names.ts`, `clear-protected-caches.ts`, and their tests.
+2. Add `SESSION_LIFETIME_MS` to `src/constants.ts`.
+3. Create `src/query-client/` module:
+   - `query-persister.ts` — IDB persister singleton + `clearQueriesCache()` export
+   - `query-client.tsx` — zero-prop `QueryClientProvider` wrapping `PersistQueryClientProvider` with selective dehydration for `session` and `key-ring-profile`; uses `SESSION_LIFETIME_MS` for `maxAge`
+   - `index.ts` — barrel
+4. Update `main.tsx` to import `QueryClientProvider` from `./query-client`; remove inline `new QueryClient()`.
+5. Update `sessionQueryOptions` and `keyRingProfileQueryOptions` (add `gcTime: SESSION_LIFETIME_MS`, remove `networkMode`); export `KEY_RING_PROFILE_QUERY_KEY` from `key-ring-query.ts`.
+6. Update `session-cleanup.ts` to call `clearQueriesCache()` from `../query-client`.
+7. Simplify `cacheKeyRingProfile` to only `setQueryData` (sync, no await).
+8. Remove the two `runtimeCaching` entries from `vite.config.ts`.
+9. Delete `sw-cache-names.ts`, `clear-protected-caches.ts`, and their tests.
 
 No data migration needed — existing CacheStorage entries are simply abandoned; they expire naturally or are cleared by the browser.
 

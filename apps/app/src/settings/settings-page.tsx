@@ -1,16 +1,6 @@
+import { Tabs } from '@heroui/react';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { Link, Outlet, useLocation } from 'react-router';
-import { tv } from 'tailwind-variants';
-
-const tabLink = tv({
-  base: 'rounded-full px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
-  variants: {
-    selected: {
-      true: 'bg-accent text-accent-foreground shadow-xs',
-      false: 'text-muted hover:bg-surface-secondary hover:text-foreground',
-    },
-  },
-});
+import { Outlet, useLocation } from 'react-router';
 
 export function SettingsPage() {
   const { t } = useLingui();
@@ -27,36 +17,24 @@ export function SettingsPage() {
         <Trans>Podešavanja</Trans>
       </h1>
 
-      <nav
-        role="tablist"
-        aria-label={t`Podešavanja`}
-        className="flex w-fit gap-1 rounded-full bg-surface-secondary p-1"
-      >
-        <Link
-          to="/settings/general"
-          role="tab"
-          aria-selected={selectedTab === 'general'}
-          className={tabLink({ selected: selectedTab === 'general' })}
-        >
-          <Trans>Opšte</Trans>
-        </Link>
-        <Link
-          to="/settings/account"
-          role="tab"
-          aria-selected={selectedTab === 'account'}
-          className={tabLink({ selected: selectedTab === 'account' })}
-        >
-          <Trans>Nalog</Trans>
-        </Link>
-        <Link
-          to="/settings/security"
-          role="tab"
-          aria-selected={selectedTab === 'security'}
-          className={tabLink({ selected: selectedTab === 'security' })}
-        >
-          <Trans>Bezbednost</Trans>
-        </Link>
-      </nav>
+      <Tabs selectedKey={selectedTab}>
+        <Tabs.ListContainer>
+          <Tabs.List aria-label={t`Podešavanja`} className="w-fit">
+            <Tabs.Tab id="general" href="/settings/general">
+              <Trans>Opšte</Trans>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id="account" href="/settings/account">
+              <Trans>Nalog</Trans>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id="security" href="/settings/security">
+              <Trans>Bezbednost</Trans>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+          </Tabs.List>
+        </Tabs.ListContainer>
+      </Tabs>
 
       <Outlet />
     </div>

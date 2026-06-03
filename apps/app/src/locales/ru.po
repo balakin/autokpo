@@ -79,7 +79,7 @@ msgstr "Авторы"
 msgid "Beta funkcija. Kursevi se preuzimaju sa <0>kurs.resenje.org<1/></0>. Molimo vas da proverite zvanični kurs na sajtu <2>NBS<3/></2> pre primene."
 msgstr "Бета-функция. Курсы валют загружаются с <0>kurs.resenje.org<1/></0>, сервиса, не связанного с НБС. Пожалуйста, проверьте официальный курс на сайте <2>НБС<3/></2> перед применением."
 
-#: src/settings/settings-page.tsx:57
+#: src/settings/settings-page.tsx:32
 msgid "Bezbednost"
 msgstr "Безопасность"
 
@@ -365,7 +365,7 @@ msgstr "Вы можете повторно отправить код через 
 #: src/auth/profile-popover.tsx:68
 #: src/e2ee/encryption-profile-popover.tsx:63
 #: src/settings/account-settings-page.tsx:657
-#: src/settings/settings-page.tsx:49
+#: src/settings/settings-page.tsx:28
 msgid "Nalog"
 msgstr "Аккаунт"
 
@@ -603,7 +603,7 @@ msgstr "Онлайн"
 msgid "Opis prometa"
 msgstr "Описание операции"
 
-#: src/settings/settings-page.tsx:41
+#: src/settings/settings-page.tsx:24
 msgid "Opšte"
 msgstr "Общие"
 
@@ -763,8 +763,8 @@ msgstr "Данные налогоплательщика"
 #: src/auth/auth-preferences-popover.tsx:21
 #: src/auth/auth-preferences-popover.tsx:98
 #: src/auth/auth-preferences-popover.tsx:103
-#: src/settings/settings-page.tsx:27
-#: src/settings/settings-page.tsx:32
+#: src/settings/settings-page.tsx:17
+#: src/settings/settings-page.tsx:22
 msgid "Podešavanja"
 msgstr "Настройки"
 

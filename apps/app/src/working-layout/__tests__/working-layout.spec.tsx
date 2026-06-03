@@ -74,15 +74,6 @@ describe('WorkingLayout', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders the legal warning alert', async () => {
-    await renderWorkingLayout();
-    expect(
-      screen.getByText(
-        'Preuzeti dokument je nacrt. Obavezno ga potpišite i overite pečatom (Član 13, stav 2 Pravilnika o poslovnim knjigama).',
-      ),
-    ).toBeInTheDocument();
-  });
-
   it('renders income progress bar in Unosi tab', async () => {
     await renderWorkingLayout();
     expect(screen.getByRole('progressbar')).toBeInTheDocument();

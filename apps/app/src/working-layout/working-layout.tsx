@@ -146,7 +146,7 @@ export function WorkingLayout() {
       {/* Tab-based navigation: Unosi / Profil / Potpis */}
       <Tabs defaultSelectedKey="unosi">
         <Tabs.ListContainer>
-          <Tabs.List aria-label={t`Sadržaj knjige`}>
+          <Tabs.List aria-label={t`Sadržaj knjige`} className="w-fit">
             <Tabs.Tab id="unosi">
               <Trans>Unosi</Trans>
               <Tabs.Indicator />

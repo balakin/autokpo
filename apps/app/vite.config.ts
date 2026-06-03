@@ -79,6 +79,8 @@ const buildOnlyPlugins = (): PluginOption[] => [
         start_url: '/',
         scope: '/',
         display: 'standalone',
+        background_color: '#f5f6f8',
+        theme_color: '#6080b8',
         lang: undefined,
         categories: ['business', 'finance', 'productivity'],
         icons: [

@@ -5,6 +5,7 @@ import js from '@eslint/js';
 import reactX from '@eslint-react/eslint-plugin';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
+import astro from 'eslint-plugin-astro';
 import betterTailwindcss from 'eslint-plugin-better-tailwindcss';
 import { importX } from 'eslint-plugin-import-x';
 import pluginLingui from 'eslint-plugin-lingui';
@@ -135,6 +136,9 @@ export default defineConfig([
       '@typescript-eslint/no-empty-object-type': 'off',
     },
   },
+
+  // Website — Astro files.
+  ...astro.configs['flat/recommended'],
 
   // Tailwind class correctness and canonicalization for app source.
   // enforce-consistent-line-wrapping is intentionally excluded — it conflicts with Prettier.

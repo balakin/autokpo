@@ -19,7 +19,8 @@ msgstr "Спасибо, что пользовались AutoKPO. Всего хо
 
 #: worker/auth/send-otp-email.tsx:31
 msgid "Kod važi 5 minuta. Ako niste tražili ovaj kod, ignorišite ovu poruku."
-msgstr "Код действителен 5 минут. Если вы не запрашивали этот код, просто проигнорируйте это сообщение."
+msgstr "Код действителен 5 минут. Если вы не запрашивали этот код, просто "
+"проигнорируйте это сообщение."
 
 #: worker/auth/send-otp-email.tsx:28
 msgid "Koristite sledeći kod za prijavu na vaš AutoKPO nalog:"
@@ -36,5 +37,7 @@ msgid "Vaš AutoKPO nalog je obrisan"
 msgstr "Ваш аккаунт AutoKPO удалён"
 
 #: worker/auth/send-account-deleted-email.tsx:26
-msgid "Vaš AutoKPO nalog je obrisan. Nalog i sinhronizovani podaci povezani sa ovom email adresom su trajno uklonjeni."
-msgstr "Ваш аккаунт AutoKPO удалён. Аккаунт и синхронизированные данные, связанные с этим адресом электронной почты, удалены навсегда."
+msgid "Vaš AutoKPO nalog je obrisan. Nalog i sinhronizovani podaci povezani sa "
+"ovom email adresom su trajno uklonjeni."
+msgstr "Ваш аккаунт AutoKPO удалён. Аккаунт и синхронизированные данные, "
+"связанные с этим адресом электронной почты, удалены навсегда."

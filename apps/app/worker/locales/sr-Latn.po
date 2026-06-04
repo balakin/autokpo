@@ -36,5 +36,7 @@ msgid "Vaš AutoKPO nalog je obrisan"
 msgstr "Vaš AutoKPO nalog je obrisan"
 
 #: worker/auth/send-account-deleted-email.tsx:26
-msgid "Vaš AutoKPO nalog je obrisan. Nalog i sinhronizovani podaci povezani sa ovom email adresom su trajno uklonjeni."
-msgstr "Vaš AutoKPO nalog je obrisan. Nalog i sinhronizovani podaci povezani sa ovom email adresom su trajno uklonjeni."
+msgid "Vaš AutoKPO nalog je obrisan. Nalog i sinhronizovani podaci povezani sa "
+"ovom email adresom su trajno uklonjeni."
+msgstr "Vaš AutoKPO nalog je obrisan. Nalog i sinhronizovani podaci povezani sa "
+"ovom email adresom su trajno uklonjeni."

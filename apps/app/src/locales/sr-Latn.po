@@ -15,13 +15,23 @@ msgstr ""
 
 #. placeholder {0}: item.count
 #: src/books/book-library.tsx:59
-msgid "{0, plural, one {# knjiga} few {# knjige} many {# knjiga} other {# knjiga}}"
-msgstr "{0, plural, one {# knjiga} few {# knjige} many {# knjiga} other {# knjiga}}"
+msgid "{0, plural, one {# knjiga} few {# knjige} many {# knjiga} other {# "
+"knjiga}}"
+msgstr "{0, plural, one {# knjiga} few {# knjige} many {# knjiga} other {# "
+"knjiga}}"
 
 #. placeholder {0}: book.entryCount
 #: src/books/book-library.tsx:181
-msgid "{0, plural, one {Knjiga sadrži # unos. Ovu radnju nije moguće poništiti.} few {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.} many {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.} other {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.}}"
-msgstr "{0, plural, one {Knjiga sadrži # unos. Ovu radnju nije moguće poništiti.} few {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.} many {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.} other {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.}}"
+msgid "{0, plural, one {Knjiga sadrži # unos. Ovu radnju nije moguće "
+"poništiti.} few {Knjiga sadrži # unosa. Ovu radnju nije moguće "
+"poništiti.} many {Knjiga sadrži # unosa. Ovu radnju nije moguće "
+"poništiti.} other {Knjiga sadrži # unosa. Ovu radnju nije moguće "
+"poništiti.}}"
+msgstr "{0, plural, one {Knjiga sadrži # unos. Ovu radnju nije moguće "
+"poništiti.} few {Knjiga sadrži # unosa. Ovu radnju nije moguće "
+"poništiti.} many {Knjiga sadrži # unosa. Ovu radnju nije moguće "
+"poništiti.} other {Knjiga sadrži # unosa. Ovu radnju nije moguće "
+"poništiti.}}"
 
 #: src/auth/oauth-callback.tsx:65
 msgid "{providerName} prijava nije bila uspešna."
@@ -44,12 +54,18 @@ msgid "Akcije"
 msgstr "Akcije"
 
 #: src/auth/goodbye-page.tsx:27
-msgid "Ako ponovo budete želeli da koristite AutoKPO, možete napraviti novi nalog u bilo kom trenutku."
-msgstr "Ako ponovo budete želeli da koristite AutoKPO, možete napraviti novi nalog u bilo kom trenutku."
+msgid "Ako ponovo budete želeli da koristite AutoKPO, možete napraviti novi "
+"nalog u bilo kom trenutku."
+msgstr "Ako ponovo budete želeli da koristite AutoKPO, možete napraviti novi "
+"nalog u bilo kom trenutku."
 
 #: src/help/help-page.tsx:81
-msgid "Ako ste naišli na grešku ili imate predlog za poboljšanje, otvorite tiket na GitHub-u. Opišite šta se dogodilo, šta ste očekivali i korake za reprodukciju."
-msgstr "Ako ste naišli na grešku ili imate predlog za poboljšanje, otvorite tiket na GitHub-u. Opišite šta se dogodilo, šta ste očekivali i korake za reprodukciju."
+msgid "Ako ste naišli na grešku ili imate predlog za poboljšanje, otvorite "
+"tiket na GitHub-u. Opišite šta se dogodilo, šta ste očekivali i korake "
+"za reprodukciju."
+msgstr "Ako ste naišli na grešku ili imate predlog za poboljšanje, otvorite "
+"tiket na GitHub-u. Opišite šta se dogodilo, šta ste očekivali i korake "
+"za reprodukciju."
 
 #: src/help/help-page.tsx:140
 msgid "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
@@ -60,24 +76,36 @@ msgid "Aplikacija se otključava bez interakcije pri svakom pokretanju."
 msgstr "Aplikacija se otključava bez interakcije pri svakom pokretanju."
 
 #: src/help/help-page.tsx:58
-msgid "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između vaših uređaja."
-msgstr "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između vaših uređaja."
+msgid "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o "
+"ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju "
+"i sinhronizuju između vaših uređaja."
+msgstr "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o "
+"ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju "
+"i sinhronizuju između vaših uređaja."
 
 #: src/e2ee/encryption-setup-screen.tsx:73
-msgid "AutoKPO ne može da vidi, resetuje ili vrati ovu šifru. Ako je izgubite, šifrovani podaci ne mogu biti vraćeni."
-msgstr "AutoKPO ne može da vidi, resetuje ili vrati ovu šifru. Ako je izgubite, šifrovani podaci ne mogu biti vraćeni."
+msgid "AutoKPO ne može da vidi, resetuje ili vrati ovu šifru. Ako je izgubite, "
+"šifrovani podaci ne mogu biti vraćeni."
+msgstr "AutoKPO ne može da vidi, resetuje ili vrati ovu šifru. Ako je izgubite, "
+"šifrovani podaci ne mogu biti vraćeni."
 
 #: src/e2ee/encryption-unlock-screen.tsx:116
-msgid "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju nedostupni."
-msgstr "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju nedostupni."
+msgid "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju "
+"nedostupni."
+msgstr "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju "
+"nedostupni."
 
 #: src/help/help-page.tsx:158
 msgid "Autori"
 msgstr "Autori"
 
 #: src/currency/currency-convert-modal.tsx:253
-msgid "Beta funkcija. Kursevi se preuzimaju sa <0>kurs.resenje.org<1/></0>. Molimo vas da proverite zvanični kurs na sajtu <2>NBS<3/></2> pre primene."
-msgstr "Beta funkcija. Kursevi se preuzimaju sa <0>kurs.resenje.org<1/></0>. Molimo vas da proverite zvanični kurs na sajtu <2>NBS<3/></2> pre primene."
+msgid "Beta funkcija. Kursevi se preuzimaju sa <0>kurs.resenje.org<1/></0>. "
+"Molimo vas da proverite zvanični kurs na sajtu <2>NBS<3/></2> pre "
+"primene."
+msgstr "Beta funkcija. Kursevi se preuzimaju sa <0>kurs.resenje.org<1/></0>. "
+"Molimo vas da proverite zvanični kurs na sajtu <2>NBS<3/></2> pre "
+"primene."
 
 #: src/settings/settings-page.tsx:32
 msgid "Bezbednost"
@@ -187,8 +215,10 @@ msgid "ili"
 msgstr "ili"
 
 #: src/auth/profile-popover.tsx:210
-msgid "Imate lokalne izmene koje nisu sinhronizovane. Ako nastavite, može doći do gubitka podataka koji nisu poslati."
-msgstr "Imate lokalne izmene koje nisu sinhronizovane. Ako nastavite, može doći do gubitka podataka koji nisu poslati."
+msgid "Imate lokalne izmene koje nisu sinhronizovane. Ako nastavite, može doći "
+"do gubitka podataka koji nisu poslati."
+msgstr "Imate lokalne izmene koje nisu sinhronizovane. Ako nastavite, može doći "
+"do gubitka podataka koji nisu poslati."
 
 #: src/setup-wizard/unsaved-changes-dialog.tsx:34
 msgid "Imate nesačuvane izmene. Da li zaista želite da napustite stranicu?"
@@ -219,8 +249,10 @@ msgid "Izaberite godinu za novu knjigu."
 msgstr "Izaberite godinu za novu knjigu."
 
 #: src/settings/security-settings-page.tsx:334
-msgid "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju aplikacije."
-msgstr "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju aplikacije."
+msgid "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju "
+"aplikacije."
+msgstr "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju "
+"aplikacije."
 
 #: src/auth/auth-entry.tsx:30
 msgid "Izaberite način prijave."
@@ -374,8 +406,10 @@ msgid "Nalog je obrisan"
 msgstr "Nalog je obrisan"
 
 #: src/auth/oauth-callback.tsx:90
-msgid "Nalog sa ovom email adresom već postoji. Prijavite se putem jednokratnog koda na email."
-msgstr "Nalog sa ovom email adresom već postoji. Prijavite se putem jednokratnog koda na email."
+msgid "Nalog sa ovom email adresom već postoji. Prijavite se putem jednokratnog "
+"koda na email."
+msgstr "Nalog sa ovom email adresom već postoji. Prijavite se putem "
+"jednokratnog koda na email."
 
 #: src/setup-wizard/unsaved-changes-dialog.tsx:45
 msgid "Napustite"
@@ -458,8 +492,10 @@ msgid "Nije moguće odjaviti sesiju. Pokušajte ponovo."
 msgstr "Nije moguće odjaviti sesiju. Pokušajte ponovo."
 
 #: src/settings/account-settings-page.tsx:476
-msgid "Nije moguće preuzeti podatke naloga. Proverite internet vezu i pokušajte ponovo."
-msgstr "Nije moguće preuzeti podatke naloga. Proverite internet vezu i pokušajte ponovo."
+msgid "Nije moguće preuzeti podatke naloga. Proverite internet vezu i pokušajte "
+"ponovo."
+msgstr "Nije moguće preuzeti podatke naloga. Proverite internet vezu i "
+"pokušajte ponovo."
 
 #: src/settings/security-settings-page.tsx:300
 msgid "Nije moguće promeniti šifru. Pokušajte ponovo."
@@ -565,8 +601,10 @@ msgstr "Odjava sa nesinhronizovanim izmenama?"
 
 #: src/auth/profile-popover.tsx:120
 #: src/e2ee/encryption-profile-popover.tsx:139
-msgid "Odjava zahteva internet vezu. Ako je hitno, obrišite site data ovog sajta u browseru."
-msgstr "Odjava zahteva internet vezu. Ako je hitno, obrišite site data ovog sajta u browseru."
+msgid "Odjava zahteva internet vezu. Ako je hitno, obrišite site data ovog "
+"sajta u browseru."
+msgstr "Odjava zahteva internet vezu. Ako je hitno, obrišite site data ovog "
+"sajta u browseru."
 
 #: src/auth/profile-popover.tsx:221
 msgid "Odjavi ipak"
@@ -687,8 +725,10 @@ msgid "Ova radnja se ne može opozvati."
 msgstr "Ova radnja se ne može opozvati."
 
 #: src/settings/account-settings-page.tsx:565
-msgid "Ova radnja trajno briše vaš AutoKPO nalog i sve sinhronizovane podatke. Lokalni podaci na ovom uređaju biće uklonjeni nakon odjave."
-msgstr "Ova radnja trajno briše vaš AutoKPO nalog i sve sinhronizovane podatke. Lokalni podaci na ovom uređaju biće uklonjeni nakon odjave."
+msgid "Ova radnja trajno briše vaš AutoKPO nalog i sve sinhronizovane podatke. "
+"Lokalni podaci na ovom uređaju biće uklonjeni nakon odjave."
+msgstr "Ova radnja trajno briše vaš AutoKPO nalog i sve sinhronizovane podatke. "
+"Lokalni podaci na ovom uređaju biće uklonjeni nakon odjave."
 
 #: src/entries/entries-table.tsx:138
 msgid "Ovu radnju nije moguće poništiti."
@@ -730,8 +770,10 @@ msgid "PIN kod"
 msgstr "PIN kod"
 
 #: src/e2ee/encryption-unlock-screen.tsx:55
-msgid "PIN kod je uklonjen zbog previše neuspelih pokušaja. Unesite šifru za šifrovanje."
-msgstr "PIN kod je uklonjen zbog previše neuspelih pokušaja. Unesite šifru za šifrovanje."
+msgid "PIN kod je uklonjen zbog previše neuspelih pokušaja. Unesite šifru za "
+"šifrovanje."
+msgstr "PIN kod je uklonjen zbog previše neuspelih pokušaja. Unesite šifru za "
+"šifrovanje."
 
 #: src/e2ee/set-pin-modal.tsx:51
 msgid "PIN kodovi se ne poklapaju."
@@ -947,8 +989,10 @@ msgid "Prijava nije završena. Pokušajte ponovo."
 msgstr "Prijava nije završena. Pokušajte ponovo."
 
 #: src/e2ee/encryption-setup-screen.tsx:65
-msgid "Prijava potvrđuje vaš nalog. Ova odvojena šifra otključava vaše šifrovane podatke posle prijave."
-msgstr "Prijava potvrđuje vaš nalog. Ova odvojena šifra otključava vaše šifrovane podatke posle prijave."
+msgid "Prijava potvrđuje vaš nalog. Ova odvojena šifra otključava vaše "
+"šifrovane podatke posle prijave."
+msgstr "Prijava potvrđuje vaš nalog. Ova odvojena šifra otključava vaše "
+"šifrovane podatke posle prijave."
 
 #: src/help/help-page.tsx:88
 msgid "Prijavite problem na GitHub-u"
@@ -981,8 +1025,10 @@ msgid "Promena avatara trenutno nije dostupna"
 msgstr "Promena avatara trenutno nije dostupna"
 
 #: src/settings/security-settings-page.tsx:556
-msgid "Promena utiče samo na šifru kojom se otključavaju podaci sa servera. Lokalni PIN ili automatsko otključavanje ostaju isti."
-msgstr "Promena utiče samo na šifru kojom se otključavaju podaci sa servera. Lokalni PIN ili automatsko otključavanje ostaju isti."
+msgid "Promena utiče samo na šifru kojom se otključavaju podaci sa servera. "
+"Lokalni PIN ili automatsko otključavanje ostaju isti."
+msgstr "Promena utiče samo na šifru kojom se otključavaju podaci sa servera. "
+"Lokalni PIN ili automatsko otključavanje ostaju isti."
 
 #: src/settings/security-settings-page.tsx:399
 #: src/settings/security-settings-page.tsx:627
@@ -1002,12 +1048,16 @@ msgid "Proverite internet vezu i pokušajte ponovo kasnije."
 msgstr "Proverite internet vezu i pokušajte ponovo kasnije."
 
 #: src/e2ee/encryption-gate.tsx:322
-msgid "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
-msgstr "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
+msgid "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ "
+"dok ne proverimo postojeće podešavanje naloga."
+msgstr "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ "
+"dok ne proverimo postojeće podešavanje naloga."
 
 #: src/e2ee/encryption-setup-screen.tsx:152
-msgid "Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane podatke bez nje."
-msgstr "Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane podatke bez nje."
+msgid "Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane podatke bez "
+"nje."
+msgstr "Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane podatke bez "
+"nje."
 
 #: src/entries/entries-table.tsx:32
 msgid "Redni broj"
@@ -1288,20 +1338,30 @@ msgid "Vaš AutoKPO nalog i sinhronizovani podaci su trajno uklonjeni."
 msgstr "Vaš AutoKPO nalog i sinhronizovani podaci su trajno uklonjeni."
 
 #: src/auth/oauth-callback.tsx:101
-msgid "Vaš nalog nema javnu email adresu. Prijavite se putem jednokratnog koda na email."
-msgstr "Vaš nalog nema javnu email adresu. Prijavite se putem jednokratnog koda na email."
+msgid "Vaš nalog nema javnu email adresu. Prijavite se putem jednokratnog koda "
+"na email."
+msgstr "Vaš nalog nema javnu email adresu. Prijavite se putem jednokratnog koda "
+"na email."
 
 #: src/settings/account-settings-page.tsx:485
 msgid "Vaši podaci"
 msgstr "Vaši podaci"
 
 #: src/help/help-page.tsx:217
-msgid "Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje se izvodi iz vaše lozinke <0>Argon2id</0> algoritmom, a svi podaci se šifruju <1>AES-256-GCM</1> algoritmom. Server nikada ne vidi vaše podatke u čitljivom obliku."
-msgstr "Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje se izvodi iz vaše lozinke <0>Argon2id</0> algoritmom, a svi podaci se šifruju <1>AES-256-GCM</1> algoritmom. Server nikada ne vidi vaše podatke u čitljivom obliku."
+msgid "Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje se izvodi iz "
+"vaše lozinke <0>Argon2id</0> algoritmom, a svi podaci se šifruju "
+"<1>AES-256-GCM</1> algoritmom. Server nikada ne vidi vaše podatke u "
+"čitljivom obliku."
+msgstr "Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje se izvodi iz "
+"vaše lozinke <0>Argon2id</0> algoritmom, a svi podaci se šifruju "
+"<1>AES-256-GCM</1> algoritmom. Server nikada ne vidi vaše podatke u "
+"čitljivom obliku."
 
 #: src/utils/lazy-chunk-error-boundary.tsx:49
-msgid "Verovatno je dostupna nova verzija. Osvežite aplikaciju da biste nastavili."
-msgstr "Verovatno je dostupna nova verzija. Osvežite aplikaciju da biste nastavili."
+msgid "Verovatno je dostupna nova verzija. Osvežite aplikaciju da biste "
+"nastavili."
+msgstr "Verovatno je dostupna nova verzija. Osvežite aplikaciju da biste "
+"nastavili."
 
 #: src/entries/entries-schema.ts:14
 #: src/entries/entries-schema.ts:15
@@ -1314,8 +1374,10 @@ msgid "Za potvrdu unesite email adresu naloga:"
 msgstr "Za potvrdu unesite email adresu naloga:"
 
 #: src/settings/account-settings-page.tsx:135
-msgid "Za pregled i izmenu naloga potrebna je internet veza. Opšta podešavanja aplikacije ostaju dostupna bez interneta."
-msgstr "Za pregled i izmenu naloga potrebna je internet veza. Opšta podešavanja aplikacije ostaju dostupna bez interneta."
+msgid "Za pregled i izmenu naloga potrebna je internet veza. Opšta podešavanja "
+"aplikacije ostaju dostupna bez interneta."
+msgstr "Za pregled i izmenu naloga potrebna je internet veza. Opšta podešavanja "
+"aplikacije ostaju dostupna bez interneta."
 
 #: src/books/book-library.tsx:51
 msgid "Za svaku godinu zadržite jednu knjigu, a ostale obrišite."

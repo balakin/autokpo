@@ -44,6 +44,9 @@ opencode.jsonc
 .dev.vars*
 !.dev.vars.example
 
+# Astro
+.astro/
+
 # Env
 .env*
 !.env.example

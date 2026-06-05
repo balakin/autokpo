@@ -1,14 +1,18 @@
 {
   "name": "@autokpo/website",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro check --tsconfig tsconfig.app.json && astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
+    "@lucide/astro": "^1.17.0",
     "astro": "^6.4.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9"
   }
 }

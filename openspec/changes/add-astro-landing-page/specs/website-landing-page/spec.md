@@ -44,7 +44,7 @@ The landing page SHALL provide `Otvori aplikaciju` as the primary call to action
 
 ### Requirement: App-aligned visual system
 
-The landing page SHALL use a serious, app-aligned visual style based on the AutoKPO light/dark color schema, Manrope UI typography, JetBrains Mono for financial details, calm surfaces, and restrained ledger/dashboard details.
+The landing page SHALL use a serious, app-aligned visual style based on the AutoKPO light/dark color schema, Manrope UI typography, JetBrains Mono for financial details, calm surfaces, and restrained ledger details.
 
 #### Scenario: Visual style matches app tone
 
@@ -54,7 +54,7 @@ The landing page SHALL use a serious, app-aligned visual style based on the Auto
 #### Scenario: Plain CSS provides reusable primitives
 
 - **WHEN** implementers inspect the website styling
-- **THEN** common landing primitives such as buttons, cards, badges, sections, screenshot frames, and FAQ items are styled through custom CSS
+- **THEN** common landing primitives such as buttons, cards, sections, and FAQ items are styled through custom CSS
 
 ### Requirement: Light and dark theme support
 
@@ -72,31 +72,17 @@ The landing page SHALL support light and dark modes, default to system preferenc
 
 ### Requirement: Landing content sections
 
-The landing page SHALL include header, hero, feature, dashboard screenshot, book-page preview, trust/security, FAQ, final CTA, and footer sections.
+The landing page SHALL include header, hero, feature, trust/security, FAQ, final CTA, and footer sections.
 
 #### Scenario: Core sections are present
 
 - **WHEN** a visitor scrolls through the landing page
-- **THEN** the visitor can see the product introduction, feature overview, screenshot placeholders, trust/security messaging, FAQ, final CTA, and footer
+- **THEN** the visitor can see the product introduction, feature overview, trust/security messaging, FAQ, final CTA, and footer
 
 #### Scenario: Navigation targets important sections
 
 - **WHEN** a visitor uses the header navigation
 - **THEN** navigation links move the visitor to important landing sections such as features, security/trust, and FAQ
-
-### Requirement: Screenshot placeholders
-
-The landing page SHALL include designed placeholders or image slots for dashboard and book-page screenshots, including light and dark variants for later replacement.
-
-#### Scenario: Dashboard placeholder is visible
-
-- **WHEN** actual dashboard screenshot assets are not yet available
-- **THEN** the hero still displays a designed dashboard preview or placeholder without broken image UI
-
-#### Scenario: Book page placeholder is visible
-
-- **WHEN** actual book-page screenshot assets are not yet available
-- **THEN** the book preview section still displays a designed book-page preview or placeholder without broken image UI
 
 ### Requirement: Accurate data and security FAQ copy
 

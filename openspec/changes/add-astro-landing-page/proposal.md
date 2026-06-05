@@ -10,7 +10,6 @@ AutoKPO needs a public landing page at `autokpo.com` that explains the product b
 - Provide a secondary GitHub link to `https://github.com/balakin/autokpo`.
 - Use a serious visual style aligned with the app's current Nordic Winter color system, Manrope/JetBrains Mono typography, and calm financial-dashboard tone.
 - Implement light and dark modes with system preference support and a visible theme toggle.
-- Include dashboard and book-page screenshot placeholders for later replacement.
 - Include feature, trust/security, FAQ, final CTA, and footer sections.
 - Clearly state that AutoKPO is free and open source without adding a pricing section.
 - Include careful non-official wording: AutoKPO is a helper tool, not legal, tax, bookkeeping, or official advice.
@@ -20,7 +19,7 @@ AutoKPO needs a public landing page at `autokpo.com` that explains the product b
 
 ### New Capabilities
 
-- `website-landing-page`: Public Astro landing page for AutoKPO, including content, structure, theme behavior, screenshot placeholders, CTA links, FAQ, and footer.
+- `website-landing-page`: Public Astro landing page for AutoKPO, including content, structure, theme behavior, CTA links, FAQ, and footer.
 
 ### Modified Capabilities
 
@@ -32,4 +31,3 @@ None.
 - Uses Astro components and plain CSS; no React, UI kit, or component framework should be introduced for this landing page.
 - Reuses app-derived design tokens conceptually, including light/dark color variables, Manrope, and JetBrains Mono where available.
 - External links: `https://app.autokpo.com` and `https://github.com/balakin/autokpo`.
-- Screenshot placeholder paths should be prepared for dashboard and book page assets, including light/dark variants.

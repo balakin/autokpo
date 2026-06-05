@@ -16,7 +16,12 @@ import tseslint from 'typescript-eslint';
 const root = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineConfig([
-  globalIgnores(['**/dist', '**/public', 'apps/app/worker-configuration.d.ts']),
+  globalIgnores([
+    '**/dist',
+    '**/public',
+    '**/.astro',
+    'apps/app/worker-configuration.d.ts',
+  ]),
 
   // Base: applies to every TS/TSX file in the repo.
   {

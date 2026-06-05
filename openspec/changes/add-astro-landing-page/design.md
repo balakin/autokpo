@@ -14,8 +14,7 @@ The repository currently does not show `apps/website` in the working tree, even 
 - Use Astro components and plain CSS only, without React or UI kits.
 - Match the app's serious “calm fiscal instrument” tone: soft Nordic surfaces, precise financial cards, quiet grid/ledger details, and restrained motion.
 - Support light and dark themes with system preference default and a visible, accessible theme toggle.
-- Provide Serbian Latin content for hero, features, screenshot previews, trust/security, FAQ, final CTA, and footer.
-- Include dashboard and book-page screenshot placeholders that can later be replaced by real images.
+- Provide Serbian Latin content for hero, features, trust/security, FAQ, final CTA, and footer.
 - Make `Otvori aplikaciju` the primary CTA and GitHub the secondary link.
 - Include careful legal boundary copy without implying official correctness or tax/legal advice.
 
@@ -57,24 +56,12 @@ The implementation should include a small inline early script in the page head o
 The page should use this structure:
 
 1. Header with navigation, GitHub link, theme toggle, and primary app CTA.
-2. Hero with headline, supporting copy, primary/secondary CTAs, and dashboard screenshot placeholder.
+2. Hero with headline, supporting copy, and primary/secondary CTAs.
 3. Feature section covering KPO books, income entries, income overview, PDF export, encrypted sync, and open source.
-4. Book-page preview section with placeholder image and explanation.
-5. Trust/security section covering free/open-source, account-based sync, local availability, encrypted KPO documents, and account data distinction.
-6. FAQ section.
-7. Final CTA.
-8. Footer with GitHub, AGPL-3.0, and open-source note.
-
-### Screenshot placeholders
-
-Prepare image references or placeholder frames for:
-
-- `/screenshots/dashboard-light.png`
-- `/screenshots/dashboard-dark.png`
-- `/screenshots/book-light.png`
-- `/screenshots/book-dark.png`
-
-If actual files are not present during implementation, render designed placeholder frames that communicate where the screenshots will appear without broken images.
+4. Trust/security section covering free/open-source, account-based sync, local availability, encrypted KPO documents, and account data distinction.
+5. FAQ section.
+6. Final CTA.
+7. Footer with GitHub, AGPL-3.0, and open-source note.
 
 ### Copy and claims
 
@@ -90,7 +77,6 @@ Data wording must avoid claiming the server stores nothing. It should distinguis
 - **Risk: Website copy overpromises legal correctness** → Mitigation: use helper-tool wording and include a clear non-advice FAQ answer.
 - **Risk: Privacy copy implies zero server data** → Mitigation: explicitly distinguish auth/account data from encrypted KPO documents.
 - **Risk: Plain CSS duplicates app tokens manually** → Mitigation: keep the website token set small and app-aligned rather than attempting a shared package in this iteration.
-- **Risk: Missing screenshot files cause broken visuals** → Mitigation: build styled placeholder frames and use real image paths only when assets are available.
 - **Risk: Theme flash on load** → Mitigation: set `data-theme` with an early inline script before rendering theme-dependent surfaces.
 - **Risk: Page becomes generic SaaS marketing** → Mitigation: anchor the visual language in KPO/ledger/dashboard details, app palette, and serious Serbian copy.
 

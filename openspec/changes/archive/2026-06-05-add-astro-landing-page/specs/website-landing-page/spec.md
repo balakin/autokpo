@@ -2,7 +2,7 @@
 
 ### Requirement: Public Astro landing page
 
-The system SHALL provide a single-page public landing site for AutoKPO in the `apps/website` package using Astro components and plain CSS.
+The system SHALL provide a single-page public landing site for AutoKPO in the `apps/website` package, implemented as an Astro page with native HTML sections, Astro icon components, inline global plain CSS, and minimal vanilla JavaScript for theme switching.
 
 #### Scenario: Landing page renders
 
@@ -13,6 +13,11 @@ The system SHALL provide a single-page public landing site for AutoKPO in the `a
 
 - **WHEN** the website is built
 - **THEN** the landing page implementation does not introduce React, React islands, or a UI kit for page sections
+
+#### Scenario: Website build checks Astro content
+
+- **WHEN** the website build script runs
+- **THEN** it performs `astro check --tsconfig tsconfig.app.json` before `astro build`
 
 ### Requirement: Serbian Latin product positioning
 
@@ -44,21 +49,21 @@ The landing page SHALL provide `Otvori aplikaciju` as the primary call to action
 
 ### Requirement: App-aligned visual system
 
-The landing page SHALL use a serious, app-aligned visual style based on the AutoKPO light/dark color schema, Manrope UI typography, JetBrains Mono for financial details, calm surfaces, and restrained ledger details.
+The landing page SHALL use a serious, app-aligned visual style based on the AutoKPO light/dark color schema, OKLCH CSS variables, local Manrope UI typography, local JetBrains Mono for financial details, calm surfaces, and restrained ledger details.
 
 #### Scenario: Visual style matches app tone
 
 - **WHEN** a visitor views the landing page
-- **THEN** the page uses calm financial-dashboard styling rather than a generic SaaS template or unrelated visual theme
+- **THEN** the page uses calm financial-dashboard styling, including a decorative KPO ledger mockup, rather than a generic SaaS template or unrelated visual theme
 
 #### Scenario: Plain CSS provides reusable primitives
 
 - **WHEN** implementers inspect the website styling
-- **THEN** common landing primitives such as buttons, cards, sections, and FAQ items are styled through custom CSS
+- **THEN** common landing primitives such as buttons, cards, sections, the ledger mockup, and FAQ items are styled through custom CSS
 
 ### Requirement: Light and dark theme support
 
-The landing page SHALL support light and dark modes, default to system preference when no saved preference exists, and provide a visible accessible theme toggle.
+The landing page SHALL support light and dark modes, default to system preference when no saved preference exists, and provide a visible accessible theme toggle that persists preference under `autokpo-theme`.
 
 #### Scenario: System preference is used by default
 
@@ -68,35 +73,40 @@ The landing page SHALL support light and dark modes, default to system preferenc
 #### Scenario: Visitor can toggle theme
 
 - **WHEN** a visitor activates the theme toggle
-- **THEN** the page changes between light and dark mode and persists the selection for future visits
+- **THEN** the page changes between light and dark mode, updates the document `data-theme` and `.dark` class, updates the toggle accessibility state, and persists the selection for future visits
 
 ### Requirement: Landing content sections
 
-The landing page SHALL include header, hero, feature, trust/security, FAQ, final CTA, and footer sections.
+The landing page SHALL include sticky header navigation, hero, feature grid, trust/security, FAQ accordion, final CTA, and footer sections.
 
 #### Scenario: Core sections are present
 
 - **WHEN** a visitor scrolls through the landing page
-- **THEN** the visitor can see the product introduction, feature overview, trust/security messaging, FAQ, final CTA, and footer
+- **THEN** the visitor can see the product introduction with a ledger mockup, feature overview, trust/security messaging, FAQ, final CTA, and footer
 
 #### Scenario: Navigation targets important sections
 
 - **WHEN** a visitor uses the header navigation
 - **THEN** navigation links move the visitor to important landing sections such as features, security/trust, and FAQ
 
-### Requirement: Accurate data and security FAQ copy
+### Requirement: Data and security copy
 
-The landing page SHALL explain that AutoKPO requires an account, stores account/auth data needed for login, and stores KPO document content on the server only as encrypted synchronization data.
+The landing page SHALL explain that AutoKPO requires an account, supports email/Google/GitHub sign-in, synchronizes data between devices, stores account/auth data needed for login separately, and presents synchronized application data as end-to-end encrypted.
 
 #### Scenario: Data storage distinction is clear
 
-- **WHEN** a visitor reads the FAQ or trust/security section
-- **THEN** the page distinguishes account/auth data, such as email and linked OAuth accounts, from encrypted KPO document data
+- **WHEN** a visitor reads the FAQ data-storage answer
+- **THEN** the page distinguishes account/auth data, such as email and linked Google/GitHub accounts, from encrypted KPO book data
 
-#### Scenario: Server-readable KPO content is not claimed
+#### Scenario: End-to-end encryption is described
 
 - **WHEN** a visitor reads security copy
-- **THEN** the page does not claim that all server-side data is absent or unreadable, and specifically limits unreadable-content claims to KPO document content
+- **THEN** the page states that data is end-to-end encrypted, encryption/decryption happens on the user's device, and the server does not see the user's data in readable form
+
+#### Scenario: Encryption primitives are named
+
+- **WHEN** a visitor reads the FAQ answer about whether the server can read KPO data
+- **THEN** the page names Argon2id for deriving the encryption key and AES-256-GCM for encrypting data
 
 ### Requirement: Non-official legal boundary
 
@@ -125,3 +135,27 @@ The landing page SHALL include a footer with GitHub, AGPL-3.0 license, and open-
 
 - **WHEN** a visitor reaches the footer
 - **THEN** the footer mentions AGPL-3.0 licensing
+
+#### Scenario: Footer mentions project author
+
+- **WHEN** a visitor reaches the footer
+- **THEN** the footer includes a project author note linking to the author's GitHub profile
+
+### Requirement: Landing assets
+
+The landing page SHALL include local font assets, favicon assets, and theme-aware GitHub icon assets.
+
+#### Scenario: Local fonts load
+
+- **WHEN** the landing page renders
+- **THEN** Manrope and JetBrains Mono are loaded from local website font files
+
+#### Scenario: Favicons are available
+
+- **WHEN** the landing page head is rendered
+- **THEN** it links PNG, SVG, and ICO favicon assets
+
+#### Scenario: GitHub icon adapts to theme
+
+- **WHEN** the visitor switches between light and dark themes
+- **THEN** GitHub links use the appropriate black or white local GitHub SVG icon

@@ -1,27 +1,4 @@
-## Purpose
-
-Provide the public AutoKPO landing website at `autokpo.com`, introducing the product to Serbian Latin-speaking preduzetnici and paušalci before they open the authenticated app.
-
-## Requirements
-
-### Requirement: Public Astro landing page
-
-The system SHALL provide a single-page public landing site for AutoKPO in the `apps/website` package, implemented as an Astro page with native HTML sections, Astro icon components, inline global plain CSS, and minimal vanilla JavaScript for theme switching.
-
-#### Scenario: Landing page renders
-
-- **WHEN** a visitor opens the website root page
-- **THEN** the system displays the AutoKPO landing page without requiring authentication
-
-#### Scenario: No client UI framework required
-
-- **WHEN** the website is built
-- **THEN** the landing page implementation does not introduce React, React islands, or a UI kit for page sections
-
-#### Scenario: Website build checks Astro content
-
-- **WHEN** the website build script runs
-- **THEN** it performs `astro check --tsconfig tsconfig.app.json` before `astro build`
+## MODIFIED Requirements
 
 ### Requirement: Serbian Latin product positioning
 
@@ -50,48 +27,6 @@ The landing page SHALL provide a localized primary call to action linking to `ht
 
 - **WHEN** a visitor activates the GitHub link on any localized landing page
 - **THEN** the link target is `https://github.com/balakin/autokpo`
-
-### Requirement: App-aligned visual system
-
-The landing page SHALL use a serious, app-aligned visual style based on the AutoKPO light/dark color schema, OKLCH CSS variables, local Manrope UI typography, local JetBrains Mono for financial details, calm surfaces, and restrained ledger details.
-
-#### Scenario: Visual style matches app tone
-
-- **WHEN** a visitor views the landing page
-- **THEN** the page uses calm financial-dashboard styling, including a decorative KPO ledger mockup, rather than a generic SaaS template or unrelated visual theme
-
-#### Scenario: Plain CSS provides reusable primitives
-
-- **WHEN** implementers inspect the website styling
-- **THEN** common landing primitives such as buttons, cards, sections, the ledger mockup, and FAQ items are styled through custom CSS
-
-### Requirement: Light and dark theme support
-
-The landing page SHALL support light and dark modes, default to system preference when no saved preference exists, and provide a visible accessible theme toggle that persists preference under `autokpo-theme`.
-
-#### Scenario: System preference is used by default
-
-- **WHEN** a visitor has no saved website theme preference
-- **THEN** the page uses the visitor's `prefers-color-scheme` value to select light or dark mode
-
-#### Scenario: Visitor can toggle theme
-
-- **WHEN** a visitor activates the theme toggle
-- **THEN** the page changes between light and dark mode, updates the document `data-theme` and `.dark` class, updates the toggle accessibility state, and persists the selection for future visits
-
-### Requirement: Landing content sections
-
-The landing page SHALL include sticky header navigation, hero, feature grid, trust/security, FAQ accordion, final CTA, and footer sections.
-
-#### Scenario: Core sections are present
-
-- **WHEN** a visitor scrolls through the landing page
-- **THEN** the visitor can see the product introduction with a ledger mockup, feature overview, trust/security messaging, FAQ, final CTA, and footer
-
-#### Scenario: Navigation targets important sections
-
-- **WHEN** a visitor uses the header navigation
-- **THEN** navigation links move the visitor to important landing sections such as features, security/trust, and FAQ
 
 ### Requirement: Data and security copy
 
@@ -144,22 +79,3 @@ The landing page SHALL include a localized footer on every supported locale page
 
 - **WHEN** a visitor reaches the footer on any localized landing page
 - **THEN** the footer includes a project author note linking to the author's GitHub profile in that page's locale
-
-### Requirement: Landing assets
-
-The landing page SHALL include local font assets, favicon assets, and theme-aware GitHub icon assets.
-
-#### Scenario: Local fonts load
-
-- **WHEN** the landing page renders
-- **THEN** Manrope and JetBrains Mono are loaded from local website font files
-
-#### Scenario: Favicons are available
-
-- **WHEN** the landing page head is rendered
-- **THEN** it links PNG, SVG, and ICO favicon assets
-
-#### Scenario: GitHub icon adapts to theme
-
-- **WHEN** the visitor switches between light and dark themes
-- **THEN** GitHub links use the appropriate black or white local GitHub SVG icon

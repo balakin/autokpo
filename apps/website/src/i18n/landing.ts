@@ -7,7 +7,9 @@ export type IconName =
   | 'creditCard'
   | 'fileDown'
   | 'filePlus'
+  | 'key'
   | 'lock'
+  | 'refresh'
   | 'user';
 
 type LinkText = {
@@ -116,7 +118,7 @@ export const landingContent: Record<Locale, LandingContent> = {
     nav: {
       features: 'Mogućnosti',
       security: 'Sigurnost',
-      faq: 'Pitanja',
+      faq: 'FAQ',
     },
     theme: {
       toggle: 'Promeni temu',
@@ -131,10 +133,10 @@ export const landingContent: Record<Locale, LandingContent> = {
     },
     hero: {
       badge: 'Besplatno i otvorenog koda',
-      titlePrefix: 'KPO evidencija, vođena ',
-      titleEmphasis: 'mirno i precizno',
+      titlePrefix: 'Vodite KPO-knjige ',
+      titleEmphasis: 'jednostavno i lako',
       titleSuffix: '.',
-      lede: 'AutoKPO je pomoćni alat za preduzetnike i paušalce za vođenje Knjige o ostvarenom prometu. Knjige po godinama, unosi prihoda i izvoz — bez nepotrebnog šuma.',
+      lede: 'Da li ste paušalac u Srbiji? AutoKPO vam pomaže da vodite KPO-knjige u redu — unosi prihoda, knjige po godinama i izvoz u PDF.',
     },
     ledger: {
       title: 'KPO unosi',
@@ -153,25 +155,25 @@ export const landingContent: Record<Locale, LandingContent> = {
         {
           number: '2',
           date: '15.04.2026.',
-          client: 'Demo Trade d.o.o.',
+          client: 'Primer Trade d.o.o.',
           amount: '1.700.000,00 RSD',
         },
         {
           number: '3',
           date: '12.05.2026.',
-          client: 'Nova Logistika d.o.o.',
+          client: 'Primer Logistika d.o.o.',
           amount: '350.000,00 RSD',
         },
         {
           number: '4',
           date: '28.05.2026.',
-          client: 'Alpha Tech d.o.o.',
+          client: 'Primer Tech d.o.o.',
           amount: '650.000,00 RSD',
         },
         {
           number: '5',
           date: '01.06.2026.',
-          client: 'Test Servis PR',
+          client: 'Primer Servis PR',
           amount: '2.786.856,00 RSD',
         },
       ],
@@ -180,18 +182,18 @@ export const landingContent: Record<Locale, LandingContent> = {
     },
     features: {
       eyebrow: 'Mogućnosti',
-      title: 'Sve što treba za urednu KPO knjigu',
-      body: 'Alat usmeren na evidenciju — bez suvišnih opcija. Svaki ekran radi jedno i radi ga jasno.',
+      title: 'Sve što treba za vođenje KPO knjiga',
+      body: 'Od unosa prihoda do izvoza u PDF — s knjigama po godinama, praćenjem paušalnog limita i sinhronizacijom između uređaja.',
       items: [
         {
           icon: 'book',
           title: 'Knjige po godinama',
-          body: 'Zasebna KPO knjiga za svaku poslovnu godinu, uredno razdvojena i lako dostupna.',
+          body: 'Zasebna knjiga za svaku godinu. Prošli periodi su uvek dostupni.',
         },
         {
           icon: 'filePlus',
           title: 'Unosi prihoda',
-          body: 'Brz unos pojedinačnih stavki prihoda sa datumom, dokumentom i iznosom.',
+          body: 'Unosi prihoda u RSD s automatskom konverzijom iz bilo koje valute.',
         },
         {
           icon: 'chart',
@@ -200,23 +202,23 @@ export const landingContent: Record<Locale, LandingContent> = {
         },
         {
           icon: 'fileDown',
-          title: 'PDF i izvoz',
-          body: 'Izvoz knjige u PDF i druge formate, spreman za štampu ili dalju obradu.',
+          title: 'Izvoz u PDF',
+          body: 'Izvezite KPO-knjigu u PDF — spremno za štampu ili arhiviranje.',
         },
         {
           icon: 'lock',
           title: 'Šifrovana sinhronizacija',
-          body: 'KPO dokumenti se sinhronizuju u šifrovanom obliku, dostupni sa više uređaja.',
+          body: 'Sinhronizacija između uređaja. Podaci su uvek šifrovani.',
         },
         {
           icon: 'code',
           title: 'Otvoren kod',
-          body: 'Ceo izvorni kod je javan pod licencom AGPL-3.0 — proverljiv i bez skrivenih delova.',
+          body: 'Kod je otvoren pod AGPL-3.0 i dostupan na GitHub-u. Ništa skriveno.',
         },
       ],
     },
     trust: {
-      eyebrow: 'Sigurnost i podaci',
+      eyebrow: 'Sigurnost',
       title: 'Nalog i sinhronizacija',
       body: 'Registrujte se emailom ili putem Google ili GitHub naloga. Svi vaši uređaji automatski se sinhronizuju, a svi podaci su end-to-end šifrovani.',
       items: [
@@ -226,9 +228,9 @@ export const landingContent: Record<Locale, LandingContent> = {
           body: 'Registrujte se emailom ili jednim klikom putem Google ili GitHub naloga.',
         },
         {
-          icon: 'creditCard',
-          title: 'Sinhronizacija između uređaja',
-          body: 'Pristupajte KPO knjizi sa svih uređaja. Podaci se automatski sinhronizuju.',
+          icon: 'key',
+          title: 'Lozinka za šifrovanje',
+          body: 'Pri prvoj prijavi kreirate posebnu lozinku za šifrovanje — ona nikada ne napušta vaš uređaj. Važno: ne možemo obnoviti ovu lozinku. Bez nje, svi podaci su trajno izgubljeni.',
         },
         {
           icon: 'lock',
@@ -236,16 +238,21 @@ export const landingContent: Record<Locale, LandingContent> = {
           body: 'Svi podaci su šifrovani pre nego što napuste vaš uređaj. Server nikada ne vidi sadržaj vaše knjige u čitljivom obliku.',
         },
         {
+          icon: 'refresh',
+          title: 'Sinhronizacija između uređaja',
+          body: 'Radite sa bilo kog uređaja. Podaci se automatski sinhronizuju.',
+        },
+        {
           icon: 'code',
           title: 'Otvoren za proveru',
-          body: 'Izvorni kod je javan pod licencom AGPL-3.0 — svako može da proveri kako aplikacija radi.',
+          body: 'Izvorni kod je otvoren — svako može da proveri kako aplikacija radi.',
         },
       ],
     },
     faq: {
       eyebrow: 'Česta pitanja',
-      title: 'Kratko i praktično',
-      note: 'Napomena: AutoKPO je pomoćni alat za evidenciju i ne predstavlja zvaničnu uslugu niti pravni ili poreski savet. Za obavezujuća tumačenja obratite se knjigovođi, savetniku ili nadležnoj instituciji.',
+      title: 'Što je važno znati',
+      note: 'AutoKPO je alat za evidenciju, ne pravna ili poreska usluga. Za zvanične savete obratite se stručnjacima.',
       items: [
         {
           question: 'Da li je AutoKPO besplatan?',
@@ -260,7 +267,7 @@ export const landingContent: Record<Locale, LandingContent> = {
         {
           question: 'Gde se čuvaju moji podaci?',
           answerHtml:
-            'Podaci KPO knjige čuvaju se lokalno na vašem uređaju u šifrovanom obliku i sinhronizuju se sa serverom — takođe šifrovani. Podaci naloga (email, Google ili GitHub nalog) čuvaju se odvojeno i koriste samo za prijavu.',
+            'Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju sa Cloudflare serverima u EU. Svi podaci knjige su šifrovani — i na uređaju i na serveru. Podaci naloga (email, Google ili GitHub) i podaci sesija čuvaju se na serveru u čitljivom obliku — to je neophodno za prijavu i omogućava vam pregled i brisanje aktivnih sesija.',
         },
         {
           question: 'Može li server da čita moje KPO podatke?',
@@ -277,15 +284,20 @@ export const landingContent: Record<Locale, LandingContent> = {
           answerHtml:
             '<strong>Da.</strong> AutoKPO je progresivna veb aplikacija (PWA) koja radi i bez internet veze. Dovoljno je da se jednom prijavite — nakon toga možete koristiti aplikaciju i praviti izmene i van mreže. Sve promene sinhronizuju se automatski pri ponovnom povezivanju na mrežu.',
         },
+        {
+          question: 'Zaboravio sam lozinku za šifrovanje. Šta da radim?',
+          answerHtml:
+            'Ne možemo obnoviti lozinku za šifrovanje. Možete pokušati da je se setite — ili da obrišete nalog i počnete iznova. U tom slučaju, svi podaci će biti trajno izgubljeni.',
+        },
       ],
     },
     final: {
-      title: 'Otvorite knjigu kada vama odgovara',
+      title: 'Počnite odmah',
       bodyHtml:
         'Bez pretplate, bez instalacije.<br />Prijavite se i počnite da vodite KPO evidenciju.',
     },
     footer: {
-      taglinePrefix: 'Autor',
+      taglinePrefix: 'by',
     },
   },
   en: {
@@ -302,7 +314,7 @@ export const landingContent: Record<Locale, LandingContent> = {
     nav: {
       features: 'Features',
       security: 'Security',
-      faq: 'Questions',
+      faq: 'FAQ',
     },
     theme: {
       toggle: 'Change theme',
@@ -317,10 +329,10 @@ export const landingContent: Record<Locale, LandingContent> = {
     },
     hero: {
       badge: 'Free and open source',
-      titlePrefix: 'KPO records, kept ',
-      titleEmphasis: 'calmly and precisely',
+      titlePrefix: 'Keep your KPO book ',
+      titleEmphasis: 'effortlessly',
       titleSuffix: '.',
-      lede: 'AutoKPO is a helper tool for Serbian entrepreneurs and flat-rate taxpayers who maintain the Book of Turnover Records. Yearly books, income entries and exports — without unnecessary noise.',
+      lede: 'Are you a flat-rate taxpayer in Serbia? AutoKPO helps you keep your KPO book in order — income entries, yearly books and PDF export.',
     },
     ledger: {
       title: 'KPO entries',
@@ -332,32 +344,32 @@ export const landingContent: Record<Locale, LandingContent> = {
       rows: [
         {
           number: '1',
-          date: '11 Mar 2026',
+          date: '11.03.2026.',
           client: 'Primer Studio d.o.o.',
           amount: '127,403.70 RSD',
         },
         {
           number: '2',
-          date: '15 Apr 2026',
-          client: 'Demo Trade d.o.o.',
+          date: '15.04.2026.',
+          client: 'Primer Trade d.o.o.',
           amount: '1,700,000.00 RSD',
         },
         {
           number: '3',
-          date: '12 May 2026',
-          client: 'Nova Logistika d.o.o.',
+          date: '12.05.2026.',
+          client: 'Primer Logistika d.o.o.',
           amount: '350,000.00 RSD',
         },
         {
           number: '4',
-          date: '28 May 2026',
-          client: 'Alpha Tech d.o.o.',
+          date: '28.05.2026.',
+          client: 'Primer Tech d.o.o.',
           amount: '650,000.00 RSD',
         },
         {
           number: '5',
-          date: '01 Jun 2026',
-          client: 'Test Servis PR',
+          date: '01.06.2026.',
+          client: 'Primer Servis PR',
           amount: '2,786,856.00 RSD',
         },
       ],
@@ -366,18 +378,18 @@ export const landingContent: Record<Locale, LandingContent> = {
     },
     features: {
       eyebrow: 'Features',
-      title: 'Everything needed for an orderly KPO book',
-      body: 'A focused record-keeping tool — no extra clutter. Each screen does one job and does it clearly.',
+      title: 'Everything needed for keeping KPO books',
+      body: 'From recording income to exporting PDF — with yearly books, flat-rate limit tracking and sync across devices.',
       items: [
         {
           icon: 'book',
           title: 'Books by year',
-          body: 'A separate KPO book for every business year, clearly separated and easy to access.',
+          body: 'A separate book for every year. Past periods are always accessible.',
         },
         {
           icon: 'filePlus',
           title: 'Income entries',
-          body: 'Quickly record individual income items with date, document and amount.',
+          body: 'Income entries in RSD with automatic conversion from any currency.',
         },
         {
           icon: 'chart',
@@ -386,23 +398,23 @@ export const landingContent: Record<Locale, LandingContent> = {
         },
         {
           icon: 'fileDown',
-          title: 'PDF and export',
-          body: 'Export the book to PDF and other formats, ready for printing or further processing.',
+          title: 'PDF export',
+          body: 'Export your KPO book to PDF — ready for printing or archiving.',
         },
         {
           icon: 'lock',
           title: 'Encrypted synchronization',
-          body: 'KPO documents synchronize in encrypted form and remain available across devices.',
+          body: 'Sync across devices. Data is always encrypted.',
         },
         {
           icon: 'code',
           title: 'Open source',
-          body: 'The full source code is public under the AGPL-3.0 license — verifiable and without hidden parts.',
+          body: 'Code is open under AGPL-3.0 and available on GitHub. Nothing hidden.',
         },
       ],
     },
     trust: {
-      eyebrow: 'Security and data',
+      eyebrow: 'Security',
       title: 'Account and synchronization',
       body: 'Sign up with email, Google or GitHub. Your devices synchronize automatically, and your application data is end-to-end encrypted.',
       items: [
@@ -412,9 +424,9 @@ export const landingContent: Record<Locale, LandingContent> = {
           body: 'Register with email or in one click using a Google or GitHub account.',
         },
         {
-          icon: 'creditCard',
-          title: 'Sync across devices',
-          body: 'Access your KPO book from all your devices. Data synchronizes automatically.',
+          icon: 'key',
+          title: 'Encryption password',
+          body: 'On first sign-in you create a separate encryption password — it never leaves your device. Important: we cannot restore this password. Without it, all data is permanently lost.',
         },
         {
           icon: 'lock',
@@ -422,16 +434,21 @@ export const landingContent: Record<Locale, LandingContent> = {
           body: 'Data is encrypted before it leaves your device. The server never sees your book content in readable form.',
         },
         {
+          icon: 'refresh',
+          title: 'Sync across devices',
+          body: 'Work from any device. Data synchronizes automatically.',
+        },
+        {
           icon: 'code',
           title: 'Open for inspection',
-          body: 'The source code is public under the AGPL-3.0 license — anyone can check how the app works.',
+          body: 'The source code is open — anyone can check how the app works.',
         },
       ],
     },
     faq: {
       eyebrow: 'Frequently asked questions',
-      title: 'Short and practical',
-      note: 'Note: AutoKPO is a helper tool for record keeping. It is not an official service and does not provide legal or tax advice. For binding interpretations, consult a bookkeeper, advisor or competent institution.',
+      title: 'What to know',
+      note: 'AutoKPO is a record-keeping tool, not a legal or tax service. For official advice, consult qualified professionals.',
       items: [
         {
           question: 'Is AutoKPO free?',
@@ -446,7 +463,7 @@ export const landingContent: Record<Locale, LandingContent> = {
         {
           question: 'Where is my data stored?',
           answerHtml:
-            'KPO book data is stored locally on your device in encrypted form and synchronized with the server — also encrypted. Account data such as email and linked Google or GitHub accounts is stored separately and used only for sign-in.',
+            'Data is stored locally on your device and synchronized with Cloudflare servers located in the EU. All book data is encrypted — both on the device and on the server. Account data (email, Google or GitHub) and session data are stored on the server in readable form — this is required for sign-in and lets you view and delete your active sessions.',
         },
         {
           question: 'Can the server read my KPO data?',
@@ -463,15 +480,20 @@ export const landingContent: Record<Locale, LandingContent> = {
           answerHtml:
             '<strong>Yes.</strong> AutoKPO is a progressive web app (PWA) that works without an internet connection. Sign in once, then continue using the app and making changes offline. Changes synchronize automatically when you reconnect.',
         },
+        {
+          question: 'I forgot my encryption password. What can I do?',
+          answerHtml:
+            'We cannot restore your encryption password. You can try to remember it — or delete your account and start over. In that case, all your data will be permanently lost.',
+        },
       ],
     },
     final: {
-      title: 'Open your book when it suits you',
+      title: 'Start right now',
       bodyHtml:
         'No subscription, no installation.<br />Sign in and start keeping KPO records.',
     },
     footer: {
-      taglinePrefix: 'Made by',
+      taglinePrefix: 'by',
     },
   },
   ru: {
@@ -488,7 +510,7 @@ export const landingContent: Record<Locale, LandingContent> = {
     nav: {
       features: 'Возможности',
       security: 'Безопасность',
-      faq: 'Вопросы',
+      faq: 'FAQ',
     },
     theme: {
       toggle: 'Изменить тему',
@@ -503,10 +525,10 @@ export const landingContent: Record<Locale, LandingContent> = {
     },
     hero: {
       badge: 'Бесплатно и open source',
-      titlePrefix: 'Учет KPO, который ведется ',
-      titleEmphasis: 'спокойно и точно',
+      titlePrefix: 'Ведите KPO-книгу ',
+      titleEmphasis: 'без лишних усилий',
       titleSuffix: '.',
-      lede: 'AutoKPO — вспомогательный инструмент для сербских предпринимателей и паушальцев, ведущих книгу учета оборота. Книги по годам, записи доходов и экспорт — без лишнего шума.',
+      lede: 'Вы паушал в Сербии? AutoKPO поможет держать KPO-книгу в порядке — записи доходов, книги по годам и экспорт в PDF.',
     },
     ledger: {
       title: 'Записи KPO',
@@ -518,32 +540,32 @@ export const landingContent: Record<Locale, LandingContent> = {
       rows: [
         {
           number: '1',
-          date: '11.03.2026',
+          date: '11.03.2026.',
           client: 'Primer Studio d.o.o.',
           amount: '127 403,70 RSD',
         },
         {
           number: '2',
-          date: '15.04.2026',
-          client: 'Demo Trade d.o.o.',
+          date: '15.04.2026.',
+          client: 'Primer Trade d.o.o.',
           amount: '1 700 000,00 RSD',
         },
         {
           number: '3',
-          date: '12.05.2026',
-          client: 'Nova Logistika d.o.o.',
+          date: '12.05.2026.',
+          client: 'Primer Logistika d.o.o.',
           amount: '350 000,00 RSD',
         },
         {
           number: '4',
-          date: '28.05.2026',
-          client: 'Alpha Tech d.o.o.',
+          date: '28.05.2026.',
+          client: 'Primer Tech d.o.o.',
           amount: '650 000,00 RSD',
         },
         {
           number: '5',
-          date: '01.06.2026',
-          client: 'Test Servis PR',
+          date: '01.06.2026.',
+          client: 'Primer Servis PR',
           amount: '2 786 856,00 RSD',
         },
       ],
@@ -552,18 +574,18 @@ export const landingContent: Record<Locale, LandingContent> = {
     },
     features: {
       eyebrow: 'Возможности',
-      title: 'Все, что нужно для аккуратной книги KPO',
-      body: 'Инструмент сфокусирован на учете — без лишних функций. Каждый экран делает одну задачу и делает ее понятно.',
+      title: 'Все, что нужно для ведения KPO-книг',
+      body: 'От записи дохода до экспорта в PDF — с книгами по годам, контролем паушального лимита и синхронизацией между устройствами.',
       items: [
         {
           icon: 'book',
           title: 'Книги по годам',
-          body: 'Отдельная книга KPO для каждого делового года, аккуратно разделенная и легко доступная.',
+          body: 'Отдельная книга на каждый год. Прошлые периоды всегда доступны.',
         },
         {
           icon: 'filePlus',
           title: 'Записи доходов',
-          body: 'Быстрое добавление отдельных доходов с датой, документом и суммой.',
+          body: 'Записи доходов в RSD с автоматической конвертацией из любой валюты.',
         },
         {
           icon: 'chart',
@@ -572,23 +594,23 @@ export const landingContent: Record<Locale, LandingContent> = {
         },
         {
           icon: 'fileDown',
-          title: 'PDF и экспорт',
-          body: 'Экспорт книги в PDF и другие форматы, готовые для печати или дальнейшей обработки.',
+          title: 'Экспорт в PDF',
+          body: 'Экспортируйте KPO-книгу в PDF — готово для печати или архива.',
         },
         {
           icon: 'lock',
           title: 'Зашифрованная синхронизация',
-          body: 'Документы KPO синхронизируются в зашифрованном виде и доступны с нескольких устройств.',
+          body: 'Синхронизация между устройствами. Данные всегда зашифрованы.',
         },
         {
           icon: 'code',
           title: 'Открытый код',
-          body: 'Весь исходный код открыт под лицензией AGPL-3.0 — его можно проверить, скрытых частей нет.',
+          body: 'Код открыт под AGPL-3.0 и доступен на GitHub. Никаких скрытых частей.',
         },
       ],
     },
     trust: {
-      eyebrow: 'Безопасность и данные',
+      eyebrow: 'Безопасность',
       title: 'Аккаунт и синхронизация',
       body: 'Зарегистрируйтесь по email или через Google/GitHub. Все ваши устройства синхронизируются автоматически, а данные приложения защищены end-to-end шифрованием.',
       items: [
@@ -598,26 +620,31 @@ export const landingContent: Record<Locale, LandingContent> = {
           body: 'Зарегистрируйтесь по email или в один клик через аккаунт Google или GitHub.',
         },
         {
-          icon: 'creditCard',
-          title: 'Синхронизация между устройствами',
-          body: 'Открывайте книгу KPO на всех устройствах. Данные синхронизируются автоматически.',
+          icon: 'key',
+          title: 'Пароль шифрования',
+          body: 'При первом входе вы создаёте отдельный пароль шифрования — он никогда не покидает ваше устройство. Важно: мы не можем восстановить этот пароль. Без него все данные будут безвозвратно утеряны.',
         },
         {
           icon: 'lock',
           title: 'End-to-end шифрование',
-          body: 'Данные шифруются до того, как покидают ваше устройство. Сервер никогда не видит содержимое книги в читаемом виде.',
+          body: 'Шифрование на стороне устройства — сервер видит только зашифрованные данные.',
+        },
+        {
+          icon: 'refresh',
+          title: 'Синхронизация между устройствами',
+          body: 'Работайте с любого устройства. Данные синхронизируются автоматически.',
         },
         {
           icon: 'code',
           title: 'Открыто для проверки',
-          body: 'Исходный код открыт под лицензией AGPL-3.0 — любой может проверить, как работает приложение.',
+          body: 'Исходный код открыт — любой может проверить, как работает приложение.',
         },
       ],
     },
     faq: {
       eyebrow: 'Частые вопросы',
-      title: 'Коротко и практично',
-      note: 'Примечание: AutoKPO — вспомогательный инструмент для учета. Это не официальная услуга и не юридическая или налоговая консультация. За обязательными толкованиями обращайтесь к бухгалтеру, консультанту или компетентному органу.',
+      title: 'Что важно знать',
+      note: 'AutoKPO — инструмент для учета, не юридическая и не налоговая услуга. За официальными консультациями обращайтесь к специалистам.',
       items: [
         {
           question: 'AutoKPO бесплатный?',
@@ -632,7 +659,7 @@ export const landingContent: Record<Locale, LandingContent> = {
         {
           question: 'Где хранятся мои данные?',
           answerHtml:
-            'Данные книги KPO хранятся локально на вашем устройстве в зашифрованном виде и синхронизируются с сервером — также зашифрованными. Данные аккаунта, например email и связанные аккаунты Google или GitHub, хранятся отдельно и используются только для входа.',
+            'Данные хранятся локально на вашем устройстве и синхронизируются с серверами Cloudflare, расположенными в ЕС. Все данные книги зашифрованы — как на устройстве, так и на сервере. Данные аккаунта (email, Google или GitHub) и данные сессий хранятся на сервере в читаемом виде — это необходимо для входа и позволяет просматривать и удалять активные сессии.',
         },
         {
           question: 'Может ли сервер читать мои данные KPO?',
@@ -645,19 +672,24 @@ export const landingContent: Record<Locale, LandingContent> = {
             '<strong>Да.</strong> Аккаунт нужен для использования приложения, входа и синхронизации данных.',
         },
         {
-          question: 'AutoKPO работает офлайн?',
+          question: 'AutoKPO работает без интернета?',
           answerHtml:
             '<strong>Да.</strong> AutoKPO — прогрессивное веб-приложение (PWA), которое работает без подключения к интернету. Достаточно один раз войти — после этого можно пользоваться приложением и вносить изменения офлайн. Изменения автоматически синхронизируются после повторного подключения.',
+        },
+        {
+          question: 'Я забыл пароль шифрования. Что делать?',
+          answerHtml:
+            'Мы не можем восстановить пароль шифрования. Вы можете попробовать вспомнить его — или удалить аккаунт и начать заново. В этом случае все данные будут безвозвратно утеряны.',
         },
       ],
     },
     final: {
-      title: 'Откройте книгу, когда вам удобно',
+      title: 'Начните прямо сейчас',
       bodyHtml:
         'Без подписки, без установки.<br />Войдите и начните вести учет KPO.',
     },
     footer: {
-      taglinePrefix: 'Сделано',
+      taglinePrefix: 'by',
     },
   },
 };

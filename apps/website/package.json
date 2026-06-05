@@ -1,7 +1,8 @@
 {
   "name": "@autokpo/website",
-  "type": "module",
   "version": "0.0.0",
+  "private": true,
+  "type": "module",
   "scripts": {
     "dev": "astro dev",
     "build": "astro check --tsconfig tsconfig.app.json && astro build",

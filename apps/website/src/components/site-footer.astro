@@ -1,0 +1,109 @@
+---
+import githubBlackUrl from '../assets/github-black.svg?url';
+import githubWhiteUrl from '../assets/github-white.svg?url';
+import type { LandingContent } from '../i18n/landing';
+
+interface Props {
+  content: LandingContent;
+  legalUrls: { privacy: string; terms: string; cookies: string };
+}
+
+const { content, legalUrls } = Astro.props;
+---
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div class="footer-brand">
+      <span class="wordmark">AutoKPO</span>
+      <span class="tagline">{content.footer.taglinePrefix} <a href="https://github.com/dm-balakin" rel="noreferrer noopener">Dmitrii Balakin</a></span>
+    </div>
+    <div class="footer-spacer"></div>
+    <div class="footer-links">
+      <div class="footer-project-links">
+        <a href="https://github.com/balakin/autokpo" rel="noreferrer noopener">
+          <span class="github-icon" aria-hidden="true"><img class="github-black" src={githubBlackUrl} alt="" /><img class="github-white" src={githubWhiteUrl} alt="" /></span>
+          GitHub
+        </a>
+        <span class="footer-license">AGPL-3.0</span>
+      </div>
+      <nav class="footer-legal-links" aria-label="Legal">
+        <a href={legalUrls.privacy}>{content.legalLinks.privacy}</a>
+        <a href={legalUrls.terms}>{content.legalLinks.terms}</a>
+        <a href={legalUrls.cookies}>{content.legalLinks.cookies}</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer { border-top: 1px solid var(--separator); padding: 24px 0; }
+  .footer-inner { display: flex; align-items: center; gap: 16px 24px; flex-wrap: wrap; }
+  .footer-brand { display: flex; flex-direction: column; gap: 6px; }
+  .footer-brand .wordmark { font-size: 19px; }
+  .footer-brand .tagline { font-size: 13px; color: var(--muted); }
+  .footer-spacer { flex: 1; }
+
+  .footer-links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .footer-project-links,
+  .footer-legal-links {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px 18px;
+    flex-wrap: wrap;
+  }
+  .footer-links a {
+    font-size: 14px;
+    color: var(--muted);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: color 120ms;
+  }
+  .footer-links a:hover { color: var(--foreground); }
+  .footer-legal-links a { font-size: 13px; }
+
+  .github-icon {
+    position: relative;
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    display: inline-block;
+  }
+  .github-icon img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+  }
+  .github-icon .github-white { display: none; }
+  :global(.dark) .github-icon .github-black { display: none; }
+  :global(.dark) .github-icon .github-white { display: block; }
+
+  .footer-license {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    padding: 4px 10px;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
+  }
+
+  @media (max-width: 620px) {
+    .footer-spacer { display: none; }
+    .footer-links { align-items: flex-start; }
+    .footer-project-links,
+    .footer-legal-links { justify-content: flex-start; }
+  }
+</style>

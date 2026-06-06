@@ -8,7 +8,8 @@ The public website needs stable, discoverable legal document pages for cookies, 
 - Provide each document in every supported website locale: Serbian Latin, English, and Russian.
 - Use English URL slugs for all locales, with Serbian Latin as the default unprefixed locale.
 - Populate documents with localized lorem ipsum placeholder content for now.
-- Add localized footer links on the website so visitors can conveniently reach all three legal documents.
+- Extract shared website shell components (`base-layout.astro`, `site-header.astro`, `site-footer.astro`) from the landing page so legal pages reuse the same HTML shell, fonts, theme variables, and light/dark toggle.
+- Add localized footer links on both landing and legal pages so visitors can conveniently reach all three legal documents.
 - Keep the legal pages visually aligned with the existing website theme, header/footer, local fonts, favicon setup, and light/dark theme behavior.
 
 ## Capabilities
@@ -25,6 +26,7 @@ The public website needs stable, discoverable legal document pages for cookies, 
 ## Impact
 
 - Affected package: `apps/website`.
-- Likely affected files: Astro pages/layouts/components under `apps/website/src`, website i18n content, and the existing landing footer.
+- New files: `src/components/site-footer.astro`, `src/components/site-header.astro`, `src/i18n/legal.ts`, `src/layouts/base-layout.astro`, `src/layouts/legal-document-layout.astro`, and nine Markdown legal document pages under `src/pages/{privacy,terms,cookies}/` and `src/pages/{en,ru}/{privacy,terms,cookies}/`.
+- Modified files: `src/components/LandingPage.astro` (renamed to `landing-page.astro` and restructured to use shared components), `src/i18n/landing.ts` (refactored to expose footer legal link labels), and locale-specific `index.astro` pages (updated imports).
 - No backend, worker, authenticated app, API, or database changes.
 - No new runtime Markdown parser is required; Astro's built-in Markdown page rendering should be preferred.

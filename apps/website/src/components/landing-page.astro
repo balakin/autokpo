@@ -1,4 +1,6 @@
 ---
+import { getAbsoluteLocaleUrl, getRelativeLocaleUrl } from 'astro:i18n';
+
 import {
   BookOpen,
   ChartColumn,
@@ -9,27 +11,34 @@ import {
   FilePlusCorner,
   KeyRound,
   Lock,
-  Moon,
   RefreshCw,
-  Sun,
   User,
 } from '@lucide/astro';
 
 import githubBlackUrl from '../assets/github-black.svg?url';
 import githubWhiteUrl from '../assets/github-white.svg?url';
+import BaseLayout from '../layouts/base-layout.astro';
+import SiteFooter from './site-footer.astro';
+import SiteHeader from './site-header.astro';
 import { landingContent, localeAlternates, type IconName, type LandingContent } from '../i18n/landing';
+import { legalContent } from '../i18n/legal';
 
 type Props = {
   content: LandingContent;
 };
 
 const { content } = Astro.props;
-const site = Astro.site ?? new URL('https://autokpo.com');
-const canonicalUrl = new URL(content.route, site).toString();
+const canonicalUrl = getAbsoluteLocaleUrl(content.locale, '');
 const alternates = localeAlternates.map((alternate) => ({
   ...alternate,
-  url: new URL(alternate.route, site).toString(),
+  url: getAbsoluteLocaleUrl(alternate.locale, ''),
 }));
+const legalRoutes = legalContent[content.locale].documents;
+const legalUrls = {
+  privacy: getRelativeLocaleUrl(content.locale, legalRoutes.privacy.slug),
+  terms: getRelativeLocaleUrl(content.locale, legalRoutes.terms.slug),
+  cookies: getRelativeLocaleUrl(content.locale, legalRoutes.cookies.slug),
+};
 
 const iconByName = {
   book: BookOpen,
@@ -45,139 +54,31 @@ const iconByName = {
 } satisfies Record<IconName, unknown>;
 ---
 
-<!doctype html>
-<html lang={content.locale} data-theme="light">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{content.meta.title}</title>
-  <meta name="description" content={content.meta.description} />
-  <link rel="canonical" href={canonicalUrl} />
-  {alternates.map((alternate) => <link rel="alternate" hreflang={alternate.locale} href={alternate.url} />)}
-  <link rel="alternate" hreflang="x-default" href={new URL(landingContent['sr-Latn'].route, site).toString()} />
-  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="shortcut icon" href="/favicon.ico" />
+<BaseLayout
+  locale={content.locale}
+  title={content.meta.title}
+  description={content.meta.description}
+  skipLink={content.skipLink}
+  themeLightLabel={content.theme.light}
+  themeDarkLabel={content.theme.dark}
+>
+  <Fragment slot="head">
+    <link rel="canonical" href={canonicalUrl} />
+    {alternates.map((alternate) => <link rel="alternate" hreflang={alternate.locale} href={alternate.url} />)}
+    <link rel="alternate" hreflang="x-default" href={getAbsoluteLocaleUrl(landingContent['sr-Latn'].locale, '')} />
+  </Fragment>
 
-  <!-- Set theme before paint to avoid wrong-theme flash -->
-  <script is:inline>
-    (function () {
-      try {
-        var saved = localStorage.getItem("autokpo-theme");
-        var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-        var theme = saved || (prefersDark ? "dark" : "light");
-        var root = document.documentElement;
-        root.setAttribute("data-theme", theme);
-        root.classList.toggle("dark", theme === "dark");
-      } catch (e) {}
-    })();
-  </script>
+  <SiteHeader
+    content={content}
+    currentLocale={content.locale}
+    homeHref="#top"
+    alternates={alternates}
+  />
+
+  <main id="main">
+    <span id="top"></span>
 
   <style is:global>
-    /* ── Fonts (local files, same as app) ──────────────────── */
-    @font-face { font-family:"Manrope"; font-style:normal; font-weight:200 800; font-display:swap; src:url("/fonts/manrope/Manrope-VariableFont_wght.woff2") format("woff2"); }
-    @font-face { font-family:"JetBrains Mono"; font-style:normal; font-weight:100 800; font-display:swap; src:url("/fonts/jetbrains-mono/JetBrainsMono-VariableFont_wght.woff2") format("woff2"); }
-
-    /* ── Light theme ───────────────────────────────────────── */
-    :root, [data-theme="light"] {
-      --font-sans: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
-      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-      --background:        oklch(0.97  0.005 240);
-      --surface:           oklch(0.995 0.003 240);
-      --surface-secondary: oklch(0.96  0.004 240);
-      --overlay:           oklch(0.995 0.003 240);
-      --foreground:        oklch(0.2   0.015 260);
-      --muted:             oklch(0.5   0.02  250);
-      --default:           oklch(0.94  0.005 240);
-      --default-foreground:oklch(0.2   0.015 260);
-      --accent:            oklch(0.6   0.1   245);
-      --accent-foreground: oklch(1     0     0);
-      --accent-soft:       oklch(0.92  0.03  245);
-      --accent-soft-foreground: oklch(0.3 0.03 245);
-      --success:           oklch(0.55  0.1   155);
-      --warning:           oklch(0.7   0.1   85);
-      --danger:            oklch(0.6   0.12  25);
-      --border:            oklch(0.88  0.008 240);
-      --separator:         oklch(0.9   0.006 240);
-      --focus:             var(--accent);
-      --link:              var(--foreground);
-      --surface-shadow:    0 2px 4px 0 rgba(0,0,0,.04), 0 1px 2px 0 rgba(0,0,0,.06), 0 0 1px 0 rgba(0,0,0,.06);
-      --overlay-shadow:    0 4px 16px 0 rgba(24,24,27,.08), 0 8px 24px 0 rgba(24,24,27,.09);
-      color-scheme: light;
-    }
-
-    /* ── Dark theme ────────────────────────────────────────── */
-    .dark, [data-theme="dark"] {
-      --background:        oklch(0.12  0.015 255);
-      --surface:           oklch(0.16  0.012 255);
-      --surface-secondary: oklch(0.2   0.01  255);
-      --overlay:           oklch(0.18  0.012 255);
-      --foreground:        oklch(0.95  0.005 260);
-      --muted:             oklch(0.78  0.015 255);
-      --default:           oklch(0.28  0.015 255);
-      --default-foreground:oklch(0.95  0.005 260);
-      --accent:            oklch(0.48  0.08  245);
-      --accent-foreground: oklch(1     0     0);
-      --accent-soft:       oklch(0.28  0.04  245);
-      --accent-soft-foreground: oklch(0.85 0.02 245);
-      --success:           oklch(0.72  0.12  155);
-      --warning:           oklch(0.8   0.1   85);
-      --danger:            oklch(0.65  0.12  25);
-      --border:            oklch(0.28  0.015 255);
-      --separator:         oklch(0.25  0.015 255);
-      --surface-shadow:    0 0 0 0 transparent;
-      --overlay-shadow:    0 0 1px 0 rgba(255,255,255,.08) inset;
-      color-scheme: dark;
-    }
-
-    /* ── Reset / base ──────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    html, body { margin: 0; padding: 0; }
-    body {
-      font-family: var(--font-sans);
-      font-size: 16px;
-      line-height: 1.5;
-      background: var(--background);
-      color: var(--foreground);
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-      overflow-x: hidden;
-    }
-    h1, h2, h3, p { margin: 0; }
-    a {
-      color: var(--link);
-      text-decoration: underline;
-      text-underline-offset: 2px;
-      text-decoration-color: color-mix(in oklch, currentColor 30%, transparent);
-    }
-    a:hover { text-decoration-color: currentColor; }
-    :focus-visible {
-      outline: 2px solid var(--focus);
-      outline-offset: 2px;
-      border-radius: 6px;
-    }
-    button { font: inherit; cursor: pointer; }
-    svg { flex-shrink: 0; }
-
-    .skip-link {
-      position: absolute; left: 12px; top: -48px;
-      background: var(--surface); color: var(--foreground);
-      padding: 8px 14px; border-radius: 10px;
-      box-shadow: var(--surface-shadow); z-index: 100;
-      text-decoration: none; transition: top 120ms;
-    }
-    .skip-link:focus { top: 12px; }
-
-    /* ── Layout ────────────────────────────────────────────── */
-    .wrap { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 24px; }
-    .wordmark {
-      font-weight: 700; font-size: 24px; line-height: 1;
-      letter-spacing: -0.025em; color: var(--foreground);
-      text-decoration: none; white-space: nowrap;
-    }
-    .wordmark:hover, .wordmark:visited, .wordmark:focus { color: var(--foreground); text-decoration: none; }
-
     /* ── Buttons (from app) ────────────────────────────────── */
     .btn {
       font-family: var(--font-sans); font-weight: 500; font-size: 14px;
@@ -207,55 +108,7 @@ const iconByName = {
     .dark .github-icon .github-white { display: block; }
     .btn.lg { height: 44px; padding: 0 20px; font-size: 15px; }
 
-    /* ── Header ────────────────────────────────────────────── */
-    .site-header {
-      position: sticky; top: 0; z-index: 50;
-      background: color-mix(in oklch, var(--background) 88%, transparent);
-      -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-      border-bottom: 1px solid var(--separator);
-    }
-    .header-inner { height: 60px; display: flex; align-items: center; gap: 16px; }
-    .header-nav { display: flex; align-items: center; gap: 28px; margin-left: 24px; }
-    .header-nav a {
-      font-size: 14px; font-weight: 500; color: var(--muted);
-      text-decoration: none; transition: color 120ms;
-    }
-    .header-nav a:hover { color: var(--foreground); }
-    .header-spacer { flex: 1; }
-    .header-actions { display: flex; align-items: center; gap: 8px; }
 
-    .language-switcher {
-      display: inline-flex; align-items: center; gap: 2px;
-      height: 38px; padding: 3px; border-radius: 10px;
-      background: var(--default); border: 1px solid var(--border);
-      box-shadow: var(--surface-shadow);
-    }
-    .language-switcher a {
-      display: inline-flex; align-items: center; justify-content: center;
-      min-width: 34px; height: 30px; padding: 0 8px; border-radius: 8px;
-      font-family: var(--font-mono); font-size: 11px; font-weight: 600;
-      color: var(--muted); text-decoration: none;
-      transition: background-color 120ms, color 120ms;
-    }
-    .language-switcher a:hover { color: var(--foreground); }
-    .language-switcher a[aria-current="page"] {
-      background: var(--surface); color: var(--foreground);
-      box-shadow: 0 1px 2px rgba(0,0,0,.05);
-    }
-
-    .theme-toggle {
-      width: 38px; height: 38px; border-radius: 10px;
-      display: inline-flex; align-items: center; justify-content: center;
-      background: var(--default); color: var(--default-foreground);
-      border: 1px solid var(--border); box-shadow: var(--surface-shadow);
-      transition: filter 120ms;
-    }
-    .theme-toggle:hover { filter: brightness(0.96); }
-    .theme-toggle svg { width: 17px; height: 17px; }
-    .theme-toggle .i-sun { display: none; }
-    .dark .theme-toggle .i-sun  { display: block; }
-    .dark .theme-toggle .i-moon { display: none; }
-    .hide-sm { }
 
     /* ── Section scaffolding ───────────────────────────────── */
     section { scroll-margin-top: 76px; }
@@ -450,28 +303,7 @@ const iconByName = {
     .final-card p { color: var(--muted); font-size: 16px; max-width: 460px; margin: 0 auto 28px; line-height: 1.55; }
     .final-card .hero-cta { justify-content: center; }
 
-    /* ── Footer ────────────────────────────────────────────── */
-    .site-footer { border-top: 1px solid var(--separator); padding: 36px 0; }
-    .footer-inner {
-      display: flex; align-items: center; gap: 16px 24px; flex-wrap: wrap;
-    }
-    .footer-brand { display: flex; flex-direction: column; gap: 6px; }
-    .footer-brand .wordmark { font-size: 19px; }
-    .footer-brand .tagline { font-size: 13px; color: var(--muted); }
-    .footer-spacer { flex: 1; }
-    .footer-links { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-    .footer-links a {
-      font-size: 14px; color: var(--muted); text-decoration: none;
-      display: inline-flex; align-items: center; gap: 7px; transition: color 120ms;
-    }
-    .footer-links a:hover { color: var(--foreground); }
-    .footer-links a svg { width: 15px; height: 15px; }
-    .footer-links .github-icon { width: 15px; height: 15px; }
-    .footer-license {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-family: var(--font-mono); font-size: 12px; color: var(--muted);
-      padding: 4px 10px; border-radius: 9999px; border: 1px solid var(--border);
-    }
+
 
     /* ── Responsive ────────────────────────────────────────── */
     @media (max-width: 860px) {
@@ -481,10 +313,6 @@ const iconByName = {
       .hero-grid { grid-template-columns: 1fr; gap: 44px; }
       .hero-inner { max-width: 620px; }
       .ledger { max-width: 100%; }
-      .header-nav { gap: 18px; margin-left: 14px; }
-    }
-    @media (max-width: 720px) {
-      .header-nav { display: none; }
     }
     @media (max-width: 620px) {
       .wrap { padding: 0 18px; }
@@ -496,8 +324,6 @@ const iconByName = {
       }
       .final-card { padding: 40px 22px; }
       .faq-answer { padding-left: 4px; }
-      .footer-spacer { display: none; }
-      .hide-sm { display: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -505,44 +331,6 @@ const iconByName = {
       *, *::before, *::after { transition: none !important; animation: none !important; }
     }
   </style>
-</head>
-<body data-theme-light-label={content.theme.light} data-theme-dark-label={content.theme.dark}>
-  <a class="skip-link" href="#main">{content.skipLink}</a>
-
-  <!-- ── Header ─────────────────────────────────────────────── -->
-  <header class="site-header">
-    <div class="wrap header-inner">
-      <a class="wordmark" href="#top">AutoKPO</a>
-      <nav class="header-nav" aria-label={content.navLabel}>
-        <a href="#features">{content.nav.features}</a>
-        <a href="#security">{content.nav.security}</a>
-        <a href="#faq">{content.nav.faq}</a>
-      </nav>
-      <div class="header-spacer"></div>
-      <div class="header-actions">
-        <nav class="language-switcher" aria-label={content.languageSwitcherLabel}>
-          {alternates.map((alternate) => (
-            <a
-              href={alternate.route}
-              aria-current={alternate.locale === content.locale ? 'page' : undefined}
-              aria-label={alternate.locale === content.locale ? `${alternate.languageName} — ${content.languageSwitcherCurrent}` : alternate.languageName}
-              title={alternate.locale === content.locale ? `${alternate.languageName} — ${content.languageSwitcherCurrent}` : alternate.languageName}
-            >
-              {alternate.locale === 'sr-Latn' ? 'SR' : alternate.locale.toUpperCase()}
-            </a>
-          ))}
-        </nav>
-        <button class="theme-toggle" id="themeToggle" type="button" aria-label={content.theme.toggle} aria-pressed="false">
-          <Moon class="i-moon" aria-hidden="true" stroke-width={1.75} />
-          <Sun class="i-sun" aria-hidden="true" stroke-width={1.75} />
-        </button>
-        <a class="btn primary hide-sm" href="https://app.autokpo.com" rel="noreferrer noopener">{content.links.app}</a>
-      </div>
-    </div>
-  </header>
-
-  <main id="main">
-    <span id="top"></span>
 
     <!-- ── Hero ─────────────────────────────────────────────── -->
     <section class="hero">
@@ -679,44 +467,5 @@ const iconByName = {
     </section>
   </main>
 
-  <!-- ── Footer ─────────────────────────────────────────────── -->
-  <footer class="site-footer">
-    <div class="wrap footer-inner">
-      <div class="footer-brand">
-        <span class="wordmark">AutoKPO</span>
-        <span class="tagline">{content.footer.taglinePrefix} <a href="https://github.com/dm-balakin" rel="noreferrer noopener">Dmitrii Balakin</a></span>
-      </div>
-      <div class="footer-spacer"></div>
-      <div class="footer-links">
-        <a href="https://github.com/balakin/autokpo" rel="noreferrer noopener">
-          <span class="github-icon" aria-hidden="true"><img class="github-black" src={githubBlackUrl} alt="" /><img class="github-white" src={githubWhiteUrl} alt="" /></span>
-          GitHub
-        </a>
-        <span class="footer-license">AGPL-3.0</span>
-      </div>
-    </div>
-  </footer>
-
-  <!-- ── Theme toggle (only JS on the page) ─────────────────── -->
-  <script is:inline>
-    (function () {
-      var root = document.documentElement;
-      var body = document.body;
-      var btn = document.getElementById("themeToggle");
-      function sync() {
-        var isDark = root.getAttribute("data-theme") === "dark";
-        btn.setAttribute("aria-pressed", String(isDark));
-        btn.setAttribute("aria-label", isDark ? body.dataset.themeLightLabel : body.dataset.themeDarkLabel);
-      }
-      sync();
-      btn.addEventListener("click", function () {
-        var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-        root.setAttribute("data-theme", next);
-        root.classList.toggle("dark", next === "dark");
-        try { localStorage.setItem("autokpo-theme", next); } catch (e) {}
-        sync();
-      });
-    })();
-  </script>
-</body>
-</html>
+  <SiteFooter content={content} legalUrls={legalUrls} />
+</BaseLayout>

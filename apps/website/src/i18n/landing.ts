@@ -1,3 +1,4 @@
+import { legalContent, type LegalDocumentKey } from './legal';
 export type Locale = 'sr-Latn' | 'en' | 'ru';
 
 export type IconName =
@@ -16,6 +17,8 @@ type LinkText = {
   app: string;
   github: string;
 };
+
+type LegalLinkText = Record<LegalDocumentKey, string>;
 
 export type LandingContent = {
   locale: Locale;
@@ -40,6 +43,7 @@ export type LandingContent = {
   languageSwitcherLabel: string;
   languageSwitcherCurrent: string;
   links: LinkText;
+  legalLinks: LegalLinkText;
   hero: {
     badge: string;
     titlePrefix: string;
@@ -130,6 +134,11 @@ export const landingContent: Record<Locale, LandingContent> = {
     links: {
       app: 'Otvori aplikaciju',
       github: 'Pogledaj kod',
+    },
+    legalLinks: {
+      privacy: legalContent['sr-Latn'].documents.privacy.title,
+      terms: legalContent['sr-Latn'].documents.terms.title,
+      cookies: legalContent['sr-Latn'].documents.cookies.title,
     },
     hero: {
       badge: 'Besplatno i otvorenog koda',
@@ -327,6 +336,11 @@ export const landingContent: Record<Locale, LandingContent> = {
       app: 'Open app',
       github: 'View source',
     },
+    legalLinks: {
+      privacy: legalContent.en.documents.privacy.title,
+      terms: legalContent.en.documents.terms.title,
+      cookies: legalContent.en.documents.cookies.title,
+    },
     hero: {
       badge: 'Free and open source',
       titlePrefix: 'Keep your KPO book ',
@@ -522,6 +536,11 @@ export const landingContent: Record<Locale, LandingContent> = {
     links: {
       app: 'Открыть приложение',
       github: 'Смотреть код',
+    },
+    legalLinks: {
+      privacy: legalContent.ru.documents.privacy.title,
+      terms: legalContent.ru.documents.terms.title,
+      cookies: legalContent.ru.documents.cookies.title,
     },
     hero: {
       badge: 'Бесплатно и open source',

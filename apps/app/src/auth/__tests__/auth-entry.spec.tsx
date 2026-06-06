@@ -112,18 +112,15 @@ describe('AuthEntry', () => {
   it('renders Terms and Privacy notice without cookie link or checkbox', () => {
     setup();
 
-    const notice = screen
-      .getByText(/Nastavkom prijave prihvatate/i)
-      .closest('p');
-    expect(notice).not.toBeNull();
+    const notice = screen.getByText(/Nastavkom prijave prihvatate/i);
     expect(
-      within(notice!).getByRole('link', { name: /Uslove korišćenja/i }),
+      within(notice).getByRole('link', { name: /Uslove korišćenja/i }),
     ).toHaveAttribute('href', 'https://autokpo.com/terms/');
     expect(
-      within(notice!).getByRole('link', { name: /Politiku privatnosti/i }),
+      within(notice).getByRole('link', { name: /Politiku privatnosti/i }),
     ).toHaveAttribute('href', 'https://autokpo.com/privacy/');
     expect(
-      within(notice!).queryByRole('link', {
+      within(notice).queryByRole('link', {
         name: /Kolačići|Politika kolačića/i,
       }),
     ).not.toBeInTheDocument();

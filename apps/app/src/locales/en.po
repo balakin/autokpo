@@ -144,7 +144,7 @@ msgstr "Date cannot be in the future"
 msgid "Datum prometa"
 msgstr "Transaction date"
 
-#: src/auth/auth-entry.tsx:31
+#: src/auth/auth-entry.tsx:32
 msgid "Dobrodošli"
 msgstr "Welcome"
 
@@ -209,7 +209,7 @@ msgstr "Annual income"
 msgid "Greška pri učitavanju kursa. Pokušajte ponovo."
 msgstr "Error loading exchange rate. Please try again."
 
-#: src/auth/auth-entry.tsx:62
+#: src/auth/auth-entry.tsx:63
 msgid "ili"
 msgstr "or"
 
@@ -252,7 +252,7 @@ msgid "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju "
 "aplikacije."
 msgstr "Choose how you unlock encrypted data on every app launch."
 
-#: src/auth/auth-entry.tsx:34
+#: src/auth/auth-entry.tsx:35
 msgid "Izaberite način prijave."
 msgstr "Choose your way to sign in."
 
@@ -288,8 +288,8 @@ msgstr "Export data"
 msgid "Izvezi podatke naloga"
 msgstr "Export account data"
 
-#: src/auth/auth-shell.tsx:64
-#: src/e2ee/encryption-shell.tsx:64
+#: src/auth/auth-shell.tsx:65
+#: src/e2ee/encryption-shell.tsx:65
 msgid "Izvorni kod"
 msgstr "Source code"
 
@@ -297,7 +297,7 @@ msgstr "Source code"
 msgid "Izvorni kod na GitHub-u"
 msgstr "Source code on GitHub"
 
-#: src/auth/auth-entry.tsx:69
+#: src/auth/auth-entry.tsx:70
 #: src/auth/email-otp-sign-in.tsx:79
 msgid "Jednokratni kod"
 msgstr "One-time code"
@@ -334,8 +334,8 @@ msgstr "Books"
 msgid "Kod nije važeći ili je istekao."
 msgstr "The code is invalid or has expired."
 
-#: src/auth/auth-shell.tsx:92
-#: src/e2ee/encryption-shell.tsx:92
+#: src/auth/auth-shell.tsx:93
+#: src/e2ee/encryption-shell.tsx:93
 msgid "Kolačići"
 msgstr "Cookies"
 
@@ -426,7 +426,7 @@ msgstr "Leave page?"
 msgid "Nastavi ka aplikaciji"
 msgstr "Continue to the app"
 
-#: src/auth/auth-entry.tsx:76
+#: src/auth/auth-entry.tsx:77
 msgid "Nastavkom prijave prihvatate <0>Uslove korišćenja</0> i potvrđujete da "
 "ste pročitali <1>Politiku privatnosti</1>."
 msgstr "By continuing to sign in, you agree to the <0>Terms of Service</0> and "
@@ -899,7 +899,7 @@ msgstr "Send code"
 msgid "Pošalji ponovo"
 msgstr "Resend"
 
-#: src/auth/auth-entry.tsx:72
+#: src/auth/auth-entry.tsx:73
 msgid "Poslaćemo vam kod za prijavu na email."
 msgstr "We'll send a sign-in code to your email."
 
@@ -994,11 +994,11 @@ msgstr "Income"
 msgid "Prihodi po godinama"
 msgstr "Income by year"
 
-#: src/auth/auth-entry.tsx:54
+#: src/auth/auth-entry.tsx:55
 msgid "Prijava GitHub"
 msgstr "Sign in with GitHub"
 
-#: src/auth/auth-entry.tsx:46
+#: src/auth/auth-entry.tsx:47
 msgid "Prijava Google"
 msgstr "Sign in with Google"
 
@@ -1024,8 +1024,8 @@ msgstr "Report an issue on GitHub"
 msgid "Primeni"
 msgstr "Apply"
 
-#: src/auth/auth-shell.tsx:83
-#: src/e2ee/encryption-shell.tsx:83
+#: src/auth/auth-shell.tsx:84
+#: src/e2ee/encryption-shell.tsx:84
 msgid "Privatnost"
 msgstr "Privacy"
 
@@ -1352,8 +1352,8 @@ msgstr "Edit profile"
 msgid "Uredi unos"
 msgstr "Edit entry"
 
-#: src/auth/auth-shell.tsx:74
-#: src/e2ee/encryption-shell.tsx:74
+#: src/auth/auth-shell.tsx:75
+#: src/e2ee/encryption-shell.tsx:75
 msgid "Uslovi"
 msgstr "Terms"
 

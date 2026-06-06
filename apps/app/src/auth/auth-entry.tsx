@@ -3,12 +3,13 @@ import { Trans } from '@lingui/react/macro';
 import { FaGithub, FaGoogle } from 'react-icons/fa6';
 import { useNavigate } from 'react-router';
 
+import { useLocale } from '../i18n/use-locale';
+import { getLegalLinks } from '../legal/legal-links';
+
 import { requestEmailOtpSession, startOAuthFlow } from './auth-session';
 import { AuthShell } from './auth-shell';
 import { EmailForm } from './email-form';
 import { useAuthEmail } from './use-auth-email';
-import { useLocale } from '../i18n/use-locale';
-import { getLegalLinks } from '../legal/legal-links';
 
 export function AuthEntry() {
   const authEmail = useAuthEmail();

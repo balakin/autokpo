@@ -2,9 +2,10 @@ import { Link } from '@heroui/react';
 import { Trans } from '@lingui/react/macro';
 import type { ReactNode } from 'react';
 
-import { AuthPreferencesPopover } from './auth-preferences-popover';
 import { useLocale } from '../i18n/use-locale';
 import { getLegalLinks } from '../legal/legal-links';
+
+import { AuthPreferencesPopover } from './auth-preferences-popover';
 
 interface AuthShellProps {
   children: ReactNode;

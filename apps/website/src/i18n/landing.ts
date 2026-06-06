@@ -1,4 +1,5 @@
 import { legalContent, type LegalDocumentKey } from './legal';
+
 export type Locale = 'sr-Latn' | 'en' | 'ru';
 
 export type IconName =

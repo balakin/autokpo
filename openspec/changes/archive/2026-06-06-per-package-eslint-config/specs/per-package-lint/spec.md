@@ -49,7 +49,7 @@ The `.husky/pre-push` hook SHALL run `pnpm turbo lint:fix build test --affected 
 
 ### Requirement: CI runs affected Turbo tasks
 
-The CI workflow SHALL check out enough git history for Turbo affected detection and SHALL run affected Turbo tasks for lint, test, and build.
+The CI workflow SHALL check out enough git history for Turbo affected detection, set explicit job-level `TURBO_SCM_BASE` and `TURBO_SCM_HEAD` refs, and SHALL run affected Turbo tasks for lint, test, and build.
 
 #### Scenario: CI lints only affected packages
 

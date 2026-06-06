@@ -63,7 +63,7 @@ pnpm does not expose executables from transitive dependencies. `eslint` (CLI) an
 
 ### 10. CI uses Turbo affected tasks
 
-The CI workflow checks out full git history (`fetch-depth: 0`) so Turbo can compute affected packages. Lint, test, and build steps run `pnpm turbo <task> --affected` directly instead of root wrapper scripts (`pnpm lint`, `pnpm test`, `pnpm build`) to avoid unnecessary work on unrelated packages while retaining task graph correctness.
+The CI workflow checks out full git history (`fetch-depth: 0`) and sets job-level `TURBO_SCM_BASE` / `TURBO_SCM_HEAD` explicitly so Turbo can compute affected packages from refs that exist in the checkout. Lint, test, and build steps run `pnpm turbo <task> --affected` directly instead of root wrapper scripts (`pnpm lint`, `pnpm test`, `pnpm build`) to avoid unnecessary work on unrelated packages while retaining task graph correctness.
 
 ## Risks / Trade-offs
 
@@ -82,5 +82,5 @@ The CI workflow checks out full git history (`fetch-depth: 0`) so Turbo can comp
 7. Add `lint` and `lint:fix` scripts to both app `package.json` files; add `@autokpo/eslint-config: workspace:*`, `eslint`, and (for `apps/app`) `cross-env` as devDeps
 8. Update `turbo.json` with `lint` task (`dependsOn: ["^lint"]`) and `lint:fix` task (`dependsOn: ["^lint:fix"]`, `cache: false`)
 9. Update `.husky/pre-push` — replace root build/test wrapper calls with `pnpm turbo lint:fix build test --affected --concurrency=1`
-10. Update `.github/workflows/ci-cd.yml` — use full checkout history and run `pnpm turbo lint/test/build --affected`
+10. Update `.github/workflows/ci-cd.yml` — use full checkout history, set explicit job-level Turbo SCM refs, and run `pnpm turbo lint/test/build --affected`
 11. Update root `package.json` — lint-staged to Prettier only; add `format` / `format:fix` scripts; remove now-redundant ESLint devDeps

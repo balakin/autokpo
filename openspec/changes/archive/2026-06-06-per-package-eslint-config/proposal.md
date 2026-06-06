@@ -11,7 +11,7 @@ Changing any file in the `website` app causes Turbo to re-lint the entire monore
 - **Updated** `turbo.json` — adds `lint` task (cached, `dependsOn: ["^lint"]`) and `lint:fix` task (uncached, `dependsOn: ["^lint:fix"]`) for proper cache invalidation
 - **Updated** `pnpm-workspace.yaml` — adds `packages/*` to workspace
 - **Updated** `.husky/pre-push` — runs affected `lint:fix`, `build`, and `test` tasks through Turbo before push
-- **Updated** `.github/workflows/ci-cd.yml` — uses Turbo `--affected` for lint, test, and build, with full git history available for affected detection
+- **Updated** `.github/workflows/ci-cd.yml` — uses Turbo `--affected` for lint, test, and build, with full git history and explicit SCM refs available for affected detection
 - **Updated** `lint-staged` in root `package.json` — Prettier only on staged files
 - **Updated** root `package.json` — shared ESLint deps move to `packages/eslint-config`; app-specific plugins move to their apps; adds `format` and `format:fix` scripts (root-level Prettier check/write)
 - **Updated** root `tsconfig.json` — removes `eslint.config.ts` from `include` (file is deleted)

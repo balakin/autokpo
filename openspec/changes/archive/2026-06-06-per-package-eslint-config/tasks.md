@@ -36,7 +36,7 @@
 ## 6. Hooks and CI
 
 - [x] 6.1 Replace `.husky/pre-push` root build/test wrappers with `pnpm turbo lint:fix build test --affected --concurrency=1`
-- [x] 6.2 Update `.github/workflows/ci-cd.yml` checkout to `fetch-depth: 0` and run `pnpm turbo lint --affected`, `pnpm turbo test --affected`, and `pnpm turbo build --affected`
+- [x] 6.2 Update `.github/workflows/ci-cd.yml` checkout to `fetch-depth: 0`, set explicit job-level `TURBO_SCM_BASE` / `TURBO_SCM_HEAD`, and run `pnpm turbo lint --affected`, `pnpm turbo test --affected`, and `pnpm turbo build --affected`
 
 ## 7. Verification
 

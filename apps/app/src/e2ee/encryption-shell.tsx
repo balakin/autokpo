@@ -3,12 +3,17 @@ import { Trans } from '@lingui/react/macro';
 import type { ReactNode } from 'react';
 
 import { EncryptionProfilePopover } from './encryption-profile-popover';
+import { useLocale } from '../i18n/use-locale';
+import { getLegalLinks } from '../legal/legal-links';
 
 type EncryptionShellProps = {
   children: ReactNode;
 };
 
 export function EncryptionShell({ children }: EncryptionShellProps) {
+  const { locale } = useLocale();
+  const legalLinks = getLegalLinks(locale);
+
   return (
     <div className="relative flex min-h-svh flex-col overflow-x-clip bg-background text-foreground">
       <div aria-hidden="true" className="grid-background" />
@@ -46,18 +51,47 @@ export function EncryptionShell({ children }: EncryptionShellProps) {
           </div>
         </main>
 
-        <footer className="py-4 text-center text-xs text-muted">
-          <span>AGPL-3.0</span>
-          {' · '}
-          <Link
-            href="https://github.com/balakin/autokpo"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-muted hover:text-foreground"
-          >
-            <Trans>Izvorni kod</Trans>
-            <Link.Icon />
-          </Link>
+        <footer className="flex flex-col items-center gap-1 py-4 text-center text-xs text-muted">
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+            <span>AGPL-3.0</span>
+            <span aria-hidden="true">·</span>
+            <Link
+              href="https://github.com/balakin/autokpo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-muted hover:text-foreground"
+            >
+              <Trans>Izvorni kod</Trans>
+            </Link>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+            <Link
+              href={legalLinks.terms}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-muted hover:text-foreground"
+            >
+              <Trans>Uslovi</Trans>
+            </Link>
+            <span aria-hidden="true">·</span>
+            <Link
+              href={legalLinks.privacy}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-muted hover:text-foreground"
+            >
+              <Trans>Privatnost</Trans>
+            </Link>
+            <span aria-hidden="true">·</span>
+            <Link
+              href={legalLinks.cookies}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-muted hover:text-foreground"
+            >
+              <Trans>Kolačići</Trans>
+            </Link>
+          </div>
         </footer>
       </div>
     </div>

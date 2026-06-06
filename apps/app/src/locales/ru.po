@@ -58,7 +58,7 @@ msgid "Ako ponovo budete želeli da koristite AutoKPO, možete napraviti novi "
 msgstr "Если вы снова захотите использовать AutoKPO, вы можете создать новый "
 "аккаунт в любое время."
 
-#: src/help/help-page.tsx:81
+#: src/help/help-page.tsx:113
 msgid "Ako ste naišli na grešku ili imate predlog za poboljšanje, otvorite "
 "tiket na GitHub-u. Opišite šta se dogodilo, šta ste očekivali i korake "
 "za reprodukciju."
@@ -66,7 +66,7 @@ msgstr "Если вы обнаружили ошибку или хотите пр
 "задачу на GitHub. Опишите, что произошло, что вы ожидали и шаги для "
 "воспроизведения."
 
-#: src/help/help-page.tsx:140
+#: src/help/help-page.tsx:172
 msgid "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
 msgstr "Если вы хотите улучшить AutoKPO, ваши pull request'ы приветствуются."
 
@@ -75,7 +75,7 @@ msgid "Aplikacija se otključava bez interakcije pri svakom pokretanju."
 msgstr "Приложение разблокируется автоматически при каждом запуске без "
 "каких-либо действий."
 
-#: src/help/help-page.tsx:58
+#: src/help/help-page.tsx:65
 msgid "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o "
 "ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju "
 "i sinhronizuju između vaših uređaja."
@@ -95,7 +95,7 @@ msgid "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju "
 msgstr "AutoKPO не может восстановить этот пароль. Без него зашифрованные "
 "данные останутся недоступными."
 
-#: src/help/help-page.tsx:158
+#: src/help/help-page.tsx:190
 msgid "Autori"
 msgstr "Авторы"
 
@@ -111,11 +111,11 @@ msgstr "Бета-функция. Курсы валют загружаются с
 msgid "Bezbednost"
 msgstr "Безопасность"
 
-#: src/help/help-page.tsx:118
+#: src/help/help-page.tsx:150
 msgid "čl. 33 — rolling 12 meseci"
 msgstr "Ст. 33 — скользящие 12 месяцев"
 
-#: src/help/help-page.tsx:110
+#: src/help/help-page.tsx:142
 msgid "čl. 42 — godišnji limit"
 msgstr "Ст. 42 — годовой лимит"
 
@@ -145,7 +145,7 @@ msgstr "Дата не может быть в будущем"
 msgid "Datum prometa"
 msgstr "Дата операции"
 
-#: src/auth/auth-entry.tsx:27
+#: src/auth/auth-entry.tsx:31
 msgid "Dobrodošli"
 msgstr "Добро пожаловать"
 
@@ -162,7 +162,7 @@ msgstr "Добавить {year} в избранное"
 msgid "Dodaj unos"
 msgstr "Добавить запись"
 
-#: src/help/help-page.tsx:135
+#: src/help/help-page.tsx:167
 msgid "Doprinesite projektu"
 msgstr "Внести вклад"
 
@@ -192,7 +192,7 @@ msgstr "Адрес электронной почты"
 msgid "Firma-radnje"
 msgstr "Фирма/магазин"
 
-#: src/help/help-page.tsx:198
+#: src/help/help-page.tsx:261
 msgid "GNU Affero General Public License v3.0"
 msgstr "GNU Affero General Public License v3.0"
 
@@ -210,7 +210,7 @@ msgstr "Годовой доход"
 msgid "Greška pri učitavanju kursa. Pokušajte ponovo."
 msgstr "Ошибка загрузки курса валюты. Пожалуйста, попробуйте снова."
 
-#: src/auth/auth-entry.tsx:58
+#: src/auth/auth-entry.tsx:62
 msgid "ili"
 msgstr "или"
 
@@ -255,7 +255,7 @@ msgid "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju "
 msgstr "Выберите способ разблокировки зашифрованных данных при каждом запуске "
 "приложения."
 
-#: src/auth/auth-entry.tsx:30
+#: src/auth/auth-entry.tsx:34
 msgid "Izaberite način prijave."
 msgstr "Выберите способ входа."
 
@@ -291,16 +291,16 @@ msgstr "Экспорт данных"
 msgid "Izvezi podatke naloga"
 msgstr "Экспорт данных аккаунта"
 
-#: src/auth/auth-shell.tsx:58
-#: src/e2ee/encryption-shell.tsx:58
+#: src/auth/auth-shell.tsx:64
+#: src/e2ee/encryption-shell.tsx:64
 msgid "Izvorni kod"
 msgstr "Исходный код"
 
-#: src/help/help-page.tsx:146
+#: src/help/help-page.tsx:178
 msgid "Izvorni kod na GitHub-u"
 msgstr "Исходный код на GitHub"
 
-#: src/auth/auth-entry.tsx:65
+#: src/auth/auth-entry.tsx:69
 #: src/auth/email-otp-sign-in.tsx:79
 msgid "Jednokratni kod"
 msgstr "Одноразовый код"
@@ -322,7 +322,7 @@ msgstr "На этом устройстве пока не было успешно
 msgid "Još nemate nijednu knjigu. Dodajte prvu da započnete."
 msgstr "У вас пока нет ни одной книги. Добавьте первую, чтобы начать."
 
-#: src/help/help-page.tsx:76
+#: src/help/help-page.tsx:108
 msgid "Kako prijaviti problem"
 msgstr "Как сообщить о проблеме"
 
@@ -336,6 +336,11 @@ msgstr "Книги"
 #: src/auth/email-otp-sign-in.tsx:70
 msgid "Kod nije važeći ili je istekao."
 msgstr "Код недействителен или истёк."
+
+#: src/auth/auth-shell.tsx:92
+#: src/e2ee/encryption-shell.tsx:92
+msgid "Kolačići"
+msgstr "Cookie"
 
 #: src/entries/entry-form.tsx:202
 #: src/entries/entry-form.tsx:247
@@ -367,7 +372,7 @@ msgstr "Создана"
 msgid "Kreirana:"
 msgstr "Создана:"
 
-#: src/help/help-page.tsx:190
+#: src/help/help-page.tsx:253
 msgid "Licenca"
 msgstr "Лицензия"
 
@@ -423,6 +428,12 @@ msgstr "Покинуть страницу?"
 #: src/e2ee/encryption-setup-screen.tsx:172
 msgid "Nastavi ka aplikaciji"
 msgstr "Перейти в приложение"
+
+#: src/auth/auth-entry.tsx:76
+msgid "Nastavkom prijave prihvatate <0>Uslove korišćenja</0> i potvrđujete da "
+"ste pročitali <1>Politiku privatnosti</1>."
+msgstr "Продолжая вход, вы соглашаетесь с <0>Условиями использования</0> и "
+"подтверждаете, что ознакомились с <1>Политикой конфиденциальности</1>."
 
 #: src/app-shell/mobile-drawer.tsx:37
 msgid "Navigacija"
@@ -533,7 +544,7 @@ msgstr "Новый пароль"
 msgid "Novi unos"
 msgstr "Новая запись"
 
-#: src/help/help-page.tsx:53
+#: src/help/help-page.tsx:60
 msgid "O projektu"
 msgstr "О проекте"
 
@@ -647,7 +658,7 @@ msgstr "Описание операции"
 msgid "Opšte"
 msgstr "Общие"
 
-#: src/help/help-page.tsx:168
+#: src/help/help-page.tsx:200
 msgid "Osnivač projekta"
 msgstr "Основатель проекта"
 
@@ -849,6 +860,14 @@ msgstr "Неверный пароль. Повторите попытку."
 msgid "Pokušaj ponovo"
 msgstr "Попробовать снова"
 
+#: src/help/help-page.tsx:239
+msgid "Politika kolačića"
+msgstr "Политика cookie"
+
+#: src/help/help-page.tsx:234
+msgid "Politika privatnosti"
+msgstr "Политика конфиденциальности"
+
 #: src/books/add-book-modal.tsx:26
 #: src/currency/currency-convert-modal.tsx:36
 #: src/currency/currency-convert-modal.tsx:37
@@ -884,7 +903,7 @@ msgstr "Отправить код"
 msgid "Pošalji ponovo"
 msgstr "Отправить снова"
 
-#: src/auth/auth-entry.tsx:68
+#: src/auth/auth-entry.tsx:72
 msgid "Poslaćemo vam kod za prijavu na email."
 msgstr "Мы отправим код для входа на ваш e-mail."
 
@@ -943,6 +962,10 @@ msgstr "Подтвердите изменение пароля"
 msgid "Potvrdite šifru"
 msgstr "Подтвердите пароль"
 
+#: src/help/help-page.tsx:222
+msgid "Pravila i privatnost"
+msgstr "Правила и конфиденциальность"
+
 #: src/settings/account-settings-page.tsx:78
 msgid "Pregled podataka povezanih sa vašim nalogom."
 msgstr "Просмотр данных, связанных с вашим аккаунтом."
@@ -975,11 +998,11 @@ msgstr "Доход"
 msgid "Prihodi po godinama"
 msgstr "Доходы по годам"
 
-#: src/auth/auth-entry.tsx:50
+#: src/auth/auth-entry.tsx:54
 msgid "Prijava GitHub"
 msgstr "Войти через GitHub"
 
-#: src/auth/auth-entry.tsx:42
+#: src/auth/auth-entry.tsx:46
 msgid "Prijava Google"
 msgstr "Войти через Google"
 
@@ -997,13 +1020,18 @@ msgid "Prijava potvrđuje vaš nalog. Ova odvojena šifra otključava vaše "
 msgstr "Вход подтверждает вашу учётную запись. Этот отдельный пароль "
 "разблокирует ваши зашифрованные данные после входа."
 
-#: src/help/help-page.tsx:88
+#: src/help/help-page.tsx:120
 msgid "Prijavite problem na GitHub-u"
 msgstr "Сообщить о проблеме на GitHub"
 
 #: src/currency/currency-convert-modal.tsx:284
 msgid "Primeni"
 msgstr "Применить"
+
+#: src/auth/auth-shell.tsx:83
+#: src/e2ee/encryption-shell.tsx:83
+msgid "Privatnost"
+msgstr "Конфиденциальность"
 
 #: src/auth/profile-popover.tsx:144
 #: src/auth/profile-popover.tsx:158
@@ -1156,7 +1184,7 @@ msgstr "Пароль шифрования"
 msgid "Šifra za šifrovanje je promenjena."
 msgstr "Пароль шифрования изменён."
 
-#: src/help/help-page.tsx:212
+#: src/help/help-page.tsx:85
 msgid "Šifrovanje"
 msgstr "Шифрование"
 
@@ -1199,7 +1227,7 @@ msgstr "Итого (RSD)"
 msgid "Svetla"
 msgstr "Светлая"
 
-#: src/help/help-page.tsx:173
+#: src/help/help-page.tsx:205
 msgid "Svi doprinosioci"
 msgstr "Все участники"
 
@@ -1329,6 +1357,15 @@ msgstr "Редактировать профиль"
 msgid "Uredi unos"
 msgstr "Редактировать запись"
 
+#: src/auth/auth-shell.tsx:74
+#: src/e2ee/encryption-shell.tsx:74
+msgid "Uslovi"
+msgstr "Условия"
+
+#: src/help/help-page.tsx:229
+msgid "Uslovi korišćenja"
+msgstr "Условия использования"
+
 #: src/currency/currency-convert-modal.tsx:149
 msgid "Valuta"
 msgstr "Валюта"
@@ -1351,7 +1388,7 @@ msgstr "У вашего аккаунта нет публичного адрес�
 msgid "Vaši podaci"
 msgstr "Ваши данные"
 
-#: src/help/help-page.tsx:217
+#: src/help/help-page.tsx:90
 msgid "Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje se izvodi iz "
 "vaše lozinke <0>Argon2id</0> algoritmom, a svi podaci se šifruju "
 "<1>AES-256-GCM</1> algoritmom. Server nikada ne vidi vaše podatke u "
@@ -1390,15 +1427,15 @@ msgstr "Для каждого года оставьте одну книгу, а 
 msgid "Zaboravili ste šifru?"
 msgstr "Забыли пароль?"
 
-#: src/help/help-page.tsx:115
+#: src/help/help-page.tsx:147
 msgid "Zakon o porezu na dodatu vrednost"
 msgstr "Закон о налоге на добавленную стоимость"
 
-#: src/help/help-page.tsx:107
+#: src/help/help-page.tsx:139
 msgid "Zakon o porezu na dohodak građana"
 msgstr "Закон о подоходном налоге с граждан"
 
-#: src/help/help-page.tsx:100
+#: src/help/help-page.tsx:132
 msgid "Zakonski propisi"
 msgstr "Нормативные акты"
 

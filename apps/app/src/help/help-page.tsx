@@ -3,6 +3,7 @@ import { Trans } from '@lingui/react/macro';
 import type { ReactNode } from 'react';
 import {
   LuBug,
+  LuFileText,
   LuGitPullRequest,
   LuInfo,
   LuKeyRound,
@@ -10,6 +11,9 @@ import {
   LuShield,
   LuUsers,
 } from 'react-icons/lu';
+
+import { useLocale } from '../i18n/use-locale';
+import { getLegalLinks } from '../legal/legal-links';
 
 const GITHUB_REPO = 'https://github.com/balakin/autokpo';
 const GITHUB_LICENSE = `${GITHUB_REPO}/blob/main/LICENSE`;
@@ -43,6 +47,9 @@ function ExternalLink({
 }
 
 export function HelpPage() {
+  const { locale } = useLocale();
+  const legalLinks = getLegalLinks(locale);
+
   return (
     <div className="flex flex-col gap-4 p-4 lg:gap-6 lg:p-6">
       {/* About — full width */}
@@ -62,6 +69,31 @@ export function HelpPage() {
               </strong>
               . Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između
               vaših uređaja.
+            </Trans>
+          </p>
+        </Card.Content>
+      </Card>
+
+      {/* Encryption — full width */}
+      <Card>
+        <Card.Header className="flex-row items-center gap-2">
+          <LuKeyRound
+            className="size-4 shrink-0 text-muted"
+            aria-hidden="true"
+          />
+          <Card.Title>
+            <Trans>Šifrovanje</Trans>
+          </Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <p className="text-sm/relaxed  text-muted">
+            <Trans>
+              Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje se izvodi
+              iz vaše lozinke{' '}
+              <strong className="text-foreground">Argon2id</strong> algoritmom,
+              a svi podaci se šifruju{' '}
+              <strong className="text-foreground">AES-256-GCM</strong>{' '}
+              algoritmom. Server nikada ne vidi vaše podatke u čitljivom obliku.
             </Trans>
           </p>
         </Card.Content>
@@ -178,8 +210,39 @@ export function HelpPage() {
         </Card>
       </div>
 
-      {/* License + Encryption — 2 columns */}
+      {/* Rules + License — 2 columns */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-6">
+        <Card>
+          <Card.Header className="flex-row items-center gap-2">
+            <LuFileText
+              className="size-4 shrink-0 text-muted"
+              aria-hidden="true"
+            />
+            <Card.Title>
+              <Trans>Pravila i privatnost</Trans>
+            </Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <ul className="flex flex-col gap-3">
+              <li>
+                <ExternalLink href={legalLinks.terms}>
+                  <Trans>Uslovi korišćenja</Trans>
+                </ExternalLink>
+              </li>
+              <li>
+                <ExternalLink href={legalLinks.privacy}>
+                  <Trans>Politika privatnosti</Trans>
+                </ExternalLink>
+              </li>
+              <li>
+                <ExternalLink href={legalLinks.cookies}>
+                  <Trans>Politika kolačića</Trans>
+                </ExternalLink>
+              </li>
+            </ul>
+          </Card.Content>
+        </Card>
+
         <Card>
           <Card.Header className="flex-row items-center gap-2">
             <LuShield
@@ -199,31 +262,6 @@ export function HelpPage() {
                 </span>
               </li>
             </ul>
-          </Card.Content>
-        </Card>
-
-        <Card>
-          <Card.Header className="flex-row items-center gap-2">
-            <LuKeyRound
-              className="size-4 shrink-0 text-muted"
-              aria-hidden="true"
-            />
-            <Card.Title>
-              <Trans>Šifrovanje</Trans>
-            </Card.Title>
-          </Card.Header>
-          <Card.Content>
-            <p className="text-sm/relaxed  text-muted">
-              <Trans>
-                Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje se
-                izvodi iz vaše lozinke{' '}
-                <strong className="text-foreground">Argon2id</strong>{' '}
-                algoritmom, a svi podaci se šifruju{' '}
-                <strong className="text-foreground">AES-256-GCM</strong>{' '}
-                algoritmom. Server nikada ne vidi vaše podatke u čitljivom
-                obliku.
-              </Trans>
-            </p>
           </Card.Content>
         </Card>
       </div>

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { I18nWrapper } from 'tests/render-helpers';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { AuthShell } from '../auth-shell';
 
@@ -15,6 +15,10 @@ function renderAuthShell() {
 }
 
 describe('AuthShell AGPL notice', () => {
+  beforeEach(() => {
+    localStorage.setItem('autokpo:locale', 'sr-Latn');
+  });
+
   it('displays the AGPL-3.0 license identifier', () => {
     renderAuthShell();
     expect(screen.getByText(/AGPL-3\.0/)).toBeInTheDocument();
@@ -46,5 +50,53 @@ describe('AuthShell AGPL notice', () => {
     expect(
       screen.getByRole('button', { name: /Podešavanja/i }),
     ).toBeInTheDocument();
+  });
+
+  it('renders localized legal footer links', () => {
+    renderAuthShell();
+
+    expect(screen.getByRole('link', { name: /Uslovi/i })).toHaveAttribute(
+      'href',
+      'https://autokpo.com/terms/',
+    );
+    expect(screen.getByRole('link', { name: /Privatnost/i })).toHaveAttribute(
+      'href',
+      'https://autokpo.com/privacy/',
+    );
+    expect(screen.getByRole('link', { name: /Kolačići/i })).toHaveAttribute(
+      'href',
+      'https://autokpo.com/cookies/',
+    );
+  });
+
+  it('uses active locale for legal footer links', () => {
+    localStorage.setItem('autokpo:locale', 'ru');
+    renderAuthShell();
+
+    expect(screen.getByRole('link', { name: /Условия/i })).toHaveAttribute(
+      'href',
+      'https://autokpo.com/ru/terms/',
+    );
+    expect(
+      screen.getByRole('link', { name: /Конфиденциальность/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/ru/privacy/');
+    expect(screen.getByRole('link', { name: /Cookie/i })).toHaveAttribute(
+      'href',
+      'https://autokpo.com/ru/cookies/',
+    );
+  });
+
+  it('legal footer links open externally', () => {
+    renderAuthShell();
+
+    for (const name of [/Uslovi/i, /Privatnost/i, /Kolačići/i]) {
+      const link = screen.getByRole('link', { name });
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
+      expect(link).toHaveAttribute(
+        'rel',
+        expect.stringContaining('noreferrer'),
+      );
+    }
   });
 });

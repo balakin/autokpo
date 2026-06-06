@@ -24,7 +24,7 @@ beforeEach(() => {
 });
 
 describe('HelpPage', () => {
-  it('renders all seven section headings', () => {
+  it('renders all eight section headings', () => {
     renderHelpPage();
     expect(screen.getByText('O projektu')).toBeInTheDocument();
     expect(screen.getByText('Kako prijaviti problem')).toBeInTheDocument();
@@ -33,6 +33,7 @@ describe('HelpPage', () => {
     expect(screen.getByText('Autori')).toBeInTheDocument();
     expect(screen.getByText('Licenca')).toBeInTheDocument();
     expect(screen.getByText('Šifrovanje')).toBeInTheDocument();
+    expect(screen.getByText('Pravila i privatnost')).toBeInTheDocument();
   });
 
   it('links to GitHub Issues for bug reports', () => {
@@ -85,6 +86,35 @@ describe('HelpPage', () => {
       'href',
       'https://github.com/balakin/autokpo/blob/main/LICENSE',
     );
+  });
+
+  it('links to localized legal documents', () => {
+    renderHelpPage();
+
+    expect(
+      screen.getByRole('link', { name: /Uslovi korišćenja/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/terms/');
+    expect(
+      screen.getByRole('link', { name: /Politika privatnosti/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/privacy/');
+    expect(
+      screen.getByRole('link', { name: /Politika kolačića/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/cookies/');
+  });
+
+  it('uses active locale for legal document links', () => {
+    localStorage.setItem('autokpo:locale', 'en');
+    renderHelpPage();
+
+    expect(
+      screen.getByRole('link', { name: /Terms of Service/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/en/terms/');
+    expect(
+      screen.getByRole('link', { name: /Privacy Policy/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/en/privacy/');
+    expect(
+      screen.getByRole('link', { name: /Cookies Policy/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/en/cookies/');
   });
 
   it('displays encryption algorithm names and zero-knowledge statement', () => {

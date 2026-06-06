@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useImperativeHandle } from 'react';
 import type { Ref } from 'react';
@@ -49,6 +49,7 @@ function setup() {
 
 describe('AuthEntry', () => {
   beforeEach(() => {
+    localStorage.setItem('autokpo:locale', 'sr-Latn');
     startOAuthFlowMock.mockReset();
     sendVerificationOtpMock.mockReset();
     startOAuthFlowMock.mockResolvedValue(undefined);
@@ -106,5 +107,49 @@ describe('AuthEntry', () => {
     expect(
       screen.getByRole('button', { name: /Podešavanja/i }),
     ).toBeInTheDocument();
+  });
+
+  it('renders Terms and Privacy notice without cookie link or checkbox', () => {
+    setup();
+
+    const notice = screen.getByText(/Nastavkom prijave prihvatate/i);
+    expect(
+      within(notice).getByRole('link', { name: /Uslove korišćenja/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/terms/');
+    expect(
+      within(notice).getByRole('link', { name: /Politiku privatnosti/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/privacy/');
+    expect(
+      within(notice).queryByRole('link', {
+        name: /Kolačići|Politika kolačića/i,
+      }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+  });
+
+  it('renders legal notice links as external links', () => {
+    setup();
+
+    for (const name of [/Uslove korišćenja/i, /Politiku privatnosti/i]) {
+      const link = screen.getByRole('link', { name });
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
+      expect(link).toHaveAttribute(
+        'rel',
+        expect.stringContaining('noreferrer'),
+      );
+    }
+  });
+
+  it('uses locale-aware legal notice links', () => {
+    localStorage.setItem('autokpo:locale', 'en');
+    setup();
+
+    expect(
+      screen.getByRole('link', { name: /Terms of Service/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/en/terms/');
+    expect(
+      screen.getByRole('link', { name: /Privacy Policy/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/en/privacy/');
   });
 });

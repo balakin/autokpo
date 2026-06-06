@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "isolatedModules": true
   },
-  "include": ["commitlint.config.ts"]
+  "include": ["base.ts"]
 }

@@ -1,8 +1,4 @@
-## Purpose
-
-Define the project's ESLint tooling requirements for React source linting.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: React linting uses @eslint-react/eslint-plugin
 

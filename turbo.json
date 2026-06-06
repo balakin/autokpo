@@ -11,6 +11,13 @@
       "persistent": true,
       "cache": false
     },
-    "test": {}
+    "test": {},
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "lint:fix": {
+      "dependsOn": ["^lint:fix"],
+      "cache": false
+    }
   }
 }

@@ -11,7 +11,7 @@ The root config uses ESLint v9 flat config with `typescript-eslint`'s `projectSe
 - Independent Turbo lint cache per app (changing `website` does not invalidate `app` lint cache)
 - Single shared package (`@autokpo/eslint-config`) for common base rules
 - Per-package `eslint.config.ts` files as the authoritative lint entry point for each app
-- ESLint auto-fix runs on pre-commit via `pnpm lint:fix` in the husky hook
+- ESLint auto-fix runs on pre-push via an affected Turbo command before build/test checks
 
 **Non-Goals:**
 
@@ -23,7 +23,7 @@ The root config uses ESLint v9 flat config with `typescript-eslint`'s `projectSe
 
 ### 1. Shared base contains only universal rules
 
-The `packages/eslint-config/base.ts` exports a flat config array with: `@eslint/js` recommended, `typescript-eslint` `recommendedTypeChecked` (with `projectService: true`), `eslint-plugin-import-x` flat config + all import-x rules, common TypeScript rules (`no-unused-vars`, `consistent-type-imports`, `consistent-type-exports`), `.d.ts` file overrides, and `eslint-config-prettier` last.
+The `packages/eslint-config/base.ts` exports a flat config array with: `@eslint/js` recommended, `typescript-eslint` `recommendedTypeChecked` (with `projectService: true`), `eslint-plugin-import-x` flat config + all import-x rules, common TypeScript rules (`no-unused-vars`, `consistent-type-imports`, `consistent-type-exports`), and `.d.ts` file overrides. It also re-exports shared building blocks (`eslintConfigPrettier`, `tseslint`, `importX`, `js`) so app configs can compose package-specific rules and keep Prettier compatibility last.
 
 Everything app-specific (React, Astro, Lingui, testing-library, better-tailwindcss, Yjs import restriction) stays in each app's local `eslint.config.ts`.
 
@@ -45,9 +45,9 @@ Extends `../../tsconfig.json` (the repo root's base compiler options: `strict`, 
 
 Unlike `lint`, `lint:fix` modifies files in the working tree. Caching a task that mutates files would mean the mutations are skipped on cache hits, so the task is always run fresh.
 
-### 6. `pnpm lint:fix` runs in the husky hook, not in lint-staged
+### 6. Affected `lint:fix`, `build`, and `test` run in the pre-push hook, not in lint-staged
 
-lint-staged runs per-file and can re-stage fixed files for the current commit. But with no root ESLint config, lint-staged cannot invoke ESLint per-file across packages without complex path-grouping logic. Running `pnpm lint:fix` (turbo) as a husky hook step is simpler: it fixes all files in all packages, and lint-staged then handles Prettier re-staging on staged files. ESLint fixes to staged files are applied to the working tree but may need a manual `git add` to be included in the commit if the fix touched a file that was only partially staged.
+lint-staged runs per-file and can re-stage fixed files for the current commit. But with no root ESLint config, lint-staged cannot invoke ESLint per-file across packages without complex path-grouping logic. The implementation leaves `lint-staged` as Prettier-only and moves ESLint fixing to `.husky/pre-push` with `pnpm turbo lint:fix build test --affected --concurrency=1`. This keeps local push checks aligned with Turbo's package graph and limits work to affected packages before running build/test.
 
 ### 7. `better-tailwindcss` plugin `cwd` and `entryPoint` resolved locally
 
@@ -61,9 +61,13 @@ Currently resolved with `resolve(root, 'apps/app')` from the repo root. In `apps
 
 pnpm does not expose executables from transitive dependencies. `eslint` (CLI) and `cross-env` (used in the `lint` script) must be direct devDeps of `apps/app` to be available when the package runs its own scripts. `apps/website` similarly needs `eslint` directly.
 
+### 10. CI uses Turbo affected tasks
+
+The CI workflow checks out full git history (`fetch-depth: 0`) so Turbo can compute affected packages. Lint, test, and build steps run `pnpm turbo <task> --affected` directly instead of root wrapper scripts (`pnpm lint`, `pnpm test`, `pnpm build`) to avoid unnecessary work on unrelated packages while retaining task graph correctness.
+
 ## Risks / Trade-offs
 
-- **ESLint auto-fixes in partially-staged files are not auto-staged** → If `pnpm lint:fix` modifies a file that was only partially staged, the fix lands in the working tree but not the index. The developer must `git add` those files before the next commit. This is an accepted trade-off of running turbo lint:fix (whole-package scope) rather than per-file lint-staged ESLint.
+- **ESLint auto-fixes happen at pre-push time** → `lint:fix` may modify affected package files during push. The developer must review and commit those fixes before pushing again. This is an accepted trade-off of running Turbo-scoped ESLint fixes rather than per-file lint-staged ESLint.
 - **`projectService: true` CWD sensitivity** → When ESLint runs from within a package directory (`cd apps/app && pnpm lint`), `projectService` finds the nearest `tsconfig.json` automatically. This is the expected behavior and is well-tested in the `typescript-eslint` project service.
 - **pnpm `strictPeerDependencies: true`** → Shared ESLint plugins in `packages/eslint-config` are listed as `dependencies` (not `peerDependencies`) to avoid peer resolution errors in consuming apps under strict peer dep mode.
 
@@ -76,6 +80,7 @@ pnpm does not expose executables from transitive dependencies. `eslint` (CLI) an
 5. Create `apps/website/eslint.config.ts` importing base + Astro rules; add `eslint.config.ts` to `apps/website/tsconfig.node.json`
 6. Delete root `eslint.config.ts`; update root `tsconfig.json` `include`
 7. Add `lint` and `lint:fix` scripts to both app `package.json` files; add `@autokpo/eslint-config: workspace:*`, `eslint`, and (for `apps/app`) `cross-env` as devDeps
-8. Update `turbo.json` with `lint` task (`dependsOn: ["^lint"]`) and `lint:fix` task (`cache: false`)
-9. Update `.husky/pre-commit` — add `pnpm lint:fix` before `pnpm lint-staged`
-10. Update root `package.json` — lint-staged to Prettier only; add `format` / `format:fix` scripts; remove now-redundant ESLint devDeps
+8. Update `turbo.json` with `lint` task (`dependsOn: ["^lint"]`) and `lint:fix` task (`dependsOn: ["^lint:fix"]`, `cache: false`)
+9. Update `.husky/pre-push` — replace root build/test wrapper calls with `pnpm turbo lint:fix build test --affected --concurrency=1`
+10. Update `.github/workflows/ci-cd.yml` — use full checkout history and run `pnpm turbo lint/test/build --affected`
+11. Update root `package.json` — lint-staged to Prettier only; add `format` / `format:fix` scripts; remove now-redundant ESLint devDeps

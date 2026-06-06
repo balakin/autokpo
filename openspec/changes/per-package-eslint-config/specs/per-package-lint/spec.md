@@ -28,11 +28,35 @@ The monorepo SHALL contain a `packages/eslint-config` workspace package (`@autok
 - **WHEN** `apps/app/eslint.config.ts` imports from `@autokpo/eslint-config/base`
 - **THEN** the import resolves to `packages/eslint-config/base.ts` via the pnpm workspace link
 
-### Requirement: Pre-commit hook runs Prettier only
+### Requirement: Pre-commit hook runs ESLint fix then Prettier
 
-The `lint-staged` configuration SHALL run only Prettier (no ESLint) on staged files. ESLint violations are caught by `turbo lint` in CI.
+The `.husky/pre-commit` hook SHALL run `pnpm lint:fix` (turbo-based ESLint auto-fix across all packages) before `pnpm lint-staged`. The `lint-staged` configuration SHALL run only Prettier on staged files.
 
-#### Scenario: Pre-commit does not run ESLint
+#### Scenario: Pre-commit auto-fixes ESLint violations
 
-- **WHEN** a developer commits files with an ESLint violation but no Prettier formatting issues
-- **THEN** the pre-commit hook exits with code 0 (ESLint is not invoked by lint-staged)
+- **WHEN** a developer commits files with auto-fixable ESLint violations
+- **THEN** `pnpm lint:fix` runs before the commit and fixes the violations; the hook exits with code 0
+
+#### Scenario: Pre-commit fails on unfixable ESLint violations
+
+- **WHEN** a developer commits files with ESLint violations that cannot be auto-fixed
+- **THEN** `pnpm lint:fix` exits with a non-zero code and the commit is aborted
+
+#### Scenario: lint-staged runs Prettier on staged files
+
+- **WHEN** staged files have Prettier formatting issues
+- **THEN** `pnpm lint-staged` rewrites and re-stages those files with correct formatting
+
+### Requirement: Root package.json provides format scripts
+
+The root `package.json` SHALL expose `format` (Prettier check across the whole repo) and `format:fix` (Prettier write across the whole repo) scripts.
+
+#### Scenario: format check fails on unformatted files
+
+- **WHEN** `pnpm format` is run and any file in the repo does not match Prettier's output
+- **THEN** the command exits with a non-zero code listing the unformatted files
+
+#### Scenario: format:fix rewrites unformatted files
+
+- **WHEN** `pnpm format:fix` is run
+- **THEN** all files in the repo are rewritten to match Prettier's output and the command exits with code 0

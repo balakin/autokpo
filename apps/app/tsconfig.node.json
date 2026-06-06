@@ -27,6 +27,7 @@
     "vitest.config.ts",
     "vitest.app.config.ts",
     "vitest.worker.config.ts",
+    "eslint.config.ts",
     "lingui.config.ts",
     "drizzle.config.ts",
     "auth.config.ts"

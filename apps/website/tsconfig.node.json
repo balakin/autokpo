@@ -22,5 +22,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["astro.config.ts"]
+  "include": ["astro.config.ts", "eslint.config.ts"]
 }

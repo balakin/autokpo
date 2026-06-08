@@ -11,6 +11,7 @@ import { DISPOSABLE_EMAIL_DOMAINS } from './disposable-email-blocklist';
 const TURNSTILE_TEST_SECRET = '1x0000000000000000000000000000000AA';
 const DEFAULT_LOCALE = 'sr-Latn';
 const SUPPORTED_LOCALES = new Set(['sr-Latn', 'en', 'ru']);
+const AUTH_SESSION_COOKIE_NAME = 'autokpo_session';
 const MAX_AUTH_EMAIL_LENGTH = 254;
 const MAX_SESSION_USER_AGENT_LENGTH = 1024;
 const MAX_SESSION_IP_ADDRESS_LENGTH = 128;
@@ -167,6 +168,11 @@ export function getAuthOptions({
       },
     },
     advanced: {
+      cookies: {
+        session_token: {
+          name: AUTH_SESSION_COOKIE_NAME,
+        },
+      },
       ipAddress: {
         ipAddressHeaders: ['cf-connecting-ip', 'x-forwarded-for'],
       },

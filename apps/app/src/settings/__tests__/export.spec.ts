@@ -197,7 +197,7 @@ describe('buildAccountExport', () => {
     expect(result.account).not.toHaveProperty('image');
     expect(result.providers).toEqual([{ name: 'github', accountId: '12345' }]);
     expect(typeof result.exportedAt).toBe('string');
-    expect(result.schemaVersion).toBe(2);
+    expect(result.schemaVersion).toBe(1);
     expect(result.sessions).toHaveLength(1);
     expect(result.sessions[0]).toMatchObject({
       id: 'sess-1',

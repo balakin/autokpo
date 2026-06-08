@@ -108,7 +108,7 @@ export async function buildAccountExport(): Promise<AccountExport> {
 
   return {
     exportedAt: new Date().toISOString(),
-    schemaVersion: 2,
+    schemaVersion: 1,
     account: {
       id: u?.id ?? null,
       email: u?.email ?? null,

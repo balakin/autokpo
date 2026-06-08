@@ -5,7 +5,7 @@ import type { LandingContent } from '../i18n/landing';
 
 interface Props {
   content: LandingContent;
-  legalUrls: { privacy: string; terms: string; cookies: string };
+  legalUrls: { privacy: string; terms: string };
 }
 
 const { content, legalUrls } = Astro.props;
@@ -29,7 +29,6 @@ const { content, legalUrls } = Astro.props;
       <nav class="footer-legal-links" aria-label="Legal">
         <a href={legalUrls.privacy}>{content.legalLinks.privacy}</a>
         <a href={legalUrls.terms}>{content.legalLinks.terms}</a>
-        <a href={legalUrls.cookies}>{content.legalLinks.cookies}</a>
       </nav>
     </div>
   </div>

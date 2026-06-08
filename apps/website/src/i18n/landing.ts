@@ -139,7 +139,6 @@ export const landingContent: Record<Locale, LandingContent> = {
     legalLinks: {
       privacy: legalContent['sr-Latn'].documents.privacy.title,
       terms: legalContent['sr-Latn'].documents.terms.title,
-      cookies: legalContent['sr-Latn'].documents.cookies.title,
     },
     hero: {
       badge: 'Besplatno i otvorenog koda',
@@ -340,7 +339,6 @@ export const landingContent: Record<Locale, LandingContent> = {
     legalLinks: {
       privacy: legalContent.en.documents.privacy.title,
       terms: legalContent.en.documents.terms.title,
-      cookies: legalContent.en.documents.cookies.title,
     },
     hero: {
       badge: 'Free and open source',
@@ -541,7 +539,6 @@ export const landingContent: Record<Locale, LandingContent> = {
     legalLinks: {
       privacy: legalContent.ru.documents.privacy.title,
       terms: legalContent.ru.documents.terms.title,
-      cookies: legalContent.ru.documents.cookies.title,
     },
     hero: {
       badge: 'Бесплатно и open source',

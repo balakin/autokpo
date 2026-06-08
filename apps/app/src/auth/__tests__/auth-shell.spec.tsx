@@ -55,41 +55,30 @@ describe('AuthShell AGPL notice', () => {
   it('renders localized legal footer links', () => {
     renderAuthShell();
 
-    expect(screen.getByRole('link', { name: /Uslovi/i })).toHaveAttribute(
-      'href',
-      'https://autokpo.com/terms/',
-    );
-    expect(screen.getByRole('link', { name: /Privatnost/i })).toHaveAttribute(
-      'href',
-      'https://autokpo.com/privacy/',
-    );
-    expect(screen.getByRole('link', { name: /Kolačići/i })).toHaveAttribute(
-      'href',
-      'https://autokpo.com/cookies/',
-    );
+    expect(
+      screen.getByRole('link', { name: /Uslovi korišćenja/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/terms/');
+    expect(
+      screen.getByRole('link', { name: /Politika privatnosti/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/privacy/');
   });
 
   it('uses active locale for legal footer links', () => {
     localStorage.setItem('autokpo:locale', 'ru');
     renderAuthShell();
 
-    expect(screen.getByRole('link', { name: /Условия/i })).toHaveAttribute(
-      'href',
-      'https://autokpo.com/ru/terms/',
-    );
     expect(
-      screen.getByRole('link', { name: /Конфиденциальность/i }),
+      screen.getByRole('link', { name: /Условия использования/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/ru/terms/');
+    expect(
+      screen.getByRole('link', { name: /Политика конфиденциальности/i }),
     ).toHaveAttribute('href', 'https://autokpo.com/ru/privacy/');
-    expect(screen.getByRole('link', { name: /Cookie/i })).toHaveAttribute(
-      'href',
-      'https://autokpo.com/ru/cookies/',
-    );
   });
 
   it('legal footer links open externally', () => {
     renderAuthShell();
 
-    for (const name of [/Uslovi/i, /Privatnost/i, /Kolačići/i]) {
+    for (const name of [/Uslovi korišćenja/i, /Politika privatnosti/i]) {
       const link = screen.getByRole('link', { name });
       expect(link).toHaveAttribute('target', '_blank');
       expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));

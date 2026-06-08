@@ -97,9 +97,6 @@ describe('HelpPage', () => {
     expect(
       screen.getByRole('link', { name: /Politika privatnosti/i }),
     ).toHaveAttribute('href', 'https://autokpo.com/privacy/');
-    expect(
-      screen.getByRole('link', { name: /Politika kolačića/i }),
-    ).toHaveAttribute('href', 'https://autokpo.com/cookies/');
   });
 
   it('uses active locale for legal document links', () => {
@@ -112,9 +109,6 @@ describe('HelpPage', () => {
     expect(
       screen.getByRole('link', { name: /Privacy Policy/i }),
     ).toHaveAttribute('href', 'https://autokpo.com/en/privacy/');
-    expect(
-      screen.getByRole('link', { name: /Cookies Policy/i }),
-    ).toHaveAttribute('href', 'https://autokpo.com/en/cookies/');
   });
 
   it('displays encryption algorithm names and zero-knowledge statement', () => {

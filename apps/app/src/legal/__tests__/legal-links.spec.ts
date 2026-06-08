@@ -7,7 +7,6 @@ describe('getLegalLinks', () => {
     expect(getLegalLinks('sr-Latn')).toEqual({
       terms: 'https://autokpo.com/terms/',
       privacy: 'https://autokpo.com/privacy/',
-      cookies: 'https://autokpo.com/cookies/',
     });
   });
 
@@ -15,7 +14,6 @@ describe('getLegalLinks', () => {
     expect(getLegalLinks('en')).toEqual({
       terms: 'https://autokpo.com/en/terms/',
       privacy: 'https://autokpo.com/en/privacy/',
-      cookies: 'https://autokpo.com/en/cookies/',
     });
   });
 
@@ -23,7 +21,6 @@ describe('getLegalLinks', () => {
     expect(getLegalLinks('ru')).toEqual({
       terms: 'https://autokpo.com/ru/terms/',
       privacy: 'https://autokpo.com/ru/privacy/',
-      cookies: 'https://autokpo.com/ru/cookies/',
     });
   });
 
@@ -31,7 +28,6 @@ describe('getLegalLinks', () => {
     expect(getLegalLinks('de')).toEqual({
       terms: 'https://autokpo.com/terms/',
       privacy: 'https://autokpo.com/privacy/',
-      cookies: 'https://autokpo.com/cookies/',
     });
   });
 });

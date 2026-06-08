@@ -31,42 +31,30 @@ describe('EncryptionShell legal footer', () => {
       'href',
       'https://github.com/balakin/autokpo',
     );
-    expect(screen.getByRole('link', { name: /Uslovi/i })).toHaveAttribute(
-      'href',
-      'https://autokpo.com/terms/',
-    );
-    expect(screen.getByRole('link', { name: /Privatnost/i })).toHaveAttribute(
-      'href',
-      'https://autokpo.com/privacy/',
-    );
-    expect(screen.getByRole('link', { name: /Kolačići/i })).toHaveAttribute(
-      'href',
-      'https://autokpo.com/cookies/',
-    );
+    expect(
+      screen.getByRole('link', { name: /Uslovi korišćenja/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/terms/');
+    expect(
+      screen.getByRole('link', { name: /Politika privatnosti/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/privacy/');
   });
 
   it('uses active locale for legal footer links', () => {
     localStorage.setItem('autokpo:locale', 'en');
     renderEncryptionShell();
 
-    expect(screen.getByRole('link', { name: /Terms/i })).toHaveAttribute(
-      'href',
-      'https://autokpo.com/en/terms/',
-    );
-    expect(screen.getByRole('link', { name: /Privacy/i })).toHaveAttribute(
-      'href',
-      'https://autokpo.com/en/privacy/',
-    );
-    expect(screen.getByRole('link', { name: /Cookies/i })).toHaveAttribute(
-      'href',
-      'https://autokpo.com/en/cookies/',
-    );
+    expect(
+      screen.getByRole('link', { name: /Terms of Service/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/en/terms/');
+    expect(
+      screen.getByRole('link', { name: /Privacy Policy/i }),
+    ).toHaveAttribute('href', 'https://autokpo.com/en/privacy/');
   });
 
   it('legal links open externally', () => {
     renderEncryptionShell();
 
-    for (const name of [/Uslovi/i, /Privatnost/i, /Kolačići/i]) {
+    for (const name of [/Uslovi korišćenja/i, /Politika privatnosti/i]) {
       const link = screen.getByRole('link', { name });
       expect(link).toHaveAttribute('target', '_blank');
       expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));

@@ -72,7 +72,7 @@ export function AuthShell({ children }: AuthShellProps) {
               rel="noopener noreferrer"
               className="text-xs text-muted hover:text-foreground"
             >
-              <Trans>Uslovi</Trans>
+              <Trans>Uslovi korišćenja</Trans>
             </Link>
             <span aria-hidden="true">·</span>
             <Link
@@ -81,16 +81,7 @@ export function AuthShell({ children }: AuthShellProps) {
               rel="noopener noreferrer"
               className="text-xs text-muted hover:text-foreground"
             >
-              <Trans>Privatnost</Trans>
-            </Link>
-            <span aria-hidden="true">·</span>
-            <Link
-              href={legalLinks.cookies}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-muted hover:text-foreground"
-            >
-              <Trans>Kolačići</Trans>
+              <Trans>Politika privatnosti</Trans>
             </Link>
           </div>
         </footer>

@@ -192,7 +192,7 @@ msgstr "Адрес электронной почты"
 msgid "Firma-radnje"
 msgstr "Фирма/магазин"
 
-#: src/help/help-page.tsx:261
+#: src/help/help-page.tsx:256
 msgid "GNU Affero General Public License v3.0"
 msgstr "GNU Affero General Public License v3.0"
 
@@ -337,11 +337,6 @@ msgstr "Книги"
 msgid "Kod nije važeći ili je istekao."
 msgstr "Код недействителен или истёк."
 
-#: src/auth/auth-shell.tsx:93
-#: src/e2ee/encryption-shell.tsx:93
-msgid "Kolačići"
-msgstr "Cookie"
-
 #: src/entries/entry-form.tsx:202
 #: src/entries/entry-form.tsx:247
 msgid "Konvertuj valutu"
@@ -372,7 +367,7 @@ msgstr "Создана"
 msgid "Kreirana:"
 msgstr "Создана:"
 
-#: src/help/help-page.tsx:253
+#: src/help/help-page.tsx:248
 msgid "Licenca"
 msgstr "Лицензия"
 
@@ -860,10 +855,8 @@ msgstr "Неверный пароль. Повторите попытку."
 msgid "Pokušaj ponovo"
 msgstr "Попробовать снова"
 
-#: src/help/help-page.tsx:239
-msgid "Politika kolačića"
-msgstr "Политика cookie"
-
+#: src/auth/auth-shell.tsx:84
+#: src/e2ee/encryption-shell.tsx:84
 #: src/help/help-page.tsx:234
 msgid "Politika privatnosti"
 msgstr "Политика конфиденциальности"
@@ -1027,11 +1020,6 @@ msgstr "Сообщить о проблеме на GitHub"
 #: src/currency/currency-convert-modal.tsx:284
 msgid "Primeni"
 msgstr "Применить"
-
-#: src/auth/auth-shell.tsx:84
-#: src/e2ee/encryption-shell.tsx:84
-msgid "Privatnost"
-msgstr "Конфиденциальность"
 
 #: src/auth/profile-popover.tsx:144
 #: src/auth/profile-popover.tsx:158
@@ -1359,9 +1347,6 @@ msgstr "Редактировать запись"
 
 #: src/auth/auth-shell.tsx:75
 #: src/e2ee/encryption-shell.tsx:75
-msgid "Uslovi"
-msgstr "Условия"
-
 #: src/help/help-page.tsx:229
 msgid "Uslovi korišćenja"
 msgstr "Условия использования"

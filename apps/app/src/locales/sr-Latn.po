@@ -192,7 +192,7 @@ msgstr "Email adresa"
 msgid "Firma-radnje"
 msgstr "Firma-radnje"
 
-#: src/help/help-page.tsx:261
+#: src/help/help-page.tsx:256
 msgid "GNU Affero General Public License v3.0"
 msgstr "GNU Affero General Public License v3.0"
 
@@ -336,11 +336,6 @@ msgstr "Knjige"
 msgid "Kod nije važeći ili je istekao."
 msgstr "Kod nije važeći ili je istekao."
 
-#: src/auth/auth-shell.tsx:93
-#: src/e2ee/encryption-shell.tsx:93
-msgid "Kolačići"
-msgstr "Kolačići"
-
 #: src/entries/entry-form.tsx:202
 #: src/entries/entry-form.tsx:247
 msgid "Konvertuj valutu"
@@ -371,7 +366,7 @@ msgstr "Kreirana"
 msgid "Kreirana:"
 msgstr "Kreirana:"
 
-#: src/help/help-page.tsx:253
+#: src/help/help-page.tsx:248
 msgid "Licenca"
 msgstr "Licenca"
 
@@ -857,10 +852,8 @@ msgstr "Pogrešna šifra. Pokušajte ponovo."
 msgid "Pokušaj ponovo"
 msgstr "Pokušaj ponovo"
 
-#: src/help/help-page.tsx:239
-msgid "Politika kolačića"
-msgstr "Politika kolačića"
-
+#: src/auth/auth-shell.tsx:84
+#: src/e2ee/encryption-shell.tsx:84
 #: src/help/help-page.tsx:234
 msgid "Politika privatnosti"
 msgstr "Politika privatnosti"
@@ -1024,11 +1017,6 @@ msgstr "Prijavite problem na GitHub-u"
 #: src/currency/currency-convert-modal.tsx:284
 msgid "Primeni"
 msgstr "Primeni"
-
-#: src/auth/auth-shell.tsx:84
-#: src/e2ee/encryption-shell.tsx:84
-msgid "Privatnost"
-msgstr "Privatnost"
 
 #: src/auth/profile-popover.tsx:144
 #: src/auth/profile-popover.tsx:158
@@ -1355,9 +1343,6 @@ msgstr "Uredi unos"
 
 #: src/auth/auth-shell.tsx:75
 #: src/e2ee/encryption-shell.tsx:75
-msgid "Uslovi"
-msgstr "Uslovi"
-
 #: src/help/help-page.tsx:229
 msgid "Uslovi korišćenja"
 msgstr "Uslovi korišćenja"

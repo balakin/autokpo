@@ -9,15 +9,26 @@ export interface StateExport {
   books: ReturnType<typeof yMapToBook>[];
 }
 
+export interface AccountExportSession {
+  id: string;
+  ipAddress: string | null;
+  userAgent: string | null;
+  createdAt: string | null;
+  expiresAt: string | null;
+  isCurrent: boolean;
+}
+
 export interface AccountExport {
   exportedAt: string;
   schemaVersion: number;
   account: {
+    id: string | null;
     email: string | null;
     emailVerified: boolean;
     createdAt: string | null;
   };
   providers: { name: string; accountId: string }[];
+  sessions: AccountExportSession[];
 }
 
 export function downloadJson(filename: string, data: unknown): void {
@@ -48,12 +59,14 @@ export function buildStateExport(ydoc: TypedDoc): StateExport {
 }
 
 export async function buildAccountExport(): Promise<AccountExport> {
-  const [sessionResult, accountsResult] = await Promise.all([
+  const [sessionResult, accountsResult, sessionsResult] = await Promise.all([
     authClient.getSession(),
     authClient.listAccounts(),
+    authClient.listSessions(),
   ]);
 
   const u = sessionResult.data?.user;
+  const currentSessionId = sessionResult.data?.session?.id ?? null;
 
   const createdAt =
     u?.createdAt instanceof Date
@@ -78,16 +91,64 @@ export async function buildAccountExport(): Promise<AccountExport> {
     return [];
   });
 
+  const rawSessions = readSessionsFromResult(sessionsResult);
+  const sessions: AccountExportSession[] = rawSessions.map(
+    (s: Record<string, unknown>, index: number) => {
+      const id = typeof s.id === 'string' ? s.id : `session-${index}`;
+      return {
+        id,
+        ipAddress: typeof s.ipAddress === 'string' ? s.ipAddress : null,
+        userAgent: typeof s.userAgent === 'string' ? s.userAgent : null,
+        createdAt: toIsoString(s.createdAt),
+        expiresAt: toIsoString(s.expiresAt),
+        isCurrent: currentSessionId !== null && id === currentSessionId,
+      };
+    },
+  );
+
   return {
     exportedAt: new Date().toISOString(),
-    schemaVersion: 1,
+    schemaVersion: 2,
     account: {
+      id: u?.id ?? null,
       email: u?.email ?? null,
       emailVerified: u?.emailVerified ?? false,
       createdAt,
     },
     providers,
+    sessions,
   };
+}
+
+function readSessionsFromResult(result: unknown): Record<string, unknown>[] {
+  if (Array.isArray(result)) return result as Record<string, unknown>[];
+  if (!result || typeof result !== 'object' || !('data' in result)) return [];
+  const data = (result as Record<string, unknown>).data;
+  if (Array.isArray(data)) return data as Record<string, unknown>[];
+  if (
+    data &&
+    typeof data === 'object' &&
+    'sessions' in data &&
+    Array.isArray((data as Record<string, unknown>).sessions)
+  ) {
+    return (data as Record<string, unknown>).sessions as Record<
+      string,
+      unknown
+    >[];
+  }
+  return [];
+}
+
+function toIsoString(value: unknown): string | null {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'string' && value.length > 0) {
+    const ts = Date.parse(value);
+    return Number.isNaN(ts) ? null : new Date(ts).toISOString();
+  }
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return new Date(value).toISOString();
+  }
+  return null;
 }
 
 export function exportFilename(prefix: string): string {

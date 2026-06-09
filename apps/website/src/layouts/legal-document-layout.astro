@@ -28,7 +28,6 @@ const homeUrl = getRelativeLocaleUrl(locale, '');
 const legalUrls = {
   privacy: getRelativeLocaleUrl(locale, legalLocale.documents.privacy.slug),
   terms: getRelativeLocaleUrl(locale, legalLocale.documents.terms.slug),
-  cookies: getRelativeLocaleUrl(locale, legalLocale.documents.cookies.slug),
 };
 const alternates = supportedLocales.map((alternateLocale) => ({
   locale: alternateLocale,
@@ -130,7 +129,6 @@ const alternates = supportedLocales.map((alternateLocale) => ({
     margin-bottom: 13px;
     text-wrap: pretty;
   }
-  .legal-content h1 + p { font-size: 17px; line-height: 1.65; color: var(--muted); margin-bottom: 10px; }
   .legal-content strong { color: var(--foreground); font-weight: 600; }
   .legal-content em { font-style: italic; }
   .legal-content del { text-decoration: line-through; color: var(--muted); opacity: 0.7; }
@@ -230,14 +228,19 @@ const alternates = supportedLocales.map((alternateLocale) => ({
     background: var(--surface-secondary);
     padding: 10px 16px;
     border-bottom: 1px solid var(--border);
-    white-space: nowrap;
+    max-width: 400px;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
   .legal-content td {
     padding: 11px 16px;
     border-bottom: 1px solid var(--separator);
     color: var(--muted);
     line-height: 1.5;
-    white-space: nowrap;
+    max-width: 400px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    vertical-align: top;
   }
   .legal-content tr:last-child td { border-bottom: none; }
 

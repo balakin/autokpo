@@ -82,16 +82,6 @@ const testAuth = betterAuth({
     provider: 'sqlite',
     schema,
   }),
-  secondaryStorage: {
-    get: (key) => workerTestEnv.AUTH_KV.get(key),
-    set: (key, value, ttl) =>
-      workerTestEnv.AUTH_KV.put(
-        key,
-        value,
-        ttl ? { expirationTtl: ttl } : undefined,
-      ),
-    delete: (key) => workerTestEnv.AUTH_KV.delete(key),
-  },
   secret: TEST_BETTER_AUTH_SECRET,
   baseURL: TEST_APP_URL,
   ...authOptions,

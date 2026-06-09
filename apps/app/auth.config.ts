@@ -12,11 +12,6 @@ const db = {} as BaseSQLiteDatabase<'sync', void>;
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: 'sqlite' }),
-  secondaryStorage: {
-    get: () => null,
-    set: () => {},
-    delete: () => {},
-  },
   ...getAuthOptions({
     google: { clientId: '', clientSecret: '' },
     github: { clientId: '', clientSecret: '' },

@@ -3,7 +3,7 @@ import type { Locale } from '../i18n/i18n';
 
 const LEGAL_ORIGIN = 'https://autokpo.com';
 
-export type LegalDocument = 'terms' | 'privacy' | 'cookies';
+export type LegalDocument = 'terms' | 'privacy';
 
 export type LegalLinks = Record<LegalDocument, string>;
 
@@ -23,6 +23,5 @@ export function getLegalLinks(locale: string): LegalLinks {
   return {
     terms: `${LEGAL_ORIGIN}${prefix}/terms/`,
     privacy: `${LEGAL_ORIGIN}${prefix}/privacy/`,
-    cookies: `${LEGAL_ORIGIN}${prefix}/cookies/`,
   };
 }

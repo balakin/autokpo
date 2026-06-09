@@ -145,11 +145,15 @@ describe('AuthEntry', () => {
     localStorage.setItem('autokpo:locale', 'en');
     setup();
 
-    expect(
-      screen.getByRole('link', { name: /Terms of Service/i }),
-    ).toHaveAttribute('href', 'https://autokpo.com/en/terms/');
-    expect(
-      screen.getByRole('link', { name: /Privacy Policy/i }),
-    ).toHaveAttribute('href', 'https://autokpo.com/en/privacy/');
+    for (const link of screen.getAllByRole('link', {
+      name: /Terms of Service/i,
+    })) {
+      expect(link).toHaveAttribute('href', 'https://autokpo.com/en/terms/');
+    }
+    for (const link of screen.getAllByRole('link', {
+      name: /Privacy Policy/i,
+    })) {
+      expect(link).toHaveAttribute('href', 'https://autokpo.com/en/privacy/');
+    }
   });
 });

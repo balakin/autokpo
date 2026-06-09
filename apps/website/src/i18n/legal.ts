@@ -1,6 +1,6 @@
 export type Locale = 'sr-Latn' | 'en' | 'ru';
 
-export type LegalDocumentKey = 'privacy' | 'terms' | 'cookies';
+export type LegalDocumentKey = 'privacy' | 'terms';
 
 export type LegalDocumentMeta = {
   key: LegalDocumentKey;
@@ -43,13 +43,6 @@ const createDocuments = (
     description: descriptions.terms,
     updated,
   },
-  cookies: {
-    key: 'cookies',
-    slug: 'cookies',
-    title: titles.cookies,
-    description: descriptions.cookies,
-    updated,
-  },
 });
 
 export const legalContent: Record<Locale, LegalLocaleContent> = {
@@ -69,12 +62,10 @@ export const legalContent: Record<Locale, LegalLocaleContent> = {
       {
         privacy: 'Politika privatnosti',
         terms: 'Uslovi korišćenja',
-        cookies: 'Politika kolačića',
       },
       {
         privacy: 'Kako AutoKPO obrađuje i štiti podatke korisnika.',
         terms: 'Pravila korišćenja AutoKPO veb sajta i aplikacije.',
-        cookies: 'Objašnjenje kolačića i srodnih tehnologija na AutoKPO sajtu.',
       },
       '2026-06-06',
     ),
@@ -94,13 +85,10 @@ export const legalContent: Record<Locale, LegalLocaleContent> = {
       {
         privacy: 'Privacy Policy',
         terms: 'Terms of Service',
-        cookies: 'Cookies Policy',
       },
       {
         privacy: 'How AutoKPO processes and protects user data.',
         terms: 'Rules for using the AutoKPO website and app.',
-        cookies:
-          'An explanation of cookies and related technologies on the AutoKPO website.',
       },
       '2026-06-06',
     ),
@@ -121,12 +109,10 @@ export const legalContent: Record<Locale, LegalLocaleContent> = {
       {
         privacy: 'Политика конфиденциальности',
         terms: 'Условия использования',
-        cookies: 'Политика cookie',
       },
       {
         privacy: 'Как AutoKPO обрабатывает и защищает данные пользователей.',
         terms: 'Правила использования сайта и приложения AutoKPO.',
-        cookies: 'Описание cookie и связанных технологий на сайте AutoKPO.',
       },
       '2026-06-06',
     ),

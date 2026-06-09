@@ -234,11 +234,6 @@ export function HelpPage() {
                   <Trans>Politika privatnosti</Trans>
                 </ExternalLink>
               </li>
-              <li>
-                <ExternalLink href={legalLinks.cookies}>
-                  <Trans>Politika kolačića</Trans>
-                </ExternalLink>
-              </li>
             </ul>
           </Card.Content>
         </Card>

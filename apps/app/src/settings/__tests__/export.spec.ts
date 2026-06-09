@@ -9,11 +9,13 @@ import { buildStateExport, buildAccountExport } from '../export';
 
 const mockGetSession = vi.fn<() => Promise<unknown>>();
 const mockListAccounts = vi.fn<() => Promise<unknown>>();
+const mockListSessions = vi.fn<() => Promise<unknown>>();
 
 vi.mock('../../auth/auth-client', () => ({
   authClient: {
     getSession: () => mockGetSession(),
     listAccounts: () => mockListAccounts(),
+    listSessions: () => mockListSessions(),
   },
 }));
 
@@ -151,11 +153,14 @@ describe('buildAccountExport', () => {
   beforeEach(() => {
     mockGetSession.mockReset();
     mockListAccounts.mockReset();
+    mockListSessions.mockReset();
+    mockListSessions.mockResolvedValue({ data: [] });
   });
 
   it('returns correct shape for a complete account', async () => {
     mockGetSession.mockResolvedValue({
       data: {
+        session: { id: 'sess-1' },
         user: {
           id: 'user-1',
           email: 'ana@example.com',
@@ -167,10 +172,23 @@ describe('buildAccountExport', () => {
     mockListAccounts.mockResolvedValue({
       data: [{ providerId: 'github', accountId: '12345' }],
     });
+    mockListSessions.mockResolvedValue({
+      data: [
+        {
+          id: 'sess-1',
+          token: 'tok-abc',
+          ipAddress: '1.2.3.4',
+          userAgent: 'Mozilla/5.0',
+          createdAt: new Date('2025-06-01T08:00:00.000Z'),
+          expiresAt: new Date('2025-07-01T08:00:00.000Z'),
+        },
+      ],
+    });
 
     const result = await buildAccountExport();
 
     expect(result.account).toMatchObject({
+      id: 'user-1',
       email: 'ana@example.com',
       emailVerified: true,
       createdAt: '2025-01-15T10:00:00.000Z',
@@ -180,6 +198,13 @@ describe('buildAccountExport', () => {
     expect(result.providers).toEqual([{ name: 'github', accountId: '12345' }]);
     expect(typeof result.exportedAt).toBe('string');
     expect(result.schemaVersion).toBe(1);
+    expect(result.sessions).toHaveLength(1);
+    expect(result.sessions[0]).toMatchObject({
+      id: 'sess-1',
+      ipAddress: '1.2.3.4',
+      userAgent: 'Mozilla/5.0',
+      isCurrent: true,
+    });
   });
 
   it('falls back to null createdAt when not available', async () => {
@@ -220,5 +245,110 @@ describe('buildAccountExport', () => {
 
     const result = await buildAccountExport();
     expect(result.providers).toEqual([]);
+  });
+
+  it('converts session timestamps to ISO strings and sets isCurrent correctly', async () => {
+    mockGetSession.mockResolvedValue({
+      data: {
+        session: { id: 'sess-current' },
+        user: { email: 'u@u.com', emailVerified: true },
+      },
+    });
+    mockListAccounts.mockResolvedValue({ data: [] });
+    mockListSessions.mockResolvedValue({
+      data: [
+        {
+          id: 'sess-current',
+          token: 'tok-1',
+          ipAddress: '10.0.0.1',
+          userAgent: 'Chrome/120',
+          createdAt: new Date('2025-05-01T00:00:00.000Z'),
+          expiresAt: new Date('2025-06-01T00:00:00.000Z'),
+        },
+        {
+          id: 'sess-other',
+          token: 'tok-2',
+          ipAddress: '10.0.0.2',
+          userAgent: 'Firefox/115',
+          createdAt: 1_746_057_600_000,
+          expiresAt: 1_748_649_600_000,
+        },
+      ],
+    });
+
+    const result = await buildAccountExport();
+
+    expect(result.sessions).toHaveLength(2);
+    expect(result.sessions[0]).toMatchObject({
+      id: 'sess-current',
+      ipAddress: '10.0.0.1',
+      userAgent: 'Chrome/120',
+      createdAt: '2025-05-01T00:00:00.000Z',
+      expiresAt: '2025-06-01T00:00:00.000Z',
+      isCurrent: true,
+    });
+    expect(result.sessions[1]).toMatchObject({
+      id: 'sess-other',
+      ipAddress: '10.0.0.2',
+      userAgent: 'Firefox/115',
+      isCurrent: false,
+    });
+    expect(typeof result.sessions[1].createdAt).toBe('string');
+    expect(typeof result.sessions[1].expiresAt).toBe('string');
+  });
+
+  it('sets session metadata fields to null when unavailable', async () => {
+    mockGetSession.mockResolvedValue({
+      data: {
+        session: { id: 'sess-1' },
+        user: { email: 'u@u.com', emailVerified: false },
+      },
+    });
+    mockListAccounts.mockResolvedValue({ data: [] });
+    mockListSessions.mockResolvedValue({
+      data: [{ id: 'sess-1', token: 'tok-x' }],
+    });
+
+    const result = await buildAccountExport();
+
+    expect(result.sessions).toHaveLength(1);
+    expect(result.sessions[0]).toEqual({
+      id: 'sess-1',
+      ipAddress: null,
+      userAgent: null,
+      createdAt: null,
+      expiresAt: null,
+      isCurrent: true,
+    });
+  });
+
+  it('does not include session token in export', async () => {
+    mockGetSession.mockResolvedValue({
+      data: {
+        session: { id: 'sess-1' },
+        user: { email: 'u@u.com', emailVerified: false },
+      },
+    });
+    mockListAccounts.mockResolvedValue({ data: [] });
+    mockListSessions.mockResolvedValue({
+      data: [{ id: 'sess-1', token: 'super-secret-token' }],
+    });
+
+    const result = await buildAccountExport();
+
+    expect(result.sessions[0]).not.toHaveProperty('token');
+    const json = JSON.stringify(result);
+    expect(json).not.toContain('super-secret-token');
+  });
+
+  it('returns empty sessions array when listSessions returns unexpected shape', async () => {
+    mockGetSession.mockResolvedValue({
+      data: { user: { email: 'u@u.com', emailVerified: false } },
+    });
+    mockListAccounts.mockResolvedValue({ data: [] });
+    mockListSessions.mockResolvedValue({ data: null });
+
+    const result = await buildAccountExport();
+    expect(result.sessions).toEqual([]);
   });
 });

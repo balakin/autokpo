@@ -2,36 +2,35 @@
 
 ## Purpose
 
-TBD - created by archiving change cloudflare-kv. Update Purpose after archive.
+Defines how better-auth sessions and verification records are stored in the application backend. Sessions are stored in D1 via the Drizzle adapter; no Cloudflare KV namespace is used for authentication storage.
 
 ## Requirements
 
-### Requirement: Sessions and verification records are stored in Cloudflare KV
+### Requirement: Sessions are stored in D1
 
-The system SHALL configure better-auth with a `secondaryStorage` backed by a Cloudflare KV namespace (`AUTH_KV`). Sessions and OTP verification records SHALL be written to and read from KV rather than D1.
+The system SHALL store better-auth sessions in the D1 database via the Drizzle adapter. The worker SHALL NOT configure `secondaryStorage` in the better-auth options. A `session` table SHALL exist in the D1 schema with columns matching better-auth's expected session model (`id`, `expiresAt`, `token`, `createdAt`, `updatedAt`, `ipAddress`, `userAgent`, `userId`). There SHALL be no `AUTH_KV` KV namespace binding in the worker configuration.
 
-#### Scenario: Session lookup uses KV
+#### Scenario: Session lookup uses D1
 
 - **WHEN** an authenticated request arrives and `getSession()` is called
-- **THEN** the session SHALL be retrieved from the `AUTH_KV` KV namespace
-- **AND** no D1 query SHALL be issued for session lookup
+- **THEN** the session SHALL be retrieved from the D1 `session` table
+- **AND** no KV namespace SHALL be queried
 
-#### Scenario: OTP verification record uses KV
+#### Scenario: Session creation uses D1
+
+- **WHEN** a user signs in and better-auth creates a new session
+- **THEN** the session record SHALL be written to the D1 `session` table
+- **AND** no KV write SHALL occur
+
+#### Scenario: OTP verification record uses D1
 
 - **WHEN** the email OTP plugin writes or reads a verification record
-- **THEN** the record SHALL be stored in the `AUTH_KV` KV namespace with a TTL matching the OTP expiry
-- **AND** no D1 query SHALL be issued for the verification record
+- **THEN** the record SHALL be stored in the D1 `verification` table
+- **AND** no KV write SHALL occur
+
+## Removed
 
 ### Requirement: KV namespace is isolated between environments
 
-The worker SHALL use a separate KV namespace for local development and production. The `AUTH_KV` binding SHALL resolve to the dev namespace in the default (local) wrangler environment and to the production namespace under `env.production`.
-
-#### Scenario: Local dev uses dev namespace
-
-- **WHEN** the worker runs in local development
-- **THEN** session data SHALL be written to and read from the dev `AUTH_KV` namespace
-
-#### Scenario: Production uses production namespace
-
-- **WHEN** the worker runs in the production environment
-- **THEN** session data SHALL be written to and read from the production `AUTH_KV` namespace
+**Reason**: The `AUTH_KV` KV namespace is removed entirely. Sessions are now stored in D1, which already has per-environment database bindings (`autokpo-dev` and `autokpo-production`).
+**Migration**: No migration needed. Remove `kv_namespaces` entries from `wrangler.jsonc` for both base and `env.production` environments.

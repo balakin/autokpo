@@ -4,7 +4,7 @@ locale: en
 documentKey: privacy
 title: Privacy Policy
 description: How AutoKPO processes and protects user data.
-updated: 2026-06-09
+updated: 2026-06-10
 ---
 
 # Privacy Policy

@@ -17,47 +17,66 @@ const { content, legalUrls } = Astro.props;
       <span class="wordmark">AutoKPO</span>
       <span class="tagline">{content.footer.taglinePrefix} <a href="https://github.com/dm-balakin" rel="noreferrer noopener">Dmitrii Balakin</a></span>
     </div>
-    <div class="footer-spacer"></div>
-    <div class="footer-links">
-      <div class="footer-project-links">
-        <a href="https://github.com/balakin/autokpo" rel="noreferrer noopener">
-          <span class="github-icon" aria-hidden="true"><img class="github-black" src={githubBlackUrl} alt="" /><img class="github-white" src={githubWhiteUrl} alt="" /></span>
-          GitHub
-        </a>
-        <span class="footer-license">AGPL-3.0</span>
-      </div>
-      <nav class="footer-legal-links" aria-label="Legal">
-        <a href={legalUrls.privacy}>{content.legalLinks.privacy}</a>
-        <a href={legalUrls.terms}>{content.legalLinks.terms}</a>
-      </nav>
+    <div class="footer-project-links">
+      <a href="https://github.com/balakin/autokpo" rel="noreferrer noopener">
+        <span class="github-icon" aria-hidden="true"><img class="github-black" src={githubBlackUrl} alt="" /><img class="github-white" src={githubWhiteUrl} alt="" /></span>
+        GitHub
+      </a>
+      <span class="footer-license">AGPL-3.0</span>
     </div>
+    <nav class="footer-legal-links" aria-label="Legal">
+      <a href="mailto:support@autokpo.com">{content.support}</a>
+      <span aria-hidden="true">·</span>
+      <a href={legalUrls.terms}>{content.legalLinks.terms}</a>
+      <span aria-hidden="true">·</span>
+      <a href={legalUrls.privacy}>{content.legalLinks.privacy}</a>
+    </nav>
   </div>
 </footer>
 
 <style>
   .site-footer { border-top: 1px solid var(--separator); padding: 24px 0; }
-  .footer-inner { display: flex; align-items: center; gap: 16px 24px; flex-wrap: wrap; }
-  .footer-brand { display: flex; flex-direction: column; gap: 6px; }
-  .footer-brand .wordmark { font-size: 19px; }
-  .footer-brand .tagline { font-size: 13px; color: var(--muted); }
-  .footer-spacer { flex: 1; }
+  .site-footer a { text-decoration: none; }
 
-  .footer-links {
+  .footer-inner {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "brand project"
+      "brand legal";
+    gap: 6px 24px;
+    align-items: center;
+  }
+
+  .footer-brand {
+    grid-area: brand;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
+    align-self: center;
   }
-  .footer-project-links,
-  .footer-legal-links {
+  .footer-brand .wordmark { font-size: 19px; }
+  .footer-brand .tagline { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .footer-brand .tagline a { text-decoration: underline; }
+
+  .footer-project-links {
+    grid-area: project;
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 12px 18px;
+    gap: 12px;
+  }
+
+  .footer-legal-links {
+    grid-area: legal;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
     flex-wrap: wrap;
   }
-  .footer-links a {
-    font-size: 14px;
+
+  .footer-project-links a,
+  .footer-legal-links a {
     color: var(--muted);
     text-decoration: none;
     display: inline-flex;
@@ -65,8 +84,11 @@ const { content, legalUrls } = Astro.props;
     gap: 7px;
     transition: color 120ms;
   }
-  .footer-links a:hover { color: var(--foreground); }
+  .footer-project-links a { font-size: 14px; }
   .footer-legal-links a { font-size: 13px; }
+  .footer-project-links a:hover,
+  .footer-legal-links a:hover { color: var(--foreground); }
+  .footer-legal-links span { font-size: 13px; color: var(--muted); }
 
   .github-icon {
     position: relative;
@@ -90,7 +112,6 @@ const { content, legalUrls } = Astro.props;
   .footer-license {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
     font-family: var(--font-mono);
     font-size: 12px;
     color: var(--muted);
@@ -99,10 +120,14 @@ const { content, legalUrls } = Astro.props;
     border: 1px solid var(--border);
   }
 
-  @media (max-width: 620px) {
-    .footer-spacer { display: none; }
-    .footer-links { align-items: flex-start; }
-    .footer-project-links,
-    .footer-legal-links { justify-content: flex-start; }
+  @media (max-width: 768px) {
+    .footer-inner {
+      grid-template-columns: 1fr auto;
+      grid-template-areas:
+        "brand project"
+        "legal legal";
+      row-gap: 16px;
+    }
+    .footer-legal-links { justify-content: center; }
   }
 </style>

@@ -23,18 +23,18 @@
     "*": "pnpm prettier --write --ignore-unknown"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^0.7.0",
-    "@changesets/cli": "^2.31.0",
-    "@commitlint/cli": "^21.0.2",
-    "@commitlint/config-conventional": "^21.0.2",
-    "@commitlint/types": "^21.0.1",
-    "@types/node": "^25.9.2",
-    "husky": "^9.1.7",
-    "jiti": "^2.7.0",
-    "lint-staged": "^17.0.7",
-    "prettier": "^3.8.3",
-    "turbo": "^2.9.16",
-    "typescript": "~6.0.3"
+    "@changesets/changelog-github": "catalog:tooling",
+    "@changesets/cli": "catalog:tooling",
+    "@commitlint/cli": "catalog:tooling",
+    "@commitlint/config-conventional": "catalog:tooling",
+    "@commitlint/types": "catalog:tooling",
+    "@types/node": "catalog:tooling",
+    "husky": "catalog:tooling",
+    "jiti": "catalog:tooling",
+    "lint-staged": "catalog:tooling",
+    "prettier": "catalog:tooling",
+    "turbo": "catalog:tooling",
+    "typescript": "catalog:tooling"
   },
   "packageManager": "pnpm@11.5.2+sha512.71c631e382066efc25625d5cf029075de07b61b37f6e27350fbd84b1bda5864c8c1967adc280776b45c30a715c0359a3be08fef42d5bb09e2b99029979692916",
   "engines": {

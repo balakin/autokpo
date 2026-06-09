@@ -7,15 +7,7 @@ updates:
     cooldown:
       default-days: 2
     groups:
-      prod-dependencies:
-        dependency-type: production
-        update-types:
-          - minor
-          - patch
-        patterns:
-          - '*'
-      dev-dependencies:
-        dependency-type: development
+      all-dependencies:
         update-types:
           - minor
           - patch

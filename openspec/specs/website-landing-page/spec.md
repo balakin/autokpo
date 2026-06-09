@@ -128,7 +128,7 @@ The landing page SHALL state in each supported locale that AutoKPO is a helper t
 
 ### Requirement: Footer links and project metadata
 
-The landing page SHALL include a localized footer on every supported locale page with GitHub, Cookies Policy, Privacy Policy, Terms of Service, AGPL-3.0 license, and open-source project notes.
+The landing page SHALL include a localized footer on every supported locale page with GitHub, Cookies Policy, Privacy Policy, Terms of Service, AGPL-3.0 license, open-source project notes, and a support email link.
 
 #### Scenario: Footer exposes project source
 
@@ -149,6 +149,12 @@ The landing page SHALL include a localized footer on every supported locale page
 
 - **WHEN** a visitor reaches the footer on any localized landing page
 - **THEN** the footer includes a project author note linking to the author's GitHub profile in that page's locale
+
+#### Scenario: Footer contains support email link
+
+- **WHEN** a visitor reaches the footer on any localized landing page
+- **THEN** the footer SHALL contain a `mailto:support@autokpo.com` link in the legal-links row
+- **AND** the link label SHALL be the localized equivalent of "support@autokpo.com" in that page's locale
 
 ### Requirement: Landing assets
 

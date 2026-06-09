@@ -59,7 +59,7 @@ Each card uses `Card.Header` with a Lucide icon and `Card.Title`, and `Card.Cont
 Section content:
 
 1. **O projektu** (icon: `LuInfo`) — Brief description of AutoKPO as a free open-source app for maintaining the Knjiga o ostvarenom prometu (KPO), with local-first data storage and cross-device sync.
-2. **Kako prijaviti problem** (icon: `LuBug`) — Instructions to open a GitHub Issue, with a link to `https://github.com/balakin/autokpo/issues`.
+2. **Kako prijaviti problem** (icon: `LuBug`) — Instructions to open a GitHub Issue, with a link to `https://github.com/balakin/autokpo/issues`. Below the GitHub link, a `mailto:support@autokpo.com` link SHALL be present as a second contact option.
 3. **Zakonski propisi** (icon: `LuScale`) — Two law links, each with an article reference subtitle below:
    - Zakon o porezu na dohodak građana: `https://mfin.gov.rs/sr/propisi-1/zakon-o-porezu-na-dohodak-gradjana-1` / subtitle: "čl. 42 — godišnji limit"
    - Zakon o porezu na dodatu vrednost: `https://purs.gov.rs/pravna-lica/pdv/zakon/202/zakon-o-porezu-na-dodatu-vrednost.html` / subtitle: "čl. 33 — rolling 12 meseci"
@@ -111,3 +111,10 @@ Section content:
 
 - **WHEN** the app locale is changed
 - **THEN** all help page headings and body text SHALL reflect the active locale's translations
+
+#### Scenario: Report-problem card contains support email link
+
+- **WHEN** the user views the "Kako prijaviti problem" card
+- **THEN** a `mailto:support@autokpo.com` link SHALL be present below the GitHub Issues link
+- **AND** the link label SHALL be the translated equivalent of "Pišite nam na support@autokpo.com"
+- **AND** the link SHALL open in a new tab

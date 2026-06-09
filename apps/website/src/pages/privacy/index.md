@@ -4,7 +4,7 @@ locale: sr-Latn
 documentKey: privacy
 title: Politika privatnosti
 description: Kako AutoKPO obrađuje i štiti podatke korisnika.
-updated: 2026-06-09
+updated: 2026-06-10
 ---
 
 # Politika privatnosti

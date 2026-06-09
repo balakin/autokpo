@@ -4,7 +4,7 @@ locale: ru
 documentKey: privacy
 title: Политика конфиденциальности
 description: Как AutoKPO обрабатывает и защищает данные пользователей.
-updated: 2026-06-09
+updated: 2026-06-10
 ---
 
 # Политика конфиденциальности

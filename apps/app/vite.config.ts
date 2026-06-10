@@ -59,7 +59,7 @@ const buildOnlyPlugins = (): PluginOption[] => [
               filename: 'stats-worker.html',
             }) as Plugin,
           ],
-          (env) => env.name === 'autokpo',
+          (env) => env.name === 'autokpo_app',
         ),
       ]
     : []),

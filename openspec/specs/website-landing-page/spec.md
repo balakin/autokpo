@@ -6,7 +6,7 @@ Provide the public AutoKPO landing website at `autokpo.com`, introducing the pro
 
 ### Requirement: Public Astro landing page
 
-The system SHALL provide a single-page public landing site for AutoKPO in the `apps/website` package, implemented as an Astro page with native HTML sections, Astro icon components, inline global plain CSS, and minimal vanilla JavaScript for theme switching.
+The system SHALL provide a single-page public landing site for AutoKPO in the `apps/website` package, implemented as an Astro page with native HTML sections, Astro icon components, inline global plain CSS, and minimal vanilla JavaScript for theme switching. The package SHALL include a `wrangler.jsonc` for deployment to Cloudflare Workers static asset hosting, with `wrangler` as a dev dependency.
 
 #### Scenario: Landing page renders
 
@@ -22,6 +22,11 @@ The system SHALL provide a single-page public landing site for AutoKPO in the `a
 
 - **WHEN** the website build script runs
 - **THEN** it performs `astro check --tsconfig tsconfig.app.json` before `astro build`
+
+#### Scenario: wrangler.jsonc present for deployment
+
+- **WHEN** a developer inspects `apps/website`
+- **THEN** a `wrangler.jsonc` file exists configuring Cloudflare Workers static asset hosting pointing at `./dist`
 
 ### Requirement: Serbian Latin product positioning
 

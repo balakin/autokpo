@@ -124,6 +124,7 @@ catalogs:
     astro: '^6.4.4'
     '@lucide/astro': '^1.17.0'
     '@astrojs/check': '^0.9.9'
+    '@astrojs/sitemap': '^3.4.1'
 
   misc:
     hono: '^4.12.23'

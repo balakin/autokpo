@@ -66,7 +66,7 @@ msgstr "Если вы обнаружили ошибку или хотите пр
 "задачу на GitHub. Опишите, что произошло, что вы ожидали и шаги для "
 "воспроизведения."
 
-#: src/help/help-page.tsx:172
+#: src/help/help-page.tsx:175
 msgid "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
 msgstr "Если вы хотите улучшить AutoKPO, ваши pull request'ы приветствуются."
 
@@ -95,7 +95,7 @@ msgid "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju "
 msgstr "AutoKPO не может восстановить этот пароль. Без него зашифрованные "
 "данные останутся недоступными."
 
-#: src/help/help-page.tsx:190
+#: src/help/help-page.tsx:193
 msgid "Autori"
 msgstr "Авторы"
 
@@ -111,11 +111,11 @@ msgstr "Бета-функция. Курсы валют загружаются с
 msgid "Bezbednost"
 msgstr "Безопасность"
 
-#: src/help/help-page.tsx:150
+#: src/help/help-page.tsx:153
 msgid "čl. 33 — rolling 12 meseci"
 msgstr "Ст. 33 — скользящие 12 месяцев"
 
-#: src/help/help-page.tsx:142
+#: src/help/help-page.tsx:145
 msgid "čl. 42 — godišnji limit"
 msgstr "Ст. 42 — годовой лимит"
 
@@ -162,7 +162,7 @@ msgstr "Добавить {year} в избранное"
 msgid "Dodaj unos"
 msgstr "Добавить запись"
 
-#: src/help/help-page.tsx:167
+#: src/help/help-page.tsx:170
 msgid "Doprinesite projektu"
 msgstr "Внести вклад"
 
@@ -192,7 +192,7 @@ msgstr "Адрес электронной почты"
 msgid "Firma-radnje"
 msgstr "Фирма/магазин"
 
-#: src/help/help-page.tsx:256
+#: src/help/help-page.tsx:259
 msgid "GNU Affero General Public License v3.0"
 msgstr "GNU Affero General Public License v3.0"
 
@@ -296,7 +296,7 @@ msgstr "Экспорт данных аккаунта"
 msgid "Izvorni kod"
 msgstr "Исходный код"
 
-#: src/help/help-page.tsx:178
+#: src/help/help-page.tsx:181
 msgid "Izvorni kod na GitHub-u"
 msgstr "Исходный код на GitHub"
 
@@ -367,7 +367,7 @@ msgstr "Создана"
 msgid "Kreirana:"
 msgstr "Создана:"
 
-#: src/help/help-page.tsx:248
+#: src/help/help-page.tsx:251
 msgid "Licenca"
 msgstr "Лицензия"
 
@@ -653,7 +653,7 @@ msgstr "Описание операции"
 msgid "Opšte"
 msgstr "Общие"
 
-#: src/help/help-page.tsx:200
+#: src/help/help-page.tsx:203
 msgid "Osnivač projekta"
 msgstr "Основатель проекта"
 
@@ -788,6 +788,10 @@ msgstr "PIN-код удалён из-за слишком большого кол
 msgid "PIN kodovi se ne poklapaju."
 msgstr "PIN-коды не совпадают."
 
+#: src/help/help-page.tsx:123
+msgid "Pišite nam na support@autokpo.com"
+msgstr "Напишите нам на support@autokpo.com"
+
 #: src/setup-wizard/wizard-stepper.tsx:20
 msgid "Početak"
 msgstr "Начало"
@@ -857,7 +861,7 @@ msgstr "Попробовать снова"
 
 #: src/auth/auth-shell.tsx:84
 #: src/e2ee/encryption-shell.tsx:84
-#: src/help/help-page.tsx:234
+#: src/help/help-page.tsx:237
 msgid "Politika privatnosti"
 msgstr "Политика конфиденциальности"
 
@@ -955,7 +959,7 @@ msgstr "Подтвердите изменение пароля"
 msgid "Potvrdite šifru"
 msgstr "Подтвердите пароль"
 
-#: src/help/help-page.tsx:222
+#: src/help/help-page.tsx:225
 msgid "Pravila i privatnost"
 msgstr "Правила и конфиденциальность"
 
@@ -1215,7 +1219,7 @@ msgstr "Итого (RSD)"
 msgid "Svetla"
 msgstr "Светлая"
 
-#: src/help/help-page.tsx:205
+#: src/help/help-page.tsx:208
 msgid "Svi doprinosioci"
 msgstr "Все участники"
 
@@ -1347,7 +1351,7 @@ msgstr "Редактировать запись"
 
 #: src/auth/auth-shell.tsx:75
 #: src/e2ee/encryption-shell.tsx:75
-#: src/help/help-page.tsx:229
+#: src/help/help-page.tsx:232
 msgid "Uslovi korišćenja"
 msgstr "Условия использования"
 
@@ -1412,15 +1416,15 @@ msgstr "Для каждого года оставьте одну книгу, а 
 msgid "Zaboravili ste šifru?"
 msgstr "Забыли пароль?"
 
-#: src/help/help-page.tsx:147
+#: src/help/help-page.tsx:150
 msgid "Zakon o porezu na dodatu vrednost"
 msgstr "Закон о налоге на добавленную стоимость"
 
-#: src/help/help-page.tsx:139
+#: src/help/help-page.tsx:142
 msgid "Zakon o porezu na dohodak građana"
 msgstr "Закон о подоходном налоге с граждан"
 
-#: src/help/help-page.tsx:132
+#: src/help/help-page.tsx:135
 msgid "Zakonski propisi"
 msgstr "Нормативные акты"
 

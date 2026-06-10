@@ -67,7 +67,7 @@ msgstr "Ako ste naišli na grešku ili imate predlog za poboljšanje, otvorite "
 "tiket na GitHub-u. Opišite šta se dogodilo, šta ste očekivali i korake "
 "za reprodukciju."
 
-#: src/help/help-page.tsx:172
+#: src/help/help-page.tsx:175
 msgid "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
 msgstr "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
 
@@ -95,7 +95,7 @@ msgid "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju "
 msgstr "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju "
 "nedostupni."
 
-#: src/help/help-page.tsx:190
+#: src/help/help-page.tsx:193
 msgid "Autori"
 msgstr "Autori"
 
@@ -111,11 +111,11 @@ msgstr "Beta funkcija. Kursevi se preuzimaju sa <0>kurs.resenje.org<1/></0>. "
 msgid "Bezbednost"
 msgstr "Bezbednost"
 
-#: src/help/help-page.tsx:150
+#: src/help/help-page.tsx:153
 msgid "čl. 33 — rolling 12 meseci"
 msgstr "čl. 33 — rolling 12 meseci"
 
-#: src/help/help-page.tsx:142
+#: src/help/help-page.tsx:145
 msgid "čl. 42 — godišnji limit"
 msgstr "čl. 42 — godišnji limit"
 
@@ -162,7 +162,7 @@ msgstr "Dodaj u omiljene za {year}"
 msgid "Dodaj unos"
 msgstr "Dodaj unos"
 
-#: src/help/help-page.tsx:167
+#: src/help/help-page.tsx:170
 msgid "Doprinesite projektu"
 msgstr "Doprinesite projektu"
 
@@ -192,7 +192,7 @@ msgstr "Email adresa"
 msgid "Firma-radnje"
 msgstr "Firma-radnje"
 
-#: src/help/help-page.tsx:256
+#: src/help/help-page.tsx:259
 msgid "GNU Affero General Public License v3.0"
 msgstr "GNU Affero General Public License v3.0"
 
@@ -295,7 +295,7 @@ msgstr "Izvezi podatke naloga"
 msgid "Izvorni kod"
 msgstr "Izvorni kod"
 
-#: src/help/help-page.tsx:178
+#: src/help/help-page.tsx:181
 msgid "Izvorni kod na GitHub-u"
 msgstr "Izvorni kod na GitHub-u"
 
@@ -366,7 +366,7 @@ msgstr "Kreirana"
 msgid "Kreirana:"
 msgstr "Kreirana:"
 
-#: src/help/help-page.tsx:248
+#: src/help/help-page.tsx:251
 msgid "Licenca"
 msgstr "Licenca"
 
@@ -651,7 +651,7 @@ msgstr "Opis prometa"
 msgid "Opšte"
 msgstr "Opšte"
 
-#: src/help/help-page.tsx:200
+#: src/help/help-page.tsx:203
 msgid "Osnivač projekta"
 msgstr "Osnivač projekta"
 
@@ -785,6 +785,10 @@ msgstr "PIN kod je uklonjen zbog previše neuspelih pokušaja. Unesite šifru za
 msgid "PIN kodovi se ne poklapaju."
 msgstr "PIN kodovi se ne poklapaju."
 
+#: src/help/help-page.tsx:123
+msgid "Pišite nam na support@autokpo.com"
+msgstr "Pišite nam na support@autokpo.com"
+
 #: src/setup-wizard/wizard-stepper.tsx:20
 msgid "Početak"
 msgstr "Početak"
@@ -854,7 +858,7 @@ msgstr "Pokušaj ponovo"
 
 #: src/auth/auth-shell.tsx:84
 #: src/e2ee/encryption-shell.tsx:84
-#: src/help/help-page.tsx:234
+#: src/help/help-page.tsx:237
 msgid "Politika privatnosti"
 msgstr "Politika privatnosti"
 
@@ -952,7 +956,7 @@ msgstr "Potvrdite promenu šifre"
 msgid "Potvrdite šifru"
 msgstr "Potvrdite šifru"
 
-#: src/help/help-page.tsx:222
+#: src/help/help-page.tsx:225
 msgid "Pravila i privatnost"
 msgstr "Pravila i privatnost"
 
@@ -1211,7 +1215,7 @@ msgstr "Svega (RSD)"
 msgid "Svetla"
 msgstr "Svetla"
 
-#: src/help/help-page.tsx:205
+#: src/help/help-page.tsx:208
 msgid "Svi doprinosioci"
 msgstr "Svi doprinosioci"
 
@@ -1343,7 +1347,7 @@ msgstr "Uredi unos"
 
 #: src/auth/auth-shell.tsx:75
 #: src/e2ee/encryption-shell.tsx:75
-#: src/help/help-page.tsx:229
+#: src/help/help-page.tsx:232
 msgid "Uslovi korišćenja"
 msgstr "Uslovi korišćenja"
 
@@ -1409,15 +1413,15 @@ msgstr "Za svaku godinu zadržite jednu knjigu, a ostale obrišite."
 msgid "Zaboravili ste šifru?"
 msgstr "Zaboravili ste šifru?"
 
-#: src/help/help-page.tsx:147
+#: src/help/help-page.tsx:150
 msgid "Zakon o porezu na dodatu vrednost"
 msgstr "Zakon o porezu na dodatu vrednost"
 
-#: src/help/help-page.tsx:139
+#: src/help/help-page.tsx:142
 msgid "Zakon o porezu na dohodak građana"
 msgstr "Zakon o porezu na dohodak građana"
 
-#: src/help/help-page.tsx:132
+#: src/help/help-page.tsx:135
 msgid "Zakonski propisi"
 msgstr "Zakonski propisi"
 

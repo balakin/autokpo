@@ -45,6 +45,7 @@ export type LandingContent = {
   languageSwitcherCurrent: string;
   links: LinkText;
   legalLinks: LegalLinkText;
+  support: string;
   hero: {
     badge: string;
     titlePrefix: string;
@@ -140,6 +141,7 @@ export const landingContent: Record<Locale, LandingContent> = {
       privacy: legalContent['sr-Latn'].documents.privacy.title,
       terms: legalContent['sr-Latn'].documents.terms.title,
     },
+    support: 'support@autokpo.com',
     hero: {
       badge: 'Besplatno i otvorenog koda',
       titlePrefix: 'Vodite KPO-knjige ',
@@ -340,6 +342,7 @@ export const landingContent: Record<Locale, LandingContent> = {
       privacy: legalContent.en.documents.privacy.title,
       terms: legalContent.en.documents.terms.title,
     },
+    support: 'support@autokpo.com',
     hero: {
       badge: 'Free and open source',
       titlePrefix: 'Keep your KPO book ',
@@ -540,6 +543,7 @@ export const landingContent: Record<Locale, LandingContent> = {
       privacy: legalContent.ru.documents.privacy.title,
       terms: legalContent.ru.documents.terms.title,
     },
+    support: 'support@autokpo.com',
     hero: {
       badge: 'Бесплатно и open source',
       titlePrefix: 'Ведите KPO-книгу ',

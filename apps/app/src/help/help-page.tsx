@@ -119,6 +119,9 @@ export function HelpPage() {
             <ExternalLink href={GITHUB_ISSUES}>
               <Trans>Prijavite problem na GitHub-u</Trans>
             </ExternalLink>
+            <ExternalLink href="mailto:support@autokpo.com">
+              <Trans>Pišite nam na support@autokpo.com</Trans>
+            </ExternalLink>
           </Card.Content>
         </Card>
 

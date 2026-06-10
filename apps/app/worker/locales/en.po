@@ -13,7 +13,7 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: worker/auth/send-account-deleted-email.tsx:28
+#: worker/auth/send-account-deleted-email.tsx:29
 msgid "Hvala što ste koristili AutoKPO. Prijatno!"
 msgstr "Thank you for using AutoKPO. Goodbye!"
 
@@ -31,12 +31,12 @@ msgstr "Use the following code to sign in to your AutoKPO account:"
 msgid "Vaš AutoKPO kod za prijavu"
 msgstr "Your AutoKPO sign-in code"
 
-#: worker/auth/send-account-deleted-email.tsx:20
-#: worker/auth/send-account-deleted-email.tsx:24
+#: worker/auth/send-account-deleted-email.tsx:21
+#: worker/auth/send-account-deleted-email.tsx:25
 msgid "Vaš AutoKPO nalog je obrisan"
 msgstr "Your AutoKPO account has been deleted"
 
-#: worker/auth/send-account-deleted-email.tsx:26
+#: worker/auth/send-account-deleted-email.tsx:27
 msgid "Vaš AutoKPO nalog je obrisan. Nalog i sinhronizovani podaci povezani sa "
 "ovom email adresom su trajno uklonjeni."
 msgstr "Your AutoKPO account has been deleted. The account and synchronized "

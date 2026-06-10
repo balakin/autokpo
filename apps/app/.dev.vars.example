@@ -4,5 +4,4 @@ GOOGLE_CLIENT_SECRET=replace-with-google-client-secret
 GITHUB_CLIENT_ID=replace-with-github-client-id
 GITHUB_CLIENT_SECRET=replace-with-github-client-secret
 RESEND_API_KEY=re_********************************
-RESEND_FROM_EMAIL=AutoKPO <autokpo@resend.dev>
 TURNSTILE_SECRET_KEY=0x**********

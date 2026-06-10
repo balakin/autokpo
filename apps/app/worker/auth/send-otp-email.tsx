@@ -1,7 +1,6 @@
 import { msg } from '@lingui/core/macro';
 import { Resend } from 'resend';
 
-import OtpEmail from '../../emails/otp-email';
 import { createI18n, isWorkerLocale } from '../i18n/i18n';
 
 export async function sendOtpEmail(
@@ -14,6 +13,7 @@ export async function sendOtpEmail(
   const workerLocale = isWorkerLocale(locale) ? locale : 'sr-Latn';
   const i18n = createI18n(workerLocale);
   const resend = new Resend(apiKey);
+  const { default: OtpEmail } = await import('../../emails/otp-email');
 
   const { error } = await resend.emails.send({
     from,

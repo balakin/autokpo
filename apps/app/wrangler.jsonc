@@ -1,7 +1,7 @@
 // IMPORTANT: After any change to this file, run `pnpm generate:worker-types` to regenerate types.
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "autokpo",
+  "name": "autokpo-app",
   "compatibility_date": "2026-04-23",
   "compatibility_flags": ["nodejs_compat"],
   "main": "./worker/main.ts",

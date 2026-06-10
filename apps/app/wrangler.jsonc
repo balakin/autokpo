@@ -12,7 +12,7 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "autokpo-dev",
+      "database_name": "autokpo-database-dev",
       "database_id": "PLACEHOLDER_SET_VIA_WRANGLER_D1_CREATE",
       "migrations_dir": "./worker/db/migrations",
     },
@@ -59,8 +59,8 @@
       "d1_databases": [
         {
           "binding": "DB",
-          "database_name": "autokpo-production",
-          "database_id": "PLACEHOLDER_SET_VIA_WRANGLER_D1_CREATE",
+          "database_name": "autokpo-database",
+          "database_id": "0cfdb800-3a81-4207-9951-daa8fc7ec2f3",
           "migrations_dir": "./worker/db/migrations",
         },
       ],
@@ -87,8 +87,8 @@
         },
       ],
       "vars": {
-        "APP_URL": "https://example.com",
-        "RESEND_FROM_EMAIL": "AutoKPO <autokpo@resend.dev>",
+        "APP_URL": "https://autokpo.com",
+        "RESEND_FROM_EMAIL": "AutoKPO <autokpo@notify.autokpo.com>",
       },
       "secrets": {
         "required": [

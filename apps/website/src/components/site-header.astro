@@ -46,10 +46,21 @@ const { content, currentLocale, homeHref, navPrefix = '', alternates } = Astro.p
 </header>
 
 <style>
+  /* Keep the sticky element itself background-free: iOS 26 Safari derives its
+     toolbar tint from fixed/sticky elements at the viewport edge, and a
+     translucent background (or border-bottom) breaks the sampling. The glass
+     effect lives on an absolute ::before child, which Safari ignores, so the
+     toolbar falls back to the theme-aware body background. */
   .site-header {
     position: sticky;
     top: 0;
     z-index: 50;
+  }
+  .site-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
     background: color-mix(in oklch, var(--background) 88%, transparent);
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);

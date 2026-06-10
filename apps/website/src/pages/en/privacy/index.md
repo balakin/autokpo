@@ -126,6 +126,8 @@ AutoKPO uses the following service providers:
 
 Cloudflare and Resend process data as AutoKPO service providers for the purposes described above.
 
+Cloudflare Turnstile data processing is also described in Cloudflare's <a href="https://www.cloudflare.com/en-gb/turnstile-privacy-policy/" target="_blank" rel="noopener noreferrer">Turnstile Privacy Addendum</a>.
+
 Google and GitHub may process data under their own privacy policies when you use their services to sign in.
 
 Cloudflare D1 data for AutoKPO is stored in the European Union. Because of global infrastructure, security, email delivery, or Google/GitHub sign-in, some service providers may process data outside Serbia or the European Union. Where applicable, AutoKPO uses available contractual and other safeguards for such transfers, including data processing agreements, standard contractual clauses, or other appropriate mechanisms made available by the service provider.

@@ -126,6 +126,8 @@ AutoKPO koristi sledeće pružaoce usluga:
 
 Cloudflare i Resend obrađuju podatke kao pružaoci usluga AutoKPO-a za gore opisane svrhe.
 
+Obrada podataka u okviru Cloudflare Turnstile usluge dodatno je opisana u Cloudflare dokumentu <a href="https://www.cloudflare.com/en-gb/turnstile-privacy-policy/" target="_blank" rel="noopener noreferrer">Turnstile Privacy Addendum</a>.
+
 Google i GitHub mogu obrađivati podatke u skladu sa sopstvenim pravilima privatnosti kada koristite njihove servise za prijavu.
 
 Cloudflare D1 podaci za AutoKPO čuvaju se u Evropskoj uniji. Zbog globalne infrastrukture, bezbednosti, slanja email poruka ili prijave putem Google/GitHub naloga, neki pružaoci usluga mogu obrađivati podatke izvan Srbije ili Evropske unije. Kada je primenljivo, AutoKPO koristi dostupne ugovorne i druge mere zaštite za takve prenose, uključujući ugovore o obradi podataka, standardne ugovorne klauzule ili druge odgovarajuće mehanizme koje pružalac usluge stavlja na raspolaganje.

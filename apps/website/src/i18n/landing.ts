@@ -46,6 +46,12 @@ export type LandingContent = {
   links: LinkText;
   legalLinks: LegalLinkText;
   support: string;
+  notFound: {
+    title: string;
+    meta: { title: string; description: string };
+    message: string;
+    navLabel: string;
+  };
   hero: {
     badge: string;
     titlePrefix: string;
@@ -142,6 +148,15 @@ export const landingContent: Record<Locale, LandingContent> = {
       terms: legalContent['sr-Latn'].documents.terms.title,
     },
     support: 'support@autokpo.com',
+    notFound: {
+      title: 'Stranica nije pronađena',
+      meta: {
+        title: '404 — Stranica nije pronađena | AutoKPO',
+        description: 'Tražena stranica nije pronađena.',
+      },
+      message: 'Tražena stranica ne postoji ili je premeštena.',
+      navLabel: 'Povratak na početnu stranicu',
+    },
     hero: {
       badge: 'Besplatno i otvorenog koda',
       titlePrefix: 'Vodite KPO-knjige ',
@@ -343,6 +358,15 @@ export const landingContent: Record<Locale, LandingContent> = {
       terms: legalContent.en.documents.terms.title,
     },
     support: 'support@autokpo.com',
+    notFound: {
+      title: 'Page not found',
+      meta: {
+        title: '404 — Page not found | AutoKPO',
+        description: 'The page you requested could not be found.',
+      },
+      message: 'The page you requested does not exist or has been moved.',
+      navLabel: 'Back to homepage',
+    },
     hero: {
       badge: 'Free and open source',
       titlePrefix: 'Keep your KPO book ',
@@ -544,6 +568,15 @@ export const landingContent: Record<Locale, LandingContent> = {
       terms: legalContent.ru.documents.terms.title,
     },
     support: 'support@autokpo.com',
+    notFound: {
+      title: 'Страница не найдена',
+      meta: {
+        title: '404 — Страница не найдена | AutoKPO',
+        description: 'Запрошенная страница не найдена.',
+      },
+      message: 'Запрошенная страница не существует или была перемещена.',
+      navLabel: 'Вернуться на главную',
+    },
     hero: {
       badge: 'Бесплатно и open source',
       titlePrefix: 'Ведите KPO-книгу ',

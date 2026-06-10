@@ -19,6 +19,7 @@
     "@astrojs/check": "catalog:astro",
     "@autokpo/eslint-config": "workspace:*",
     "eslint": "catalog:eslint",
-    "eslint-plugin-astro": "catalog:eslint"
+    "eslint-plugin-astro": "catalog:eslint",
+    "wrangler": "catalog:cloudflare"
   }
 }

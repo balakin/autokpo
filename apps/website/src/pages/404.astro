@@ -1,0 +1,147 @@
+---
+import BaseLayout from '../layouts/base-layout.astro';
+import SiteHeader from '../components/site-header.astro';
+import SiteFooter from '../components/site-footer.astro';
+import { landingContent, localeAlternates, supportedLocales } from '../i18n/landing';
+
+const primary = landingContent['sr-Latn'];
+const legalUrls = { privacy: '/privacy/', terms: '/terms/' };
+---
+
+<BaseLayout
+  locale="sr-Latn"
+  title={primary.notFound.meta.title}
+  description={primary.notFound.meta.description}
+  skipLink={primary.skipLink}
+  themeLightLabel={primary.theme.light}
+  themeDarkLabel={primary.theme.dark}
+>
+  <div class="page">
+    <SiteHeader
+      content={primary}
+      currentLocale="sr-Latn"
+      homeHref="/"
+      navPrefix="/"
+      alternates={localeAlternates}
+    />
+
+    <main id="main">
+      <div class="wrap">
+        <div class="container">
+          <p class="code">404</p>
+          <div class="locales-content">
+            {supportedLocales.map((locale) => {
+              const c = landingContent[locale];
+              return (
+                <div class="locale-block" lang={locale}>
+                  <h1 class="heading">{c.notFound.title}</h1>
+                  <p class="message">{c.notFound.message}</p>
+                  <nav aria-label={c.notFound.navLabel}>
+                    <a href={c.route}>{c.languageName}</a>
+                  </nav>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <SiteFooter content={primary} legalUrls={legalUrls} />
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 48px 0;
+  }
+
+  .container {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 32px;
+  }
+
+  .code {
+    font-family: var(--font-mono);
+    font-size: 5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--muted);
+    letter-spacing: -2px;
+  }
+
+  .locales-content {
+    display: flex;
+    gap: 0;
+    justify-content: center;
+  }
+
+  .locale-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 0 32px;
+  }
+
+  .locale-block + .locale-block {
+    border-left: 1px solid var(--separator);
+  }
+
+  .heading {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--foreground);
+  }
+
+  .message {
+    font-size: 0.875rem;
+    color: var(--muted);
+    max-width: 240px;
+  }
+
+  .locale-block nav a {
+    font-size: 0.875rem;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    margin-top: 4px;
+    display: inline-block;
+  }
+
+  .locale-block nav a:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  @media (max-width: 560px) {
+    .code { font-size: 3.5rem; }
+
+    .locales-content {
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .locale-block {
+      padding: 24px 0;
+    }
+
+    .locale-block + .locale-block {
+      border-left: none;
+      border-top: 1px solid var(--separator);
+    }
+  }
+</style>

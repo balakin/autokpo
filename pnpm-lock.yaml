@@ -567,6 +567,9 @@ importers:
       eslint-plugin-astro:
         specifier: catalog:eslint
         version: 1.7.0(eslint@10.4.1(jiti@2.7.0))
+      wrangler:
+        specifier: catalog:cloudflare
+        version: 4.98.0
 
   packages/eslint-config:
     dependencies:

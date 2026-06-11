@@ -115,7 +115,7 @@ async function insertTestKeyRing() {
     .onConflictDoNothing();
 }
 
-describe('GET /api/sync', () => {
+describe('GET /api/sync/pull', () => {
   afterEach(async () => {
     sessionState.userId = 'user-1';
     sessionState.headers = null;
@@ -127,7 +127,7 @@ describe('GET /api/sync', () => {
 
   it('returns 401 for missing authenticated session', async () => {
     sessionState.userId = null;
-    const res = await syncRequest('/api/sync?since=0', {
+    const res = await syncRequest('/api/sync/pull?since=0', {
       headers: syncHeaders(),
     });
     expect(res.status).toBe(401);
@@ -135,13 +135,13 @@ describe('GET /api/sync', () => {
   });
 
   it('returns 400 when X-Local-User-Id is missing', async () => {
-    const res = await syncRequest('/api/sync?since=0');
+    const res = await syncRequest('/api/sync/pull?since=0');
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ code: 'missing_local_user_id' });
   });
 
   it('returns 409 when X-Local-User-Id mismatches session user', async () => {
-    const res = await syncRequest('/api/sync?since=0', {
+    const res = await syncRequest('/api/sync/pull?since=0', {
       headers: { 'X-Local-User-Id': 'other-user' },
     });
     expect(res.status).toBe(409);
@@ -151,7 +151,7 @@ describe('GET /api/sync', () => {
   it('returns 400 when ?since is not a valid non-negative integer', async () => {
     await authHeaders();
     await insertTestKeyRing();
-    const res = await syncRequest('/api/sync?since=abc', {
+    const res = await syncRequest('/api/sync/pull?since=abc', {
       headers: syncHeaders(),
     });
     expect(res.status).toBe(400);
@@ -167,10 +167,10 @@ describe('GET /api/sync', () => {
       makeCiphertext([3]),
     ];
     for (let i = 0; i < 3; i++) {
-      await syncRequest('/api/sync', pushBody(ciphertexts[i]));
+      await syncRequest('/api/sync/push', pushBody(ciphertexts[i]));
     }
 
-    const res = await syncRequest('/api/sync?since=0', {
+    const res = await syncRequest('/api/sync/pull?since=0', {
       headers: syncHeaders(),
     });
     expect(res.status).toBe(200);
@@ -206,10 +206,10 @@ describe('GET /api/sync', () => {
     await authHeaders();
     await insertTestKeyRing();
     for (let i = 0; i < 3; i++) {
-      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+      await syncRequest('/api/sync/push', pushBody(makeCiphertext([i])));
     }
 
-    const res = await syncRequest('/api/sync?since=3', {
+    const res = await syncRequest('/api/sync/pull?since=3', {
       headers: syncHeaders(),
     });
     expect(res.status).toBe(200);
@@ -224,7 +224,7 @@ describe('GET /api/sync', () => {
     await authHeaders();
     await insertTestKeyRing();
     for (let i = 0; i < 5; i++) {
-      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+      await syncRequest('/api/sync/push', pushBody(makeCiphertext([i])));
     }
 
     const res = await syncRequest('/api/sync', {
@@ -242,7 +242,7 @@ describe('GET /api/sync', () => {
     await authHeaders();
     await insertTestKeyRing();
     for (let i = 0; i < 3; i++) {
-      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+      await syncRequest('/api/sync/push', pushBody(makeCiphertext([i])));
     }
 
     const res = await syncRequest('/api/sync', {
@@ -257,10 +257,10 @@ describe('GET /api/sync', () => {
     await authHeaders();
     await insertTestKeyRing();
     for (let i = 0; i < 2; i++) {
-      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+      await syncRequest('/api/sync/push', pushBody(makeCiphertext([i])));
     }
 
-    const res = await syncRequest('/api/sync?since=0', {
+    const res = await syncRequest('/api/sync/pull?since=0', {
       headers: syncHeaders(),
     });
     expect(res.status).toBe(200);
@@ -274,7 +274,7 @@ describe('GET /api/sync', () => {
     await authHeaders();
     await insertTestKeyRing();
     for (let i = 0; i < 3; i++) {
-      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+      await syncRequest('/api/sync/push', pushBody(makeCiphertext([i])));
     }
 
     const compactRes = await syncRequest(
@@ -282,10 +282,10 @@ describe('GET /api/sync', () => {
       compactBody(makeCiphertext([99]), 3),
     );
     expect(compactRes.status).toBe(200);
-    await syncRequest('/api/sync', pushBody(makeCiphertext([4])));
-    await syncRequest('/api/sync', pushBody(makeCiphertext([5])));
+    await syncRequest('/api/sync/push', pushBody(makeCiphertext([4])));
+    await syncRequest('/api/sync/push', pushBody(makeCiphertext([5])));
 
-    const res = await syncRequest('/api/sync?since=0', {
+    const res = await syncRequest('/api/sync/pull?since=0', {
       headers: syncHeaders(),
     });
     expect(res.status).toBe(200);
@@ -307,7 +307,7 @@ describe('GET /api/sync', () => {
     await authHeaders();
     await insertTestKeyRing();
     for (let i = 0; i < 3; i++) {
-      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+      await syncRequest('/api/sync/push', pushBody(makeCiphertext([i])));
     }
     const compactRes = await syncRequest(
       '/api/sync/compact',
@@ -315,7 +315,7 @@ describe('GET /api/sync', () => {
     );
     expect(compactRes.status).toBe(200);
 
-    const res = await syncRequest('/api/sync?since=3', {
+    const res = await syncRequest('/api/sync/pull?since=3', {
       headers: syncHeaders(),
     });
 
@@ -327,17 +327,17 @@ describe('GET /api/sync', () => {
     await authHeaders();
     await insertTestKeyRing();
     for (let i = 0; i < 3; i++) {
-      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+      await syncRequest('/api/sync/push', pushBody(makeCiphertext([i])));
     }
     const compactRes = await syncRequest(
       '/api/sync/compact',
       compactBody(makeCiphertext([99]), 3),
     );
     expect(compactRes.status).toBe(200);
-    await syncRequest('/api/sync', pushBody(makeCiphertext([4])));
-    await syncRequest('/api/sync', pushBody(makeCiphertext([5])));
+    await syncRequest('/api/sync/push', pushBody(makeCiphertext([4])));
+    await syncRequest('/api/sync/push', pushBody(makeCiphertext([5])));
 
-    const res = await syncRequest('/api/sync?since=4', {
+    const res = await syncRequest('/api/sync/pull?since=4', {
       headers: syncHeaders(),
     });
 
@@ -358,7 +358,7 @@ describe('GET /api/sync', () => {
   it('returns 410 when cursor is newer than head', async () => {
     await authHeaders();
     await insertTestKeyRing();
-    const res = await syncRequest('/api/sync?since=999', {
+    const res = await syncRequest('/api/sync/pull?since=999', {
       headers: syncHeaders(),
     });
     expect(res.status).toBe(410);
@@ -368,7 +368,7 @@ describe('GET /api/sync', () => {
   it('returns empty records with head=0 when no records exist', async () => {
     await authHeaders();
     await insertTestKeyRing();
-    const res = await syncRequest('/api/sync?since=0', {
+    const res = await syncRequest('/api/sync/pull?since=0', {
       headers: syncHeaders(),
     });
     expect(res.status).toBe(200);
@@ -382,9 +382,9 @@ describe('GET /api/sync', () => {
   it('includes keyRingRevision in pull response records', async () => {
     await authHeaders();
     await insertTestKeyRing();
-    await syncRequest('/api/sync', pushBody(makeCiphertext([1])));
+    await syncRequest('/api/sync/push', pushBody(makeCiphertext([1])));
 
-    const res = await syncRequest('/api/sync?since=0', {
+    const res = await syncRequest('/api/sync/pull?since=0', {
       headers: syncHeaders(),
     });
     expect(res.status).toBe(200);
@@ -398,7 +398,7 @@ describe('GET /api/sync', () => {
   });
 });
 
-describe('POST /api/sync', () => {
+describe('POST /api/sync/push', () => {
   afterEach(async () => {
     sessionState.userId = 'user-1';
     sessionState.headers = null;
@@ -410,7 +410,7 @@ describe('POST /api/sync', () => {
 
   it('returns 401 when request is unauthenticated', async () => {
     sessionState.userId = null;
-    const res = await syncRequest('/api/sync', {
+    const res = await syncRequest('/api/sync/push', {
       method: 'POST',
       headers: syncHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
@@ -428,7 +428,7 @@ describe('POST /api/sync', () => {
   it('returns 400 for missing or invalid body fields', async () => {
     await authHeaders();
     await insertTestKeyRing();
-    const res = await syncRequest('/api/sync', {
+    const res = await syncRequest('/api/sync/push', {
       method: 'POST',
       headers: syncHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ ciphertext: toBase64(makeCiphertext([1])) }), // missing id and encryptionKeyId
@@ -439,7 +439,7 @@ describe('POST /api/sync', () => {
   it('returns 413 before JSON validation when request body exceeds sync body limit', async () => {
     await authHeaders();
     await insertTestKeyRing();
-    const res = await syncRequest('/api/sync', {
+    const res = await syncRequest('/api/sync/push', {
       method: 'POST',
       headers: syncHeaders({ 'Content-Type': 'application/json' }),
       body: ' '.repeat(MAX_SYNC_BODY_BYTES + 1),
@@ -454,12 +454,12 @@ describe('POST /api/sync', () => {
     await insertTestKeyRing();
 
     const invalidRecordId = await syncRequest(
-      '/api/sync',
+      '/api/sync/push',
       pushBody(makeCiphertext([1]), 'not-a-uuid'),
     );
     expect(invalidRecordId.status).toBe(400);
 
-    const invalidKeyId = await syncRequest('/api/sync', {
+    const invalidKeyId = await syncRequest('/api/sync/push', {
       method: 'POST',
       headers: syncHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
@@ -477,7 +477,10 @@ describe('POST /api/sync', () => {
     await authHeaders();
     await insertTestKeyRing();
 
-    const r1 = await syncRequest('/api/sync', pushBody(makeCiphertext([1])));
+    const r1 = await syncRequest(
+      '/api/sync/push',
+      pushBody(makeCiphertext([1])),
+    );
     expect(r1.status).toBe(200);
     expect(r1.headers.get('Cache-Control')).toBe('no-store');
     const b1 = (await r1.json()) as {
@@ -487,7 +490,10 @@ describe('POST /api/sync', () => {
     expect(b1.assignedSeq).toBe(1);
     expect(b1.compactHint).toBe(false);
 
-    const r2 = await syncRequest('/api/sync', pushBody(makeCiphertext([2])));
+    const r2 = await syncRequest(
+      '/api/sync/push',
+      pushBody(makeCiphertext([2])),
+    );
     expect(r2.status).toBe(200);
     expect(r2.headers.get('Cache-Control')).toBe('no-store');
     const b2 = (await r2.json()) as {
@@ -503,13 +509,13 @@ describe('POST /api/sync', () => {
     const id = crypto.randomUUID();
     const ciphertext = makeCiphertext([42]);
 
-    const r1 = await syncRequest('/api/sync', pushBody(ciphertext, id));
+    const r1 = await syncRequest('/api/sync/push', pushBody(ciphertext, id));
     expect(r1.status).toBe(200);
     expect(r1.headers.get('Cache-Control')).toBe('no-store');
     const b1 = (await r1.json()) as { assignedSeq: number };
     expect(b1.assignedSeq).toBe(1);
 
-    const r2 = await syncRequest('/api/sync', pushBody(ciphertext, id));
+    const r2 = await syncRequest('/api/sync/push', pushBody(ciphertext, id));
     expect(r2.status).toBe(200);
     expect(r2.headers.get('Cache-Control')).toBe('no-store');
     const b2 = (await r2.json()) as { assignedSeq: number };
@@ -522,13 +528,13 @@ describe('POST /api/sync', () => {
     const id = crypto.randomUUID();
 
     const r1 = await syncRequest(
-      '/api/sync',
+      '/api/sync/push',
       pushBody(makeCiphertext([1]), id),
     );
     expect(r1.status).toBe(200);
 
     const r2 = await syncRequest(
-      '/api/sync',
+      '/api/sync/push',
       pushBody(makeCiphertext([2]), id),
     );
     expect(r2.status).toBe(409);
@@ -540,10 +546,10 @@ describe('POST /api/sync', () => {
     await insertTestKeyRing();
     const ciphertext = makeCiphertext([1]);
     for (let i = 0; i < 200; i++) {
-      await syncRequest('/api/sync', pushBody(ciphertext));
+      await syncRequest('/api/sync/push', pushBody(ciphertext));
     }
 
-    const res = await syncRequest('/api/sync', pushBody(ciphertext));
+    const res = await syncRequest('/api/sync/push', pushBody(ciphertext));
 
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe('no-store');
@@ -559,10 +565,13 @@ describe('POST /api/sync', () => {
     await insertTestKeyRing();
     const ciphertext = new Uint8Array(1024 * 1024);
     for (let i = 0; i < 4; i++) {
-      await syncRequest('/api/sync', pushBody(ciphertext));
+      await syncRequest('/api/sync/push', pushBody(ciphertext));
     }
 
-    const res = await syncRequest('/api/sync', pushBody(makeCiphertext([1])));
+    const res = await syncRequest(
+      '/api/sync/push',
+      pushBody(makeCiphertext([1])),
+    );
     expect(res.status).toBe(413);
   });
 
@@ -571,14 +580,14 @@ describe('POST /api/sync', () => {
     await insertTestKeyRing();
     const oversized = new Uint8Array(1024 * 1024 + 17);
 
-    const res = await syncRequest('/api/sync', pushBody(oversized));
+    const res = await syncRequest('/api/sync/push', pushBody(oversized));
     expect(res.status).toBe(413);
   });
 
   it('returns 413 before decoding when ciphertext base64 is too long', async () => {
     await authHeaders();
     await insertTestKeyRing();
-    const res = await syncRequest('/api/sync', {
+    const res = await syncRequest('/api/sync/push', {
       method: 'POST',
       headers: syncHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
@@ -622,7 +631,7 @@ describe('POST /api/sync', () => {
     await insertTestKeyRing();
 
     const wrongKeyId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
-    const res = await syncRequest('/api/sync', {
+    const res = await syncRequest('/api/sync/push', {
       method: 'POST',
       headers: syncHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
@@ -654,7 +663,10 @@ describe('POST /api/sync', () => {
       .set({ activeDekId: NEXT_KEY_ID, revision: 2 })
       .where(eq(keyRing.userId, 'user-1'));
 
-    const res = await syncRequest('/api/sync', pushBody(makeCiphertext([1])));
+    const res = await syncRequest(
+      '/api/sync/push',
+      pushBody(makeCiphertext([1])),
+    );
 
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({ code: 'write_conflict' });
@@ -669,7 +681,7 @@ describe('POST /api/sync', () => {
     await authHeaders();
     await insertTestKeyRing();
 
-    const res = await syncRequest('/api/sync', {
+    const res = await syncRequest('/api/sync/push', {
       method: 'POST',
       headers: syncHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
@@ -707,7 +719,7 @@ describe('POST /api/sync/compact', () => {
     await authHeaders();
     await insertTestKeyRing();
     for (let i = 0; i < 5; i++) {
-      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+      await syncRequest('/api/sync/push', pushBody(makeCiphertext([i])));
     }
 
     const res = await syncRequest(
@@ -743,7 +755,7 @@ describe('POST /api/sync/compact', () => {
     const b2 = (await r2.json()) as { assignedSeq: number };
     expect(b2.assignedSeq).toBe(b1.assignedSeq);
 
-    const getRes = await syncRequest('/api/sync?since=0', {
+    const getRes = await syncRequest('/api/sync/pull?since=0', {
       headers: syncHeaders(),
     });
     const rawBody: unknown = await getRes.json();
@@ -756,7 +768,7 @@ describe('POST /api/sync/compact', () => {
     await authHeaders();
     await insertTestKeyRing();
     for (let i = 0; i < 3; i++) {
-      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+      await syncRequest('/api/sync/push', pushBody(makeCiphertext([i])));
     }
 
     const res = await syncRequest(
@@ -852,7 +864,7 @@ describe('POST /api/sync/compact', () => {
     await authHeaders();
     await insertTestKeyRing();
     for (let i = 0; i < 5; i++) {
-      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+      await syncRequest('/api/sync/push', pushBody(makeCiphertext([i])));
     }
 
     const compactRes = await syncRequest(
@@ -868,7 +880,7 @@ describe('POST /api/sync/compact', () => {
       .where(eq(syncRecord.userId, 'user-1'));
     expect(rows).toEqual([{ seq: 6, kind: 'snapshot' }]);
 
-    const getRes = await syncRequest('/api/sync?since=0', {
+    const getRes = await syncRequest('/api/sync/pull?since=0', {
       headers: syncHeaders(),
     });
     const rawBody2: unknown = await getRes.json();
@@ -894,7 +906,7 @@ describe('POST /api/sync/compact', () => {
     await authHeaders();
     await insertTestKeyRing();
     for (let i = 0; i < 3; i++) {
-      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+      await syncRequest('/api/sync/push', pushBody(makeCiphertext([i])));
     }
 
     const wrongKeyId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
@@ -929,7 +941,7 @@ describe('POST /api/sync/compact', () => {
     await authHeaders();
     await insertTestKeyRing();
     for (let i = 0; i < 3; i++) {
-      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+      await syncRequest('/api/sync/push', pushBody(makeCiphertext([i])));
     }
 
     const res = await syncRequest('/api/sync/compact', {
@@ -963,7 +975,7 @@ describe('POST /api/sync/compact', () => {
     await authHeaders();
     await insertTestKeyRing();
     for (let i = 0; i < 3; i++) {
-      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+      await syncRequest('/api/sync/push', pushBody(makeCiphertext([i])));
     }
     const db = getDb(workerTestEnv.DB);
     await db
@@ -984,5 +996,59 @@ describe('POST /api/sync/compact', () => {
       .where(eq(syncRecord.userId, 'user-1'));
     expect(rows.filter((r) => r.kind === 'snapshot')).toHaveLength(0);
     expect(rows.filter((r) => r.kind === 'update')).toHaveLength(3);
+  });
+});
+
+// TODO(follow-up): remove once old alias routes (GET /api/sync, POST /api/sync) are removed
+describe('backward-compat aliases', () => {
+  afterEach(async () => {
+    sessionState.userId = 'user-1';
+    sessionState.headers = null;
+    await workerTestEnv.DB.exec('DELETE FROM sync_record');
+    await workerTestEnv.DB.exec('DELETE FROM key_ring_wrapping');
+    await workerTestEnv.DB.exec('DELETE FROM key_ring');
+    await clearAuthData();
+  });
+
+  it('GET /api/sync returns same pull response as GET /api/sync/pull', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    await syncRequest('/api/sync/push', pushBody(makeCiphertext([1])));
+
+    const aliasRes = await syncRequest('/api/sync?since=0', {
+      headers: syncHeaders(),
+    });
+    const canonicalRes = await syncRequest('/api/sync/pull?since=0', {
+      headers: syncHeaders(),
+    });
+
+    expect(aliasRes.status).toBe(200);
+    expect(canonicalRes.status).toBe(200);
+    const aliasBody = (await aliasRes.json()) as {
+      head: number;
+      records: Array<{ seq: number }>;
+    };
+    const canonicalBody = (await canonicalRes.json()) as {
+      head: number;
+      records: Array<{ seq: number }>;
+    };
+    expect(aliasBody.head).toBe(canonicalBody.head);
+    expect(aliasBody.records.map((r) => r.seq)).toEqual(
+      canonicalBody.records.map((r) => r.seq),
+    );
+  });
+
+  it('POST /api/sync accepts push and returns assignedSeq', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+
+    const res = await syncRequest('/api/sync', pushBody(makeCiphertext([1])));
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      assignedSeq: number;
+      compactHint: boolean;
+    };
+    expect(body.assignedSeq).toBe(1);
+    expect(body.compactHint).toBe(false);
   });
 });

@@ -49,7 +49,9 @@ export async function pull({
   since: number;
   localUserId: string;
 }): Promise<{ records: SyncRecord[]; head: number; status: number }> {
-  const res = await fetch(`${SYNC_BASE}?since=${since}`, {
+  const url = new URL(`${SYNC_BASE}/pull`, location.origin);
+  url.searchParams.set('since', String(since));
+  const res = await fetch(url, {
     headers: { 'X-Local-User-Id': localUserId },
   });
   if (res.status === 410) {
@@ -109,7 +111,7 @@ export async function push({
     'X-Local-User-Id': localUserId,
   };
 
-  const res = await fetch(SYNC_BASE, {
+  const res = await fetch(`${SYNC_BASE}/push`, {
     method: 'POST',
     headers,
     body: JSON.stringify({

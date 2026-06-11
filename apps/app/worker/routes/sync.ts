@@ -1,5 +1,5 @@
 import { and, eq, exists, gt, gte, lte, sql } from 'drizzle-orm';
-import { Hono } from 'hono';
+import { type Context, Hono } from 'hono';
 import { z } from 'zod';
 
 import {
@@ -66,7 +66,7 @@ function getLocalUserId(c: {
 
 const NO_STORE = { 'Cache-Control': 'no-store' } as const;
 
-router.get('/', async (c) => {
+async function handlePull(c: Context<WorkerHonoEnv>) {
   const session = c.get('session');
   const localUserId = getLocalUserId(c);
   if (localUserId instanceof Response) return localUserId;
@@ -187,9 +187,9 @@ router.get('/', async (c) => {
   }));
 
   return c.json({ head, records }, 200, { ETag: etag, ...NO_STORE });
-});
+}
 
-router.post('/', async (c) => {
+async function handlePush(c: Context<WorkerHonoEnv>) {
   const session = c.get('session');
   const localUserId = getLocalUserId(c);
   if (localUserId instanceof Response) return localUserId;
@@ -344,7 +344,15 @@ router.post('/', async (c) => {
   }
 
   return c.json({ error: 'Storage limit exceeded' }, 413, NO_STORE);
-});
+}
+
+router.get('/pull', handlePull);
+// TODO(follow-up): remove once old clients are gone
+router.get('/', handlePull);
+
+router.post('/push', handlePush);
+// TODO(follow-up): remove once old clients are gone
+router.post('/', handlePush);
 
 router.post('/compact', async (c) => {
   const session = c.get('session');

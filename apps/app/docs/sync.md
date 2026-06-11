@@ -118,7 +118,7 @@ sequenceDiagram
   participant S as Sync API
   participant D as Y.Doc / persistence
 
-  C->>S: GET /api/sync?since=<cursor> with X-Local-User-Id
+  C->>S: GET /api/sync/pull?since=<cursor> with X-Local-User-Id
   alt local user mismatch
     S-->>C: 409 local_user_mismatch
   else cursor stale or too new
@@ -177,7 +177,7 @@ sequenceDiagram
     C->>C: compact instead
   else push update
     C->>C: encrypt delta with active DEK and current key-ring revision
-    C->>S: POST /api/sync encrypted update
+    C->>S: POST /api/sync/push encrypted update
     alt accepted and contiguous
       S-->>C: 200 { assignedSeq, compactHint }
       C->>C: cursor=assignedSeq, stateVector=prepared, dirty=false if unchanged

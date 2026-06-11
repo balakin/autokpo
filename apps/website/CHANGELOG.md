@@ -1,5 +1,11 @@
 # @autokpo/website
 
+## 0.2.0
+
+### Minor Changes
+
+- [#62](https://github.com/balakin/autokpo/pull/62) [`c581798`](https://github.com/balakin/autokpo/commit/c581798b66bdb835e260c4849fb25c7d004e2864) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Added privacy-friendly PostHog analytics to the website, with consent-free configuration and disclosure in the privacy policy
+
 ## 0.1.0
 
 ### Minor Changes

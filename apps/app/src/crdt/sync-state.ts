@@ -86,7 +86,7 @@ export function createSyncStateStore(userId: string): SyncStateStore {
     try {
       const parsed = JSON.parse(raw) as SyncState;
       return {
-        cursor: parsed.cursor,
+        cursor: parsed.cursor ?? 0,
         stateVector: decodeSV(parsed.stateVector),
         dirty: parsed.dirty ?? false,
         lastSuccessfulSyncAt: parsed.lastSuccessfulSyncAt ?? null,

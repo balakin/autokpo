@@ -127,7 +127,7 @@ describe('GET /api/sync', () => {
 
   it('returns 401 for missing authenticated session', async () => {
     sessionState.userId = null;
-    const res = await syncRequest('/api/sync', {
+    const res = await syncRequest('/api/sync?since=0', {
       headers: syncHeaders(),
     });
     expect(res.status).toBe(401);
@@ -135,21 +135,31 @@ describe('GET /api/sync', () => {
   });
 
   it('returns 400 when X-Local-User-Id is missing', async () => {
-    const res = await syncRequest('/api/sync');
+    const res = await syncRequest('/api/sync?since=0');
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ code: 'missing_local_user_id' });
   });
 
   it('returns 409 when X-Local-User-Id mismatches session user', async () => {
-    const res = await syncRequest('/api/sync', {
+    const res = await syncRequest('/api/sync?since=0', {
       headers: { 'X-Local-User-Id': 'other-user' },
     });
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({ code: 'local_user_mismatch' });
   });
 
-  it('returns JSON records array with ETag', async () => {
-    await authHeaders(); // ensure user exists
+  it('returns 400 when ?since is not a valid non-negative integer', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    const res = await syncRequest('/api/sync?since=abc', {
+      headers: syncHeaders(),
+    });
+    expect(res.status).toBe(400);
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+  });
+
+  it('returns JSON records array with head in body', async () => {
+    await authHeaders();
     await insertTestKeyRing();
     const ciphertexts = [
       makeCiphertext([1]),
@@ -160,13 +170,16 @@ describe('GET /api/sync', () => {
       await syncRequest('/api/sync', pushBody(ciphertexts[i]));
     }
 
-    const res = await syncRequest('/api/sync', { headers: syncHeaders() });
+    const res = await syncRequest('/api/sync?since=0', {
+      headers: syncHeaders(),
+    });
     expect(res.status).toBe(200);
     expect(res.headers.get('Content-Type')).toContain('application/json');
-    expect(res.headers.get('ETag')).toBe('"3"');
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
 
     const rawBody: unknown = await res.json();
     const body = rawBody as {
+      head: number;
       records: Array<{
         seq: number;
         kind: string;
@@ -176,6 +189,7 @@ describe('GET /api/sync', () => {
         ciphertext: string;
       }>;
     };
+    expect(body.head).toBe(3);
     expect(body.records).toHaveLength(3);
     expect(body.records[0].seq).toBe(1);
     expect(body.records[0].kind).toBe('update');
@@ -188,7 +202,43 @@ describe('GET /api/sync', () => {
     expect(body.records[2].seq).toBe(3);
   });
 
-  it('returns 304 when If-None-Match matches head', async () => {
+  it('since=head returns 200 with empty records', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    for (let i = 0; i < 3; i++) {
+      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+    }
+
+    const res = await syncRequest('/api/sync?since=3', {
+      headers: syncHeaders(),
+    });
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+    const rawBody: unknown = await res.json();
+    const body = rawBody as { head: number; records: unknown[] };
+    expect(body.head).toBe(3);
+    expect(body.records).toHaveLength(0);
+  });
+
+  it('transitional: If-None-Match cursor is used when ?since is absent', async () => {
+    await authHeaders();
+    await insertTestKeyRing();
+    for (let i = 0; i < 5; i++) {
+      await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
+    }
+
+    const res = await syncRequest('/api/sync', {
+      headers: syncHeaders({ 'If-None-Match': '"2"' }),
+    });
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+    const rawBody: unknown = await res.json();
+    const body = rawBody as { head: number; records: Array<{ seq: number }> };
+    expect(body.head).toBe(5);
+    expect(body.records.map((r) => r.seq)).toEqual([3, 4, 5]);
+  });
+
+  it('transitional: returns 304 when If-None-Match matches head', async () => {
     await authHeaders();
     await insertTestKeyRing();
     for (let i = 0; i < 3; i++) {
@@ -200,6 +250,7 @@ describe('GET /api/sync', () => {
     });
     expect(res.status).toBe(304);
     expect(res.headers.get('ETag')).toBe('"3"');
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
   });
 
   it('returns full records when no If-None-Match header', async () => {
@@ -209,8 +260,11 @@ describe('GET /api/sync', () => {
       await syncRequest('/api/sync', pushBody(makeCiphertext([i])));
     }
 
-    const res = await syncRequest('/api/sync', { headers: syncHeaders() });
+    const res = await syncRequest('/api/sync?since=0', {
+      headers: syncHeaders(),
+    });
     expect(res.status).toBe(200);
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
     const rawBody: unknown = await res.json();
     const body = rawBody as { records: unknown[] };
     expect(body.records).toHaveLength(2);
@@ -231,11 +285,17 @@ describe('GET /api/sync', () => {
     await syncRequest('/api/sync', pushBody(makeCiphertext([4])));
     await syncRequest('/api/sync', pushBody(makeCiphertext([5])));
 
-    const res = await syncRequest('/api/sync', { headers: syncHeaders() });
+    const res = await syncRequest('/api/sync?since=0', {
+      headers: syncHeaders(),
+    });
     expect(res.status).toBe(200);
-    expect(res.headers.get('ETag')).toBe('"6"');
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
     const rawBody: unknown = await res.json();
-    const body = rawBody as { records: Array<{ seq: number; kind: string }> };
+    const body = rawBody as {
+      head: number;
+      records: Array<{ seq: number; kind: string }>;
+    };
+    expect(body.head).toBe(6);
     expect(body.records).toEqual([
       expect.objectContaining({ seq: 4, kind: 'snapshot' }),
       expect.objectContaining({ seq: 5, kind: 'update' }),
@@ -255,11 +315,12 @@ describe('GET /api/sync', () => {
     );
     expect(compactRes.status).toBe(200);
 
-    const res = await syncRequest('/api/sync', {
-      headers: syncHeaders({ 'If-None-Match': '"3"' }),
+    const res = await syncRequest('/api/sync?since=3', {
+      headers: syncHeaders(),
     });
 
     expect(res.status).toBe(410);
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
   });
 
   it('returns later rows when cursor is at latest snapshot', async () => {
@@ -276,14 +337,18 @@ describe('GET /api/sync', () => {
     await syncRequest('/api/sync', pushBody(makeCiphertext([4])));
     await syncRequest('/api/sync', pushBody(makeCiphertext([5])));
 
-    const res = await syncRequest('/api/sync', {
-      headers: syncHeaders({ 'If-None-Match': '"4"' }),
+    const res = await syncRequest('/api/sync?since=4', {
+      headers: syncHeaders(),
     });
 
     expect(res.status).toBe(200);
-    expect(res.headers.get('ETag')).toBe('"6"');
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
     const rawBody: unknown = await res.json();
-    const body = rawBody as { records: Array<{ seq: number; kind: string }> };
+    const body = rawBody as {
+      head: number;
+      records: Array<{ seq: number; kind: string }>;
+    };
+    expect(body.head).toBe(6);
     expect(body.records).toEqual([
       expect.objectContaining({ seq: 5, kind: 'update' }),
       expect.objectContaining({ seq: 6, kind: 'update' }),
@@ -293,20 +358,24 @@ describe('GET /api/sync', () => {
   it('returns 410 when cursor is newer than head', async () => {
     await authHeaders();
     await insertTestKeyRing();
-    const res = await syncRequest('/api/sync', {
-      headers: syncHeaders({ 'If-None-Match': '"999"' }),
+    const res = await syncRequest('/api/sync?since=999', {
+      headers: syncHeaders(),
     });
     expect(res.status).toBe(410);
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
   });
 
-  it('returns empty records with ETag "0" when no records exist', async () => {
+  it('returns empty records with head=0 when no records exist', async () => {
     await authHeaders();
     await insertTestKeyRing();
-    const res = await syncRequest('/api/sync', { headers: syncHeaders() });
+    const res = await syncRequest('/api/sync?since=0', {
+      headers: syncHeaders(),
+    });
     expect(res.status).toBe(200);
-    expect(res.headers.get('ETag')).toBe('"0"');
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
     const rawBody: unknown = await res.json();
-    const body = rawBody as { records: unknown[] };
+    const body = rawBody as { head: number; records: unknown[] };
+    expect(body.head).toBe(0);
     expect(body.records).toHaveLength(0);
   });
 
@@ -315,8 +384,11 @@ describe('GET /api/sync', () => {
     await insertTestKeyRing();
     await syncRequest('/api/sync', pushBody(makeCiphertext([1])));
 
-    const res = await syncRequest('/api/sync', { headers: syncHeaders() });
+    const res = await syncRequest('/api/sync?since=0', {
+      headers: syncHeaders(),
+    });
     expect(res.status).toBe(200);
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
     const rawBody: unknown = await res.json();
     const body = rawBody as {
       records: Array<{ keyRingRevision: unknown }>;
@@ -401,20 +473,31 @@ describe('POST /api/sync', () => {
     expect(invalidKeyId.status).toBe(400);
   });
 
-  it('assigns sequential seq and returns ETag', async () => {
+  it('assigns sequential assignedSeq in body and sets Cache-Control: no-store', async () => {
     await authHeaders();
     await insertTestKeyRing();
 
     const r1 = await syncRequest('/api/sync', pushBody(makeCiphertext([1])));
     expect(r1.status).toBe(200);
-    expect(r1.headers.get('ETag')).toBe('"1"');
+    expect(r1.headers.get('Cache-Control')).toBe('no-store');
+    const b1 = (await r1.json()) as {
+      assignedSeq: number;
+      compactHint: boolean;
+    };
+    expect(b1.assignedSeq).toBe(1);
+    expect(b1.compactHint).toBe(false);
 
     const r2 = await syncRequest('/api/sync', pushBody(makeCiphertext([2])));
     expect(r2.status).toBe(200);
-    expect(r2.headers.get('ETag')).toBe('"2"');
+    expect(r2.headers.get('Cache-Control')).toBe('no-store');
+    const b2 = (await r2.json()) as {
+      assignedSeq: number;
+      compactHint: boolean;
+    };
+    expect(b2.assignedSeq).toBe(2);
   });
 
-  it('idempotent duplicate returns same ETag', async () => {
+  it('idempotent duplicate returns same assignedSeq in body', async () => {
     await authHeaders();
     await insertTestKeyRing();
     const id = crypto.randomUUID();
@@ -422,11 +505,15 @@ describe('POST /api/sync', () => {
 
     const r1 = await syncRequest('/api/sync', pushBody(ciphertext, id));
     expect(r1.status).toBe(200);
-    expect(r1.headers.get('ETag')).toBe('"1"');
+    expect(r1.headers.get('Cache-Control')).toBe('no-store');
+    const b1 = (await r1.json()) as { assignedSeq: number };
+    expect(b1.assignedSeq).toBe(1);
 
     const r2 = await syncRequest('/api/sync', pushBody(ciphertext, id));
     expect(r2.status).toBe(200);
-    expect(r2.headers.get('ETag')).toBe('"1"');
+    expect(r2.headers.get('Cache-Control')).toBe('no-store');
+    const b2 = (await r2.json()) as { assignedSeq: number };
+    expect(b2.assignedSeq).toBe(1);
   });
 
   it('same id different ciphertext returns 409', async () => {
@@ -448,7 +535,7 @@ describe('POST /api/sync', () => {
     expect(await r2.json()).toEqual({ code: 'idempotency_conflict' });
   });
 
-  it('emits X-Compact-Hint when over soft cap rows', async () => {
+  it('compactHint is true in body when over soft cap rows', async () => {
     await authHeaders();
     await insertTestKeyRing();
     const ciphertext = makeCiphertext([1]);
@@ -459,7 +546,12 @@ describe('POST /api/sync', () => {
     const res = await syncRequest('/api/sync', pushBody(ciphertext));
 
     expect(res.status).toBe(200);
-    expect(res.headers.get('X-Compact-Hint')).toBe('please');
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+    const body = (await res.json()) as {
+      assignedSeq: number;
+      compactHint: boolean;
+    };
+    expect(body.compactHint).toBe(true);
   }, 15000);
 
   it('returns 413 when hard cap exceeded', async () => {
@@ -611,7 +703,7 @@ describe('POST /api/sync/compact', () => {
     await clearAuthData();
   });
 
-  it('inserts snapshot and returns ETag', async () => {
+  it('inserts snapshot and returns assignedSeq in body with Cache-Control: no-store', async () => {
     await authHeaders();
     await insertTestKeyRing();
     for (let i = 0; i < 5; i++) {
@@ -624,10 +716,12 @@ describe('POST /api/sync/compact', () => {
     );
 
     expect(res.status).toBe(200);
-    expect(res.headers.get('ETag')).toBe('"6"');
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+    const body = (await res.json()) as { assignedSeq: number };
+    expect(body.assignedSeq).toBe(6);
   });
 
-  it('idempotent repeat returns same ETag without re-inserting', async () => {
+  it('idempotent repeat returns same assignedSeq without re-inserting', async () => {
     await authHeaders();
     await insertTestKeyRing();
     const id = crypto.randomUUID();
@@ -637,16 +731,21 @@ describe('POST /api/sync/compact', () => {
       compactBody(makeCiphertext([99]), 0, id),
     );
     expect(r1.status).toBe(200);
-    const etag1 = r1.headers.get('ETag');
+    expect(r1.headers.get('Cache-Control')).toBe('no-store');
+    const b1 = (await r1.json()) as { assignedSeq: number };
 
     const r2 = await syncRequest(
       '/api/sync/compact',
       compactBody(makeCiphertext([99]), 0, id),
     );
     expect(r2.status).toBe(200);
-    expect(r2.headers.get('ETag')).toBe(etag1);
+    expect(r2.headers.get('Cache-Control')).toBe('no-store');
+    const b2 = (await r2.json()) as { assignedSeq: number };
+    expect(b2.assignedSeq).toBe(b1.assignedSeq);
 
-    const getRes = await syncRequest('/api/sync', { headers: syncHeaders() });
+    const getRes = await syncRequest('/api/sync?since=0', {
+      headers: syncHeaders(),
+    });
     const rawBody: unknown = await getRes.json();
     const body = rawBody as { records: Array<{ kind: string }> };
     const snapshots = body.records.filter((r) => r.kind === 'snapshot');
@@ -769,7 +868,9 @@ describe('POST /api/sync/compact', () => {
       .where(eq(syncRecord.userId, 'user-1'));
     expect(rows).toEqual([{ seq: 6, kind: 'snapshot' }]);
 
-    const getRes = await syncRequest('/api/sync', { headers: syncHeaders() });
+    const getRes = await syncRequest('/api/sync?since=0', {
+      headers: syncHeaders(),
+    });
     const rawBody2: unknown = await getRes.json();
     const body = rawBody2 as {
       records: Array<{ seq: number; kind: string }>;

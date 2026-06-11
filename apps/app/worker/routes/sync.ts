@@ -48,7 +48,10 @@ router.use(
 );
 
 function codeResponse(code: string, status: number): Response {
-  return Response.json({ code }, { status });
+  return Response.json(
+    { code },
+    { status, headers: { 'Cache-Control': 'no-store' } },
+  );
 }
 
 function getLocalUserId(c: {
@@ -61,6 +64,8 @@ function getLocalUserId(c: {
   return localUserId;
 }
 
+const NO_STORE = { 'Cache-Control': 'no-store' } as const;
+
 router.get('/', async (c) => {
   const session = c.get('session');
   const localUserId = getLocalUserId(c);
@@ -71,14 +76,31 @@ router.get('/', async (c) => {
   const userId = session.user.id;
   const db = getDb(c.env.DB);
 
+  // Read cursor from ?since= query param. Transitional: fall back to If-None-Match when absent.
+  // TODO(follow-up): remove If-None-Match fallback and informational ETag once update adoption is sufficient.
+  const sinceParam = c.req.query('since');
   const ifNoneMatch = c.req.header('If-None-Match');
-  const since =
-    ifNoneMatch !== undefined
-      ? parseInt(ifNoneMatch.replace(/^"|"$/g, ''), 10)
-      : 0;
 
-  if (ifNoneMatch !== undefined && (Number.isNaN(since) || since < 0)) {
-    return c.json({ error: 'Invalid If-None-Match header' }, 400);
+  let since: number;
+  let usingSinceParam: boolean;
+
+  if (sinceParam !== undefined && sinceParam !== '') {
+    const parsed = parseInt(sinceParam, 10);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      return c.json({ error: 'Invalid since parameter' }, 400, NO_STORE);
+    }
+    since = parsed;
+    usingSinceParam = true;
+  } else if (ifNoneMatch !== undefined) {
+    const parsed = parseInt(ifNoneMatch.replace(/^"|"$/g, ''), 10);
+    if (Number.isNaN(parsed) || parsed < 0) {
+      return c.json({ error: 'Invalid If-None-Match header' }, 400, NO_STORE);
+    }
+    since = parsed;
+    usingSinceParam = false;
+  } else {
+    since = 0;
+    usingSinceParam = true;
   }
 
   const freshPullFloor = sql<number>`COALESCE(
@@ -126,16 +148,28 @@ router.get('/', async (c) => {
     meta.latestSnapshotSeq > 0 &&
     since < meta.latestSnapshotSeq
   ) {
-    return c.json({ error: 'Cursor is stale; refetch from scratch' }, 410);
+    return c.json(
+      { error: 'Cursor is stale; refetch from scratch' },
+      410,
+      NO_STORE,
+    );
   }
   if (since > meta.head) {
-    return c.json({ error: 'Cursor is too new; refetch from scratch' }, 410);
+    return c.json(
+      { error: 'Cursor is too new; refetch from scratch' },
+      410,
+      NO_STORE,
+    );
   }
 
   const head = meta.head;
+  // Transitional: include ETag for old clients. TODO(follow-up): remove ETag header.
   const etag = `"${head}"`;
-  if (ifNoneMatch !== undefined && since === head) {
-    return c.body(null, 304, { ETag: etag });
+
+  // Transitional: return 304 only for old clients that sent If-None-Match (no ?since= param).
+  // TODO(follow-up): remove this branch once update adoption is sufficient.
+  if (!usingSinceParam && since === head) {
+    return c.body(null, 304, { ETag: etag, ...NO_STORE });
   }
 
   const records = items.map((row) => ({
@@ -152,7 +186,7 @@ router.get('/', async (c) => {
     ciphertext: row.ciphertext.toBase64(),
   }));
 
-  return c.json({ records }, 200, { ETag: etag });
+  return c.json({ head, records }, 200, { ETag: etag, ...NO_STORE });
 });
 
 router.post('/', async (c) => {
@@ -170,6 +204,7 @@ router.post('/', async (c) => {
     return c.json(
       { error: 'Invalid request body', details: parsed.error.issues },
       400,
+      NO_STORE,
     );
   }
   const {
@@ -184,20 +219,20 @@ router.post('/', async (c) => {
   let ivBytes: Uint8Array;
   let ciphertextBytes: Uint8Array;
   if (ciphertextBase64.length > MAX_SYNC_CIPHERTEXT_BASE64_LENGTH) {
-    return c.json({ error: 'Payload too large' }, 413);
+    return c.json({ error: 'Payload too large' }, 413, NO_STORE);
   }
   try {
     ivBytes = Uint8Array.fromBase64(encryptionParams.iv);
     ciphertextBytes = Uint8Array.fromBase64(ciphertextBase64);
   } catch {
-    return c.json({ error: 'Invalid base64 encoding' }, 400);
+    return c.json({ error: 'Invalid base64 encoding' }, 400, NO_STORE);
   }
 
   if (ivBytes.byteLength !== 12) {
-    return c.json({ error: 'IV must be 12 bytes' }, 400);
+    return c.json({ error: 'IV must be 12 bytes' }, 400, NO_STORE);
   }
   if (ciphertextBytes.byteLength > MAX_SYNC_CIPHERTEXT_BYTES) {
-    return c.json({ error: 'Payload too large' }, 413);
+    return c.json({ error: 'Payload too large' }, 413, NO_STORE);
   }
 
   const db = getDb(c.env.DB);
@@ -263,9 +298,14 @@ router.post('/', async (c) => {
     if (row) {
       const compactHint =
         row.rowCount >= SOFT_CAP_ROWS || row.totalBytes >= SOFT_CAP_BYTES;
-      const headers: Record<string, string> = { ETag: `"${row.seq}"` };
+      // Transitional: keep ETag/X-Compact-Hint for old clients.
+      // TODO(follow-up): remove ETag and X-Compact-Hint headers.
+      const headers: Record<string, string> = {
+        ETag: `"${row.seq}"`,
+        'Cache-Control': 'no-store',
+      };
       if (compactHint) headers['X-Compact-Hint'] = 'please';
-      return c.body(null, 200, headers);
+      return c.json({ assignedSeq: row.seq, compactHint }, 200, headers);
     }
   } catch {
     const [existing] = await db
@@ -290,7 +330,12 @@ router.post('/', async (c) => {
           (v, i) => v === ciphertextBytes[i],
         )
       ) {
-        return c.body(null, 200, { ETag: `"${existing.existingSeq}"` });
+        // Transitional: keep ETag for old clients. TODO(follow-up): remove ETag header.
+        return c.json(
+          { assignedSeq: existing.existingSeq, compactHint: false },
+          200,
+          { ETag: `"${existing.existingSeq}"`, 'Cache-Control': 'no-store' },
+        );
       }
       return codeResponse('idempotency_conflict', 409);
     }
@@ -298,7 +343,7 @@ router.post('/', async (c) => {
     return codeResponse('write_conflict', 409);
   }
 
-  return c.json({ error: 'Storage limit exceeded' }, 413);
+  return c.json({ error: 'Storage limit exceeded' }, 413, NO_STORE);
 });
 
 router.post('/compact', async (c) => {
@@ -312,12 +357,12 @@ router.post('/compact', async (c) => {
 
   const replacesUpToStr = c.req.header('X-Replaces-Up-To');
   if (!replacesUpToStr) {
-    return c.json({ code: 'missing_required_headers' }, 400);
+    return c.json({ code: 'missing_required_headers' }, 400, NO_STORE);
   }
 
   const replacesUpTo = parseInt(replacesUpToStr, 10);
   if (Number.isNaN(replacesUpTo)) {
-    return c.json({ error: 'Invalid X-Replaces-Up-To header' }, 400);
+    return c.json({ error: 'Invalid X-Replaces-Up-To header' }, 400, NO_STORE);
   }
 
   const rawBody: unknown = await c.req.json().catch(() => null);
@@ -326,6 +371,7 @@ router.post('/compact', async (c) => {
     return c.json(
       { error: 'Invalid request body', details: parsed.error.issues },
       400,
+      NO_STORE,
     );
   }
   const {
@@ -340,20 +386,20 @@ router.post('/compact', async (c) => {
   let ivBytes: Uint8Array;
   let snapshotCiphertext: Uint8Array;
   if (ciphertextBase64.length > MAX_SYNC_CIPHERTEXT_BASE64_LENGTH) {
-    return c.json({ error: 'Payload too large' }, 413);
+    return c.json({ error: 'Payload too large' }, 413, NO_STORE);
   }
   try {
     ivBytes = Uint8Array.fromBase64(encryptionParams.iv);
     snapshotCiphertext = Uint8Array.fromBase64(ciphertextBase64);
   } catch {
-    return c.json({ error: 'Invalid base64 encoding' }, 400);
+    return c.json({ error: 'Invalid base64 encoding' }, 400, NO_STORE);
   }
 
   if (ivBytes.byteLength !== 12) {
-    return c.json({ error: 'IV must be 12 bytes' }, 400);
+    return c.json({ error: 'IV must be 12 bytes' }, 400, NO_STORE);
   }
   if (snapshotCiphertext.byteLength > MAX_SYNC_CIPHERTEXT_BYTES) {
-    return c.json({ error: 'Payload too large' }, 413);
+    return c.json({ error: 'Payload too large' }, 413, NO_STORE);
   }
 
   const db = getDb(c.env.DB);
@@ -380,8 +426,11 @@ router.post('/compact', async (c) => {
   }
 
   const { nextSeq } = insertResult;
-  const headers: Record<string, string> = { ETag: `"${nextSeq}"` };
-  return c.body(null, 200, headers);
+  // Transitional: keep ETag for old clients. TODO(follow-up): remove ETag header.
+  return c.json({ assignedSeq: nextSeq }, 200, {
+    ETag: `"${nextSeq}"`,
+    'Cache-Control': 'no-store',
+  });
 });
 
 export { router as syncRouter };
@@ -502,10 +551,7 @@ async function insertCompactSnapshot(
         existing.ciphertext.byteLength === ciphertext.byteLength &&
         new Uint8Array(existing.ciphertext).every((v, i) => v === ciphertext[i])
       ) {
-        return new Response(null, {
-          status: 200,
-          headers: { ETag: `"${existing.seq}"` },
-        });
+        return { nextSeq: existing.seq };
       }
       return codeResponse('idempotency_conflict', 409);
     }

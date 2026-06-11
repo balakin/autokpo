@@ -118,17 +118,15 @@ sequenceDiagram
   participant S as Sync API
   participant D as Y.Doc / persistence
 
-  C->>S: GET /api/sync with X-Local-User-Id and If-None-Match cursor
+  C->>S: GET /api/sync?since=<cursor> with X-Local-User-Id
   alt local user mismatch
     S-->>C: 409 local_user_mismatch
   else cursor stale or too new
     S-->>C: 410 Gone
     C->>C: reset sync state only, keep Y.Doc
     C->>S: retry from cursor 0
-  else no new rows
-    S-->>C: 304 with ETag=head
-  else rows available
-    S-->>C: 200 rows + ETag=head
+  else no new rows or rows available
+    S-->>C: 200 { head, records } (records [] when nothing newer)
     alt row references newer key-ring revision
       C->>C: decryptPulledRecords throws FutureKeyRingRevisionError
       C->>K: refreshKeyRingProfile
@@ -144,11 +142,11 @@ sequenceDiagram
 
 Rules:
 
-1. Pull uses the cursor as `If-None-Match`; server returns current head as `ETag`.
+1. Pull sends the cursor as `?since=<n>`; server returns `{ head, records }` in the `200` JSON body. All sync responses include `Cache-Control: no-store`.
 2. The latest snapshot row is the server's baseline boundary. A fresh pull from cursor `0` returns the latest snapshot plus later rows, or all rows when no snapshot exists.
 3. An incremental cursor older than the latest snapshot receives `410`, because snapshots can contain changes that have no standalone update row.
 4. An incremental cursor at or after the latest snapshot receives rows with `seq > cursor`.
-5. `304` means the cursor is already at head.
+5. The server always returns `200` (never `304`). An empty `records` array means the cursor is at head.
 6. `410` means local sync metadata is invalid. Reset sync metadata and retry from scratch; do not wipe the Y.Doc.
 7. `decryptPulledRecords` throws `FutureKeyRingRevisionError` when rows reference a newer key-ring revision; the pull path refreshes the key ring once and retries decryption.
 8. If rows still reference a future revision after refresh, fail hard.
@@ -181,10 +179,10 @@ sequenceDiagram
     C->>C: encrypt delta with active DEK and current key-ring revision
     C->>S: POST /api/sync encrypted update
     alt accepted and contiguous
-      S-->>C: 200 ETag=assignedSeq
+      S-->>C: 200 { assignedSeq, compactHint }
       C->>C: cursor=assignedSeq, stateVector=prepared, dirty=false if unchanged
     else accepted with gap
-      S-->>C: 200 ETag=assignedSeq
+      S-->>C: 200 { assignedSeq, compactHint }
       C->>C: pull to reconcile concurrent rows
     else write conflict
       S-->>C: 409 write_conflict
@@ -239,10 +237,10 @@ sequenceDiagram
   C->>C: encrypt snapshot as kind=snapshot
   C->>S: POST /api/sync/compact with X-Replaces-Up-To
   alt accepted and contiguous
-    S-->>C: 200 ETag=assignedSeq
+    S-->>C: 200 { assignedSeq }
     C->>C: cursor=assignedSeq, stateVector=prepared, dirty=false if unchanged
   else accepted with gap
-    S-->>C: 200 ETag=assignedSeq
+    S-->>C: 200 { assignedSeq }
     C->>C: pull before continuing
   else compact POST write conflict
     S-->>C: 409 write_conflict
@@ -252,7 +250,7 @@ sequenceDiagram
 
 Rules:
 
-1. Compact when a delta exceeds the client update limit or server returns `X-Compact-Hint: please`.
+1. Compact when a delta exceeds the client update limit or `compactHint: true` is in the push response body.
 2. Snapshot plaintext is the full encoded Y.Doc state.
 3. Snapshot rows use `kind = snapshot`; kind is included in AAD.
 4. After accepting a snapshot, the server deletes all rows with `seq <= X-Replaces-Up-To`; it does not retain a pre-snapshot tail.
@@ -275,11 +273,11 @@ flowchart TD
   size -- yes --> active{active DEK id and revision match key ring?}
   active -- no --> dup{same id exists?}
   active -- yes --> insert{insert under storage cap}
-  insert -- yes --> ok[200 ETag assigned seq]
+  insert -- yes --> ok[200 { assignedSeq, compactHint }]
   insert -- no --> dup
   dup -- no --> conflict[409 write_conflict]
   dup -- yes --> same{metadata, IV, ciphertext identical?}
-  same -- yes --> idem[200 original ETag]
+  same -- yes --> idem[200 { assignedSeq, compactHint }]
   same -- no --> idemConflict[409 idempotency_conflict]
 ```
 
@@ -291,7 +289,7 @@ Rules:
 4. If the id is new but active DEK/revision guard fails, return `write_conflict`.
 5. Server assigns dense monotonic `seq` values per user.
 6. Server hard storage cap is 4 MiB of ciphertext per user.
-7. Server asks for compaction at 200 rows or 2 MiB by returning `X-Compact-Hint: please`.
+7. Server asks for compaction at 200 rows or 2 MiB by returning `compactHint: true` in the push response body.
 8. Compact deletes all covered rows; clients behind the latest snapshot recover by resetting sync metadata and pulling the latest snapshot baseline.
 
 ## Error handling summary
@@ -336,3 +334,4 @@ Rules:
 - Followers only call `markDirty()` for localStorage sync metadata.
 - Only the leader writes cursor/state-vector/last-success metadata.
 - Server never receives plaintext Yjs updates or snapshots.
+- All `/api/sync*` responses include `Cache-Control: no-store`; the browser and intermediaries never cache or revalidate sync requests.

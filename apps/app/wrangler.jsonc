@@ -87,8 +87,8 @@
         },
       ],
       "vars": {
-        "APP_URL": "https://autokpo.com",
-        "RESEND_FROM_EMAIL": "AutoKPO <autokpo@notify.autokpo.com>",
+        "APP_URL": "https://app.autokpo.com",
+        "RESEND_FROM_EMAIL": "AutoKPO <noreply@notify.autokpo.com>",
       },
       "secrets": {
         "required": [
@@ -101,6 +101,8 @@
           "TURNSTILE_SECRET_KEY",
         ],
       },
+      "workers_dev": false,
+      "preview_urls": false,
     },
   },
 }

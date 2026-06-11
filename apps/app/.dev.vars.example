@@ -4,4 +4,4 @@ GOOGLE_CLIENT_SECRET=replace-with-google-client-secret
 GITHUB_CLIENT_ID=replace-with-github-client-id
 GITHUB_CLIENT_SECRET=replace-with-github-client-secret
 RESEND_API_KEY=re_********************************
-TURNSTILE_SECRET_KEY=0x**********
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA

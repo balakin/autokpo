@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "@lucide/astro": "catalog:astro",
-    "astro": "catalog:astro"
+    "astro": "catalog:astro",
+    "posthog-js": "catalog:misc"
   },
   "devDependencies": {
     "@astrojs/check": "catalog:astro",

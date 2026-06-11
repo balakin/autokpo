@@ -1,0 +1,35 @@
+---
+// PostHog analytics, initialized via the posthog-js npm package.
+// Astro bundles this module <script> (no is:inline) and inlines the
+// PUBLIC_* env vars at build time.
+---
+<script>
+  import posthog from 'posthog-js';
+
+  const apiKey = import.meta.env.PUBLIC_POSTHOG_PROJECT_TOKEN;
+  const apiHost = import.meta.env.PUBLIC_POSTHOG_HOST;
+
+  if (apiKey && apiHost) {
+    posthog.init(apiKey, {
+      api_host: apiHost,                  // first-party reverse proxy (CNAME → PostHog EU)
+      ui_host: 'https://eu.posthog.com',  // so toolbar / "view in app" links resolve to EU Cloud, not the proxy
+      defaults: '2026-01-30',
+
+      cookieless_mode: 'always',        // no cookies / localStorage; hashed anonymous visitor id
+      persistence: 'memory',            // belt-and-suspenders: nothing written to the browser
+      autocapture: false,               // no automatic click/form tracking
+      capture_pageview: true,           // pageviews (SPA-aware via the 2026 defaults)
+      capture_pageleave: true,          // needed for bounce rate / time-on-page in Web Analytics
+      capture_performance: { web_vitals: true }, // Core Web Vitals
+      disable_session_recording: true,  // no replay
+      disable_surveys: true,            // no surveys
+      enable_heatmaps: false,           // no mouse-move / click / scroll heatmaps
+      person_profiles: 'identified_only', // never identified → events stay anonymous
+    });
+
+    // The npm build, unlike the CDN snippet, doesn't register a global. Expose
+    // it for the inline `window.posthog?.capture(...)` handlers in the header,
+    // footer, landing page, and theme toggle (typed in src/env.d.ts).
+    window.posthog = posthog;
+  }
+</script>

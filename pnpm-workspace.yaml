@@ -3,6 +3,7 @@ packages:
   - 'packages/*'
 
 allowBuilds:
+  core-js: false
   esbuild: true
   sharp: true
   unrs-resolver: true
@@ -132,5 +133,6 @@ catalogs:
     yjs: '^13.6.31'
     hash-wasm: '^4.12.0'
     workbox-window: '^7.4.1'
+    posthog-js: '^1.380.0'
     '@marsidev/react-turnstile': '^1.5.2'
     '@react-pdf/renderer': '^4.5.1'

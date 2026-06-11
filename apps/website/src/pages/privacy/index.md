@@ -4,7 +4,7 @@ locale: sr-Latn
 documentKey: privacy
 title: Politika privatnosti
 description: Kako AutoKPO obrađuje i štiti podatke korisnika.
-updated: 2026-06-10
+updated: 2026-06-11
 ---
 
 # Politika privatnosti
@@ -30,6 +30,8 @@ Email: [privacy@autokpo.com](mailto:privacy@autokpo.com)
 Javne stranice AutoKPO veb-sajta, uključujući pravne dokumente, služe se kao statički fajlovi preko Cloudflare infrastrukture. Te stranice nemaju kontakt forme, newsletter prijave, reklamne kolačiće niti marketinške piksele.
 
 Prilikom posete javnom veb-sajtu mogu se tehnički obraditi podaci neophodni za isporuku sajta, bezbednost i rad mreže, kao što su IP adresa, podaci o pregledaču, vreme zahteva i tražena stranica. Cloudflare može pružiti AutoKPO-u agregirane ili anonimizovane operativne podatke o saobraćaju radi bezbednosti, performansi i pouzdanosti usluge.
+
+AutoKPO koristi analitiku javnog veb-sajta koja poštuje privatnost i ne koristi kolačiće, a pruža je PostHog i čuva se u Evropskoj uniji. Beleže se zbirni pregledi stranica, osnovni podaci o performansama i mali broj anonimnih događaja interakcije. Analitika ne koristi kolačiće niti pohranjivanje u pregledaču, ne prati vas kroz druge veb-sajtove i ne gradi reklamne profile niti profile pojedinačnih korisnika.
 
 ## 3. Koje podatke AutoKPO obrađuje i kako ih prikuplja
 
@@ -76,20 +78,22 @@ AutoKPO obrađuje podatke radi sledećih svrha:
 - zaštite aplikacije od zloupotreba, automatizovanih napada i neovlašćenog pristupa;
 - slanja transakcionih email poruka, kao što su kodovi za prijavu i obaveštenja o nalogu;
 - omogućavanja izvoza podataka i brisanja naloga;
+- razumevanja zbirnog korišćenja javnog veb-sajta putem analitike koja poštuje privatnost i ne koristi kolačiće;
 - odgovaranja na poruke i zahteve koje pošaljete na kontakt email;
 - odgovaranja na zahteve korisnika u vezi sa privatnošću.
 
 Pravni osnov zavisi od svrhe obrade:
 
-| Svrha                                                                 | Pravni osnov                                      |
-| --------------------------------------------------------------------- | ------------------------------------------------- |
-| Nalog, prijava, sesije, sinhronizacija i transakcione poruke          | Pružanje tražene usluge                           |
-| Lokalno čuvanje, podešavanja, izvoz podataka i brisanje naloga        | Pružanje tražene usluge                           |
-| Prijava putem Google ili GitHub naloga, ako je izaberete              | Pružanje tražene usluge na vaš zahtev             |
-| Neophodni kolačići, Turnstile zaštita i tehnički rad javnog veb-sajta | Pružanje tražene usluge i legitimni interes       |
-| Bezbednost, sprečavanje zloupotreba, pouzdan rad i tehnički logovi    | Legitimni interes                                 |
-| Odgovaranje na poruke i zahteve koje pošaljete na kontakt email       | Legitimni interes ili postupanje po vašem zahtevu |
-| Zahtevi u vezi sa pravima korisnika i drugi obavezni zahtevi          | Zakonska obaveza                                  |
+| Svrha                                                                    | Pravni osnov                                      |
+| ------------------------------------------------------------------------ | ------------------------------------------------- |
+| Nalog, prijava, sesije, sinhronizacija i transakcione poruke             | Pružanje tražene usluge                           |
+| Lokalno čuvanje, podešavanja, izvoz podataka i brisanje naloga           | Pružanje tražene usluge                           |
+| Prijava putem Google ili GitHub naloga, ako je izaberete                 | Pružanje tražene usluge na vaš zahtev             |
+| Neophodni kolačići, Turnstile zaštita i tehnički rad javnog veb-sajta    | Pružanje tražene usluge i legitimni interes       |
+| Bezbednost, sprečavanje zloupotreba, pouzdan rad i tehnički logovi       | Legitimni interes                                 |
+| Analitika javnog veb-sajta koja poštuje privatnost i ne koristi kolačiće | Legitimni interes                                 |
+| Odgovaranje na poruke i zahteve koje pošaljete na kontakt email          | Legitimni interes ili postupanje po vašem zahtevu |
+| Zahtevi u vezi sa pravima korisnika i drugi obavezni zahtevi             | Zakonska obaveza                                  |
 
 Ako ne pružite podatke potrebne za nalog, prijavu, sinhronizaciju ili bezbednost, odgovarajući delovi aplikacije možda neće biti dostupni.
 
@@ -111,20 +115,23 @@ AutoKPO koristi savremene kriptografske mehanizme za šifrovanje podataka i zaš
 
 AutoKPO koristi samo neophodne kolačiće.
 
+Analitika veb-sajta koja poštuje privatnost, opisana u odeljku 2, ne koristi kolačiće niti pohranjivanje u pregledaču.
+
 Možete ograničiti ili obrisati kolačiće u podešavanjima pregledača, ali neke funkcije AutoKPO-a možda neće raditi ispravno.
 
 ## 7. Pružaoci usluga i prenos podataka
 
 AutoKPO koristi sledeće pružaoce usluga:
 
-| Pružalac   | Svrha                                                                                                                                                                         |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cloudflare | Hosting javnog veb-sajta i aplikacije, Cloudflare Workers, Cloudflare D1 baza podataka konfigurisana za čuvanje u EU, Turnstile zaštita, bezbednost, performanse i pouzdanost |
-| Resend     | Slanje transakcionih email poruka, kao što su kodovi za prijavu i obaveštenja o nalogu                                                                                        |
-| Google     | Prijava putem Google naloga, ako je izaberete                                                                                                                                 |
-| GitHub     | Prijava putem GitHub naloga, ako je izaberete                                                                                                                                 |
+| Pružalac   | Svrha                                                                                                                                                                                  |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cloudflare | Hosting javnog veb-sajta i aplikacije, Cloudflare Workers, Cloudflare D1 baza podataka konfigurisana za čuvanje u EU, Turnstile zaštita, bezbednost, performanse i pouzdanost          |
+| Resend     | Slanje transakcionih email poruka, kao što su kodovi za prijavu i obaveštenja o nalogu                                                                                                 |
+| PostHog    | Analitika javnog veb-sajta koja poštuje privatnost i ne koristi kolačiće (zbirni pregledi stranica, podaci o performansama i anonimni događaji interakcije), čuva se u Evropskoj uniji |
+| Google     | Prijava putem Google naloga, ako je izaberete                                                                                                                                          |
+| GitHub     | Prijava putem GitHub naloga, ako je izaberete                                                                                                                                          |
 
-Cloudflare i Resend obrađuju podatke kao pružaoci usluga AutoKPO-a za gore opisane svrhe.
+Cloudflare, Resend i PostHog obrađuju podatke kao pružaoci usluga AutoKPO-a za gore opisane svrhe.
 
 Obrada podataka u okviru Cloudflare Turnstile usluge dodatno je opisana u Cloudflare dokumentu <a href="https://www.cloudflare.com/en-gb/turnstile-privacy-policy/" target="_blank" rel="noopener noreferrer">Turnstile Privacy Addendum</a>.
 

@@ -4,7 +4,7 @@ locale: en
 documentKey: privacy
 title: Privacy Policy
 description: How AutoKPO processes and protects user data.
-updated: 2026-06-10
+updated: 2026-06-11
 ---
 
 # Privacy Policy
@@ -30,6 +30,8 @@ Email: [privacy@autokpo.com](mailto:privacy@autokpo.com)
 The public AutoKPO website, including legal documents, is served as static files through Cloudflare infrastructure. These pages do not have contact forms, newsletter signups, advertising cookies, or marketing pixels.
 
 When you visit the public website, technical data needed to deliver the site, keep it secure, and operate the network may be processed, such as your IP address, browser information, request time, and requested page. Cloudflare may provide AutoKPO with aggregated or anonymized operational traffic data for security, performance, and reliability.
+
+AutoKPO uses privacy-friendly, cookieless analytics on the public website, provided by PostHog and hosted in the European Union. It records aggregate page views, basic performance metrics, and a few anonymous interaction events. It does not use cookies or browser storage, track you across other websites, or build advertising or individual user profiles.
 
 ## 3. What data AutoKPO processes and how it collects it
 
@@ -76,6 +78,7 @@ AutoKPO processes data for the following purposes:
 - protecting the app from abuse, automated attacks, and unauthorized access;
 - sending transactional emails, such as sign-in codes and account notices;
 - allowing data export and account deletion;
+- understanding aggregate use of the public website through privacy-friendly, cookieless analytics;
 - responding to messages and requests you send to the contact email;
 - responding to user privacy requests.
 
@@ -88,6 +91,7 @@ The legal basis depends on the purpose:
 | Google or GitHub sign-in, if you choose it                               | Providing the requested service at your request         |
 | Necessary cookies, Turnstile protection, and technical website operation | Providing the requested service and legitimate interest |
 | Security, abuse prevention, reliable operation, and technical logs       | Legitimate interest                                     |
+| Privacy-friendly, cookieless website analytics                           | Legitimate interest                                     |
 | Responding to messages and requests you send to the contact email        | Legitimate interest or acting on your request           |
 | User-rights requests and other mandatory requests                        | Legal obligation                                        |
 
@@ -111,20 +115,23 @@ AutoKPO uses modern cryptographic mechanisms to encrypt data and protect the enc
 
 AutoKPO uses only necessary cookies.
 
+The privacy-friendly website analytics described in section 2 does not use cookies or browser storage.
+
 You can restrict or delete cookies in your browser settings, but some AutoKPO features may not work correctly.
 
 ## 7. Service providers and data transfers
 
 AutoKPO uses the following service providers:
 
-| Provider   | Purpose                                                                                                                                                                |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cloudflare | Hosting the public website and app, Cloudflare Workers, Cloudflare D1 database configured for EU storage, Turnstile protection, security, performance, and reliability |
-| Resend     | Sending transactional emails, such as sign-in codes and account notices                                                                                                |
-| Google     | Google account sign-in, if you choose it                                                                                                                               |
-| GitHub     | GitHub account sign-in, if you choose it                                                                                                                               |
+| Provider   | Purpose                                                                                                                                                                   |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cloudflare | Hosting the public website and app, Cloudflare Workers, Cloudflare D1 database configured for EU storage, Turnstile protection, security, performance, and reliability    |
+| Resend     | Sending transactional emails, such as sign-in codes and account notices                                                                                                   |
+| PostHog    | Privacy-friendly, cookieless analytics for the public website (aggregate page views, performance metrics, and anonymous interaction events), hosted in the European Union |
+| Google     | Google account sign-in, if you choose it                                                                                                                                  |
+| GitHub     | GitHub account sign-in, if you choose it                                                                                                                                  |
 
-Cloudflare and Resend process data as AutoKPO service providers for the purposes described above.
+Cloudflare, Resend, and PostHog process data as AutoKPO service providers for the purposes described above.
 
 Cloudflare Turnstile data processing is also described in Cloudflare's <a href="https://www.cloudflare.com/en-gb/turnstile-privacy-policy/" target="_blank" rel="noopener noreferrer">Turnstile Privacy Addendum</a>.
 

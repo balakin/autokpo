@@ -100,6 +100,7 @@ export type LandingContent = {
     title: string;
     note: string;
     items: Array<{
+      id: string;
       question: string;
       answerHtml: string;
     }>;
@@ -281,36 +282,43 @@ export const landingContent: Record<Locale, LandingContent> = {
       note: 'AutoKPO je alat za evidenciju, ne pravna ili poreska usluga. Za zvanične savete obratite se stručnjacima.',
       items: [
         {
+          id: 'is-free',
           question: 'Da li je AutoKPO besplatan?',
           answerHtml:
             '<strong>Da.</strong> AutoKPO je besplatan i otvorenog koda. Ova verzija nema cenovnik ni pakete — sve mogućnosti su dostupne bez plaćanja.',
         },
         {
+          id: 'is-official-service',
           question: 'Da li je AutoKPO zvanična poreska ili pravna usluga?',
           answerHtml:
             '<strong>Ne.</strong> AutoKPO je pomoćni alat za vođenje evidencije. Nije zamena za knjigovođu, poreskog ili pravnog savetnika, niti za nadležnu instituciju. Alat ne garantuje poresku ili pravnu ispravnost vaših podataka.',
         },
         {
+          id: 'data-storage',
           question: 'Gde se čuvaju moji podaci?',
           answerHtml:
             'Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju sa Cloudflare serverima u EU. Svi podaci knjige su šifrovani — i na uređaju i na serveru. Podaci naloga (email, Google ili GitHub) i podaci sesija čuvaju se na serveru u čitljivom obliku — to je neophodno za prijavu i omogućava vam pregled i brisanje aktivnih sesija.',
         },
         {
+          id: 'server-can-read',
           question: 'Može li server da čita moje KPO podatke?',
           answerHtml:
             'Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje izvodi se iz vaše lozinke pomoću algoritma <strong>Argon2id</strong>, a svi podaci šifruju se algoritmom <strong>AES-256-GCM</strong>. Šifrovanje i dešifrovanje odvija se isključivo na vašem uređaju — server nikada ne vidi vaše podatke u čitljivom obliku.',
         },
         {
+          id: 'account-required',
           question: 'Da li mi je potreban nalog?',
           answerHtml:
             '<strong>Da.</strong> Nalog je potreban za korišćenje aplikacije, prijavu i sinhronizaciju podataka.',
         },
         {
+          id: 'offline',
           question: 'Da li AutoKPO radi van mreže?',
           answerHtml:
             '<strong>Da.</strong> AutoKPO je progresivna veb aplikacija (PWA) koja radi i bez internet veze. Dovoljno je da se jednom prijavite — nakon toga možete koristiti aplikaciju i praviti izmene i van mreže. Sve promene sinhronizuju se automatski pri ponovnom povezivanju na mrežu.',
         },
         {
+          id: 'forgot-encryption-password',
           question: 'Zaboravio sam lozinku za šifrovanje. Šta da radim?',
           answerHtml:
             'Ne možemo obnoviti lozinku za šifrovanje. Možete pokušati da je se setite — ili da obrišete nalog i počnete iznova. U tom slučaju, svi podaci će biti trajno izgubljeni.',
@@ -491,36 +499,43 @@ export const landingContent: Record<Locale, LandingContent> = {
       note: 'AutoKPO is a record-keeping tool, not a legal or tax service. For official advice, consult qualified professionals.',
       items: [
         {
+          id: 'is-free',
           question: 'Is AutoKPO free?',
           answerHtml:
             '<strong>Yes.</strong> AutoKPO is free and open source. This version has no pricing plans or packages — all features are available without payment.',
         },
         {
+          id: 'is-official-service',
           question: 'Is AutoKPO an official tax or legal service?',
           answerHtml:
             '<strong>No.</strong> AutoKPO is a helper tool for keeping records. It is not a replacement for a bookkeeper, tax advisor, legal advisor or competent institution. The tool does not guarantee the tax or legal correctness of your data.',
         },
         {
+          id: 'data-storage',
           question: 'Where is my data stored?',
           answerHtml:
             'Data is stored locally on your device and synchronized with Cloudflare servers located in the EU. All book data is encrypted — both on the device and on the server. Account data (email, Google or GitHub) and session data are stored on the server in readable form — this is required for sign-in and lets you view and delete your active sessions.',
         },
         {
+          id: 'server-can-read',
           question: 'Can the server read my KPO data?',
           answerHtml:
             'Your data is end-to-end encrypted. The encryption key is derived from your password using <strong>Argon2id</strong>, and all data is encrypted with <strong>AES-256-GCM</strong>. Encryption and decryption happen only on your device — the server never sees your data in readable form.',
         },
         {
+          id: 'account-required',
           question: 'Do I need an account?',
           answerHtml:
             '<strong>Yes.</strong> An account is required to use the application, sign in and synchronize data.',
         },
         {
+          id: 'offline',
           question: 'Does AutoKPO work offline?',
           answerHtml:
             '<strong>Yes.</strong> AutoKPO is a progressive web app (PWA) that works without an internet connection. Sign in once, then continue using the app and making changes offline. Changes synchronize automatically when you reconnect.',
         },
         {
+          id: 'forgot-encryption-password',
           question: 'I forgot my encryption password. What can I do?',
           answerHtml:
             'We cannot restore your encryption password. You can try to remember it — or delete your account and start over. In that case, all your data will be permanently lost.',
@@ -701,36 +716,43 @@ export const landingContent: Record<Locale, LandingContent> = {
       note: 'AutoKPO — инструмент для учета, не юридическая и не налоговая услуга. За официальными консультациями обращайтесь к специалистам.',
       items: [
         {
+          id: 'is-free',
           question: 'AutoKPO бесплатный?',
           answerHtml:
             '<strong>Да.</strong> AutoKPO бесплатен и имеет открытый исходный код. В этой версии нет тарифов или пакетов — все возможности доступны без оплаты.',
         },
         {
+          id: 'is-official-service',
           question: 'AutoKPO — официальная налоговая или юридическая услуга?',
           answerHtml:
             '<strong>Нет.</strong> AutoKPO — вспомогательный инструмент для ведения учета. Он не заменяет бухгалтера, налогового или юридического консультанта либо компетентный орган. Инструмент не гарантирует налоговую или юридическую корректность ваших данных.',
         },
         {
+          id: 'data-storage',
           question: 'Где хранятся мои данные?',
           answerHtml:
             'Данные хранятся локально на вашем устройстве и синхронизируются с серверами Cloudflare, расположенными в ЕС. Все данные книги зашифрованы — как на устройстве, так и на сервере. Данные аккаунта (email, Google или GitHub) и данные сессий хранятся на сервере в читаемом виде — это необходимо для входа и позволяет просматривать и удалять активные сессии.',
         },
         {
+          id: 'server-can-read',
           question: 'Может ли сервер читать мои данные KPO?',
           answerHtml:
             'Ваши данные защищены end-to-end шифрованием. Ключ шифрования выводится из вашего пароля с помощью алгоритма <strong>Argon2id</strong>, а все данные шифруются алгоритмом <strong>AES-256-GCM</strong>. Шифрование и расшифровка происходят только на вашем устройстве — сервер никогда не видит данные в читаемом виде.',
         },
         {
+          id: 'account-required',
           question: 'Нужен ли аккаунт?',
           answerHtml:
             '<strong>Да.</strong> Аккаунт нужен для использования приложения, входа и синхронизации данных.',
         },
         {
+          id: 'offline',
           question: 'AutoKPO работает без интернета?',
           answerHtml:
             '<strong>Да.</strong> AutoKPO — прогрессивное веб-приложение (PWA), которое работает без подключения к интернету. Достаточно один раз войти — после этого можно пользоваться приложением и вносить изменения офлайн. Изменения автоматически синхронизируются после повторного подключения.',
         },
         {
+          id: 'forgot-encryption-password',
           question: 'Я забыл пароль шифрования. Что делать?',
           answerHtml:
             'Мы не можем восстановить пароль шифрования. Вы можете попробовать вспомнить его — или удалить аккаунт и начать заново. В этом случае все данные будут безвозвратно утеряны.',

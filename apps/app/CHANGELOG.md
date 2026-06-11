@@ -1,5 +1,13 @@
 # @autokpo/app
 
+## 0.2.2
+
+### Patch Changes
+
+- [#60](https://github.com/balakin/autokpo/pull/60) [`bdb1177`](https://github.com/balakin/autokpo/commit/bdb1177b87e4f1ec0d5dc720083794ef16971d65) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Added /pull and /push named routes to the sync API, keeping old root routes as deprecated aliases
+
+- [#60](https://github.com/balakin/autokpo/pull/60) [`b247028`](https://github.com/balakin/autokpo/commit/b24702870c45ffeaf076ab8cebee1f7c06de606f) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Moved sync cursor to ?since= param and signaling to JSON bodies, added Cache-Control: no-store
+
 ## 0.2.1
 
 ### Patch Changes

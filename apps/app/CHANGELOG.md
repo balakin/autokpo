@@ -1,5 +1,11 @@
 # @autokpo/app
 
+## 0.2.1
+
+### Patch Changes
+
+- [#58](https://github.com/balakin/autokpo/pull/58) [`1165b2c`](https://github.com/balakin/autokpo/commit/1165b2caaf5490be5598f9d2b72174137f31883f) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Fix sync write loop caused by push racing with pull's IDB writes
+
 ## 0.2.0
 
 ### Minor Changes

@@ -1,8 +1,11 @@
 {
+  "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "autokpo-website",
   "compatibility_date": "2026-06-10",
   "assets": {
     "directory": "./dist",
     "not_found_handling": "404-page",
   },
+  "workers_dev": false,
+  "preview_urls": false,
 }

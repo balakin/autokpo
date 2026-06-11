@@ -11,7 +11,8 @@
 
   if (apiKey && apiHost) {
     posthog.init(apiKey, {
-      api_host: apiHost,
+      api_host: apiHost,                  // first-party reverse proxy (CNAME → PostHog EU)
+      ui_host: 'https://eu.posthog.com',  // so toolbar / "view in app" links resolve to EU Cloud, not the proxy
       defaults: '2026-01-30',
 
       cookieless_mode: 'always',        // no cookies / localStorage; hashed anonymous visitor id

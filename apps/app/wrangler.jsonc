@@ -101,6 +101,8 @@
           "TURNSTILE_SECRET_KEY",
         ],
       },
+      "workers_dev": false,
+      "preview_urls": false,
     },
   },
 }

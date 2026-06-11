@@ -40,7 +40,7 @@ const { content, currentLocale, homeHref, navPrefix = '', alternates } = Astro.p
         <Moon class="i-moon" aria-hidden="true" stroke-width={1.75} />
         <Sun class="i-sun" aria-hidden="true" stroke-width={1.75} />
       </button>
-      <a class="btn primary hide-sm" href="https://app.autokpo.com" rel="noreferrer noopener">{content.links.app}</a>
+      <a class="btn primary hide-sm" href="https://app.autokpo.com" rel="noreferrer noopener" onclick="window.posthog?.capture('app_opened', { location: 'header' })">{content.links.app}</a>
     </div>
   </div>
 </header>
@@ -178,3 +178,14 @@ const { content, currentLocale, homeHref, navPrefix = '', alternates } = Astro.p
     .hide-sm { display: none; }
   }
 </style>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.language-switcher a:not([aria-current="page"])').forEach(function (link) {
+      link.addEventListener('click', function () {
+        var locale = link.getAttribute('hreflang') || link.textContent.trim().toLowerCase();
+        window.posthog?.capture('language_switched', { locale: locale });
+      });
+    });
+  });
+</script>

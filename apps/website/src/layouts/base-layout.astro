@@ -1,4 +1,6 @@
 ---
+import PostHog from '../components/posthog.astro';
+
 interface Props {
   locale: string;
   title: string;
@@ -39,6 +41,8 @@ const { locale, title, description, skipLink, themeLightLabel, themeDarkLabel } 
       } catch (e) {}
     })();
   </script>
+
+  <PostHog />
 
   <slot name="head" />
 
@@ -185,6 +189,7 @@ const { locale, title, description, skipLink, themeLightLabel, themeDarkLabel } 
       sync();
       btn.addEventListener("click", function () {
         var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        window.posthog?.capture("theme_toggled", { theme: next });
         root.setAttribute("data-theme", next);
         root.classList.toggle("dark", next === "dark");
         root.style.colorScheme = next;

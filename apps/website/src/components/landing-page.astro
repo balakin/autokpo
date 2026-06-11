@@ -340,8 +340,8 @@ const iconByName = {
             <h1>{content.hero.titlePrefix}<span class="em">{content.hero.titleEmphasis}</span>{content.hero.titleSuffix}</h1>
             <p class="hero-lede">{content.hero.lede}</p>
             <div class="hero-cta">
-              <a class="btn primary lg" href="https://app.autokpo.com" rel="noreferrer noopener">{content.links.app}</a>
-              <a class="btn secondary lg" href="https://github.com/balakin/autokpo" rel="noreferrer noopener">
+              <a class="btn primary lg" href="https://app.autokpo.com" target="_blank" rel="noreferrer noopener" onclick="window.posthog?.capture('app_opened', { location: 'hero' })">{content.links.app}</a>
+              <a class="btn secondary lg" href="https://github.com/balakin/autokpo" target="_blank" rel="noreferrer noopener" onclick="window.posthog?.capture('github_clicked', { location: 'hero' })">
                 <span class="github-icon" aria-hidden="true"><img class="github-black" src={githubBlackUrl} alt="" /><img class="github-white" src={githubWhiteUrl} alt="" /></span>
                 {content.links.github}
               </a>
@@ -436,7 +436,7 @@ const iconByName = {
 
         <div class="faq-list">
           {content.faq.items.map((item) => (
-            <details class="faq-item">
+            <details class="faq-item" data-faq-id={item.id}>
               <summary>
                 <span class="q-mark"><ChevronRight aria-hidden="true" stroke-width={2} /></span>
                 <span class="q-text">{item.question}</span>
@@ -455,8 +455,8 @@ const iconByName = {
           <h2>{content.final.title}</h2>
           <p set:html={content.final.bodyHtml} />
           <div class="hero-cta">
-            <a class="btn primary lg" href="https://app.autokpo.com" rel="noreferrer noopener">{content.links.app}</a>
-            <a class="btn secondary lg" href="https://github.com/balakin/autokpo" rel="noreferrer noopener">
+            <a class="btn primary lg" href="https://app.autokpo.com" rel="noreferrer noopener" onclick="window.posthog?.capture('app_opened', { location: 'final_cta' })">{content.links.app}</a>
+            <a class="btn secondary lg" href="https://github.com/balakin/autokpo" target="_blank" rel="noreferrer noopener" onclick="window.posthog?.capture('github_clicked', { location: 'final_cta' })">
               <span class="github-icon" aria-hidden="true"><img class="github-black" src={githubBlackUrl} alt="" /><img class="github-white" src={githubWhiteUrl} alt="" /></span>
               {content.links.github}
             </a>
@@ -468,3 +468,17 @@ const iconByName = {
 
   <SiteFooter content={content} legalUrls={legalUrls} />
 </BaseLayout>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('details.faq-item').forEach(function (details) {
+      details.addEventListener('toggle', function () {
+        if (details.open) {
+          window.posthog?.capture('faq_item_expanded', {
+            question_id: details.dataset.faqId
+          });
+        }
+      });
+    });
+  });
+</script>

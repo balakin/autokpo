@@ -84,34 +84,39 @@ describe('pull', () => {
     vi.restoreAllMocks();
   });
 
-  it('sends If-None-Match header when cursor > 0', async () => {
+  it('sends ?since=<cursor> query parameter', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeEmptyResponse(304, { ETag: '"10"' }),
+      makeFakeJsonResponse({ head: 10, records: [] }, 200),
     );
     await pull({ since: 10, localUserId: 'user-1' });
-    expect(mockFetch).toHaveBeenCalledWith(SYNC_BASE, {
-      headers: { 'X-Local-User-Id': 'user-1', 'If-None-Match': '"10"' },
-    });
-  });
-
-  it('does not send If-None-Match header when cursor is 0', async () => {
-    const mockFetch = vi.mocked(fetch);
-    mockFetch.mockResolvedValueOnce(
-      makeFakeEmptyResponse(304, { ETag: '"0"' }),
-    );
-    await pull({ since: 0, localUserId: 'user-1' });
     const call = mockFetch.mock.calls[0] as [string, RequestInit?];
+    expect((call[0] as unknown as URL).href).toBe(
+      `${location.origin}${SYNC_BASE}/pull?since=10`,
+    );
     expect(call[1]?.headers).toEqual({ 'X-Local-User-Id': 'user-1' });
   });
 
-  it('returns empty records and head on 304', async () => {
+  it('sends ?since=0 when cursor is 0', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeEmptyResponse(304, { ETag: '"42"' }),
+      makeFakeJsonResponse({ head: 0, records: [] }, 200),
     );
-    const result = await pull({ since: 41, localUserId: 'user-1' });
-    expect(result).toEqual({ records: [], head: 42, status: 304 });
+    await pull({ since: 0, localUserId: 'user-1' });
+    const call = mockFetch.mock.calls[0] as [string, RequestInit?];
+    expect((call[0] as unknown as URL).href).toBe(
+      `${location.origin}${SYNC_BASE}/pull?since=0`,
+    );
+  });
+
+  it('does not send If-None-Match header', async () => {
+    const mockFetch = vi.mocked(fetch);
+    mockFetch.mockResolvedValueOnce(
+      makeFakeJsonResponse({ head: 5, records: [] }, 200),
+    );
+    await pull({ since: 5, localUserId: 'user-1' });
+    const call = mockFetch.mock.calls[0] as [string, RequestInit?];
+    expect(call[1]?.headers).not.toHaveProperty('If-None-Match');
   });
 
   it('throws SyncGoneError on 410', async () => {
@@ -122,13 +127,14 @@ describe('pull', () => {
     );
   });
 
-  it('parses JSON record array on 200 and base64-decodes ciphertexts', async () => {
+  it('reads head and records from 200 JSON body', async () => {
     const mockFetch = vi.mocked(fetch);
     const ciphertext1 = new Uint8Array([0xaa, 0xbb]);
     const ciphertext2 = new Uint8Array([0xcc]);
     mockFetch.mockResolvedValueOnce(
       makeFakeJsonResponse(
         {
+          head: 5,
           records: buildJsonRecords([
             {
               seq: 3,
@@ -147,7 +153,6 @@ describe('pull', () => {
           ]),
         },
         200,
-        { ETag: '"5"' },
       ),
     );
     const result = await pull({ since: 2, localUserId: 'user-1' });
@@ -176,10 +181,10 @@ describe('pull', () => {
     });
   });
 
-  it('returns empty records with head=0 on empty 200 JSON response', async () => {
+  it('returns empty records with head from body on 200 with no new rows', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeJsonResponse({ records: [] }, 200, { ETag: '"0"' }),
+      makeFakeJsonResponse({ head: 0, records: [] }, 200),
     );
     const result = await pull({ since: 0, localUserId: 'user-1' });
     expect(result).toEqual({ records: [], head: 0, status: 200 });
@@ -198,7 +203,7 @@ describe('push', () => {
   it('sends JSON body with id, encryptionKeyId, encryptionAlgorithm, encryptionParams, and base64 ciphertext', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeEmptyResponse(200, { ETag: '"7"' }),
+      makeFakeJsonResponse({ assignedSeq: 7, compactHint: false }, 200),
     );
     const delta = new Uint8Array([1, 2, 3]);
     await push({
@@ -231,10 +236,10 @@ describe('push', () => {
     expect(body.ciphertext).toBe(bytesToBase64(delta));
   });
 
-  it('parses ETag response for assignedSeq', async () => {
+  it('reads assignedSeq from response body', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeEmptyResponse(200, { ETag: '"15"' }),
+      makeFakeJsonResponse({ assignedSeq: 15, compactHint: false }, 200),
     );
     const result = await push({
       delta: new Uint8Array([1]),
@@ -248,13 +253,10 @@ describe('push', () => {
     expect(result.assignedSeq).toBe(15);
   });
 
-  it('detects X-Compact-Hint header', async () => {
+  it('reads compactHint from response body', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeEmptyResponse(200, {
-        ETag: '"8"',
-        'X-Compact-Hint': 'please',
-      }),
+      makeFakeJsonResponse({ assignedSeq: 8, compactHint: true }, 200),
     );
     const result = await push({
       delta: new Uint8Array([1]),
@@ -268,10 +270,10 @@ describe('push', () => {
     expect(result.compactHint).toBe(true);
   });
 
-  it('compactHint is false when header is absent', async () => {
+  it('compactHint is false when body has compactHint: false', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeEmptyResponse(200, { ETag: '"3"' }),
+      makeFakeJsonResponse({ assignedSeq: 3, compactHint: false }, 200),
     );
     const result = await push({
       delta: new Uint8Array([1]),
@@ -314,7 +316,7 @@ describe('compact', () => {
   it('sends JSON body with id, encryptionKeyId, encryptionAlgorithm, encryptionParams, and base64 snapshot', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeEmptyResponse(200, { ETag: '"12"' }),
+      makeFakeJsonResponse({ assignedSeq: 12 }, 200),
     );
     const snapshot = new Uint8Array([0x01, 0x02]);
     await compact({
@@ -348,10 +350,10 @@ describe('compact', () => {
     expect(body.ciphertext).toBe(bytesToBase64(snapshot));
   });
 
-  it('parses ETag for assignedSeq', async () => {
+  it('reads assignedSeq from response body', async () => {
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockResolvedValueOnce(
-      makeFakeEmptyResponse(200, { ETag: '"20"' }),
+      makeFakeJsonResponse({ assignedSeq: 20 }, 200),
     );
     const result = await compact({
       snapshot: new Uint8Array([1]),

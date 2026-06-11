@@ -216,7 +216,7 @@ The client SHALL recover from sync write conflicts caused by stale key-ring stat
 
 ### Requirement: Sync uploads enforce bounded request and stored ciphertext sizes
 
-The backend SHALL bound sync upload payloads at the request, base64 field, decoded ciphertext, and database row layers. `POST /api/sync` and `POST /api/sync/compact` SHALL reject request bodies that exceed the configured sync body limit before JSON parsing. The `ciphertext` base64 string SHALL be rejected before decoding when it is too long to fit the configured sync ciphertext byte limit. The database SHALL reject `sync_record.ciphertext` rows whose byte length exceeds the same sync ciphertext byte limit.
+The backend SHALL bound sync upload payloads at the request, base64 field, decoded ciphertext, and database row layers. `POST /api/sync/push` and `POST /api/sync/compact` SHALL reject request bodies that exceed the configured sync body limit before JSON parsing. The `ciphertext` base64 string SHALL be rejected before decoding when it is too long to fit the configured sync ciphertext byte limit. The database SHALL reject `sync_record.ciphertext` rows whose byte length exceeds the same sync ciphertext byte limit.
 
 #### Scenario: Oversized sync push body is rejected before JSON parsing
 

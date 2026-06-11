@@ -49,22 +49,19 @@ export async function pull({
   since: number;
   localUserId: string;
 }): Promise<{ records: SyncRecord[]; head: number; status: number }> {
-  const headers: HeadersInit = { 'X-Local-User-Id': localUserId };
-  if (since > 0) {
-    headers['If-None-Match'] = `"${since}"`;
-  }
-  const res = await fetch(SYNC_BASE, { headers });
+  const url = new URL(`${SYNC_BASE}/pull`, location.origin);
+  url.searchParams.set('since', String(since));
+  const res = await fetch(url, {
+    headers: { 'X-Local-User-Id': localUserId },
+  });
   if (res.status === 410) {
     throw new SyncGoneError();
-  }
-  if (res.status === 304) {
-    return { records: [], head: parseETag(res.headers), status: 304 };
   }
   if (!res.ok) {
     throw await parseError(res, 'pull failed');
   }
-  const head = parseETag(res.headers);
   const body = (await res.json()) as {
+    head: number;
     records: Array<{
       seq: number;
       id: string;
@@ -89,7 +86,7 @@ export async function pull({
     },
     ciphertext: base64ToBytes(r.ciphertext),
   }));
-  return { records, head, status: 200 };
+  return { records, head: body.head, status: 200 };
 }
 
 export async function push({
@@ -114,7 +111,7 @@ export async function push({
     'X-Local-User-Id': localUserId,
   };
 
-  const res = await fetch(SYNC_BASE, {
+  const res = await fetch(`${SYNC_BASE}/push`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
@@ -135,9 +132,11 @@ export async function push({
   if (!res.ok) {
     throw await parseError(res, 'push failed');
   }
-  const assignedSeq = parseETag(res.headers);
-  const compactHint = res.headers.get('X-Compact-Hint') === 'please';
-  return { assignedSeq, compactHint };
+  const body = (await res.json()) as {
+    assignedSeq: number;
+    compactHint: boolean;
+  };
+  return { assignedSeq: body.assignedSeq, compactHint: body.compactHint };
 }
 
 export async function compact({
@@ -183,9 +182,6 @@ export async function compact({
   if (!res.ok) {
     throw await parseError(res, 'compact failed');
   }
-  return { assignedSeq: parseETag(res.headers) };
-}
-
-function parseETag(headers: Headers): number {
-  return parseInt(headers.get('ETag')?.replace(/"/g, '') ?? '0', 10);
+  const body = (await res.json()) as { assignedSeq: number };
+  return { assignedSeq: body.assignedSeq };
 }

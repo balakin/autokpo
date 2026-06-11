@@ -43,7 +43,7 @@
 - [x] 6.1 Run worker + client sync tests: `cd apps/app && pnpm -s test src/crdt/__tests__/sync-client.spec.ts worker/routes/__tests__/sync.spec.ts --reporter=verbose`.
 - [x] 6.2 Typecheck/build: `cd apps/app && pnpm -s build 2>&1 | grep -E 'error TS|error:' | head -n 40` (expect no errors).
 - [x] 6.3 Lint changed files via `pnpm -s eslint` / `pnpm -s prettier` per repo guidance.
-- [ ] 6.4 Manual: fresh client against a large history advances the cursor past `0` (no infinite IndexedDB re-writes); confirm `Cache-Control: no-store` and JSON `head` in the Network tab.
+- [x] 6.4 Manual: fresh client against a large history advances the cursor past `0` (no infinite IndexedDB re-writes); confirm `Cache-Control: no-store` and JSON `head` in the Network tab.
 
 ## 7. Follow-up (separate change — do not implement here)
 

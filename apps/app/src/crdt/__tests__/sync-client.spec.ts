@@ -91,7 +91,7 @@ describe('pull', () => {
     );
     await pull({ since: 10, localUserId: 'user-1' });
     const call = mockFetch.mock.calls[0] as [string, RequestInit?];
-    expect((call[0] as URL).href).toBe(
+    expect((call[0] as unknown as URL).href).toBe(
       `${location.origin}${SYNC_BASE}/pull?since=10`,
     );
     expect(call[1]?.headers).toEqual({ 'X-Local-User-Id': 'user-1' });
@@ -104,7 +104,7 @@ describe('pull', () => {
     );
     await pull({ since: 0, localUserId: 'user-1' });
     const call = mockFetch.mock.calls[0] as [string, RequestInit?];
-    expect((call[0] as URL).href).toBe(
+    expect((call[0] as unknown as URL).href).toBe(
       `${location.origin}${SYNC_BASE}/pull?since=0`,
     );
   });

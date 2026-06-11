@@ -483,10 +483,8 @@ describe('POST /api/sync/push', () => {
     );
     expect(r1.status).toBe(200);
     expect(r1.headers.get('Cache-Control')).toBe('no-store');
-    const b1 = (await r1.json()) as {
-      assignedSeq: number;
-      compactHint: boolean;
-    };
+    const rawB1: unknown = await r1.json();
+    const b1 = rawB1 as { assignedSeq: number; compactHint: boolean };
     expect(b1.assignedSeq).toBe(1);
     expect(b1.compactHint).toBe(false);
 
@@ -496,10 +494,8 @@ describe('POST /api/sync/push', () => {
     );
     expect(r2.status).toBe(200);
     expect(r2.headers.get('Cache-Control')).toBe('no-store');
-    const b2 = (await r2.json()) as {
-      assignedSeq: number;
-      compactHint: boolean;
-    };
+    const rawB2: unknown = await r2.json();
+    const b2 = rawB2 as { assignedSeq: number };
     expect(b2.assignedSeq).toBe(2);
   });
 
@@ -512,13 +508,15 @@ describe('POST /api/sync/push', () => {
     const r1 = await syncRequest('/api/sync/push', pushBody(ciphertext, id));
     expect(r1.status).toBe(200);
     expect(r1.headers.get('Cache-Control')).toBe('no-store');
-    const b1 = (await r1.json()) as { assignedSeq: number };
+    const rawB1: unknown = await r1.json();
+    const b1 = rawB1 as { assignedSeq: number };
     expect(b1.assignedSeq).toBe(1);
 
     const r2 = await syncRequest('/api/sync/push', pushBody(ciphertext, id));
     expect(r2.status).toBe(200);
     expect(r2.headers.get('Cache-Control')).toBe('no-store');
-    const b2 = (await r2.json()) as { assignedSeq: number };
+    const rawB2: unknown = await r2.json();
+    const b2 = rawB2 as { assignedSeq: number };
     expect(b2.assignedSeq).toBe(1);
   });
 
@@ -553,10 +551,8 @@ describe('POST /api/sync/push', () => {
 
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe('no-store');
-    const body = (await res.json()) as {
-      assignedSeq: number;
-      compactHint: boolean;
-    };
+    const rawBody: unknown = await res.json();
+    const body = rawBody as { compactHint: boolean };
     expect(body.compactHint).toBe(true);
   }, 15000);
 
@@ -729,7 +725,8 @@ describe('POST /api/sync/compact', () => {
 
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe('no-store');
-    const body = (await res.json()) as { assignedSeq: number };
+    const rawBody: unknown = await res.json();
+    const body = rawBody as { assignedSeq: number };
     expect(body.assignedSeq).toBe(6);
   });
 
@@ -744,7 +741,8 @@ describe('POST /api/sync/compact', () => {
     );
     expect(r1.status).toBe(200);
     expect(r1.headers.get('Cache-Control')).toBe('no-store');
-    const b1 = (await r1.json()) as { assignedSeq: number };
+    const rawB1: unknown = await r1.json();
+    const b1 = rawB1 as { assignedSeq: number };
 
     const r2 = await syncRequest(
       '/api/sync/compact',
@@ -752,7 +750,8 @@ describe('POST /api/sync/compact', () => {
     );
     expect(r2.status).toBe(200);
     expect(r2.headers.get('Cache-Control')).toBe('no-store');
-    const b2 = (await r2.json()) as { assignedSeq: number };
+    const rawB2: unknown = await r2.json();
+    const b2 = rawB2 as { assignedSeq: number };
     expect(b2.assignedSeq).toBe(b1.assignedSeq);
 
     const getRes = await syncRequest('/api/sync/pull?since=0', {
@@ -1024,11 +1023,13 @@ describe('backward-compat aliases', () => {
 
     expect(aliasRes.status).toBe(200);
     expect(canonicalRes.status).toBe(200);
-    const aliasBody = (await aliasRes.json()) as {
+    const rawAlias: unknown = await aliasRes.json();
+    const aliasBody = rawAlias as {
       head: number;
       records: Array<{ seq: number }>;
     };
-    const canonicalBody = (await canonicalRes.json()) as {
+    const rawCanonical: unknown = await canonicalRes.json();
+    const canonicalBody = rawCanonical as {
       head: number;
       records: Array<{ seq: number }>;
     };
@@ -1044,10 +1045,8 @@ describe('backward-compat aliases', () => {
 
     const res = await syncRequest('/api/sync', pushBody(makeCiphertext([1])));
     expect(res.status).toBe(200);
-    const body = (await res.json()) as {
-      assignedSeq: number;
-      compactHint: boolean;
-    };
+    const rawBody: unknown = await res.json();
+    const body = rawBody as { assignedSeq: number; compactHint: boolean };
     expect(body.assignedSeq).toBe(1);
     expect(body.compactHint).toBe(false);
   });

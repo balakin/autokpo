@@ -67,6 +67,7 @@ export function useSyncEngine(
   const isLeaderRef = useRef(isLeader);
   isLeaderRef.current = isLeader;
   const pushInFlightRef = useRef(false);
+  const pullInFlightRef = useRef(false);
   const pushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const doPushRef = useRef<() => Promise<void>>(async () => {});
   const doCompactRef = useRef<(replacesUpTo: number) => Promise<void>>(
@@ -213,6 +214,7 @@ export function useSyncEngine(
       }
 
       const { cursor } = syncState.read();
+      pullInFlightRef.current = true;
       try {
         // Incremental pull: fetch only rows after our cursor.
         // Server returns 304 if nothing changed since cursor.
@@ -248,9 +250,11 @@ export function useSyncEngine(
           dirty,
           lastSuccessfulSyncAt: Date.now(),
         });
+        pullInFlightRef.current = false;
         schedulePushIfPendingChanges(syncState.read(), schedulePushRef.current);
         return result.head;
       } catch (err) {
+        pullInFlightRef.current = false;
         if (err instanceof SyncGoneError) {
           // 410 Gone: server no longer has rows from our cursor.
           // Wipe sync state (not Y.Doc!) and throw — React Query
@@ -300,6 +304,16 @@ export function useSyncEngine(
 
     doPushRef.current = async () => {
       if (pushInFlightRef.current) return;
+      // Block push while pull is writing remote records to IDB and advancing
+      // the cursor. A push firing mid-pull would read a stale cursor=0, get
+      // gap-detected by the server (prevHead > cursor), and trigger another
+      // full pull — creating the write loop. pull's queryFn calls
+      // schedulePushIfPendingChanges after it commits the cursor, so any
+      // deferred push is re-queued automatically.
+      if (pullInFlightRef.current) {
+        log('push: pull in flight, deferring');
+        return;
+      }
       // Dirty flag tracks whether local changes exist that
       // haven't been pushed yet (handles delete-only edits that
       // don't advance the state vector).
@@ -312,22 +326,22 @@ export function useSyncEngine(
       const { cursor } = syncState.read();
       const id = crypto.randomUUID();
       const plainDelta = computeDelta(ydoc, syncState.read().stateVector);
-      // Delta too large for a single POST — compact instead.
-      // Compact may pull afterwards if a gap is detected.
-      if (plainDelta.byteLength > MAX_PLAINTEXT_DELTA_BYTES) {
-        log(
-          'push: delta %d bytes exceeds max, compacting',
-          plainDelta.byteLength,
-        );
-        await doCompactRef.current(cursor);
-        return;
-      }
       const stateVector = encodeStateVector(ydoc);
       const pendingPushVersion = pendingPushVersionRef.current;
       const encryptionKeyId = activeDekIdRef.current;
       const preparedKeyRingRevision = keyRingRevisionRef.current;
       try {
         pushInFlightRef.current = true;
+        // Delta too large for a single POST — compact instead.
+        // Compact may pull afterwards if a gap is detected.
+        if (plainDelta.byteLength > MAX_PLAINTEXT_DELTA_BYTES) {
+          log(
+            'push: delta %d bytes exceeds max, compacting',
+            plainDelta.byteLength,
+          );
+          await doCompactRef.current(cursor);
+          return;
+        }
         const {
           encryptionAlgorithm,
           encryptionParams,

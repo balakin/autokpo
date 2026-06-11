@@ -326,22 +326,22 @@ export function useSyncEngine(
       const { cursor } = syncState.read();
       const id = crypto.randomUUID();
       const plainDelta = computeDelta(ydoc, syncState.read().stateVector);
-      // Delta too large for a single POST — compact instead.
-      // Compact may pull afterwards if a gap is detected.
-      if (plainDelta.byteLength > MAX_PLAINTEXT_DELTA_BYTES) {
-        log(
-          'push: delta %d bytes exceeds max, compacting',
-          plainDelta.byteLength,
-        );
-        await doCompactRef.current(cursor);
-        return;
-      }
       const stateVector = encodeStateVector(ydoc);
       const pendingPushVersion = pendingPushVersionRef.current;
       const encryptionKeyId = activeDekIdRef.current;
       const preparedKeyRingRevision = keyRingRevisionRef.current;
       try {
         pushInFlightRef.current = true;
+        // Delta too large for a single POST — compact instead.
+        // Compact may pull afterwards if a gap is detected.
+        if (plainDelta.byteLength > MAX_PLAINTEXT_DELTA_BYTES) {
+          log(
+            'push: delta %d bytes exceeds max, compacting',
+            plainDelta.byteLength,
+          );
+          await doCompactRef.current(cursor);
+          return;
+        }
         const {
           encryptionAlgorithm,
           encryptionParams,

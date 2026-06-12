@@ -1,5 +1,6 @@
 import { Button, Spinner } from '@heroui/react';
 import { Trans } from '@lingui/react/macro';
+import { usePostHog } from '@posthog/react';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
@@ -23,6 +24,7 @@ const KNOWN_ERROR_CODES = new Set([
 
 export function OAuthCallback() {
   const navigate = useNavigate();
+  const posthog = usePostHog();
   const { provider } = useParams<{ provider: string }>();
   const [searchParams] = useSearchParams();
   const urlError = searchParams.get('error');
@@ -42,9 +44,18 @@ export function OAuthCallback() {
 
   useEffect(() => {
     if (sessionQuery.status !== 'success' || !sessionQuery.data?.id) return;
+    posthog.capture('social_auth_completed', { provider });
     broadcastSessionChange(sessionQuery.data);
     void navigate('/dashboard', { replace: true });
-  }, [navigate, sessionQuery.data, sessionQuery.status]);
+  }, [navigate, posthog, provider, sessionQuery.data, sessionQuery.status]);
+
+  // Population-level counterpart to `social_auth_completed`. Breaking the
+  // failure down by `error` is the useful signal here — it tells us *why*
+  // people don't complete, which a stitched funnel could not.
+  useEffect(() => {
+    if (errorCode === null) return;
+    posthog.capture('social_auth_failed', { provider, error: errorCode });
+  }, [errorCode, posthog, provider]);
 
   if (errorCode === null) {
     return (

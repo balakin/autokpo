@@ -8,6 +8,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { TurnstileInstance } from '@marsidev/react-turnstile';
+import { usePostHog } from '@posthog/react';
 import { useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { LuMail } from 'react-icons/lu';
@@ -22,6 +23,7 @@ export interface EmailFormProps {
 
 export function EmailForm({ email, onSubmit }: EmailFormProps) {
   const { t } = useLingui();
+  const posthog = usePostHog();
   const turnstileRef = useRef<TurnstileInstance>(null);
 
   const schema = z.object({
@@ -48,6 +50,7 @@ export function EmailForm({ email, onSubmit }: EmailFormProps) {
     }
     try {
       await onSubmit(values.email, token);
+      posthog.capture('sign_in_otp_requested');
     } catch {
       toast.danger(t`Nismo uspeli da pošaljemo kod. Pokušajte ponovo.`);
       turnstileRef.current?.reset();

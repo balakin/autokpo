@@ -5,7 +5,8 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**"],
+      "env": ["VITE_*", "PUBLIC_*"]
     },
     "dev": {
       "persistent": true,

@@ -1,43 +1,45 @@
 ## 1. Cloudflare + GitHub setup (operator)
 
-- [ ] 1.1 Create a Cloudflare API token scoped to D1 Edit + Workers Scripts Edit for the account hosting `autokpo-app` and `autokpo-website`
-- [ ] 1.2 Create a GitHub `production` Environment (no required-reviewer rule)
-- [ ] 1.3 Add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as secrets on the `production` Environment
+- [x] 1.1 Create a Cloudflare API token scoped to D1 Edit + Workers Scripts Edit for the account hosting `autokpo-app` and `autokpo-website`
+- [x] 1.2 Create a GitHub `production` Environment (no required-reviewer rule)
+- [x] 1.3 Add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as secrets on the `production` Environment
+- [x] 1.4 Add client-side build variables as **variables** (`vars`, not secrets) on the `production` Environment: app `VITE_TURNSTILE_SITE_KEY` (required), `VITE_POSTHOG_PROJECT_TOKEN`, `VITE_POSTHOG_HOST`; website `PUBLIC_POSTHOG_PROJECT_TOKEN`, `PUBLIC_POSTHOG_HOST`
 
 ## 2. Package scripts
 
-- [ ] 2.1 Add `db:migrate:prod` to `apps/app/package.json`: `wrangler d1 migrations apply DB --remote --env production`
-- [ ] 2.2 Add `deploy` to `apps/app/package.json`: `wrangler deploy --env production`
-- [ ] 2.3 Add `deploy` to `apps/website/package.json`: `wrangler deploy`
+- [x] 2.1 Add `db:migrate:prod` to `apps/app/package.json`: `wrangler d1 migrations apply DB --remote --env production`
+- [x] 2.2 Add `deploy` to `apps/app/package.json`: `wrangler deploy --env production`
+- [x] 2.3 Add `deploy` to `apps/website/package.json`: `wrangler deploy`
+- [x] 2.4 Declare `env: ["VITE_*", "PUBLIC_*"]` on the `build` task in `turbo.json` so strict mode passes client build vars through
+- [x] 2.5 Create `apps/website/.env.example` documenting `PUBLIC_POSTHOG_PROJECT_TOKEN` / `PUBLIC_POSTHOG_HOST`
 
-## 3. Reusable deploy workflow
+## 3. App deploy workflow
 
-- [ ] 3.1 Add `.github/workflows/deploy.yml` with `on: workflow_call`, inputs `package` (string), `wrangler-env` (string, default `''`), `run-migrations` (boolean, default `false`), `environment` (string), and secrets `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID`
-- [ ] 3.2 Job uses `environment: ${{ inputs.environment }}` and `concurrency: { group: deploy-${{ inputs.package }}, cancel-in-progress: false }`
-- [ ] 3.3 Use `./.github/actions/setup` with `cache: false`; restore no Turborepo cache
-- [ ] 3.4 Build only the target package from the clean install (`turbo build --filter=${{ inputs.package }}`); no lint, no test
-- [ ] 3.5 If `run-migrations`, list then apply migrations with `--env ${{ inputs.wrangler-env }}` via `pnpm --filter ${{ inputs.package }} exec`, before deploy; migration failure must abort deploy
-- [ ] 3.6 Deploy via `pnpm --filter ${{ inputs.package }} exec wrangler deploy`, adding `--env ${{ inputs.wrangler-env }}` only when set, with the Cloudflare credentials in env
+- [x] 3.1 Add `.github/workflows/deploy-app.yml` on `push: tags: ['@autokpo/app@*']`, `environment: production`, `concurrency: { group: deploy-app, cancel-in-progress: false }`, with `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` secrets and `CLOUDFLARE_ENV: production` in job env
+- [x] 3.2 Use `./.github/actions/setup` with `cache: false`; build via `pnpm turbo build --filter=@autokpo/app` with `VITE_*` build vars from `vars.*` on the build step; no lint, no test
+- [x] 3.3 Apply migrations (`pnpm --filter @autokpo/app exec wrangler d1 migrations apply DB --remote`) before deploy; failure must abort deploy (apply prints the migrations it runs)
+- [x] 3.4 Deploy via `pnpm --filter @autokpo/app exec wrangler deploy` (env selected by `CLOUDFLARE_ENV`)
 
-## 4. Caller workflows
+## 4. Website deploy workflow
 
-- [ ] 4.1 Add `.github/workflows/deploy-app.yml` on `push: tags: ['@autokpo/app@*']` calling `deploy.yml` with `package: '@autokpo/app'`, `wrangler-env: production`, `run-migrations: true`, `environment: production`, `secrets: inherit`
-- [ ] 4.2 Add `.github/workflows/deploy-website.yml` on `push: tags: ['@autokpo/website@*']` calling `deploy.yml` with `package: '@autokpo/website'`, `run-migrations: false`, `environment: production`, `secrets: inherit`
-- [ ] 4.3 Confirm each tag pattern triggers only its own caller (app tag does not deploy website, and vice versa)
+- [x] 4.1 Add `.github/workflows/deploy-website.yml` on `push: tags: ['@autokpo/website@*']`, `environment: production`, `concurrency: { group: deploy-website, cancel-in-progress: false }`, with the Cloudflare secrets and no `CLOUDFLARE_ENV`
+- [x] 4.2 Use `./.github/actions/setup` with `cache: false`; build via `pnpm turbo build --filter=@autokpo/website` with `PUBLIC_*` build vars from `vars.*` on the build step; deploy via `pnpm --filter @autokpo/website exec wrangler deploy` (no migrations)
+- [x] 4.3 Confirm each tag pattern triggers only its own workflow (app tag does not deploy website, and vice versa)
 
 ## 5. Migration safety guide
 
-- [ ] 5.1 Add `apps/app/docs/migrations.md` with the migrate-first invariant, the safe/unsafe classification table, and edge-case recipes (rename, drop, NOT NULL, unique, type narrowing)
-- [ ] 5.2 Reference the expand/contract rule from `apps/app/CLAUDE.md`
+- [x] 5.1 Add `apps/app/docs/migrations.md` with the migrate-first invariant, the safe/unsafe classification table, and edge-case recipes (rename, drop, NOT NULL, unique, type narrowing)
+- [x] 5.2 Reference the expand/contract rule from `apps/app/CLAUDE.md`
 
 ## 6. Docs
 
-- [ ] 6.1 Replace the manual deployment steps in `apps/app/README.md` with the automated tag-triggered flow and link to `docs/migrations.md`
-- [ ] 6.2 Update `apps/website/README.md` (or add a deployment note) describing the automated tag-triggered deploy
+- [x] 6.1 Replace the manual deployment steps in `apps/app/README.md` with the automated tag-triggered flow and link to `docs/migrations.md`
+- [x] 6.2 Update `apps/website/README.md` (or add a deployment note) describing the automated tag-triggered deploy
 
 ## 7. Verification
 
-- [ ] 7.1 On the next `@autokpo/app@*` tag, confirm the app workflow runs build → list/apply migrations → deploy in order without manual approval
-- [ ] 7.2 Confirm app migrations are applied to `autokpo-database` (production), not `autokpo-database-dev`
-- [ ] 7.3 On the next `@autokpo/website@*` tag, confirm the website workflow runs build → deploy with no migration step
-- [ ] 7.4 Confirm the deployed worker (`https://app.autokpo.com`) and website serve the new releases
+- [x] 7.1 On the next `@autokpo/app@*` tag, confirm the app workflow runs build → apply migrations → deploy in order without manual approval
+- [x] 7.2 Confirm app migrations are applied to `autokpo-database` (production), not `autokpo-database-dev`
+- [x] 7.3 On the next `@autokpo/website@*` tag, confirm the website workflow runs build → deploy with no migration step
+- [x] 7.4 Confirm the deployed worker (`https://app.autokpo.com`) and website serve the new releases
+- [x] 7.5 Confirm the deployed app bundle has a real `VITE_TURNSTILE_SITE_KEY` (Turnstile/captcha renders) and analytics initialize — i.e. the client build vars were present at build time

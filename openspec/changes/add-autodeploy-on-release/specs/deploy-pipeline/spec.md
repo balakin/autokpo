@@ -1,27 +1,17 @@
 ## ADDED Requirements
 
-### Requirement: Reusable deploy workflow
+### Requirement: Standalone deploy workflows
 
-The system SHALL provide a reusable `.github/workflows/deploy.yml` (`on: workflow_call`) that deploys a monorepo package to Cloudflare. It SHALL accept inputs `package`, `wrangler-env` (default empty), `run-migrations` (default false), and `environment`, and the secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Its body SHALL be package-agnostic (no hardcoded package paths), building and deploying the package identified by `package`.
+The system SHALL provide two self-contained workflows — `.github/workflows/deploy-app.yml` and `.github/workflows/deploy-website.yml` — with no shared reusable/`workflow_call` template. Each SHALL define its own tag trigger, `concurrency`, `environment: production`, clean setup, build, and `wrangler deploy`, sourcing `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from the `production` environment.
 
-#### Scenario: Workflow is callable with package inputs
+#### Scenario: Each workflow is self-contained
 
-- **WHEN** another workflow calls `deploy.yml` with a `package`, `environment`, and the Cloudflare secrets
-- **THEN** the reusable workflow builds and deploys that package to Cloudflare
-
-#### Scenario: Migration step is conditional
-
-- **WHEN** the reusable workflow runs with `run-migrations: false`
-- **THEN** no database migration step runs
-
-#### Scenario: Environment flag is conditional
-
-- **WHEN** `wrangler-env` is empty
-- **THEN** `wrangler deploy` runs without an `--env` flag; when `wrangler-env` is set, deploy passes `--env <value>`
+- **WHEN** either deploy workflow runs
+- **THEN** it executes its full pipeline within a single workflow file without invoking a shared reusable workflow
 
 ### Requirement: App deployed on its release tag with migrations
 
-The system SHALL provide `.github/workflows/deploy-app.yml` triggered on push of tags matching `@autokpo/app@*`, which calls the reusable workflow with `package: '@autokpo/app'`, `wrangler-env: production`, `run-migrations: true`, and `environment: production`. It SHALL apply D1 migrations to the production database before deploying the worker.
+The system SHALL provide `.github/workflows/deploy-app.yml` triggered on push of tags matching `@autokpo/app@*`. It SHALL run under `environment: production` with `CLOUDFLARE_ENV: production` set at the job level, build the app, and apply D1 migrations to the production database before deploying the worker.
 
 #### Scenario: App tag triggers app deploy with migration
 
@@ -31,30 +21,30 @@ The system SHALL provide `.github/workflows/deploy-app.yml` triggered on push of
 #### Scenario: Migrations target the production database
 
 - **WHEN** the app migration step runs
-- **THEN** it runs `wrangler d1 migrations apply DB --remote --env production`, applying to `autokpo-database` (the `env.production` binding), not `autokpo-database-dev`
+- **THEN** it runs `wrangler d1 migrations apply DB --remote` with `CLOUDFLARE_ENV=production` in scope, applying to `autokpo-database` (the `env.production` binding), not `autokpo-database-dev`
 
 #### Scenario: Migration failure aborts app deploy
 
 - **WHEN** the production migration step exits non-zero
 - **THEN** the worker deploy step does not run and the workflow fails
 
-#### Scenario: Pending migrations are visible before applying
+#### Scenario: Applied migrations are visible in the log
 
-- **WHEN** the app deploy reaches the migration step
-- **THEN** it lists pending migrations (`wrangler d1 migrations list --remote --env production`) in the run log before applying them
+- **WHEN** the app migration step runs
+- **THEN** `wrangler d1 migrations apply` prints the migrations it applies to the run log (no separate list step is required)
 
 ### Requirement: Website deployed on its release tag without migrations
 
-The system SHALL provide `.github/workflows/deploy-website.yml` triggered on push of tags matching `@autokpo/website@*`, which calls the reusable workflow with `package: '@autokpo/website'`, `run-migrations: false`, and `environment: production`. It SHALL build and deploy the static site with no migration step and no `--env` flag.
+The system SHALL provide `.github/workflows/deploy-website.yml` triggered on push of tags matching `@autokpo/website@*`. It SHALL run under `environment: production`, build the static site, and deploy it with `wrangler deploy` — no migration step and no `CLOUDFLARE_ENV` set, so Wrangler uses the website's single (default) config.
 
 #### Scenario: Website tag triggers website deploy
 
 - **WHEN** a tag matching `@autokpo/website@*` is pushed
-- **THEN** the website deploy builds the Astro site and runs `wrangler deploy` with no migration step and no `--env` flag
+- **THEN** the website deploy builds the Astro site and runs `wrangler deploy` with no migration step and no `CLOUDFLARE_ENV` (default config; the website has no `env.production`)
 
 ### Requirement: Deploy tag isolation
 
-Each caller workflow SHALL respond only to its own package's tag. An app release tag SHALL NOT deploy the website, and a website release tag SHALL NOT deploy the app.
+Each workflow SHALL respond only to its own package's tag. An app release tag SHALL NOT deploy the website, and a website release tag SHALL NOT deploy the app.
 
 #### Scenario: App tag does not deploy website
 
@@ -68,7 +58,7 @@ Each caller workflow SHALL respond only to its own package's tag. An app release
 
 ### Requirement: Clean cache-free build
 
-The reusable deploy workflow SHALL install dependencies with no restored cache (setup action with `cache: false`, no Turborepo cache) and build the target package from scratch before deploying. It SHALL NOT reuse build output or caches produced by `ci-cd.yml`, and SHALL NOT re-run lint or test — those gate the code at PR time, and the clean build (not the tests) is what protects against cache poisoning.
+Each deploy workflow SHALL install dependencies with no restored cache (setup action with `cache: false`, no Turborepo cache) and build the target package from scratch before deploying. It SHALL NOT reuse build output or caches produced by `ci-cd.yml`, and SHALL NOT re-run lint or test — those gate the code at PR time, and the clean build (not the tests) is what protects against cache poisoning.
 
 #### Scenario: Dependencies install clean
 
@@ -85,9 +75,28 @@ The reusable deploy workflow SHALL install dependencies with no restored cache (
 - **WHEN** a deploy runs
 - **THEN** it does not run lint or the test suite
 
+### Requirement: Client-side build variables available at build time
+
+The build step SHALL provide each package's client-side build variables — exposed as GitHub Actions variables (`vars`) on the `production` environment — to the build, so Vite (`VITE_*`) and Astro (`PUBLIC_*`) inline them into the bundle. `turbo.json`'s `build` task SHALL declare `env: ["VITE_*", "PUBLIC_*"]` so Turbo's strict env mode passes them through. These are publishable values stored as variables, not secrets.
+
+#### Scenario: App build receives its client variables
+
+- **WHEN** the app build runs
+- **THEN** `VITE_TURNSTILE_SITE_KEY`, `VITE_POSTHOG_PROJECT_TOKEN`, and `VITE_POSTHOG_HOST` from the `production` environment are present so Vite inlines them into the client bundle
+
+#### Scenario: Website build receives its client variables
+
+- **WHEN** the website build runs
+- **THEN** `PUBLIC_POSTHOG_PROJECT_TOKEN` and `PUBLIC_POSTHOG_HOST` from the `production` environment are present so Astro inlines them into the bundle
+
+#### Scenario: Turbo passes the build variables through
+
+- **WHEN** `turbo build` runs in strict env mode
+- **THEN** the `build` task's declared `env: ["VITE_*", "PUBLIC_*"]` makes the `VITE_*` / `PUBLIC_*` variables available to the underlying Vite/Astro build
+
 ### Requirement: Production environment for credential scoping
 
-Both deploy callers SHALL run under `environment: production` so the Cloudflare credentials are scoped to deploy jobs and deployments are recorded in GitHub. The environment SHALL NOT impose a required-reviewer approval; deploys run unattended on a release tag, since the deliberate merge of the Changeset release PR already serves as the human checkpoint. Both packages SHALL require only `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+Both deploy workflows SHALL run under `environment: production` so the Cloudflare credentials are scoped to deploy jobs and deployments are recorded in GitHub. The environment SHALL NOT impose a required-reviewer approval; deploys run unattended on a release tag, since the deliberate merge of the Changeset release PR already serves as the human checkpoint. Both packages SHALL require only `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
 
 #### Scenario: Deploy runs without manual approval
 
@@ -101,7 +110,7 @@ Both deploy callers SHALL run under `environment: production` so the Cloudflare 
 
 ### Requirement: Serialized deploys per package
 
-The reusable workflow SHALL use a concurrency group keyed by package that serializes deploys of the same package and does not cancel an in-progress deploy. Different packages SHALL be able to deploy concurrently.
+Each workflow SHALL use its own concurrency group (`deploy-app`, `deploy-website`) that serializes deploys of the same package and does not cancel an in-progress deploy. The two packages SHALL be able to deploy concurrently.
 
 #### Scenario: Same-package deploys are serialized
 

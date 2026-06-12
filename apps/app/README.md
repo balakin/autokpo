@@ -77,15 +77,41 @@ pnpm generate:worker-types # regenerate Wrangler types (run after wrangler.jsonc
 pnpm check:worker-types    # verify types are up to date (CI / pre-commit)
 pnpm db:generate           # generate a new D1 migration after schema changes
 pnpm db:migrate:local      # apply migrations to the local D1 database
-pnpm db:migrate:remote     # apply migrations to the remote D1 database (before deploy)
+pnpm db:migrate:remote     # apply migrations to the dev remote D1 database
+pnpm db:migrate:prod       # apply migrations to the production D1 database (--env production)
+pnpm deploy                # build output is deployed with wrangler deploy --env production
 ```
 
 ## Deployment
 
-1. Create Cloudflare D1 and R2 resources and update the `database_id` and `bucket_name` values in `wrangler.jsonc`.
-2. Set all required secrets in the Cloudflare dashboard or via `wrangler secret put`.
-3. Run `pnpm db:migrate:remote` to apply migrations.
-4. Run `pnpm build` and deploy with `wrangler deploy`.
+Deployment is automated. Cutting a release with Changesets creates an `@autokpo/app@<version>` git tag, which triggers the **Deploy App** GitHub Actions workflow (`.github/workflows/deploy-app.yml`). The workflow:
+
+1. installs cleanly (no restored cache) and builds the app,
+2. applies pending D1 migrations to the **production** database — see [`docs/migrations.md`](docs/migrations.md) for migration safety rules,
+3. deploys the worker with `wrangler deploy`.
+
+The workflow sets `CLOUDFLARE_ENV=production` at the job level so every Wrangler command targets the `env.production` config — `autokpo-database` and `app.autokpo.com` — without needing an `--env` flag. You do **not** configure `CLOUDFLARE_ENV` yourself; it lives in `deploy-app.yml` only. The website deploy is a separate workflow that sets no `CLOUDFLARE_ENV` (it has no `production` environment), so the two never interfere.
+
+It runs under the `production` GitHub Environment, which holds the workflow's two secrets — `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` — and the **client-side build variables** (see below). Application _runtime_ secrets (`BETTER_AUTH_SECRET`, OAuth credentials, `RESEND_API_KEY`, etc.) are managed separately in the Cloudflare dashboard or via `wrangler secret put`, not by the workflow.
+
+**Client-side build variables.** The browser bundle inlines `VITE_*` variables at **build time**, so they must be present in CI when the workflow builds — otherwise production ships with an empty Turnstile key (captcha/auth breaks) and no analytics. They are publishable (they end up in the client bundle), so they are stored as GitHub Actions **variables** (`vars`), not secrets, on the `production` environment, and listed in `turbo.json`'s `build.env` so Turbo's strict mode passes them through:
+
+| Variable                     | Required | Purpose                           |
+| ---------------------------- | -------- | --------------------------------- |
+| `VITE_TURNSTILE_SITE_KEY`    | yes      | Cloudflare Turnstile **site** key |
+| `VITE_POSTHOG_PROJECT_TOKEN` | no       | PostHog project token (analytics) |
+| `VITE_POSTHOG_HOST`          | no       | PostHog ingestion host            |
+
+See [`.env.example`](.env.example) for local development.
+
+First-time setup (operator):
+
+1. Create a Cloudflare API token (D1 Edit + Workers Scripts Edit) and add `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` as secrets on the `production` GitHub Environment.
+2. Add the client-side build variables (`VITE_*` above) as **variables** on the `production` environment.
+3. Create the Cloudflare D1 resource and set `database_id` in `wrangler.jsonc`.
+4. Set the application runtime secrets in Cloudflare.
+
+For a manual deploy outside CI, the package scripts carry the environment explicitly: `pnpm db:migrate:prod` then `pnpm deploy` (both use `--env production`).
 
 ## License
 

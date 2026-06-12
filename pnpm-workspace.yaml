@@ -127,12 +127,15 @@ catalogs:
     '@astrojs/check': '^0.9.9'
     '@astrojs/sitemap': '^3.4.1'
 
+  analytics:
+    posthog-js: '^1.384.1'
+    '@posthog/react': '^1.10.1'
+
   misc:
     hono: '^4.12.23'
     zod: '^4.4.3'
     yjs: '^13.6.31'
     hash-wasm: '^4.12.0'
     workbox-window: '^7.4.1'
-    posthog-js: '^1.380.0'
     '@marsidev/react-turnstile': '^1.5.2'
     '@react-pdf/renderer': '^4.5.1'

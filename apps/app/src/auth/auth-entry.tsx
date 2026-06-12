@@ -1,5 +1,6 @@
 import { Button, Card, Link, Separator } from '@heroui/react';
 import { Trans } from '@lingui/react/macro';
+import { usePostHog } from '@posthog/react';
 import { FaGithub, FaGoogle } from 'react-icons/fa6';
 import { useNavigate } from 'react-router';
 
@@ -15,6 +16,7 @@ export function AuthEntry() {
   const authEmail = useAuthEmail();
   const { locale } = useLocale();
   const navigate = useNavigate();
+  const posthog = usePostHog();
   const legalLinks = getLegalLinks(locale);
 
   async function requestOtp(email: string, captchaToken: string) {
@@ -22,6 +24,15 @@ export function AuthEntry() {
     authEmail.setEmail(normalizedEmail);
     await requestEmailOtpSession(normalizedEmail, captchaToken);
     void navigate('/sign-in/code');
+  }
+
+  function startSocialSignIn(provider: 'google' | 'github') {
+    // Capture before the redirect leaves our origin. We can't stitch this to
+    // the post-redirect `social_auth_completed` (the callback is a fresh page
+    // load with a new anonymous id), so these are read as population counts:
+    // completed ÷ started as an aggregate conversion proxy.
+    posthog.capture('social_auth_started', { provider });
+    void startOAuthFlow(provider);
   }
 
   return (
@@ -41,7 +52,7 @@ export function AuthEntry() {
               <Button
                 fullWidth
                 variant="secondary"
-                onPress={() => void startOAuthFlow('google')}
+                onPress={() => startSocialSignIn('google')}
               >
                 <FaGoogle aria-hidden="true" className="size-4" />
                 <Trans>Prijava Google</Trans>
@@ -49,7 +60,7 @@ export function AuthEntry() {
               <Button
                 fullWidth
                 variant="secondary"
-                onPress={() => void startOAuthFlow('github')}
+                onPress={() => startSocialSignIn('github')}
               >
                 <FaGithub aria-hidden="true" className="size-4" />
                 <Trans>Prijava GitHub</Trans>

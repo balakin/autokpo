@@ -1,3 +1,4 @@
+import { usePostHog } from '@posthog/react';
 import { useState } from 'react';
 import { useBlocker } from 'react-router';
 
@@ -19,6 +20,7 @@ import type { WizardStep } from './wizard-stepper';
 
 export function SetupWizard() {
   const ydoc = useDoc();
+  const posthog = usePostHog();
   const bookId = useBookId();
   const profile = useYDoc(profileSelectors.active(bookId));
   const signature = useYDoc(signatureSelectors.active(bookId));
@@ -49,10 +51,12 @@ export function SetupWizard() {
 
   const handleSaveProfile = (data: EntityProfile) => {
     profileMutations.save(ydoc, bookId, data);
+    posthog.capture('profile_saved');
   };
 
   const handleSaveSignature = (data: Signature) => {
     signatureMutations.save(ydoc, bookId, data);
+    posthog.capture('signature_saved');
   };
 
   const blocker = useBlocker(isDirty);

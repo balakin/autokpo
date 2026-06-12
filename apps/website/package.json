@@ -14,7 +14,7 @@
   "dependencies": {
     "@lucide/astro": "catalog:astro",
     "astro": "catalog:astro",
-    "posthog-js": "catalog:misc"
+    "posthog-js": "catalog:analytics"
   },
   "devDependencies": {
     "@astrojs/check": "catalog:astro",

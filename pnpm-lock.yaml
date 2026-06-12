@@ -5,6 +5,13 @@ settings:
   excludeLinksFromLockfile: false
 
 catalogs:
+  analytics:
+    '@posthog/react':
+      specifier: ^1.10.1
+      version: 1.10.1
+    posthog-js:
+      specifier: ^1.384.1
+      version: 1.384.1
   astro:
     '@astrojs/check':
       specifier: ^0.9.9
@@ -138,9 +145,6 @@ catalogs:
     hono:
       specifier: ^4.12.23
       version: 4.12.23
-    posthog-js:
-      specifier: ^1.380.0
-      version: 1.383.3
     workbox-window:
       specifier: ^7.4.1
       version: 7.4.1
@@ -361,6 +365,9 @@ importers:
       '@marsidev/react-turnstile':
         specifier: catalog:misc
         version: 1.5.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@posthog/react':
+        specifier: catalog:analytics
+        version: 1.10.1(@types/react@19.2.17)(posthog-js@1.384.1)(react@19.2.7)
       '@react-pdf/renderer':
         specifier: catalog:misc
         version: 4.5.1(react@19.2.7)
@@ -388,6 +395,9 @@ importers:
       hono:
         specifier: catalog:misc
         version: 4.12.23
+      posthog-js:
+        specifier: catalog:analytics
+        version: 1.384.1
       react:
         specifier: catalog:react
         version: 19.2.7
@@ -561,8 +571,8 @@ importers:
         specifier: catalog:astro
         version: 6.4.4(@types/node@25.9.2)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.61.1)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0)
       posthog-js:
-        specifier: catalog:misc
-        version: 1.383.3
+        specifier: catalog:analytics
+        version: 1.384.1
     devDependencies:
       '@astrojs/check':
         specifier: catalog:astro
@@ -2909,11 +2919,21 @@ packages:
   '@poppinss/exception@1.2.3':
     resolution: {integrity: sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw==}
 
-  '@posthog/core@1.30.14':
-    resolution: {integrity: sha512-cC0che/17kP6qMIMgdmxsoz3h8Jar8knQfDM8WqQwVacSeWXkrwkemoV7S5tCGmgTuRTTsdigirs9HiBXHQ/dA==}
+  '@posthog/core@1.31.1':
+    resolution: {integrity: sha512-ZV7qk1lSLpJR7n5HZ/au0iA1H/5TaZjwAF3pVVhQYwCALOSIF5jvnI2X9mvByQIS+wSUckPkZQ+33YaIT6SZJQ==}
 
-  '@posthog/types@1.383.3':
-    resolution: {integrity: sha512-N4jtmLaJxzjQ/C0UHnF0igQPSwUqwScPDv9ePGjKCfDomIEUcO3+c6pBrjTp7woxuMQ49BmyM/pV4/SOBPpe0Q==}
+  '@posthog/react@1.10.1':
+    resolution: {integrity: sha512-VbZiwshRYJi6PDRTLtSmNLU9cud4DFLrebL4minUlk532aeGTMwyQdTybsMCRDCVStVTBE5/wWY9YYreud4DJQ==}
+    peerDependencies:
+      '@types/react': '>=16.8.0'
+      posthog-js: '>=1.257.2'
+      react: '>=16.8.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+
+  '@posthog/types@1.384.1':
+    resolution: {integrity: sha512-tzObc/AIunXrKGX3lsPGQ1vs915L0KEChBDmPvgs9PMkCc7sH9eMn8/XKPbZ/BxJALRN8fsWCeSkR2fyoADWvA==}
 
   '@radix-ui/react-avatar@1.1.11':
     resolution: {integrity: sha512-0Qk603AHGV28BOBO34p7IgD5m+V5Sg/YovfayABkoDDBM5d3NCx0Mp4gGrjzLGes1jV5eNOE1r3itqOR33VC6Q==}
@@ -6708,8 +6728,8 @@ packages:
     resolution: {integrity: sha512-FfR8sjd4em2T6fb3I2MwAJU7HWVMr9zba+enmQeeWFfCbm+UOC/0X4DS8XtpUTMwWMGbjKYP7xjfNekzyGmB3A==}
     engines: {node: ^10 || ^12 || >=14}
 
-  posthog-js@1.383.3:
-    resolution: {integrity: sha512-caH+lSELdgqaS2uxmBiJT22/cr3epuMKSqBsO8QYQgORehokwdWB/Q4LIh3Dgyjy26B2yhprcAAqmuKMf4s3Nw==}
+  posthog-js@1.384.1:
+    resolution: {integrity: sha512-PDgxuNz2A8UsrglsSAhxYUuOx598PomxidDKuifydmz2LeMvLNvXg+6Iil8+MIHjVJjaPal0kdUhomsaeWiDOQ==}
 
   powershell-utils@0.1.0:
     resolution: {integrity: sha512-dM0jVuXJPsDN6DvRpea484tCUaMiXWjuCn++HGTqUWzGDjv5tZkEZldAJ/UMlqRYGFrD/etByo4/xOuC/snX2A==}
@@ -10546,11 +10566,18 @@ snapshots:
 
   '@poppinss/exception@1.2.3': {}
 
-  '@posthog/core@1.30.14':
+  '@posthog/core@1.31.1':
     dependencies:
-      '@posthog/types': 1.383.3
+      '@posthog/types': 1.384.1
 
-  '@posthog/types@1.383.3': {}
+  '@posthog/react@1.10.1(@types/react@19.2.17)(posthog-js@1.384.1)(react@19.2.7)':
+    dependencies:
+      posthog-js: 1.384.1
+      react: 19.2.7
+    optionalDependencies:
+      '@types/react': 19.2.17
+
+  '@posthog/types@1.384.1': {}
 
   '@radix-ui/react-avatar@1.1.11(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:
@@ -14570,10 +14597,10 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  posthog-js@1.383.3:
+  posthog-js@1.384.1:
     dependencies:
-      '@posthog/core': 1.30.14
-      '@posthog/types': 1.383.3
+      '@posthog/core': 1.31.1
+      '@posthog/types': 1.384.1
       core-js: 3.49.0
       dompurify: 3.4.8
       fflate: 0.4.8

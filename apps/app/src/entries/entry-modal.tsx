@@ -1,5 +1,6 @@
 import { Button, Modal } from '@heroui/react';
 import { Trans } from '@lingui/react/macro';
+import { usePostHog } from '@posthog/react';
 import { useId, type ReactNode } from 'react';
 
 import { type EntryModelData, type KpoEntry } from './entries-schema';
@@ -19,13 +20,16 @@ export function EntryModal({
   onSaveEntry,
 }: EntryModalProps) {
   const formId = useId();
+  const posthog = usePostHog();
 
   function handleSave(data: EntryModelData, close: () => void) {
+    const isEdit = !!entry;
     const newEntry: KpoEntry = {
       ...data,
       id: entry?.id ?? crypto.randomUUID(),
     };
     onSaveEntry?.(newEntry);
+    posthog.capture(isEdit ? 'entry_updated' : 'entry_created', { year });
     close();
   }
 

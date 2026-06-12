@@ -1,5 +1,6 @@
 import { Button } from '@heroui/react';
 import { Trans } from '@lingui/react/macro';
+import { usePostHog } from '@posthog/react';
 
 import { useBookId } from '../books/use-book-id';
 import { useYDoc } from '../crdt';
@@ -10,6 +11,7 @@ import { signatureSelectors } from '../signatures/signature-selectors';
 import { downloadPdf } from './download-pdf';
 
 export function DownloadPdfButton() {
+  const posthog = usePostHog();
   const bookId = useBookId();
   const profile = useYDoc(profileSelectors.active(bookId));
   const signature = useYDoc(signatureSelectors.active(bookId));
@@ -17,6 +19,7 @@ export function DownloadPdfButton() {
 
   async function handleDownloadPdf() {
     await downloadPdf(entries, profile!, signature!);
+    posthog.capture('pdf_downloaded', { entry_count: entries.length });
   }
 
   return (

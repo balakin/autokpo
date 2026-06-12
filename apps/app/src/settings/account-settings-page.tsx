@@ -11,6 +11,7 @@ import {
   toast,
 } from '@heroui/react';
 import { Trans, useLingui } from '@lingui/react/macro';
+import { usePostHog } from '@posthog/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import {
@@ -466,9 +467,11 @@ function getOperatingSystemName(userAgent: string): string | null {
 
 function AccountDataExportCard() {
   const { t } = useLingui();
+  const posthog = usePostHog();
   const exportMutation = useMutation({
     mutationFn: buildAccountExport,
     onSuccess: (data) => {
+      posthog.capture('account_data_exported');
       downloadJson(exportFilename('autokpo-account'), data);
     },
     onError: () => {
@@ -517,6 +520,7 @@ function DeleteAccountModal({
 }: DeleteAccountModalProps) {
   const { t } = useLingui();
   const navigate = useNavigate();
+  const posthog = usePostHog();
   const queryClient = useQueryClient();
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const accountEmail = user.email ?? '';
@@ -526,6 +530,7 @@ function DeleteAccountModal({
   const deleteMutation = useMutation({
     mutationFn: () => deleteAccount(user.id),
     onSuccess: () => {
+      posthog.capture('account_deleted');
       clearQueryCacheOnSignOut(queryClient);
       void navigate('/goodbye');
     },

@@ -34,4 +34,9 @@ export function initAnalytics(): void {
     person_profiles: 'identified_only', // never identified → events stay anonymous
     advanced_disable_flags: true, // we use no flags/experiments/remote config; skips the /flags request (web vitals stays, set client-side above)
   });
+
+  // Super property on every event so metrics (web vitals, auth funnels, …) can
+  // be sliced by release. Re-registered each load because `persistence: 'memory'`
+  // resets super properties per page load.
+  posthog.register({ app_version: __APP_VERSION__ });
 }

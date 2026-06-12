@@ -29,6 +29,11 @@
       advanced_disable_flags: true,     // no flags/experiments/remote config; skips the /flags request (web vitals stays, set client-side above)
     });
 
+    // Super property on every event so metrics can be sliced by release.
+    // Re-registered each load because `persistence: 'memory'` resets super
+    // properties per page load.
+    posthog.register({ app_version: __APP_VERSION__ });
+
     // The npm build, unlike the CDN snippet, doesn't register a global. Expose
     // it for the inline `window.posthog?.capture(...)` handlers in the header,
     // footer, landing page, and theme toggle (typed in src/env.d.ts).

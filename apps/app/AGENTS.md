@@ -25,7 +25,9 @@ db:migrate:remote      # apply migrations to remote D1 (before worker deploy)
 
 **Wrangler**: run `generate:worker-types` after any change to `wrangler.jsonc`. The pre-commit hook and CI/CD run `check:worker-types` to verify types are up to date.
 
-**D1 migrations**: after changing `worker/db/schema.ts`, run `db:generate` to create a migration, then `db:migrate:local` to apply it locally. On deploy, run `db:migrate:remote` before the worker deploy step.
+**D1 migrations**: after changing `worker/db/schema.ts`, run `db:generate` to create a migration, then `db:migrate:local` to apply it locally. Production migrations are applied automatically by the deploy workflow (`db:migrate:prod`, `--env production`) before the worker deploy step.
+
+Deploys auto-apply migrations to production, so every migration must follow the **expand/contract** rule — it must be tolerated by the currently-live (old) worker. Never emit a single-shot `RENAME COLUMN` / `DROP COLUMN`; split renames and drops across releases. See [`docs/migrations.md`](docs/migrations.md) for the safe/unsafe table and step-by-step recipes.
 
 ## Architecture
 

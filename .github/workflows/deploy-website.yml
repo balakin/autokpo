@@ -1,0 +1,41 @@
+name: 🚀 Deploy Website
+
+on:
+  push:
+    tags:
+      - '@autokpo/website@*'
+
+# Serialize website deploys; never cancel one in flight.
+concurrency:
+  group: deploy-website
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: 📦 Deploy website
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://autokpo.com
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v6
+
+      - name: ⚙️ Setup
+        uses: ./.github/actions/setup
+        with:
+          cache: false # clean install, no restored cache — privileged context, guards against cache poisoning
+
+      - name: 🏗️ Build
+        # PUBLIC_* are inlined into the bundle at build time; turbo.json declares
+        # `env: [..., "PUBLIC_*"]` so strict mode passes them through.
+        env:
+          PUBLIC_POSTHOG_PROJECT_TOKEN: ${{ vars.PUBLIC_POSTHOG_PROJECT_TOKEN }}
+          PUBLIC_POSTHOG_HOST: ${{ vars.PUBLIC_POSTHOG_HOST }}
+        run: pnpm turbo build --filter=@autokpo/website
+
+      - name: 🚀 Deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm --filter @autokpo/website exec wrangler deploy

@@ -19,7 +19,9 @@
     "auth:generate": "pnpm dlx @better-auth/cli generate --config auth.config.ts --output worker/db/schema/auth.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
-    "db:migrate:remote": "wrangler d1 migrations apply DB --remote"
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "db:migrate:prod": "wrangler d1 migrations apply DB --remote --env production",
+    "deploy": "wrangler deploy --env production"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "catalog:auth",

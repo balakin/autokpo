@@ -1,5 +1,11 @@
 # @autokpo/app
 
+## 0.3.0
+
+### Minor Changes
+
+- [#64](https://github.com/balakin/autokpo/pull/64) [`a98e98e`](https://github.com/balakin/autokpo/commit/a98e98e91c1d8efc495d718903c9ac98b132b643) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Added privacy-conscious PostHog product analytics with event sanitization and per-release app version tagging
+
 ## 0.2.2
 
 ### Patch Changes

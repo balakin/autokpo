@@ -8,7 +8,7 @@ export default defineConfig({
   site: 'https://autokpo.com',
   vite: {
     define: {
-      __APP_VERSION__: JSON.stringify(version),
+      'import.meta.env.PUBLIC_APP_VERSION': JSON.stringify(version),
     },
   },
   integrations: [

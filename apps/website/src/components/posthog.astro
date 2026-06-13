@@ -5,7 +5,8 @@
 ---
 
 <script>
-  import posthog from 'posthog-js';
+  import 'posthog-js/dist/web-vitals';
+  import posthog from 'posthog-js/dist/module.slim.no-external';
 
   const apiKey = import.meta.env.PUBLIC_POSTHOG_PROJECT_TOKEN;
   const apiHost = import.meta.env.PUBLIC_POSTHOG_HOST;
@@ -27,13 +28,18 @@
       disable_surveys: true, // no surveys
       enable_heatmaps: false, // no mouse-move / click / scroll heatmaps
       person_profiles: 'identified_only', // never identified → events stay anonymous
-      advanced_disable_flags: true, // no flags/experiments/remote config; skips the /flags request (web vitals stays, set client-side above)
+      advanced_disable_flags: true, // no flags/experiments/remote config; skips the /flags request
+      disable_external_dependency_loading: true, // belt-and-suspenders alongside module.slim.no-external
     });
 
     // Super property on every event so metrics can be sliced by release.
     // Re-registered each load because `persistence: 'memory'` resets super
     // properties per page load.
-    posthog.register({ app_version: __APP_VERSION__ });
+    posthog.register({
+      app_version: import.meta.env.DEV
+        ? `${import.meta.env.PUBLIC_APP_VERSION}-dev`
+        : import.meta.env.PUBLIC_APP_VERSION,
+    });
 
     // The npm build, unlike the CDN snippet, doesn't register a global. Expose
     // it for delegated analytics handlers and the theme toggle (typed in

@@ -10,234 +10,319 @@ interface Props {
   themeDarkLabel: string;
 }
 
-const { locale, title, description, skipLink, themeLightLabel, themeDarkLabel } = Astro.props;
+const {
+  locale,
+  title,
+  description,
+  skipLink,
+  themeLightLabel,
+  themeDarkLabel,
+} = Astro.props;
 ---
 
 <!doctype html>
 <html lang={locale}>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{title}</title>
-  <meta name="description" content={description} />
-  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="shortcut icon" href="/favicon.ico" />
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
 
-  <script is:inline>
-    try {
-      var autokpoSavedTheme = localStorage.getItem("autokpo-theme");
-      var autokpoPrefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-      var autokpoTheme = autokpoSavedTheme || (autokpoPrefersDark ? "dark" : "light");
-      var autokpoRoot = document.documentElement;
+    <script is:inline>
+      try {
+        var autokpoSavedTheme = localStorage.getItem('autokpo-theme');
+        var autokpoPrefersDark =
+          window.matchMedia &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var autokpoTheme =
+          autokpoSavedTheme || (autokpoPrefersDark ? 'dark' : 'light');
+        var autokpoRoot = document.documentElement;
 
-      autokpoRoot.setAttribute("data-theme", autokpoTheme);
-      autokpoRoot.classList.toggle("dark", autokpoTheme === "dark");
-      autokpoRoot.style.colorScheme = autokpoTheme;
+        autokpoRoot.setAttribute('data-theme', autokpoTheme);
+        autokpoRoot.classList.toggle('dark', autokpoTheme === 'dark');
+        autokpoRoot.style.colorScheme = autokpoTheme;
 
-      var autokpoThemeColor = document.createElement("meta");
-      autokpoThemeColor.name = "theme-color";
-      autokpoThemeColor.content = autokpoTheme === "dark" ? "#171921" : "#f3f4f8";
-      document.head.appendChild(autokpoThemeColor);
-    } catch (e) {}
-  </script>
+        var autokpoThemeColor = document.createElement('meta');
+        autokpoThemeColor.name = 'theme-color';
+        autokpoThemeColor.content =
+          autokpoTheme === 'dark' ? '#171921' : '#f3f4f8';
+        document.head.appendChild(autokpoThemeColor);
+      } catch (e) {}
+    </script>
 
-  <PostHog />
+    <PostHog />
 
-  <slot name="head" />
+    <slot name="head" />
 
-  <style is:global>
-    @font-face {
-      font-family: "Manrope";
-      font-style: normal;
-      font-weight: 200 800;
-      font-display: swap;
-      src: url("/fonts/manrope/Manrope-VariableFont_wght.woff2") format("woff2");
-    }
-    @font-face {
-      font-family: "JetBrains Mono";
-      font-style: normal;
-      font-weight: 100 800;
-      font-display: swap;
-      src: url("/fonts/jetbrains-mono/JetBrainsMono-VariableFont_wght.woff2") format("woff2");
-    }
-
-    :root,
-    [data-theme="light"] {
-      --font-sans: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
-      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-      --background:           oklch(0.97  0.005 240);
-      --surface:              oklch(0.995 0.003 240);
-      --surface-secondary:    oklch(0.96  0.004 240);
-      --overlay:              oklch(0.995 0.003 240);
-      --foreground:           oklch(0.2   0.015 260);
-      --muted:                oklch(0.5   0.02  250);
-      --default:              oklch(0.94  0.005 240);
-      --default-foreground:   oklch(0.2   0.015 260);
-      --accent:               oklch(0.6   0.1   245);
-      --accent-foreground:    oklch(1     0     0);
-      --accent-soft:          oklch(0.92  0.03  245);
-      --accent-soft-foreground: oklch(0.3 0.03 245);
-      --success:              oklch(0.55  0.1   155);
-      --warning:              oklch(0.7   0.1   85);
-      --danger:               oklch(0.6   0.12  25);
-      --border:               oklch(0.88  0.008 240);
-      --separator:            oklch(0.9   0.006 240);
-      --focus:                var(--accent);
-      --link:                 var(--foreground);
-      --surface-shadow:       0 2px 4px 0 rgba(0,0,0,.04), 0 1px 2px 0 rgba(0,0,0,.06), 0 0 1px 0 rgba(0,0,0,.06);
-      --overlay-shadow:       0 4px 16px 0 rgba(24,24,27,.08), 0 8px 24px 0 rgba(24,24,27,.09);
-      color-scheme: light;
-    }
-
-    .dark,
-    [data-theme="dark"] {
-      --background:           oklch(0.12  0.015 255);
-      --surface:              oklch(0.16  0.012 255);
-      --surface-secondary:    oklch(0.2   0.01  255);
-      --overlay:              oklch(0.18  0.012 255);
-      --foreground:           oklch(0.95  0.005 260);
-      --muted:                oklch(0.78  0.015 255);
-      --default:              oklch(0.28  0.015 255);
-      --default-foreground:   oklch(0.95  0.005 260);
-      --accent:               oklch(0.48  0.08  245);
-      --accent-foreground:    oklch(1     0     0);
-      --accent-soft:          oklch(0.28  0.04  245);
-      --accent-soft-foreground: oklch(0.85 0.02 245);
-      --success:              oklch(0.72  0.12  155);
-      --warning:              oklch(0.8   0.1   85);
-      --danger:               oklch(0.65  0.12  25);
-      --border:               oklch(0.28  0.015 255);
-      --separator:            oklch(0.25  0.015 255);
-      --surface-shadow:       0 0 0 0 transparent;
-      --overlay-shadow:       0 0 1px 0 rgba(255,255,255,.08) inset;
-      color-scheme: dark;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; }
-    /* iOS 26 Safari samples the html element's background for its toolbar
-       tint — when unset it falls back to white regardless of theme. */
-    html { scroll-behavior: smooth; background: var(--background); }
-    html, body { margin: 0; padding: 0; }
-    body {
-      font-family: var(--font-sans);
-      font-size: 16px;
-      line-height: 1.5;
-      background: var(--background);
-      color: var(--foreground);
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-      overflow-x: hidden;
-    }
-    h1, h2, h3, h4, h5, h6, p { margin: 0; }
-    a {
-      color: var(--link);
-      text-decoration: underline;
-      text-underline-offset: 2px;
-      text-decoration-color: color-mix(in oklch, currentColor 30%, transparent);
-    }
-    a:hover { text-decoration-color: currentColor; }
-    :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
-    button { font: inherit; cursor: pointer; }
-    svg { flex-shrink: 0; }
-
-    .skip-link {
-      position: absolute;
-      left: 12px;
-      top: -48px;
-      background: var(--surface);
-      color: var(--foreground);
-      padding: 8px 14px;
-      border-radius: 10px;
-      box-shadow: var(--surface-shadow);
-      z-index: 100;
-      text-decoration: none;
-      transition: top 120ms;
-    }
-    .skip-link:focus { top: 12px; }
-
-    .wrap { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 24px; }
-
-    @media (max-width: 620px) {
-      .wrap { padding: 0 18px; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      *, *::before, *::after { transition: none !important; animation: none !important; }
-    }
-  </style>
-</head>
-<body data-theme-light-label={themeLightLabel} data-theme-dark-label={themeDarkLabel}>
-  <a class="skip-link" href="#main">{skipLink}</a>
-
-  <slot />
-
-  <script>
-    const analyticsSelector = '[data-analytics-event]';
-
-    document.addEventListener('click', (event) => {
-      const target = event.target instanceof Element ? event.target.closest(analyticsSelector) : null;
-      if (!(target instanceof HTMLElement)) return;
-
-      const eventName = target.dataset.analyticsEvent;
-      if (!eventName) return;
-
-      const properties = target.dataset.analyticsProperties ? JSON.parse(target.dataset.analyticsProperties) : undefined;
-      window.posthog?.capture(eventName, properties);
-    });
-
-    const root = document.documentElement;
-    const body = document.body;
-    const themeToggle = document.getElementById('themeToggle');
-
-    if (themeToggle) {
-      const btn = themeToggle;
-      let strips: HTMLElement[] = [];
-      let stripTimer: ReturnType<typeof setTimeout> | undefined;
-
-      function syncThemeToggle() {
-        const isDark = root.getAttribute('data-theme') === 'dark';
-        btn.setAttribute('aria-pressed', String(isDark));
-        btn.setAttribute('aria-label', isDark ? body.dataset.themeLightLabel ?? '' : body.dataset.themeDarkLabel ?? '');
+    <style is:global>
+      @font-face {
+        font-family: 'Manrope';
+        font-style: normal;
+        font-weight: 200 800;
+        font-display: swap;
+        src: url('/fonts/manrope/Manrope-VariableFont_wght.woff2')
+          format('woff2');
+      }
+      @font-face {
+        font-family: 'JetBrains Mono';
+        font-style: normal;
+        font-weight: 100 800;
+        font-display: swap;
+        src: url('/fonts/jetbrains-mono/JetBrainsMono-VariableFont_wght.woff2')
+          format('woff2');
       }
 
-      syncThemeToggle();
+      :root,
+      [data-theme='light'] {
+        --font-sans:
+          'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        --font-mono:
+          'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+        --background: oklch(0.97 0.005 240);
+        --surface: oklch(0.995 0.003 240);
+        --surface-secondary: oklch(0.96 0.004 240);
+        --overlay: oklch(0.995 0.003 240);
+        --foreground: oklch(0.2 0.015 260);
+        --muted: oklch(0.5 0.02 250);
+        --default: oklch(0.94 0.005 240);
+        --default-foreground: oklch(0.2 0.015 260);
+        --accent: oklch(0.6 0.1 245);
+        --accent-foreground: oklch(1 0 0);
+        --accent-soft: oklch(0.92 0.03 245);
+        --accent-soft-foreground: oklch(0.3 0.03 245);
+        --success: oklch(0.55 0.1 155);
+        --warning: oklch(0.7 0.1 85);
+        --danger: oklch(0.6 0.12 25);
+        --border: oklch(0.88 0.008 240);
+        --separator: oklch(0.9 0.006 240);
+        --focus: var(--accent);
+        --link: var(--foreground);
+        --surface-shadow:
+          0 2px 4px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.06),
+          0 0 1px 0 rgba(0, 0, 0, 0.06);
+        --overlay-shadow:
+          0 4px 16px 0 rgba(24, 24, 27, 0.08),
+          0 8px 24px 0 rgba(24, 24, 27, 0.09);
+        color-scheme: light;
+      }
 
-      btn.addEventListener('click', () => {
-        const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        window.posthog?.capture('theme_toggled', { theme: next });
-        root.setAttribute('data-theme', next);
-        root.classList.toggle('dark', next === 'dark');
-        root.style.colorScheme = next;
-        try { localStorage.setItem('autokpo-theme', next); } catch {}
+      .dark,
+      [data-theme='dark'] {
+        --background: oklch(0.12 0.015 255);
+        --surface: oklch(0.16 0.012 255);
+        --surface-secondary: oklch(0.2 0.01 255);
+        --overlay: oklch(0.18 0.012 255);
+        --foreground: oklch(0.95 0.005 260);
+        --muted: oklch(0.78 0.015 255);
+        --default: oklch(0.28 0.015 255);
+        --default-foreground: oklch(0.95 0.005 260);
+        --accent: oklch(0.48 0.08 245);
+        --accent-foreground: oklch(1 0 0);
+        --accent-soft: oklch(0.28 0.04 245);
+        --accent-soft-foreground: oklch(0.85 0.02 245);
+        --success: oklch(0.72 0.12 155);
+        --warning: oklch(0.8 0.1 85);
+        --danger: oklch(0.65 0.12 25);
+        --border: oklch(0.28 0.015 255);
+        --separator: oklch(0.25 0.015 255);
+        --surface-shadow: 0 0 0 0 transparent;
+        --overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.08) inset;
+        color-scheme: dark;
+      }
 
-        document.querySelector('meta[name="theme-color"]')?.remove();
-        const themeColor = document.createElement('meta');
-        themeColor.name = 'theme-color';
-        themeColor.content = next === 'dark' ? '#171921' : '#f3f4f8';
-        document.head.appendChild(themeColor);
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      /* iOS 26 Safari samples the html element's background for its toolbar
+       tint — when unset it falls back to white regardless of theme. */
+      html {
+        scroll-behavior: smooth;
+        background: var(--background);
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: var(--font-sans);
+        font-size: 16px;
+        line-height: 1.5;
+        background: var(--background);
+        color: var(--foreground);
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        overflow-x: hidden;
+      }
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      p {
+        margin: 0;
+      }
+      a {
+        color: var(--link);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        text-decoration-color: color-mix(
+          in oklch,
+          currentColor 30%,
+          transparent
+        );
+      }
+      a:hover {
+        text-decoration-color: currentColor;
+      }
+      :focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+        border-radius: 6px;
+      }
+      button {
+        font: inherit;
+        cursor: pointer;
+      }
+      svg {
+        flex-shrink: 0;
+      }
 
-        // iOS 26 Safari ignores background changes after first paint, but
-        // re-derives its bar tints when a fixed element appears at a
-        // viewport edge — flash one per edge with the new background.
-        strips.forEach((strip) => strip.remove());
-        clearTimeout(stripTimer);
-        const bg = getComputedStyle(body).backgroundColor;
-        strips = ['top', 'bottom'].map((edge) => {
-          const strip = document.createElement('div');
-          strip.style.cssText = `position:fixed;${edge}:0;left:0;width:100%;height:6px;z-index:9999;pointer-events:none;background:${bg}`;
-          body.appendChild(strip);
-          return strip;
-        });
+      .skip-link {
+        position: absolute;
+        left: 12px;
+        top: -48px;
+        background: var(--surface);
+        color: var(--foreground);
+        padding: 8px 14px;
+        border-radius: 10px;
+        box-shadow: var(--surface-shadow);
+        z-index: 100;
+        text-decoration: none;
+        transition: top 120ms;
+      }
+      .skip-link:focus {
+        top: 12px;
+      }
 
-        stripTimer = setTimeout(() => {
-          strips.forEach((strip) => strip.remove());
-        }, 500);
+      .wrap {
+        width: 100%;
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+
+      @media (max-width: 620px) {
+        .wrap {
+          padding: 0 18px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *::before,
+        *::after {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body
+    data-theme-light-label={themeLightLabel}
+    data-theme-dark-label={themeDarkLabel}
+  >
+    <a class="skip-link" href="#main">{skipLink}</a>
+
+    <slot />
+
+    <script>
+      const analyticsSelector = '[data-analytics-event]';
+
+      document.addEventListener('click', (event) => {
+        const target =
+          event.target instanceof Element
+            ? event.target.closest(analyticsSelector)
+            : null;
+        if (!(target instanceof HTMLElement)) return;
+
+        const eventName = target.dataset.analyticsEvent;
+        if (!eventName) return;
+
+        const properties = target.dataset.analyticsProperties
+          ? JSON.parse(target.dataset.analyticsProperties)
+          : undefined;
+        window.posthog?.capture(eventName, properties);
+      });
+
+      const root = document.documentElement;
+      const body = document.body;
+      const themeToggle = document.getElementById('themeToggle');
+
+      if (themeToggle) {
+        const btn = themeToggle;
+        let strips: HTMLElement[] = [];
+        let stripTimer: ReturnType<typeof setTimeout> | undefined;
+
+        function syncThemeToggle() {
+          const isDark = root.getAttribute('data-theme') === 'dark';
+          btn.setAttribute('aria-pressed', String(isDark));
+          btn.setAttribute(
+            'aria-label',
+            isDark
+              ? (body.dataset.themeLightLabel ?? '')
+              : (body.dataset.themeDarkLabel ?? ''),
+          );
+        }
 
         syncThemeToggle();
-      });
-    }
-  </script>
-</body>
+
+        btn.addEventListener('click', () => {
+          const next =
+            root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+          window.posthog?.capture('theme_toggled', { theme: next });
+          root.setAttribute('data-theme', next);
+          root.classList.toggle('dark', next === 'dark');
+          root.style.colorScheme = next;
+          try {
+            localStorage.setItem('autokpo-theme', next);
+          } catch {}
+
+          document.querySelector('meta[name="theme-color"]')?.remove();
+          const themeColor = document.createElement('meta');
+          themeColor.name = 'theme-color';
+          themeColor.content = next === 'dark' ? '#171921' : '#f3f4f8';
+          document.head.appendChild(themeColor);
+
+          // iOS 26 Safari ignores background changes after first paint, but
+          // re-derives its bar tints when a fixed element appears at a
+          // viewport edge — flash one per edge with the new background.
+          strips.forEach((strip) => strip.remove());
+          clearTimeout(stripTimer);
+          const bg = getComputedStyle(body).backgroundColor;
+          strips = ['top', 'bottom'].map((edge) => {
+            const strip = document.createElement('div');
+            strip.style.cssText = `position:fixed;${edge}:0;left:0;width:100%;height:6px;z-index:9999;pointer-events:none;background:${bg}`;
+            body.appendChild(strip);
+            return strip;
+          });
+
+          stripTimer = setTimeout(() => {
+            strips.forEach((strip) => strip.remove());
+          }, 500);
+
+          syncThemeToggle();
+        });
+      }
+    </script>
+  </body>
 </html>

@@ -33,6 +33,7 @@
     "jiti": "catalog:tooling",
     "lint-staged": "catalog:tooling",
     "prettier": "catalog:tooling",
+    "prettier-plugin-astro": "catalog:",
     "turbo": "catalog:tooling",
     "typescript": "catalog:tooling"
   },

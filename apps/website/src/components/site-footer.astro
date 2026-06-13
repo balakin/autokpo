@@ -15,17 +15,39 @@ const { content, legalUrls } = Astro.props;
   <div class="wrap footer-inner">
     <div class="footer-brand">
       <span class="wordmark">AutoKPO</span>
-      <span class="tagline">{content.footer.taglinePrefix} <a href="https://github.com/dm-balakin" target="_blank" rel="noreferrer noopener">Dmitrii Balakin</a></span>
+      <span class="tagline"
+        >{content.footer.taglinePrefix}
+        <a
+          href="https://github.com/dm-balakin"
+          target="_blank"
+          rel="noreferrer noopener">Dmitrii Balakin</a
+        ></span
+      >
     </div>
     <div class="footer-project-links">
-      <a href="https://github.com/balakin/autokpo" target="_blank" rel="noreferrer noopener" data-analytics-event="github_clicked" data-analytics-properties={JSON.stringify({ location: 'footer' })}>
-        <span class="github-icon" aria-hidden="true"><img class="github-black" src={githubBlackUrl} alt="" /><img class="github-white" src={githubWhiteUrl} alt="" /></span>
+      <a
+        href="https://github.com/balakin/autokpo"
+        target="_blank"
+        rel="noreferrer noopener"
+        data-analytics-event="github_clicked"
+        data-analytics-properties={JSON.stringify({ location: 'footer' })}
+      >
+        <span class="github-icon" aria-hidden="true"
+          ><img class="github-black" src={githubBlackUrl} alt="" /><img
+            class="github-white"
+            src={githubWhiteUrl}
+            alt=""
+          /></span
+        >
         GitHub
       </a>
       <span class="footer-license">AGPL-3.0</span>
     </div>
     <nav class="footer-legal-links" aria-label="Legal">
-      <a href="mailto:support@autokpo.com" data-analytics-event="support_email_clicked">{content.support}</a>
+      <a
+        href="mailto:support@autokpo.com"
+        data-analytics-event="support_email_clicked">{content.support}</a
+      >
       <span aria-hidden="true">·</span>
       <a href={legalUrls.terms}>{content.legalLinks.terms}</a>
       <span aria-hidden="true">·</span>
@@ -35,15 +57,20 @@ const { content, legalUrls } = Astro.props;
 </footer>
 
 <style>
-  .site-footer { border-top: 1px solid var(--separator); padding: 24px 0; }
-  .site-footer a { text-decoration: none; }
+  .site-footer {
+    border-top: 1px solid var(--separator);
+    padding: 24px 0;
+  }
+  .site-footer a {
+    text-decoration: none;
+  }
 
   .footer-inner {
     display: grid;
     grid-template-columns: 1fr auto;
     grid-template-areas:
-      "brand project"
-      "brand legal";
+      'brand project'
+      'brand legal';
     gap: 6px 24px;
     align-items: center;
   }
@@ -54,9 +81,17 @@ const { content, legalUrls } = Astro.props;
     flex-direction: column;
     align-self: center;
   }
-  .footer-brand .wordmark { font-size: 19px; }
-  .footer-brand .tagline { font-size: 13px; color: var(--muted); white-space: nowrap; }
-  .footer-brand .tagline a { text-decoration: underline; }
+  .footer-brand .wordmark {
+    font-size: 19px;
+  }
+  .footer-brand .tagline {
+    font-size: 13px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .footer-brand .tagline a {
+    text-decoration: underline;
+  }
 
   .footer-project-links {
     grid-area: project;
@@ -84,11 +119,20 @@ const { content, legalUrls } = Astro.props;
     gap: 7px;
     transition: color 120ms;
   }
-  .footer-project-links a { font-size: 14px; }
-  .footer-legal-links a { font-size: 13px; }
+  .footer-project-links a {
+    font-size: 14px;
+  }
+  .footer-legal-links a {
+    font-size: 13px;
+  }
   .footer-project-links a:hover,
-  .footer-legal-links a:hover { color: var(--foreground); }
-  .footer-legal-links span { font-size: 13px; color: var(--muted); }
+  .footer-legal-links a:hover {
+    color: var(--foreground);
+  }
+  .footer-legal-links span {
+    font-size: 13px;
+    color: var(--muted);
+  }
 
   .github-icon {
     position: relative;
@@ -105,9 +149,15 @@ const { content, legalUrls } = Astro.props;
     display: block;
     object-fit: contain;
   }
-  .github-icon .github-white { display: none; }
-  :global(.dark) .github-icon .github-black { display: none; }
-  :global(.dark) .github-icon .github-white { display: block; }
+  .github-icon .github-white {
+    display: none;
+  }
+  :global(.dark) .github-icon .github-black {
+    display: none;
+  }
+  :global(.dark) .github-icon .github-white {
+    display: block;
+  }
 
   .footer-license {
     display: inline-flex;
@@ -124,10 +174,12 @@ const { content, legalUrls } = Astro.props;
     .footer-inner {
       grid-template-columns: 1fr auto;
       grid-template-areas:
-        "brand project"
-        "legal legal";
+        'brand project'
+        'legal legal';
       row-gap: 16px;
     }
-    .footer-legal-links { justify-content: center; }
+    .footer-legal-links {
+      justify-content: center;
+    }
   }
 </style>

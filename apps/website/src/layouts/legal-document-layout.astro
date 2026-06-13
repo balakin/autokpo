@@ -5,7 +5,11 @@ import BaseLayout from './base-layout.astro';
 import SiteFooter from '../components/site-footer.astro';
 import SiteHeader from '../components/site-header.astro';
 import { landingContent, supportedLocales } from '../i18n/landing';
-import { legalContent, type LegalDocumentKey, type Locale } from '../i18n/legal';
+import {
+  legalContent,
+  type LegalDocumentKey,
+  type Locale,
+} from '../i18n/legal';
 
 type Props = {
   locale: Locale;
@@ -15,7 +19,8 @@ type Props = {
   updated?: string;
 };
 
-const frontmatter = ((Astro.props as Props & { frontmatter?: Props }).frontmatter ?? Astro.props) as Props;
+const frontmatter = ((Astro.props as Props & { frontmatter?: Props })
+  .frontmatter ?? Astro.props) as Props;
 const { locale, documentKey, title, description, updated } = frontmatter;
 const content = landingContent[locale];
 const legalLocale = legalContent[locale];
@@ -23,7 +28,11 @@ const document = legalLocale.documents[documentKey];
 const documentTitle = title ?? document.title;
 const documentDescription = description ?? document.description;
 const documentUpdated = updated ?? document.updated;
-const formattedDate = new Date(documentUpdated).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
+const formattedDate = new Date(documentUpdated).toLocaleDateString(locale, {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
 const homeUrl = getRelativeLocaleUrl(locale, '');
 const legalUrls = {
   privacy: getRelativeLocaleUrl(locale, legalLocale.documents.privacy.slug),
@@ -48,8 +57,20 @@ const alternates = supportedLocales.map((alternateLocale) => ({
   <Fragment slot="head">
     <meta name="updated" content={documentUpdated} />
     <link rel="canonical" href={getAbsoluteLocaleUrl(locale, document.slug)} />
-    {alternates.map((alternate) => <link rel="alternate" hreflang={alternate.locale} href={alternate.url} />)}
-    <link rel="alternate" hreflang="x-default" href={getAbsoluteLocaleUrl('sr-Latn', document.slug)} />
+    {
+      alternates.map((alternate) => (
+        <link
+          rel="alternate"
+          hreflang={alternate.locale}
+          href={alternate.url}
+        />
+      ))
+    }
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href={getAbsoluteLocaleUrl('sr-Latn', document.slug)}
+    />
   </Fragment>
 
   <SiteHeader
@@ -63,7 +84,9 @@ const alternates = supportedLocales.map((alternateLocale) => ({
   <main id="main">
     <div class="legal-page">
       <div class="legal-meta">
-        <span class="legal-updated">{legalLocale.ui.updatedPrefix}: {formattedDate}</span>
+        <span class="legal-updated"
+          >{legalLocale.ui.updatedPrefix}: {formattedDate}</span
+        >
       </div>
       <article class="legal-content">
         <slot />
@@ -75,16 +98,26 @@ const alternates = supportedLocales.map((alternateLocale) => ({
 </BaseLayout>
 
 <style is:global>
-  .legal-page { max-width: 880px; margin: 0 auto; padding: 52px 32px 88px; }
+  .legal-page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 52px 32px 88px;
+  }
   .legal-meta {
     display: flex;
     align-items: center;
     margin-bottom: 4px;
     padding-bottom: 4px;
   }
-  .legal-updated { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+  .legal-updated {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
 
-  .legal-content { color: var(--foreground); }
+  .legal-content {
+    color: var(--foreground);
+  }
   .legal-content h1 {
     font-size: 30px;
     font-weight: 700;
@@ -120,8 +153,19 @@ const alternates = supportedLocales.map((alternateLocale) => ({
     margin-top: 28px;
     margin-bottom: 8px;
   }
-  .legal-content h5 { font-size: 14px; font-weight: 600; margin-top: 24px; margin-bottom: 6px; }
-  .legal-content h6 { font-size: 13px; font-weight: 600; color: var(--muted); margin-top: 20px; margin-bottom: 6px; }
+  .legal-content h5 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 24px;
+    margin-bottom: 6px;
+  }
+  .legal-content h6 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-top: 20px;
+    margin-bottom: 6px;
+  }
   .legal-content p {
     font-size: 15.5px;
     line-height: 1.68;
@@ -129,9 +173,18 @@ const alternates = supportedLocales.map((alternateLocale) => ({
     margin-bottom: 13px;
     text-wrap: pretty;
   }
-  .legal-content strong { color: var(--foreground); font-weight: 600; }
-  .legal-content em { font-style: italic; }
-  .legal-content del { text-decoration: line-through; color: var(--muted); opacity: 0.7; }
+  .legal-content strong {
+    color: var(--foreground);
+    font-weight: 600;
+  }
+  .legal-content em {
+    font-style: italic;
+  }
+  .legal-content del {
+    text-decoration: line-through;
+    color: var(--muted);
+    opacity: 0.7;
+  }
   .legal-content a {
     color: var(--accent-soft-foreground);
     font-weight: 500;
@@ -140,7 +193,9 @@ const alternates = supportedLocales.map((alternateLocale) => ({
     text-decoration-color: color-mix(in oklch, currentColor 40%, transparent);
     transition: text-decoration-color 120ms;
   }
-  .legal-content a:hover { text-decoration-color: currentColor; }
+  .legal-content a:hover {
+    text-decoration-color: currentColor;
+  }
   .legal-content code {
     font-family: var(--font-mono);
     font-size: 0.875em;
@@ -196,13 +251,32 @@ const alternates = supportedLocales.map((alternateLocale) => ({
     flex-direction: column;
     gap: 6px;
   }
-  .legal-content li { font-size: 15.5px; line-height: 1.65; color: var(--muted); }
-  .legal-content li strong { color: var(--foreground); }
-  .legal-content ul li::marker { color: var(--accent); }
-  .legal-content ol li::marker { font-family: var(--font-mono); font-size: 13px; color: var(--accent); font-weight: 600; }
+  .legal-content li {
+    font-size: 15.5px;
+    line-height: 1.65;
+    color: var(--muted);
+  }
+  .legal-content li strong {
+    color: var(--foreground);
+  }
+  .legal-content ul li::marker {
+    color: var(--accent);
+  }
+  .legal-content ol li::marker {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+  }
   .legal-content li > ul,
-  .legal-content li > ol { margin: 6px 0 2px; }
-  .legal-content hr { border: none; border-top: 1px solid var(--separator); margin: 24px 0; }
+  .legal-content li > ol {
+    margin: 6px 0 2px;
+  }
+  .legal-content hr {
+    border: none;
+    border-top: 1px solid var(--separator);
+    margin: 24px 0;
+  }
   .legal-content table {
     width: fit-content;
     max-width: 100%;
@@ -242,12 +316,22 @@ const alternates = supportedLocales.map((alternateLocale) => ({
     overflow-wrap: anywhere;
     vertical-align: top;
   }
-  .legal-content tr:last-child td { border-bottom: none; }
+  .legal-content tr:last-child td {
+    border-bottom: none;
+  }
 
   @media (max-width: 620px) {
-    .wrap { padding: 0 18px; }
-    .legal-page { padding: 36px 18px 72px; }
-    .legal-content h1 { font-size: 24px; }
-    .legal-content h2 { font-size: 18px; }
+    .wrap {
+      padding: 0 18px;
+    }
+    .legal-page {
+      padding: 36px 18px 72px;
+    }
+    .legal-content h1 {
+      font-size: 24px;
+    }
+    .legal-content h2 {
+      font-size: 18px;
+    }
   }
 </style>

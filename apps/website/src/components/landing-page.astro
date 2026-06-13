@@ -20,7 +20,12 @@ import githubWhiteUrl from '../assets/github-white.svg?url';
 import BaseLayout from '../layouts/base-layout.astro';
 import SiteFooter from './site-footer.astro';
 import SiteHeader from './site-header.astro';
-import { landingContent, localeAlternates, type IconName, type LandingContent } from '../i18n/landing';
+import {
+  landingContent,
+  localeAlternates,
+  type IconName,
+  type LandingContent,
+} from '../i18n/landing';
 import { legalContent } from '../i18n/legal';
 
 type Props = {
@@ -63,8 +68,20 @@ const iconByName = {
 >
   <Fragment slot="head">
     <link rel="canonical" href={canonicalUrl} />
-    {alternates.map((alternate) => <link rel="alternate" hreflang={alternate.locale} href={alternate.url} />)}
-    <link rel="alternate" hreflang="x-default" href={getAbsoluteLocaleUrl(landingContent['sr-Latn'].locale, '')} />
+    {
+      alternates.map((alternate) => (
+        <link
+          rel="alternate"
+          hreflang={alternate.locale}
+          href={alternate.url}
+        />
+      ))
+    }
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href={getAbsoluteLocaleUrl(landingContent['sr-Latn'].locale, '')}
+    />
   </Fragment>
 
   <SiteHeader
@@ -77,272 +94,620 @@ const iconByName = {
   <main id="main">
     <span id="top"></span>
 
-  <style is:global>
-    /* ── Buttons (from app) ────────────────────────────────── */
-    .btn {
-      font-family: var(--font-sans); font-weight: 500; font-size: 14px;
-      height: 38px; padding: 0 16px; border-radius: 10px;
-      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-      border: none; box-shadow: var(--surface-shadow);
-      transition: filter 120ms, background-color 120ms;
-      white-space: nowrap; text-decoration: none;
-    }
-    .btn:hover { filter: brightness(0.96); text-decoration: none; }
-    .btn:active { filter: brightness(0.92); }
-    .btn.primary   { background: var(--accent);   color: var(--accent-foreground); }
-    .btn.primary:visited { color: var(--accent-foreground); }
-    .btn.secondary { background: var(--default);  color: var(--default-foreground); }
-    .btn.secondary:visited { color: var(--default-foreground); }
-    .btn svg { width: 16px; height: 16px; }
-    .github-icon {
-      position: relative; width: 16px; height: 16px; flex-shrink: 0;
-      display: inline-block;
-    }
-    .github-icon img {
-      position: absolute; inset: 0; width: 100%; height: 100%; display: block;
-      object-fit: contain;
-    }
-    .github-icon .github-white { display: none; }
-    .dark .github-icon .github-black { display: none; }
-    .dark .github-icon .github-white { display: block; }
-    .btn.lg { height: 44px; padding: 0 20px; font-size: 15px; }
-
-
-
-    /* ── Section scaffolding ───────────────────────────────── */
-    section { scroll-margin-top: 76px; }
-    .eyebrow {
-      font-family: var(--font-mono); font-size: 12px; font-weight: 500;
-      letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
-      display: inline-flex; align-items: center; gap: 8px;
-    }
-    .eyebrow::before {
-      content: ""; width: 18px; height: 1px; background: var(--border);
-    }
-    .section-head { max-width: 600px; margin-bottom: 40px; }
-    .section-head .eyebrow { margin-bottom: 14px; }
-    .section-head h2 {
-      font-size: 26px; font-weight: 700; letter-spacing: -0.02em;
-      line-height: 1.25; margin-bottom: 12px;
-    }
-    .section-head p { color: var(--muted); font-size: 16px; line-height: 1.55; }
-
-    /* ── Hero ──────────────────────────────────────────────── */
-    .hero { position: relative; padding: 88px 0 72px; overflow: hidden; }
-    .hero::before { display: none; }
-    .hero-grid {
-      position: relative; z-index: 1;
-      display: grid; grid-template-columns: 1fr 1.05fr;
-      gap: 48px; align-items: center;
-    }
-    .hero-inner { max-width: 540px; }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      height: 28px; padding: 0 12px 0 10px; border-radius: 9999px;
-      background: var(--surface); border: 1px solid var(--border);
-      box-shadow: var(--surface-shadow);
-      font-size: 12.5px; font-weight: 500; color: var(--muted);
-      margin-bottom: 32px; white-space: nowrap;
-    }
-    .hero-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
-    .hero h1 {
-      font-size: clamp(30px, 4.4vw, 42px);
-      line-height: 1.14; font-weight: 700; letter-spacing: -0.025em;
-      margin-bottom: 22px; text-wrap: balance;
-    }
-    .hero h1 .em { color: var(--accent-soft-foreground); }
-    .hero-lede {
-      font-size: 17px; line-height: 1.6; color: var(--muted);
-      max-width: 560px; margin: 0 0 36px; text-wrap: pretty;
-    }
-    .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-
-    /* ── Hero ledger card ──────────────────────────────────── */
-    .ledger {
-      position: relative; z-index: 1;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 14px; box-shadow: var(--overlay-shadow);
-      overflow: hidden; font-feature-settings: "tnum" 1;
-    }
-    .ledger-head {
-      display: flex; align-items: center; gap: 10px;
-      padding: 14px 18px; border-bottom: 1px solid var(--separator);
-      background: var(--surface-secondary);
-    }
-    .ledger-head .lh-title {
-      font-size: 13px; font-weight: 600; letter-spacing: -0.01em;
-    }
-    .ledger-head .lh-spacer { flex: 1; }
-    .ledger-head .lh-year {
-      font-family: var(--font-mono); font-size: 12px; color: var(--muted);
-      border: 1px solid var(--border); border-radius: 9999px; padding: 3px 10px;
-    }
-    .ledger-table { width: 100%; }
-    .ledger-colhead {
-      display: grid; grid-template-columns: 28px minmax(0,1fr) auto;
-      gap: 12px; padding: 10px 18px;
-      font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.06em;
-      text-transform: uppercase; color: var(--muted);
-      border-bottom: 1px solid var(--separator);
-    }
-    .ledger-colhead .num, .ledger-row .num { text-align: right; }
-    .ledger-row {
-      display: grid; grid-template-columns: 28px minmax(0,1fr) auto;
-      gap: 12px; padding: 13px 18px; align-items: baseline;
-      border-bottom: 1px solid var(--separator);
-    }
-    .ledger-row .rb { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
-    .ledger-row .desc { font-family: var(--font-mono); font-size: 12.5px; color: var(--foreground); line-height: 1.35; }
-    .ledger-row .desc small { display: block; font-family: var(--font-sans); font-size: 11.5px; color: var(--muted); margin-top: 3px; }
-    .ledger-row .amt {
-      font-family: var(--font-mono); font-size: 13px; font-weight: 500;
-      color: var(--foreground); white-space: nowrap;
-    }
-    .ledger-total {
-      display: grid; grid-template-columns: 1fr auto; gap: 12px;
-      padding: 15px 18px; align-items: baseline; background: var(--surface-secondary);
-    }
-    .ledger-total .lt-label {
-      font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
-      text-transform: uppercase; color: var(--muted);
-    }
-    .ledger-total .lt-amt {
-      font-family: var(--font-mono); font-size: 16px; font-weight: 600;
-      color: var(--foreground); white-space: nowrap;
-    }
-
-    /* ── Features ──────────────────────────────────────────── */
-    .features { padding: 48px 0; }
-    .feature-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
-    }
-    .feature-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; box-shadow: var(--surface-shadow);
-      padding: 22px; display: flex; flex-direction: column; gap: 12px;
-    }
-    .feature-ico {
-      width: 38px; height: 38px; border-radius: 10px;
-      display: inline-flex; align-items: center; justify-content: center;
-      background: var(--accent-soft); color: var(--accent-soft-foreground);
-    }
-    .feature-ico svg { width: 19px; height: 19px; }
-    .feature-card h3 { font-size: 15.5px; font-weight: 600; letter-spacing: -0.01em; }
-    .feature-card p { font-size: 14px; line-height: 1.55; color: var(--muted); }
-
-    /* ── Trust / Security ──────────────────────────────────── */
-    .trust { padding: 48px 0; }
-    .trust-inner {
-      display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 48px;
-      align-items: start;
-    }
-    .trust-list { display: flex; flex-direction: column; gap: 4px; }
-    .trust-item {
-      display: flex; gap: 16px; padding: 20px 0;
-      border-bottom: 1px solid var(--separator);
-    }
-    .trust-item:last-child { border-bottom: none; }
-    .trust-item .t-ico {
-      width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
-      display: inline-flex; align-items: center; justify-content: center;
-      background: var(--surface-secondary); color: var(--foreground);
-      border: 1px solid var(--border);
-    }
-    .trust-item .t-ico svg { width: 17px; height: 17px; }
-    .trust-item h3 { font-size: 15px; font-weight: 600; margin-bottom: 5px; letter-spacing: -0.01em; }
-    .trust-item p { font-size: 14px; line-height: 1.55; color: var(--muted); }
-    .trust-item .mono { font-family: var(--font-mono); font-size: 13px; color: var(--foreground); }
-
-    /* ── FAQ ───────────────────────────────────────────────── */
-    .faq { padding: 48px 0; }
-    .faq-inner {
-      display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 48px;
-      align-items: start;
-    }
-    .faq-list { display: flex; flex-direction: column; }
-    details.faq-item {
-      border-bottom: 1px solid var(--separator);
-    }
-    details.faq-item:first-child { border-top: 1px solid var(--separator); }
-    .faq-item summary {
-      list-style: none; cursor: pointer;
-      display: flex; align-items: center; gap: 16px;
-      padding: 20px 4px; font-size: 16px; font-weight: 600;
-      letter-spacing: -0.01em; color: var(--foreground);
-    }
-    .faq-item summary::-webkit-details-marker { display: none; }
-    .faq-item summary .q-mark {
-      flex: 0 0 auto; width: 22px; height: 22px; border-radius: 6px;
-      display: inline-flex; align-items: center; justify-content: center;
-      color: var(--muted); transition: transform 160ms ease, color 120ms;
-    }
-    .faq-item summary .q-mark svg { width: 16px; height: 16px; }
-    .faq-item[open] summary .q-mark { transform: rotate(90deg); color: var(--accent-soft-foreground); }
-    .faq-item summary .q-text { flex: 1; }
-    .faq-answer {
-      padding: 0 4px 22px 54px; font-size: 14.5px; line-height: 1.6;
-      color: var(--muted); max-width: 640px;
-    }
-    .faq-answer strong { color: var(--foreground); font-weight: 600; }
-    .faq-note {
-      margin-top: 0; font-size: 16px; line-height: 1.55; color: var(--muted);
-    }
-
-    /* ── Final CTA ─────────────────────────────────────────── */
-    .final { padding: 20px 0 64px; }
-    .final-card {
-      position: relative; overflow: hidden;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; box-shadow: var(--surface-shadow);
-      padding: 52px 40px; text-align: center;
-    }
-    .final-card::before { display: none; }
-    .final-card > * { position: relative; z-index: 1; }
-    .final-card h2 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
-    .final-card p { color: var(--muted); font-size: 16px; max-width: 460px; margin: 0 auto 28px; line-height: 1.55; }
-    .final-card .hero-cta { justify-content: center; }
-
-
-
-    /* ── Responsive ────────────────────────────────────────── */
-    @media (max-width: 860px) {
-      .feature-grid { grid-template-columns: repeat(2, 1fr); }
-      .trust-inner { grid-template-columns: 1fr; gap: 28px; }
-      .faq-inner { grid-template-columns: 1fr; gap: 28px; }
-      .hero-grid { grid-template-columns: 1fr; gap: 44px; }
-      .hero-inner { max-width: 620px; }
-      .ledger { max-width: 100%; }
-    }
-    @media (max-width: 620px) {
-      .wrap { padding: 0 18px; }
-      .feature-grid { grid-template-columns: 1fr; }
-      .hero { padding: 48px 0 40px; }
-      .hero-cta .btn { flex: 1; }
-      .ledger-colhead, .ledger-row {
-        padding-left: 14px; padding-right: 14px;
+    <style is:global>
+      /* ── Buttons (from app) ────────────────────────────────── */
+      .btn {
+        font-family: var(--font-sans);
+        font-weight: 500;
+        font-size: 14px;
+        height: 38px;
+        padding: 0 16px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        border: none;
+        box-shadow: var(--surface-shadow);
+        transition:
+          filter 120ms,
+          background-color 120ms;
+        white-space: nowrap;
+        text-decoration: none;
       }
-      .final-card { padding: 40px 22px; }
-      .faq-answer { padding-left: 4px; }
-    }
+      .btn:hover {
+        filter: brightness(0.96);
+        text-decoration: none;
+      }
+      .btn:active {
+        filter: brightness(0.92);
+      }
+      .btn.primary {
+        background: var(--accent);
+        color: var(--accent-foreground);
+      }
+      .btn.primary:visited {
+        color: var(--accent-foreground);
+      }
+      .btn.secondary {
+        background: var(--default);
+        color: var(--default-foreground);
+      }
+      .btn.secondary:visited {
+        color: var(--default-foreground);
+      }
+      .btn svg {
+        width: 16px;
+        height: 16px;
+      }
+      .github-icon {
+        position: relative;
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        display: inline-block;
+      }
+      .github-icon img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: contain;
+      }
+      .github-icon .github-white {
+        display: none;
+      }
+      .dark .github-icon .github-black {
+        display: none;
+      }
+      .dark .github-icon .github-white {
+        display: block;
+      }
+      .btn.lg {
+        height: 44px;
+        padding: 0 20px;
+        font-size: 15px;
+      }
 
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      *, *::before, *::after { transition: none !important; animation: none !important; }
-    }
-  </style>
+      /* ── Section scaffolding ───────────────────────────────── */
+      section {
+        scroll-margin-top: 76px;
+      }
+      .eyebrow {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .eyebrow::before {
+        content: '';
+        width: 18px;
+        height: 1px;
+        background: var(--border);
+      }
+      .section-head {
+        max-width: 600px;
+        margin-bottom: 40px;
+      }
+      .section-head .eyebrow {
+        margin-bottom: 14px;
+      }
+      .section-head h2 {
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.25;
+        margin-bottom: 12px;
+      }
+      .section-head p {
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.55;
+      }
+
+      /* ── Hero ──────────────────────────────────────────────── */
+      .hero {
+        position: relative;
+        padding: 88px 0 72px;
+        overflow: hidden;
+      }
+      .hero::before {
+        display: none;
+      }
+      .hero-grid {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: 1fr 1.05fr;
+        gap: 48px;
+        align-items: center;
+      }
+      .hero-inner {
+        max-width: 540px;
+      }
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 28px;
+        padding: 0 12px 0 10px;
+        border-radius: 9999px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        box-shadow: var(--surface-shadow);
+        font-size: 12.5px;
+        font-weight: 500;
+        color: var(--muted);
+        margin-bottom: 32px;
+        white-space: nowrap;
+      }
+      .hero-badge .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--success);
+        flex-shrink: 0;
+      }
+      .hero h1 {
+        font-size: clamp(30px, 4.4vw, 42px);
+        line-height: 1.14;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+        margin-bottom: 22px;
+        text-wrap: balance;
+      }
+      .hero h1 .em {
+        color: var(--accent-soft-foreground);
+      }
+      .hero-lede {
+        font-size: 17px;
+        line-height: 1.6;
+        color: var(--muted);
+        max-width: 560px;
+        margin: 0 0 36px;
+        text-wrap: pretty;
+      }
+      .hero-cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+      }
+
+      /* ── Hero ledger card ──────────────────────────────────── */
+      .ledger {
+        position: relative;
+        z-index: 1;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        box-shadow: var(--overlay-shadow);
+        overflow: hidden;
+        font-feature-settings: 'tnum' 1;
+      }
+      .ledger-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--separator);
+        background: var(--surface-secondary);
+      }
+      .ledger-head .lh-title {
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .ledger-head .lh-spacer {
+        flex: 1;
+      }
+      .ledger-head .lh-year {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: 9999px;
+        padding: 3px 10px;
+      }
+      .ledger-table {
+        width: 100%;
+      }
+      .ledger-colhead {
+        display: grid;
+        grid-template-columns: 28px minmax(0, 1fr) auto;
+        gap: 12px;
+        padding: 10px 18px;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+        border-bottom: 1px solid var(--separator);
+      }
+      .ledger-colhead .num,
+      .ledger-row .num {
+        text-align: right;
+      }
+      .ledger-row {
+        display: grid;
+        grid-template-columns: 28px minmax(0, 1fr) auto;
+        gap: 12px;
+        padding: 13px 18px;
+        align-items: baseline;
+        border-bottom: 1px solid var(--separator);
+      }
+      .ledger-row .rb {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .ledger-row .desc {
+        font-family: var(--font-mono);
+        font-size: 12.5px;
+        color: var(--foreground);
+        line-height: 1.35;
+      }
+      .ledger-row .desc small {
+        display: block;
+        font-family: var(--font-sans);
+        font-size: 11.5px;
+        color: var(--muted);
+        margin-top: 3px;
+      }
+      .ledger-row .amt {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--foreground);
+        white-space: nowrap;
+      }
+      .ledger-total {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        padding: 15px 18px;
+        align-items: baseline;
+        background: var(--surface-secondary);
+      }
+      .ledger-total .lt-label {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .ledger-total .lt-amt {
+        font-family: var(--font-mono);
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--foreground);
+        white-space: nowrap;
+      }
+
+      /* ── Features ──────────────────────────────────────────── */
+      .features {
+        padding: 48px 0;
+      }
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      .feature-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: var(--surface-shadow);
+        padding: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .feature-ico {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--accent-soft);
+        color: var(--accent-soft-foreground);
+      }
+      .feature-ico svg {
+        width: 19px;
+        height: 19px;
+      }
+      .feature-card h3 {
+        font-size: 15.5px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .feature-card p {
+        font-size: 14px;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+
+      /* ── Trust / Security ──────────────────────────────────── */
+      .trust {
+        padding: 48px 0;
+      }
+      .trust-inner {
+        display: grid;
+        grid-template-columns: 0.85fr 1.15fr;
+        gap: 48px;
+        align-items: start;
+      }
+      .trust-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .trust-item {
+        display: flex;
+        gap: 16px;
+        padding: 20px 0;
+        border-bottom: 1px solid var(--separator);
+      }
+      .trust-item:last-child {
+        border-bottom: none;
+      }
+      .trust-item .t-ico {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--surface-secondary);
+        color: var(--foreground);
+        border: 1px solid var(--border);
+      }
+      .trust-item .t-ico svg {
+        width: 17px;
+        height: 17px;
+      }
+      .trust-item h3 {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 5px;
+        letter-spacing: -0.01em;
+      }
+      .trust-item p {
+        font-size: 14px;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+      .trust-item .mono {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        color: var(--foreground);
+      }
+
+      /* ── FAQ ───────────────────────────────────────────────── */
+      .faq {
+        padding: 48px 0;
+      }
+      .faq-inner {
+        display: grid;
+        grid-template-columns: 0.85fr 1.15fr;
+        gap: 48px;
+        align-items: start;
+      }
+      .faq-list {
+        display: flex;
+        flex-direction: column;
+      }
+      details.faq-item {
+        border-bottom: 1px solid var(--separator);
+      }
+      details.faq-item:first-child {
+        border-top: 1px solid var(--separator);
+      }
+      .faq-item summary {
+        list-style: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px 4px;
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: var(--foreground);
+      }
+      .faq-item summary::-webkit-details-marker {
+        display: none;
+      }
+      .faq-item summary .q-mark {
+        flex: 0 0 auto;
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        transition:
+          transform 160ms ease,
+          color 120ms;
+      }
+      .faq-item summary .q-mark svg {
+        width: 16px;
+        height: 16px;
+      }
+      .faq-item[open] summary .q-mark {
+        transform: rotate(90deg);
+        color: var(--accent-soft-foreground);
+      }
+      .faq-item summary .q-text {
+        flex: 1;
+      }
+      .faq-answer {
+        padding: 0 4px 22px 54px;
+        font-size: 14.5px;
+        line-height: 1.6;
+        color: var(--muted);
+        max-width: 640px;
+      }
+      .faq-answer strong {
+        color: var(--foreground);
+        font-weight: 600;
+      }
+      .faq-note {
+        margin-top: 0;
+        font-size: 16px;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+
+      /* ── Final CTA ─────────────────────────────────────────── */
+      .final {
+        padding: 20px 0 64px;
+      }
+      .final-card {
+        position: relative;
+        overflow: hidden;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: var(--surface-shadow);
+        padding: 52px 40px;
+        text-align: center;
+      }
+      .final-card::before {
+        display: none;
+      }
+      .final-card > * {
+        position: relative;
+        z-index: 1;
+      }
+      .final-card h2 {
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 12px;
+      }
+      .final-card p {
+        color: var(--muted);
+        font-size: 16px;
+        max-width: 460px;
+        margin: 0 auto 28px;
+        line-height: 1.55;
+      }
+      .final-card .hero-cta {
+        justify-content: center;
+      }
+
+      /* ── Responsive ────────────────────────────────────────── */
+      @media (max-width: 860px) {
+        .feature-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .trust-inner {
+          grid-template-columns: 1fr;
+          gap: 28px;
+        }
+        .faq-inner {
+          grid-template-columns: 1fr;
+          gap: 28px;
+        }
+        .hero-grid {
+          grid-template-columns: 1fr;
+          gap: 44px;
+        }
+        .hero-inner {
+          max-width: 620px;
+        }
+        .ledger {
+          max-width: 100%;
+        }
+      }
+      @media (max-width: 620px) {
+        .wrap {
+          padding: 0 18px;
+        }
+        .feature-grid {
+          grid-template-columns: 1fr;
+        }
+        .hero {
+          padding: 48px 0 40px;
+        }
+        .hero-cta .btn {
+          flex: 1;
+        }
+        .ledger-colhead,
+        .ledger-row {
+          padding-left: 14px;
+          padding-right: 14px;
+        }
+        .final-card {
+          padding: 40px 22px;
+        }
+        .faq-answer {
+          padding-left: 4px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *::before,
+        *::after {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+    </style>
 
     <!-- ── Hero ─────────────────────────────────────────────── -->
     <section class="hero">
       <div class="wrap">
         <div class="hero-grid">
           <div class="hero-inner">
-            <span class="hero-badge"><span class="dot"></span>{content.hero.badge}</span>
-            <h1>{content.hero.titlePrefix}<span class="em">{content.hero.titleEmphasis}</span>{content.hero.titleSuffix}</h1>
+            <span class="hero-badge"
+              ><span class="dot"></span>{content.hero.badge}</span
+            >
+            <h1>
+              {content.hero.titlePrefix}<span class="em"
+                >{content.hero.titleEmphasis}</span
+              >{content.hero.titleSuffix}
+            </h1>
             <p class="hero-lede">{content.hero.lede}</p>
             <div class="hero-cta">
-              <a class="btn primary lg" href="https://app.autokpo.com" target="_blank" rel="noreferrer noopener" data-analytics-event="app_opened" data-analytics-properties={JSON.stringify({ location: 'hero' })}>{content.links.app}</a>
-              <a class="btn secondary lg" href="https://github.com/balakin/autokpo" target="_blank" rel="noreferrer noopener" data-analytics-event="github_clicked" data-analytics-properties={JSON.stringify({ location: 'hero' })}>
-                <span class="github-icon" aria-hidden="true"><img class="github-black" src={githubBlackUrl} alt="" /><img class="github-white" src={githubWhiteUrl} alt="" /></span>
+              <a
+                class="btn primary lg"
+                href="https://app.autokpo.com"
+                target="_blank"
+                rel="noreferrer noopener"
+                data-analytics-event="app_opened"
+                data-analytics-properties={JSON.stringify({ location: 'hero' })}
+                >{content.links.app}</a
+              >
+              <a
+                class="btn secondary lg"
+                href="https://github.com/balakin/autokpo"
+                target="_blank"
+                rel="noreferrer noopener"
+                data-analytics-event="github_clicked"
+                data-analytics-properties={JSON.stringify({ location: 'hero' })}
+              >
+                <span class="github-icon" aria-hidden="true"
+                  ><img class="github-black" src={githubBlackUrl} alt="" /><img
+                    class="github-white"
+                    src={githubWhiteUrl}
+                    alt=""
+                  /></span
+                >
                 {content.links.github}
               </a>
             </div>
@@ -359,13 +724,18 @@ const iconByName = {
                 <span>{content.ledger.columns.description}</span>
                 <span class="num">{content.ledger.columns.amount}</span>
               </div>
-              {content.ledger.rows.map((row) => (
-                <div class="ledger-row">
-                  <span class="rb">{row.number}</span>
-                  <span class="desc">{row.date}<small>{row.client}</small></span>
-                  <span class="amt num">{row.amount}</span>
-                </div>
-              ))}
+              {
+                content.ledger.rows.map((row) => (
+                  <div class="ledger-row">
+                    <span class="rb">{row.number}</span>
+                    <span class="desc">
+                      {row.date}
+                      <small>{row.client}</small>
+                    </span>
+                    <span class="amt num">{row.amount}</span>
+                  </div>
+                ))
+              }
             </div>
             <div class="ledger-total">
               <span class="lt-label">{content.ledger.totalLabel}</span>
@@ -385,16 +755,20 @@ const iconByName = {
           <p>{content.features.body}</p>
         </div>
         <div class="feature-grid">
-          {content.features.items.map((feature) => {
-            const Icon = iconByName[feature.icon];
-            return (
-              <article class="feature-card">
-                <span class="feature-ico"><Icon aria-hidden="true" stroke-width={1.75} /></span>
-                <h3>{feature.title}</h3>
-                <p>{feature.body}</p>
-              </article>
-            );
-          })}
+          {
+            content.features.items.map((feature) => {
+              const Icon = iconByName[feature.icon];
+              return (
+                <article class="feature-card">
+                  <span class="feature-ico">
+                    <Icon aria-hidden="true" stroke-width={1.75} />
+                  </span>
+                  <h3>{feature.title}</h3>
+                  <p>{feature.body}</p>
+                </article>
+              );
+            })
+          }
         </div>
       </div>
     </section>
@@ -409,18 +783,22 @@ const iconByName = {
         </div>
 
         <div class="trust-list">
-          {content.trust.items.map((item) => {
-            const Icon = iconByName[item.icon];
-            return (
-              <div class="trust-item">
-                <span class="t-ico"><Icon aria-hidden="true" stroke-width={1.75} /></span>
-                <div>
-                  <h3>{item.title}</h3>
-                  <p>{item.body}</p>
+          {
+            content.trust.items.map((item) => {
+              const Icon = iconByName[item.icon];
+              return (
+                <div class="trust-item">
+                  <span class="t-ico">
+                    <Icon aria-hidden="true" stroke-width={1.75} />
+                  </span>
+                  <div>
+                    <h3>{item.title}</h3>
+                    <p>{item.body}</p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          }
         </div>
       </div>
     </section>
@@ -435,15 +813,19 @@ const iconByName = {
         </div>
 
         <div class="faq-list">
-          {content.faq.items.map((item) => (
-            <details class="faq-item" data-faq-id={item.id}>
-              <summary>
-                <span class="q-mark"><ChevronRight aria-hidden="true" stroke-width={2} /></span>
-                <span class="q-text">{item.question}</span>
-              </summary>
-              <div class="faq-answer" set:html={item.answerHtml} />
-            </details>
-          ))}
+          {
+            content.faq.items.map((item) => (
+              <details class="faq-item" data-faq-id={item.id}>
+                <summary>
+                  <span class="q-mark">
+                    <ChevronRight aria-hidden="true" stroke-width={2} />
+                  </span>
+                  <span class="q-text">{item.question}</span>
+                </summary>
+                <div class="faq-answer" set:html={item.answerHtml} />
+              </details>
+            ))
+          }
         </div>
       </div>
     </section>
@@ -455,9 +837,32 @@ const iconByName = {
           <h2>{content.final.title}</h2>
           <p set:html={content.final.bodyHtml} />
           <div class="hero-cta">
-            <a class="btn primary lg" href="https://app.autokpo.com" rel="noreferrer noopener" data-analytics-event="app_opened" data-analytics-properties={JSON.stringify({ location: 'final_cta' })}>{content.links.app}</a>
-            <a class="btn secondary lg" href="https://github.com/balakin/autokpo" target="_blank" rel="noreferrer noopener" data-analytics-event="github_clicked" data-analytics-properties={JSON.stringify({ location: 'final_cta' })}>
-              <span class="github-icon" aria-hidden="true"><img class="github-black" src={githubBlackUrl} alt="" /><img class="github-white" src={githubWhiteUrl} alt="" /></span>
+            <a
+              class="btn primary lg"
+              href="https://app.autokpo.com"
+              rel="noreferrer noopener"
+              data-analytics-event="app_opened"
+              data-analytics-properties={JSON.stringify({
+                location: 'final_cta',
+              })}>{content.links.app}</a
+            >
+            <a
+              class="btn secondary lg"
+              href="https://github.com/balakin/autokpo"
+              target="_blank"
+              rel="noreferrer noopener"
+              data-analytics-event="github_clicked"
+              data-analytics-properties={JSON.stringify({
+                location: 'final_cta',
+              })}
+            >
+              <span class="github-icon" aria-hidden="true"
+                ><img class="github-black" src={githubBlackUrl} alt="" /><img
+                  class="github-white"
+                  src={githubWhiteUrl}
+                  alt=""
+                /></span
+              >
               {content.links.github}
             </a>
           </div>
@@ -470,13 +875,15 @@ const iconByName = {
 </BaseLayout>
 
 <script>
-  document.querySelectorAll<HTMLDetailsElement>('details.faq-item').forEach((details) => {
-    details.addEventListener('toggle', () => {
-      if (!details.open) return;
+  document
+    .querySelectorAll<HTMLDetailsElement>('details.faq-item')
+    .forEach((details) => {
+      details.addEventListener('toggle', () => {
+        if (!details.open) return;
 
-      window.posthog?.capture('faq_item_expanded', {
-        question_id: details.dataset.faqId,
+        window.posthog?.capture('faq_item_expanded', {
+          question_id: details.dataset.faqId,
+        });
       });
     });
-  });
 </script>

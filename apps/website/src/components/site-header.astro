@@ -11,7 +11,13 @@ interface Props {
   alternates: Array<{ locale: string; route: string; languageName: string }>;
 }
 
-const { content, currentLocale, homeHref, navPrefix = '', alternates } = Astro.props;
+const {
+  content,
+  currentLocale,
+  homeHref,
+  navPrefix = '',
+  alternates,
+} = Astro.props;
 ---
 
 <header class="site-header">
@@ -25,24 +31,53 @@ const { content, currentLocale, homeHref, navPrefix = '', alternates } = Astro.p
     <div class="header-spacer"></div>
     <div class="header-actions">
       <nav class="language-switcher" aria-label={content.languageSwitcherLabel}>
-        {alternates.map((alternate) => (
-          <a
-            href={alternate.route}
-            aria-current={alternate.locale === currentLocale ? 'page' : undefined}
-            aria-label={alternate.locale === currentLocale ? `${alternate.languageName} — ${content.languageSwitcherCurrent}` : alternate.languageName}
-            title={alternate.locale === currentLocale ? `${alternate.languageName} — ${content.languageSwitcherCurrent}` : alternate.languageName}
-            data-analytics-event="language_switched"
-            data-analytics-properties={JSON.stringify({ locale: alternate.locale })}
-          >
-            {alternate.locale === 'sr-Latn' ? 'SR' : alternate.locale.toUpperCase()}
-          </a>
-        ))}
+        {
+          alternates.map((alternate) => (
+            <a
+              href={alternate.route}
+              aria-current={
+                alternate.locale === currentLocale ? 'page' : undefined
+              }
+              aria-label={
+                alternate.locale === currentLocale
+                  ? `${alternate.languageName} — ${content.languageSwitcherCurrent}`
+                  : alternate.languageName
+              }
+              title={
+                alternate.locale === currentLocale
+                  ? `${alternate.languageName} — ${content.languageSwitcherCurrent}`
+                  : alternate.languageName
+              }
+              data-analytics-event="language_switched"
+              data-analytics-properties={JSON.stringify({
+                locale: alternate.locale,
+              })}
+            >
+              {alternate.locale === 'sr-Latn'
+                ? 'SR'
+                : alternate.locale.toUpperCase()}
+            </a>
+          ))
+        }
       </nav>
-      <button class="theme-toggle" id="themeToggle" type="button" aria-label={content.theme.toggle} aria-pressed="false">
+      <button
+        class="theme-toggle"
+        id="themeToggle"
+        type="button"
+        aria-label={content.theme.toggle}
+        aria-pressed="false"
+      >
         <Moon class="i-moon" aria-hidden="true" stroke-width={1.75} />
         <Sun class="i-sun" aria-hidden="true" stroke-width={1.75} />
       </button>
-      <a class="btn primary hide-sm" href="https://app.autokpo.com" rel="noreferrer noopener" data-analytics-event="app_opened" data-analytics-properties={JSON.stringify({ location: 'header' })}>{content.links.app}</a>
+      <a
+        class="btn primary hide-sm"
+        href="https://app.autokpo.com"
+        rel="noreferrer noopener"
+        data-analytics-event="app_opened"
+        data-analytics-properties={JSON.stringify({ location: 'header' })}
+        >{content.links.app}</a
+      >
     </div>
   </div>
 </header>
@@ -59,7 +94,7 @@ const { content, currentLocale, homeHref, navPrefix = '', alternates } = Astro.p
     z-index: 50;
   }
   .site-header::before {
-    content: "";
+    content: '';
     position: absolute;
     inset: 0;
     z-index: -1;
@@ -68,8 +103,18 @@ const { content, currentLocale, homeHref, navPrefix = '', alternates } = Astro.p
     backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--separator);
   }
-  .header-inner { height: 60px; display: flex; align-items: center; gap: 16px; }
-  .header-nav { display: flex; align-items: center; gap: 28px; margin-left: 24px; }
+  .header-inner {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    margin-left: 24px;
+  }
   .header-nav a {
     font-size: 14px;
     font-weight: 500;
@@ -77,9 +122,17 @@ const { content, currentLocale, homeHref, navPrefix = '', alternates } = Astro.p
     text-decoration: none;
     transition: color 120ms;
   }
-  .header-nav a:hover { color: var(--foreground); }
-  .header-spacer { flex: 1; }
-  .header-actions { display: flex; align-items: center; gap: 8px; }
+  .header-nav a:hover {
+    color: var(--foreground);
+  }
+  .header-spacer {
+    flex: 1;
+  }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
   .wordmark {
     font-weight: 700;
@@ -92,7 +145,10 @@ const { content, currentLocale, homeHref, navPrefix = '', alternates } = Astro.p
   }
   .wordmark:hover,
   .wordmark:visited,
-  .wordmark:focus { color: var(--foreground); text-decoration: none; }
+  .wordmark:focus {
+    color: var(--foreground);
+    text-decoration: none;
+  }
 
   .btn {
     font-family: var(--font-sans);
@@ -107,14 +163,26 @@ const { content, currentLocale, homeHref, navPrefix = '', alternates } = Astro.p
     gap: 7px;
     border: none;
     box-shadow: var(--surface-shadow);
-    transition: filter 120ms, background-color 120ms;
+    transition:
+      filter 120ms,
+      background-color 120ms;
     white-space: nowrap;
     text-decoration: none;
   }
-  .btn:hover { filter: brightness(0.96); text-decoration: none; }
-  .btn:active { filter: brightness(0.92); }
-  .btn.primary { background: var(--accent); color: var(--accent-foreground); }
-  .btn.primary:visited { color: var(--accent-foreground); }
+  .btn:hover {
+    filter: brightness(0.96);
+    text-decoration: none;
+  }
+  .btn:active {
+    filter: brightness(0.92);
+  }
+  .btn.primary {
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+  .btn.primary:visited {
+    color: var(--accent-foreground);
+  }
 
   .language-switcher {
     display: inline-flex;
@@ -140,13 +208,17 @@ const { content, currentLocale, homeHref, navPrefix = '', alternates } = Astro.p
     font-weight: 600;
     color: var(--muted);
     text-decoration: none;
-    transition: background-color 120ms, color 120ms;
+    transition:
+      background-color 120ms,
+      color 120ms;
   }
-  .language-switcher a:hover { color: var(--foreground); }
-  .language-switcher a[aria-current="page"] {
+  .language-switcher a:hover {
+    color: var(--foreground);
+  }
+  .language-switcher a[aria-current='page'] {
     background: var(--surface);
     color: var(--foreground);
-    box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 
   .theme-toggle {
@@ -162,21 +234,40 @@ const { content, currentLocale, homeHref, navPrefix = '', alternates } = Astro.p
     box-shadow: var(--surface-shadow);
     transition: filter 120ms;
   }
-  .theme-toggle:hover { filter: brightness(0.96); }
-  .theme-toggle svg { width: 17px; height: 17px; }
-  .theme-toggle .i-sun { display: none; }
-  :global(.dark) .theme-toggle .i-sun { display: block; }
-  :global(.dark) .theme-toggle .i-moon { display: none; }
+  .theme-toggle:hover {
+    filter: brightness(0.96);
+  }
+  .theme-toggle svg {
+    width: 17px;
+    height: 17px;
+  }
+  .theme-toggle .i-sun {
+    display: none;
+  }
+  :global(.dark) .theme-toggle .i-sun {
+    display: block;
+  }
+  :global(.dark) .theme-toggle .i-moon {
+    display: none;
+  }
 
-  .hide-sm { }
+  .hide-sm {
+  }
 
   @media (max-width: 860px) {
-    .header-nav { gap: 18px; margin-left: 14px; }
+    .header-nav {
+      gap: 18px;
+      margin-left: 14px;
+    }
   }
   @media (max-width: 720px) {
-    .header-nav { display: none; }
+    .header-nav {
+      display: none;
+    }
   }
   @media (max-width: 620px) {
-    .hide-sm { display: none; }
+    .hide-sm {
+      display: none;
+    }
   }
 </style>

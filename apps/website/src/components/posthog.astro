@@ -3,6 +3,7 @@
 // Astro bundles this module <script> (no is:inline) and inlines the
 // PUBLIC_* env vars at build time.
 ---
+
 <script>
   import posthog from 'posthog-js';
 
@@ -11,22 +12,22 @@
 
   if (apiKey && apiHost) {
     posthog.init(apiKey, {
-      api_host: apiHost,                  // first-party reverse proxy (CNAME → PostHog EU)
-      ui_host: 'https://eu.posthog.com',  // so toolbar / "view in app" links resolve to EU Cloud, not the proxy
+      api_host: apiHost, // first-party reverse proxy (CNAME → PostHog EU)
+      ui_host: 'https://eu.posthog.com', // so toolbar / "view in app" links resolve to EU Cloud, not the proxy
       defaults: '2026-01-30',
 
-      cookieless_mode: 'always',        // no cookies / localStorage; hashed anonymous visitor id
-      persistence: 'memory',            // belt-and-suspenders: nothing written to the browser
+      cookieless_mode: 'always', // no cookies / localStorage; hashed anonymous visitor id
+      persistence: 'memory', // belt-and-suspenders: nothing written to the browser
       mask_personal_data_properties: true, // mask advertising click ids (gclid, fbclid, …) in urls; keeps utm attribution
-      autocapture: false,               // no automatic click/form tracking
-      capture_pageview: true,           // pageviews (SPA-aware via the 2026 defaults)
-      capture_pageleave: true,          // needed for bounce rate / time-on-page in Web Analytics
+      autocapture: false, // no automatic click/form tracking
+      capture_pageview: true, // pageviews (SPA-aware via the 2026 defaults)
+      capture_pageleave: true, // needed for bounce rate / time-on-page in Web Analytics
       capture_performance: { web_vitals: true }, // Core Web Vitals
-      disable_session_recording: true,  // no replay
-      disable_surveys: true,            // no surveys
-      enable_heatmaps: false,           // no mouse-move / click / scroll heatmaps
+      disable_session_recording: true, // no replay
+      disable_surveys: true, // no surveys
+      enable_heatmaps: false, // no mouse-move / click / scroll heatmaps
       person_profiles: 'identified_only', // never identified → events stay anonymous
-      advanced_disable_flags: true,     // no flags/experiments/remote config; skips the /flags request (web vitals stays, set client-side above)
+      advanced_disable_flags: true, // no flags/experiments/remote config; skips the /flags request (web vitals stays, set client-side above)
     });
 
     // Super property on every event so metrics can be sliced by release.

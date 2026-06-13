@@ -85,6 +85,7 @@
     "cross-env": "catalog:tooling",
     "drizzle-kit": "catalog:db",
     "eslint": "catalog:eslint",
+    "parse5": "catalog:",
     "eslint-plugin-better-tailwindcss": "catalog:eslint",
     "eslint-plugin-lingui": "catalog:eslint",
     "eslint-plugin-react-refresh": "catalog:eslint",

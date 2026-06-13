@@ -23,6 +23,7 @@
     "@autokpo/eslint-config": "workspace:*",
     "eslint": "catalog:eslint",
     "eslint-plugin-astro": "catalog:eslint",
+    "parse5": "catalog:",
     "wrangler": "catalog:cloudflare"
   }
 }

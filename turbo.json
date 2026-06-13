@@ -6,7 +6,7 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
-      "env": ["VITE_*", "PUBLIC_*"]
+      "env": ["VITE_*", "PUBLIC_*", "CLOUDFLARE_ENV"]
     },
     "dev": {
       "persistent": true,

@@ -28,7 +28,7 @@ jobs:
 
       - name: 🏗️ Build
         # VITE_* are inlined into the browser bundle at build time; turbo.json declares
-        # `env: ["VITE_*", ...]` so strict mode passes them through.
+        # `env: ["VITE_*", "CLOUDFLARE_ENV", ...]` so strict mode passes them through.
         env:
           VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY }}
           VITE_POSTHOG_PROJECT_TOKEN: ${{ vars.VITE_POSTHOG_PROJECT_TOKEN }}

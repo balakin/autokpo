@@ -135,8 +135,8 @@ function generateHeaders(): Plugin {
   return {
     name: 'generate-csp-headers',
     configResolved(config) {
-      host = config.env['VITE_POSTHOG_HOST'];
-      token = config.env['VITE_POSTHOG_PROJECT_TOKEN'];
+      host = config.env['VITE_POSTHOG_HOST'] as string | undefined;
+      token = config.env['VITE_POSTHOG_PROJECT_TOKEN'] as string | undefined;
     },
     writeBundle(outputOptions) {
       const dir = outputOptions.dir;

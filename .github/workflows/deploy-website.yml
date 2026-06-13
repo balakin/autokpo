@@ -1,9 +1,7 @@
 name: 🚀 Deploy Website
 
 on:
-  push:
-    tags:
-      - '@autokpo/website@*'
+  workflow_dispatch:
 
 # Serialize website deploys; never cancel one in flight.
 concurrency:
@@ -18,8 +16,17 @@ jobs:
       name: production
       url: https://autokpo.com
     steps:
+      - name: 🏷️ Resolve latest tag
+        id: tag
+        run: |
+          git fetch --tags
+          TAG=$(git tag --list '@autokpo/website@*' --sort=-version:refname | head -1)
+          echo "value=$TAG" >> "$GITHUB_OUTPUT"
+
       - name: 📥 Checkout code
         uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.tag.outputs.value }}
 
       - name: ⚙️ Setup
         uses: ./.github/actions/setup

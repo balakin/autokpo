@@ -1,5 +1,11 @@
 # @autokpo/app
 
+## 0.3.2
+
+### Patch Changes
+
+- [#74](https://github.com/balakin/autokpo/pull/74) [`61b12e9`](https://github.com/balakin/autokpo/commit/61b12e921fba3f2896344fb61aae77597b1d208e) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Added unsafe-eval to CSP to unblock hash-wasm during encryption unlock
+
 ## 0.3.1
 
 ### Patch Changes

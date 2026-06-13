@@ -151,11 +151,12 @@ function generateHeaders(): Plugin {
 
       const cspDirectives = [
         "default-src 'none'",
-        `script-src 'self'${scriptHashes.length ? ' ' + scriptHashes.join(' ') : ''}`,
+        `script-src 'self' https://challenges.cloudflare.com${scriptHashes.length ? ' ' + scriptHashes.join(' ') : ''}`,
         `style-src 'self'${styleHashes.length ? ' ' + styleHashes.join(' ') : ''}`,
         "font-src 'self'",
         "img-src 'self' data:",
         `connect-src 'self'${host ? ` ${host}` : ''}`,
+        'frame-src https://challenges.cloudflare.com',
         "worker-src 'self'",
         "manifest-src 'self'",
         "base-uri 'self'",

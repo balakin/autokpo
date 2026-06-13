@@ -11,7 +11,6 @@ import {
   toast,
 } from '@heroui/react';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { usePostHog } from '@posthog/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import {
@@ -28,6 +27,7 @@ import {
 } from 'react-icons/lu';
 import { useNavigate } from 'react-router';
 
+import { posthog } from '../analytics/posthog';
 import { useAuth } from '../auth/use-auth';
 import { clearQueryCacheOnSignOut } from '../auth/use-session-query';
 import { UserAvatar } from '../auth/user-avatar';
@@ -467,7 +467,6 @@ function getOperatingSystemName(userAgent: string): string | null {
 
 function AccountDataExportCard() {
   const { t } = useLingui();
-  const posthog = usePostHog();
   const exportMutation = useMutation({
     mutationFn: buildAccountExport,
     onSuccess: (data) => {
@@ -520,7 +519,6 @@ function DeleteAccountModal({
 }: DeleteAccountModalProps) {
   const { t } = useLingui();
   const navigate = useNavigate();
-  const posthog = usePostHog();
   const queryClient = useQueryClient();
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const accountEmail = user.email ?? '';

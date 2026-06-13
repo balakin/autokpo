@@ -129,7 +129,6 @@ catalogs:
 
   analytics:
     posthog-js: '^1.384.1'
-    '@posthog/react': '^1.10.1'
 
   misc:
     hono: '^4.12.23'

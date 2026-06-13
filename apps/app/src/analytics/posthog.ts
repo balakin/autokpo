@@ -1,8 +1,10 @@
-import posthog from 'posthog-js';
+import 'posthog-js/dist/web-vitals';
+import posthog from 'posthog-js/dist/module.slim.no-external';
 
 import { sanitizeAnalyticsEvent } from './sanitize-analytics-event';
 
 export { posthog };
+export type PostHogInstance = typeof posthog;
 
 /**
  * Initializes PostHog as privacy-first, anonymous analytics: cookieless, no
@@ -26,13 +28,14 @@ export function initAnalytics(): void {
     autocapture: false, // no automatic click/form tracking
     capture_pageview: true, // needed for active-user counts (unique users per day)
     capture_pageleave: true, // bounce / time-on-page
-    capture_performance: { web_vitals: true }, // Core Web Vitals (loads PostHog's web-vitals chunk)
+    capture_performance: { web_vitals: true }, // Core Web Vitals (web-vitals bundled via explicit import above)
     before_send: sanitizeAnalyticsEvent, // strip route ids + query/hash from urls
     disable_session_recording: true, // no replay
     disable_surveys: true, // no surveys
     enable_heatmaps: false, // no mouse-move / click / scroll heatmaps
     person_profiles: 'identified_only', // never identified → events stay anonymous
     advanced_disable_flags: true, // we use no flags/experiments/remote config; skips the /flags request (web vitals stays, set client-side above)
+    disable_external_dependency_loading: true, // no runtime script fetching; all deps bundled explicitly
   });
 
   // Super property on every event so metrics (web vitals, auth funnels, …) can

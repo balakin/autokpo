@@ -1,8 +1,14 @@
+import { createHash } from 'node:crypto';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { cloudflare } from '@cloudflare/vite-plugin';
 import { lingui, linguiTransformerBabelPreset } from '@lingui/vite-plugin';
 import babel from '@rolldown/plugin-babel';
 import tailwindcss from '@tailwindcss/vite';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import { defaultTreeAdapter as adapter, parse } from 'parse5';
+import type { DefaultTreeAdapterMap } from 'parse5';
 import { visualizer } from 'rollup-plugin-visualizer';
 import type { Plugin, PluginOption } from 'vite';
 import { defineConfig } from 'vite';
@@ -63,6 +69,7 @@ const buildOnlyPlugins = (): PluginOption[] => [
         ),
       ]
     : []),
+  ...scopeToEnv([generateHeaders()], (env) => env.name === 'client'),
   // VitePWA must stay top-level so its config/configResolved hooks run.
   // applyToEnvironment restricts it to the client environment — without this,
   // the Cloudflare plugin's worker environment would also receive it and emit
@@ -119,4 +126,93 @@ function scopeToEnv(
   predicate: ApplyToEnvironment,
 ): Plugin[] {
   return plugins.map((p) => ({ ...p, applyToEnvironment: predicate }));
+}
+
+function generateHeaders(): Plugin {
+  let host: string | undefined;
+  let token: string | undefined;
+
+  return {
+    name: 'generate-csp-headers',
+    configResolved(config) {
+      host = config.env['VITE_POSTHOG_HOST'] as string | undefined;
+      token = config.env['VITE_POSTHOG_PROJECT_TOKEN'] as string | undefined;
+    },
+    writeBundle(outputOptions) {
+      const dir = outputOptions.dir;
+      if (!dir) return;
+
+      const reportUri =
+        token && host ? `${host}/report/?token=${token}&v=${version}` : null;
+
+      const html = readFileSync(join(dir, 'index.html'), 'utf8');
+      const scriptHashes = extractInlineTagHashes(html, 'script');
+
+      const cspDirectives = [
+        "default-src 'none'",
+        `script-src 'self' https://challenges.cloudflare.com${scriptHashes.length ? ' ' + scriptHashes.join(' ') : ''}`,
+        `style-src 'self' 'unsafe-inline'`,
+        "font-src 'self'",
+        "img-src 'self' data:",
+        `connect-src 'self'${host ? ` ${host}` : ''}`,
+        'frame-src https://challenges.cloudflare.com',
+        "worker-src 'self'",
+        "manifest-src 'self'",
+        "base-uri 'self'",
+        ...(reportUri ? [`report-uri ${reportUri}`, 'report-to posthog'] : []),
+      ];
+
+      const headers = [
+        '/*',
+        `  Content-Security-Policy: ${cspDirectives.join('; ')}`,
+        '  X-Content-Type-Options: nosniff',
+        '  X-Frame-Options: DENY',
+        '  Referrer-Policy: strict-origin-when-cross-origin',
+        ...(reportUri ? [`  Reporting-Endpoints: posthog="${reportUri}"`] : []),
+        '',
+      ].join('\n');
+
+      writeFileSync(join(dir, '_headers'), headers);
+    },
+  };
+}
+
+type Node = DefaultTreeAdapterMap['node'];
+
+function walkNodes(node: Node, visit: (n: Node) => void): void {
+  visit(node);
+  if ('childNodes' in node) {
+    for (const child of node.childNodes) walkNodes(child, visit);
+  }
+}
+
+function extractInlineTagHashes(
+  html: string,
+  tagName: 'script' | 'style',
+): string[] {
+  const hashes = new Set<string>();
+  const document = parse(html);
+
+  walkNodes(document, (node) => {
+    if (!adapter.isElementNode(node)) return;
+    if (adapter.getTagName(node) !== tagName) return;
+    if (
+      tagName === 'script' &&
+      adapter.getAttrList(node).some((a) => a.name === 'src')
+    )
+      return;
+
+    const textNode = adapter
+      .getChildNodes(node)
+      .find((c) => adapter.isTextNode(c));
+    if (!textNode) return;
+
+    const content = adapter.getTextNodeContent(textNode);
+    if (!content.trim()) return;
+
+    const hash = createHash('sha256').update(content).digest('base64');
+    hashes.add(`'sha256-${hash}'`);
+  });
+
+  return [...hashes];
 }

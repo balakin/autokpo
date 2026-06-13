@@ -17,11 +17,11 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { usePostHog } from '@posthog/react';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { posthog } from '../analytics/posthog';
 import { useAuth } from '../auth/use-auth';
 import { useEncryptionContext } from '../e2ee/encryption-context';
 import {
@@ -82,7 +82,6 @@ type VerifyPasswordFormData = { password: string };
 export function SecuritySettingsPage() {
   const { t } = useLingui();
   const auth = useAuth();
-  const posthog = usePostHog();
   const { mek, clearEncryptionSession, refreshKeyRingProfile } =
     useEncryptionContext();
   const userId = auth.user?.id ?? '';

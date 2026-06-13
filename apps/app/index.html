@@ -14,6 +14,11 @@
     <meta name="theme-color" content="#f3f5f6" />
     <title>AutoKPO</title>
     <script>
+      // Must run before any ES module so Zod's allowsEval() check sees jitless:true
+      // and skips the new Function() probe that fires a CSP violation in Firefox.
+      globalThis.__zod_globalConfig = { jitless: true };
+    </script>
+    <script>
       try {
         var t = localStorage.getItem('autokpo:theme');
         var dark =

@@ -10,12 +10,12 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
-import { usePostHog } from '@posthog/react';
 import { useId, useState, type ReactNode } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 import { z } from 'zod';
 
+import { posthog } from '../analytics/posthog';
 import { KPO_FIRST_YEAR } from '../constants';
 import { useDoc, useYDoc } from '../crdt';
 
@@ -82,7 +82,6 @@ function AddBookDialog({
   onCreated: (id: string) => void;
 }) {
   const formId = useId();
-  const posthog = usePostHog();
   const { control, handleSubmit } = useForm({
     resolver: zodResolver(createAddBookFormSchema()),
     defaultValues: { year: defaultYear },

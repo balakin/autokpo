@@ -37,7 +37,7 @@ msgstr "{0, plural, one {Knjiga sadrži # unos. Ovu radnju nije moguće "
 msgid "{providerName} prijava nije bila uspešna."
 msgstr "{providerName} prijava nije bila uspešna."
 
-#: src/books/add-book-modal.tsx:142
+#: src/books/add-book-modal.tsx:141
 msgid "{year} (zauzeto)"
 msgstr "{year} (zauzeto)"
 
@@ -71,7 +71,7 @@ msgstr "Ako ste naišli na grešku ili imate predlog za poboljšanje, otvorite "
 msgid "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
 msgstr "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
 
-#: src/settings/security-settings-page.tsx:362
+#: src/settings/security-settings-page.tsx:361
 msgid "Aplikacija se otključava bez interakcije pri svakom pokretanju."
 msgstr "Aplikacija se otključava bez interakcije pri svakom pokretanju."
 
@@ -145,11 +145,11 @@ msgstr "Datum ne može biti u budućnosti"
 msgid "Datum prometa"
 msgstr "Datum prometa"
 
-#: src/auth/auth-entry.tsx:43
+#: src/auth/auth-entry.tsx:42
 msgid "Dobrodošli"
 msgstr "Dobrodošli"
 
-#: src/books/add-book-modal.tsx:170
+#: src/books/add-book-modal.tsx:169
 msgid "Dodaj"
 msgstr "Dodaj"
 
@@ -183,7 +183,7 @@ msgid "Duplikat"
 msgstr "Duplikat"
 
 #: src/auth/email-form.tsx:71
-#: src/settings/account-settings-page.tsx:591
+#: src/settings/account-settings-page.tsx:589
 msgid "Email adresa"
 msgstr "Email adresa"
 
@@ -196,7 +196,7 @@ msgstr "Firma-radnje"
 msgid "GNU Affero General Public License v3.0"
 msgstr "GNU Affero General Public License v3.0"
 
-#: src/books/add-book-modal.tsx:132
+#: src/books/add-book-modal.tsx:131
 msgid "Godina"
 msgstr "Godina"
 
@@ -210,7 +210,7 @@ msgstr "Godišnji prihod"
 msgid "Greška pri učitavanju kursa. Pokušajte ponovo."
 msgstr "Greška pri učitavanju kursa. Pokušajte ponovo."
 
-#: src/auth/auth-entry.tsx:74
+#: src/auth/auth-entry.tsx:73
 msgid "ili"
 msgstr "ili"
 
@@ -240,21 +240,21 @@ msgstr "Ističe"
 msgid "Ističe:"
 msgstr "Ističe:"
 
-#: src/books/add-book-modal.tsx:124
+#: src/books/add-book-modal.tsx:123
 msgid "Izaberite godinu"
 msgstr "Izaberite godinu"
 
-#: src/books/add-book-modal.tsx:108
+#: src/books/add-book-modal.tsx:107
 msgid "Izaberite godinu za novu knjigu."
 msgstr "Izaberite godinu za novu knjigu."
 
-#: src/settings/security-settings-page.tsx:337
+#: src/settings/security-settings-page.tsx:336
 msgid "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju "
 "aplikacije."
 msgstr "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju "
 "aplikacije."
 
-#: src/auth/auth-entry.tsx:46
+#: src/auth/auth-entry.tsx:45
 msgid "Izaberite način prijave."
 msgstr "Izaberite način prijave."
 
@@ -286,7 +286,7 @@ msgstr "Iznos u stranoj valuti"
 msgid "Izvezi podatke"
 msgstr "Izvezi podatke"
 
-#: src/settings/account-settings-page.tsx:501
+#: src/settings/account-settings-page.tsx:500
 msgid "Izvezi podatke naloga"
 msgstr "Izvezi podatke naloga"
 
@@ -299,7 +299,7 @@ msgstr "Izvorni kod"
 msgid "Izvorni kod na GitHub-u"
 msgstr "Izvorni kod na GitHub-u"
 
-#: src/auth/auth-entry.tsx:81
+#: src/auth/auth-entry.tsx:80
 #: src/auth/email-otp-sign-in.tsx:79
 msgid "Jednokratni kod"
 msgstr "Jednokratni kod"
@@ -349,7 +349,7 @@ msgstr "Konverzija valute"
 msgid "Korisnički avatar"
 msgstr "Korisnički avatar"
 
-#: src/settings/security-settings-page.tsx:246
+#: src/settings/security-settings-page.tsx:245
 msgid "Korisnik nije prijavljen."
 msgstr "Korisnik nije prijavljen."
 
@@ -382,7 +382,7 @@ msgstr "Limit: {limitFormatted} (<0>čl. 42 ZPDGa</0>)"
 msgid "Limit: {rollingLimitFormatted} (<0>čl. 33 ZPDV</0>)"
 msgstr "Limit: {rollingLimitFormatted} (<0>čl. 33 ZPDV</0>)"
 
-#: src/settings/security-settings-page.tsx:334
+#: src/settings/security-settings-page.tsx:333
 msgid "Lokalno otključavanje"
 msgstr "Lokalno otključavanje"
 
@@ -396,7 +396,7 @@ msgstr "Možete poslati kod ponovo za {resendSecondsLeft}s"
 
 #: src/auth/profile-popover.tsx:68
 #: src/e2ee/encryption-profile-popover.tsx:63
-#: src/settings/account-settings-page.tsx:662
+#: src/settings/account-settings-page.tsx:660
 #: src/settings/settings-page.tsx:28
 msgid "Nalog"
 msgstr "Nalog"
@@ -423,7 +423,7 @@ msgstr "Napustiti stranicu?"
 msgid "Nastavi ka aplikaciji"
 msgstr "Nastavi ka aplikaciji"
 
-#: src/auth/auth-entry.tsx:88
+#: src/auth/auth-entry.tsx:87
 msgid "Nastavkom prijave prihvatate <0>Uslove korišćenja</0> i potvrđujete da "
 "ste pročitali <1>Politiku privatnosti</1>."
 msgstr "Nastavkom prijave prihvatate <0>Uslove korišćenja</0> i potvrđujete da "
@@ -472,7 +472,7 @@ msgid "Nema unetih stavki"
 msgstr "Nema unetih stavki"
 
 #: src/auth/profile-popover.tsx:92
-#: src/settings/account-settings-page.tsx:679
+#: src/settings/account-settings-page.tsx:677
 msgid "Nesinhronizovano"
 msgstr "Nesinhronizovano"
 
@@ -485,7 +485,7 @@ msgstr "Nezavršeno"
 msgid "nije dostupna"
 msgstr "nije dostupna"
 
-#: src/settings/account-settings-page.tsx:539
+#: src/settings/account-settings-page.tsx:537
 msgid "Nije moguće obrisati nalog. Proverite internet vezu i pokušajte ponovo."
 msgstr "Nije moguće obrisati nalog. Proverite internet vezu i pokušajte ponovo."
 
@@ -497,13 +497,13 @@ msgstr "Nije moguće odjaviti ostale sesije. Pokušajte ponovo."
 msgid "Nije moguće odjaviti sesiju. Pokušajte ponovo."
 msgstr "Nije moguće odjaviti sesiju. Pokušajte ponovo."
 
-#: src/settings/account-settings-page.tsx:479
+#: src/settings/account-settings-page.tsx:478
 msgid "Nije moguće preuzeti podatke naloga. Proverite internet vezu i pokušajte "
 "ponovo."
 msgstr "Nije moguće preuzeti podatke naloga. Proverite internet vezu i "
 "pokušajte ponovo."
 
-#: src/settings/security-settings-page.tsx:303
+#: src/settings/security-settings-page.tsx:302
 msgid "Nije moguće promeniti šifru. Pokušajte ponovo."
 msgstr "Nije moguće promeniti šifru. Pokušajte ponovo."
 
@@ -516,7 +516,7 @@ msgstr "Nije moguće učitati sesije"
 msgid "Nismo uspeli da pošaljemo kod. Pokušajte ponovo."
 msgstr "Nismo uspeli da pošaljemo kod. Pokušajte ponovo."
 
-#: src/settings/security-settings-page.tsx:360
+#: src/settings/security-settings-page.tsx:359
 msgid "Ništa"
 msgstr "Ništa"
 
@@ -524,12 +524,12 @@ msgstr "Ništa"
 msgid "Niste dobili kod?"
 msgstr "Niste dobili kod?"
 
-#: src/books/add-book-modal.tsx:105
+#: src/books/add-book-modal.tsx:104
 #: src/books/book-library.tsx:34
 msgid "Nova knjiga"
 msgstr "Nova knjiga"
 
-#: src/settings/security-settings-page.tsx:579
+#: src/settings/security-settings-page.tsx:578
 msgid "Nova šifra"
 msgstr "Nova šifra"
 
@@ -560,12 +560,12 @@ msgstr "Obriši"
 msgid "Obriši knjigu za {year}"
 msgstr "Obriši knjigu za {year}"
 
-#: src/settings/account-settings-page.tsx:622
-#: src/settings/account-settings-page.tsx:695
+#: src/settings/account-settings-page.tsx:620
+#: src/settings/account-settings-page.tsx:693
 msgid "Obriši nalog"
 msgstr "Obriši nalog"
 
-#: src/settings/account-settings-page.tsx:564
+#: src/settings/account-settings-page.tsx:562
 msgid "Obriši nalog?"
 msgstr "Obriši nalog?"
 
@@ -639,7 +639,7 @@ msgid "Omiljene knjige"
 msgstr "Omiljene knjige"
 
 #: src/auth/profile-popover.tsx:80
-#: src/settings/account-settings-page.tsx:673
+#: src/settings/account-settings-page.tsx:671
 msgid "Online"
 msgstr "Online"
 
@@ -676,7 +676,7 @@ msgid "Otkazali ste prijavu. Pokušajte ponovo."
 msgstr "Otkazali ste prijavu. Pokušajte ponovo."
 
 #: src/auth/profile-popover.tsx:218
-#: src/books/add-book-modal.tsx:167
+#: src/books/add-book-modal.tsx:166
 #: src/books/book-library.tsx:192
 #: src/currency/currency-convert-modal.tsx:281
 #: src/e2ee/set-pin-modal.tsx:92
@@ -684,10 +684,10 @@ msgstr "Otkazali ste prijavu. Pokušajte ponovo."
 #: src/entity-profiles/entity-profile-preview.tsx:59
 #: src/entries/entries-table.tsx:145
 #: src/entries/entry-modal.tsx:70
-#: src/settings/account-settings-page.tsx:614
-#: src/settings/security-settings-page.tsx:515
-#: src/settings/security-settings-page.tsx:623
-#: src/settings/security-settings-page.tsx:831
+#: src/settings/account-settings-page.tsx:612
+#: src/settings/security-settings-page.tsx:514
+#: src/settings/security-settings-page.tsx:622
+#: src/settings/security-settings-page.tsx:830
 #: src/signatures/signature-preview.tsx:61
 msgid "Otkaži"
 msgstr "Otkaži"
@@ -726,11 +726,11 @@ msgstr "Ova godina"
 msgid "Ova podešavanja zahtevaju internet vezu."
 msgstr "Ova podešavanja zahtevaju internet vezu."
 
-#: src/settings/account-settings-page.tsx:577
+#: src/settings/account-settings-page.tsx:575
 msgid "Ova radnja se ne može opozvati."
 msgstr "Ova radnja se ne može opozvati."
 
-#: src/settings/account-settings-page.tsx:570
+#: src/settings/account-settings-page.tsx:568
 msgid "Ova radnja trajno briše vaš AutoKPO nalog i sve sinhronizovane podatke. "
 "Lokalni podaci na ovom uređaju biće uklonjeni nakon odjave."
 msgstr "Ova radnja trajno briše vaš AutoKPO nalog i sve sinhronizovane podatke. "
@@ -769,9 +769,9 @@ msgstr "PIB mora sadržati samo cifre"
 
 #: src/e2ee/pin-unlock-screen.tsx:63
 #: src/e2ee/set-pin-modal.tsx:82
-#: src/settings/security-settings-page.tsx:371
-#: src/settings/security-settings-page.tsx:480
-#: src/settings/security-settings-page.tsx:756
+#: src/settings/security-settings-page.tsx:370
+#: src/settings/security-settings-page.tsx:479
+#: src/settings/security-settings-page.tsx:755
 msgid "PIN kod"
 msgstr "PIN kod"
 
@@ -839,8 +839,8 @@ msgid "Podesite šifru za šifrovanje"
 msgstr "Podesite šifru za šifrovanje"
 
 #: src/e2ee/pin-unlock-screen.tsx:80
-#: src/settings/security-settings-page.tsx:203
-#: src/settings/security-settings-page.tsx:271
+#: src/settings/security-settings-page.tsx:202
+#: src/settings/security-settings-page.tsx:270
 msgid "Pogrešan PIN. Pokušajte ponovo."
 msgstr "Pogrešan PIN. Pokušajte ponovo."
 
@@ -848,7 +848,7 @@ msgstr "Pogrešan PIN. Pokušajte ponovo."
 msgid "Pogrešan PIN. Preostalo pokušaja: {remaining}."
 msgstr "Pogrešan PIN. Preostalo pokušaja: {remaining}."
 
-#: src/settings/security-settings-page.tsx:272
+#: src/settings/security-settings-page.tsx:271
 msgid "Pogrešna šifra. Pokušajte ponovo."
 msgstr "Pogrešna šifra. Pokušajte ponovo."
 
@@ -897,7 +897,7 @@ msgstr "Pošalji kod"
 msgid "Pošalji ponovo"
 msgstr "Pošalji ponovo"
 
-#: src/auth/auth-entry.tsx:84
+#: src/auth/auth-entry.tsx:83
 msgid "Poslaćemo vam kod za prijavu na email."
 msgstr "Poslaćemo vam kod za prijavu na email."
 
@@ -926,7 +926,7 @@ msgstr "Potpis"
 msgid "Potpis je sačuvan"
 msgstr "Potpis je sačuvan"
 
-#: src/settings/security-settings-page.tsx:839
+#: src/settings/security-settings-page.tsx:838
 msgid "Potvrdi"
 msgstr "Potvrdi"
 
@@ -934,7 +934,7 @@ msgstr "Potvrdi"
 msgid "Potvrdite da razumete da šifra ne može biti vraćena."
 msgstr "Potvrdite da razumete da šifra ne može biti vraćena."
 
-#: src/settings/security-settings-page.tsx:600
+#: src/settings/security-settings-page.tsx:599
 msgid "Potvrdite novu šifru"
 msgstr "Potvrdite novu šifru"
 
@@ -947,7 +947,7 @@ msgstr "Potvrdite PIN kod"
 msgid "Potvrdite prijavu"
 msgstr "Potvrdite prijavu"
 
-#: src/settings/security-settings-page.tsx:727
+#: src/settings/security-settings-page.tsx:726
 msgid "Potvrdite promenu šifre"
 msgstr "Potvrdite promenu šifre"
 
@@ -968,11 +968,11 @@ msgstr "Pregled podataka povezanih sa vašim nalogom."
 msgid "Pregledajte aktivne prijave na drugim uređajima."
 msgstr "Pregledajte aktivne prijave na drugim uređajima."
 
-#: src/pdf/download-pdf-button.tsx:30
+#: src/pdf/download-pdf-button.tsx:29
 msgid "Preuzmi PDF"
 msgstr "Preuzmi PDF"
 
-#: src/settings/account-settings-page.tsx:491
+#: src/settings/account-settings-page.tsx:490
 msgid "Preuzmite kopiju podataka vašeg naloga."
 msgstr "Preuzmite kopiju podataka vašeg naloga."
 
@@ -980,7 +980,7 @@ msgstr "Preuzmite kopiju podataka vašeg naloga."
 msgid "Preuzmite kopiju svih podataka knjiga i stavki."
 msgstr "Preuzmite kopiju svih podataka knjiga i stavki."
 
-#: src/settings/security-settings-page.tsx:373
+#: src/settings/security-settings-page.tsx:372
 msgid "Pri svakom pokretanju unosite 6-cifreni PIN kod."
 msgstr "Pri svakom pokretanju unosite 6-cifreni PIN kod."
 
@@ -992,11 +992,11 @@ msgstr "Prihod"
 msgid "Prihodi po godinama"
 msgstr "Prihodi po godinama"
 
-#: src/auth/auth-entry.tsx:66
+#: src/auth/auth-entry.tsx:65
 msgid "Prijava GitHub"
 msgstr "Prijava GitHub"
 
-#: src/auth/auth-entry.tsx:58
+#: src/auth/auth-entry.tsx:57
 msgid "Prijava Google"
 msgstr "Prijava Google"
 
@@ -1039,27 +1039,27 @@ msgstr "Profil"
 msgid "Profil je sačuvan"
 msgstr "Profil je sačuvan"
 
-#: src/settings/account-settings-page.tsx:649
-#: src/settings/account-settings-page.tsx:650
+#: src/settings/account-settings-page.tsx:647
+#: src/settings/account-settings-page.tsx:648
 msgid "Promena avatara trenutno nije dostupna"
 msgstr "Promena avatara trenutno nije dostupna"
 
-#: src/settings/security-settings-page.tsx:559
+#: src/settings/security-settings-page.tsx:558
 msgid "Promena utiče samo na šifru kojom se otključavaju podaci sa servera. "
 "Lokalni PIN ili automatsko otključavanje ostaju isti."
 msgstr "Promena utiče samo na šifru kojom se otključavaju podaci sa servera. "
 "Lokalni PIN ili automatsko otključavanje ostaju isti."
 
-#: src/settings/security-settings-page.tsx:402
-#: src/settings/security-settings-page.tsx:630
+#: src/settings/security-settings-page.tsx:401
+#: src/settings/security-settings-page.tsx:629
 msgid "Promeni šifru"
 msgstr "Promeni šifru"
 
-#: src/settings/security-settings-page.tsx:390
+#: src/settings/security-settings-page.tsx:389
 msgid "Promenite glavnu šifru. Podaci neće biti ponovo šifrovani."
 msgstr "Promenite glavnu šifru. Podaci neće biti ponovo šifrovani."
 
-#: src/settings/security-settings-page.tsx:556
+#: src/settings/security-settings-page.tsx:555
 msgid "Promenite šifru za šifrovanje"
 msgstr "Promenite šifru za šifrovanje"
 
@@ -1164,11 +1164,11 @@ msgstr "Šifra poreskog obveznika mora imati tačno 8 cifara"
 #: src/e2ee/encryption-setup-screen.tsx:95
 #: src/e2ee/encryption-unlock-screen.tsx:71
 #: src/e2ee/encryption-unlock-screen.tsx:75
-#: src/settings/security-settings-page.tsx:387
+#: src/settings/security-settings-page.tsx:386
 msgid "Šifra za šifrovanje"
 msgstr "Šifra za šifrovanje"
 
-#: src/settings/security-settings-page.tsx:295
+#: src/settings/security-settings-page.tsx:294
 msgid "Šifra za šifrovanje je promenjena."
 msgstr "Šifra za šifrovanje je promenjena."
 
@@ -1177,7 +1177,7 @@ msgid "Šifrovanje"
 msgstr "Šifrovanje"
 
 #: src/auth/profile-popover.tsx:97
-#: src/settings/account-settings-page.tsx:684
+#: src/settings/account-settings-page.tsx:682
 msgid "Sinhronizovano"
 msgstr "Sinhronizovano"
 
@@ -1242,7 +1242,7 @@ msgstr "Tema"
 msgid "Trenutna sesija"
 msgstr "Trenutna sesija"
 
-#: src/settings/security-settings-page.tsx:798
+#: src/settings/security-settings-page.tsx:797
 msgid "Trenutna šifra"
 msgstr "Trenutna šifra"
 
@@ -1258,7 +1258,7 @@ msgstr "Učitavanje sesija…"
 msgid "Ukloni iz omiljenih za {year}"
 msgstr "Ukloni iz omiljenih za {year}"
 
-#: src/settings/security-settings-page.tsx:457
+#: src/settings/security-settings-page.tsx:456
 msgid "Ukloni PIN kod"
 msgstr "Ukloni PIN kod"
 
@@ -1283,11 +1283,11 @@ msgid "Unesite jednokratni kod koji smo poslali na:"
 msgstr "Unesite jednokratni kod koji smo poslali na:"
 
 #: src/e2ee/pin-unlock-screen.tsx:52
-#: src/settings/security-settings-page.tsx:750
+#: src/settings/security-settings-page.tsx:749
 msgid "Unesite PIN kod"
 msgstr "Unesite PIN kod"
 
-#: src/settings/security-settings-page.tsx:731
+#: src/settings/security-settings-page.tsx:730
 msgid "Unesite PIN kod da biste nastavili."
 msgstr "Unesite PIN kod da biste nastavili."
 
@@ -1300,11 +1300,11 @@ msgstr "Unesite podatke novog unosa."
 msgid "Unesite šifru za šifrovanje."
 msgstr "Unesite šifru za šifrovanje."
 
-#: src/settings/security-settings-page.tsx:460
+#: src/settings/security-settings-page.tsx:459
 msgid "Unesite trenutni PIN kod da biste potvrdili."
 msgstr "Unesite trenutni PIN kod da biste potvrdili."
 
-#: src/settings/security-settings-page.tsx:733
+#: src/settings/security-settings-page.tsx:732
 msgid "Unesite trenutnu šifru da biste nastavili."
 msgstr "Unesite trenutnu šifru da biste nastavili."
 
@@ -1369,7 +1369,7 @@ msgid "Vaš nalog nema javnu email adresu. Prijavite se putem jednokratnog koda 
 msgstr "Vaš nalog nema javnu email adresu. Prijavite se putem jednokratnog koda "
 "na email."
 
-#: src/settings/account-settings-page.tsx:488
+#: src/settings/account-settings-page.tsx:487
 msgid "Vaši podaci"
 msgstr "Vaši podaci"
 
@@ -1395,7 +1395,7 @@ msgstr "Verovatno je dostupna nova verzija. Osvežite aplikaciju da biste "
 msgid "Vrednost ne može biti negativna"
 msgstr "Vrednost ne može biti negativna"
 
-#: src/settings/account-settings-page.tsx:582
+#: src/settings/account-settings-page.tsx:580
 msgid "Za potvrdu unesite email adresu naloga:"
 msgstr "Za potvrdu unesite email adresu naloga:"
 

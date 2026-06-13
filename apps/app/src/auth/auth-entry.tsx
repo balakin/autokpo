@@ -1,9 +1,9 @@
 import { Button, Card, Link, Separator } from '@heroui/react';
 import { Trans } from '@lingui/react/macro';
-import { usePostHog } from '@posthog/react';
 import { FaGithub, FaGoogle } from 'react-icons/fa6';
 import { useNavigate } from 'react-router';
 
+import { posthog } from '../analytics/posthog';
 import { useLocale } from '../i18n/use-locale';
 import { getLegalLinks } from '../legal/legal-links';
 
@@ -16,7 +16,6 @@ export function AuthEntry() {
   const authEmail = useAuthEmail();
   const { locale } = useLocale();
   const navigate = useNavigate();
-  const posthog = usePostHog();
   const legalLinks = getLegalLinks(locale);
 
   async function requestOtp(email: string, captchaToken: string) {

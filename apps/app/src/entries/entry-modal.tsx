@@ -1,7 +1,8 @@
 import { Button, Modal } from '@heroui/react';
 import { Trans } from '@lingui/react/macro';
-import { usePostHog } from '@posthog/react';
 import { useId, type ReactNode } from 'react';
+
+import { posthog } from '../analytics/posthog';
 
 import { type EntryModelData, type KpoEntry } from './entries-schema';
 import { EntryForm } from './entry-form';
@@ -20,7 +21,6 @@ export function EntryModal({
   onSaveEntry,
 }: EntryModalProps) {
   const formId = useId();
-  const posthog = usePostHog();
 
   function handleSave(data: EntryModelData, close: () => void) {
     const isEdit = !!entry;

@@ -1,7 +1,7 @@
-import { usePostHog } from '@posthog/react';
 import { useState } from 'react';
 import { useBlocker } from 'react-router';
 
+import { posthog } from '../analytics/posthog';
 import { useBookId } from '../books/use-book-id';
 import { useDoc, useYDoc } from '../crdt';
 import type { EntityProfile } from '../entity-profiles/entity-profile-schema';
@@ -20,7 +20,6 @@ import type { WizardStep } from './wizard-stepper';
 
 export function SetupWizard() {
   const ydoc = useDoc();
-  const posthog = usePostHog();
   const bookId = useBookId();
   const profile = useYDoc(profileSelectors.active(bookId));
   const signature = useYDoc(signatureSelectors.active(bookId));

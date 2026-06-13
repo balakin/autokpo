@@ -15,11 +15,13 @@ import { z } from 'zod';
 import { posthog } from '../analytics/posthog';
 
 type EncryptionSetupScreenProps = {
+  hasSetupError: boolean;
   isSubmitting: boolean;
   onSubmit: (password: string) => void;
 };
 
 export function EncryptionSetupScreen({
+  hasSetupError,
   isSubmitting,
   onSubmit,
 }: EncryptionSetupScreenProps) {
@@ -174,6 +176,14 @@ export function EncryptionSetupScreen({
           >
             <Trans>Nastavi ka aplikaciji</Trans>
           </Button>
+          {hasSetupError ? (
+            <p className="text-center text-sm text-danger">
+              <Trans>
+                Podešavanje šifrovanja nije uspelo. Proverite internet vezu i
+                pokušajte ponovo.
+              </Trans>
+            </p>
+          ) : null}
         </form>
       </Card.Content>
     </Card>

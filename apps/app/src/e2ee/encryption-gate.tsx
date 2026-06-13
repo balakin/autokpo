@@ -160,7 +160,8 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
         keyRingRevision: revision,
         deks,
       });
-    } catch {
+    } catch (error) {
+      console.error('setup-failed', error);
       dispatch({ type: 'setup-failed' });
     }
   }
@@ -191,7 +192,8 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
         keyRingRevision,
         deks,
       });
-    } catch {
+    } catch (error) {
+      console.error('unlock-failed', error);
       dispatch({ type: 'unlock-failed' });
     }
   }
@@ -344,6 +346,9 @@ function EncryptionGateForUser({ userId, children }: EncryptionGateProps) {
     return (
       <EncryptionShell>
         <EncryptionSetupScreen
+          hasSetupError={
+            session.status === 'error' && session.error === 'setup'
+          }
           isSubmitting={session.status === 'setup-submitting'}
           onSubmit={(password) => void setup(password)}
         />

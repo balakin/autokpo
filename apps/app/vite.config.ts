@@ -150,7 +150,7 @@ function generateHeaders(): Plugin {
 
       const cspDirectives = [
         "default-src 'none'",
-        `script-src 'self' https://challenges.cloudflare.com${scriptHashes.length ? ' ' + scriptHashes.join(' ') : ''}`,
+        `script-src 'self' 'unsafe-eval' https://challenges.cloudflare.com${scriptHashes.length ? ' ' + scriptHashes.join(' ') : ''}`,
         `style-src 'self' 'unsafe-inline'`,
         "font-src 'self'",
         "img-src 'self' data:",

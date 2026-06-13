@@ -1,10 +1,11 @@
 import { Card } from '@heroui/react';
 import { Trans } from '@lingui/react/macro';
 import type { TurnstileInstance } from '@marsidev/react-turnstile';
-import { usePostHog } from '@posthog/react';
 import { useRef } from 'react';
 import { LuMail } from 'react-icons/lu';
 import { Navigate, useNavigate } from 'react-router';
+
+import { posthog } from '../analytics/posthog';
 
 import { requestEmailOtpSession, verifyEmailOtpSession } from './auth-session';
 import { AuthShell } from './auth-shell';
@@ -29,7 +30,6 @@ export function EmailAuthPage({
   const auth = useAuth();
   const authEmail = useAuthEmail();
   const navigate = useNavigate();
-  const posthog = usePostHog();
   const emailAddress = authEmail.email;
   const turnstileRef = useRef<TurnstileInstance>(null);
 

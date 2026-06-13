@@ -8,11 +8,12 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Trans, useLingui } from '@lingui/react/macro';
 import type { TurnstileInstance } from '@marsidev/react-turnstile';
-import { usePostHog } from '@posthog/react';
 import { useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { LuMail } from 'react-icons/lu';
 import { z } from 'zod';
+
+import { posthog } from '../analytics/posthog';
 
 import { HiddenTurnstile } from './hidden-turnstile';
 
@@ -23,7 +24,6 @@ export interface EmailFormProps {
 
 export function EmailForm({ email, onSubmit }: EmailFormProps) {
   const { t } = useLingui();
-  const posthog = usePostHog();
   const turnstileRef = useRef<TurnstileInstance>(null);
 
   const schema = z.object({

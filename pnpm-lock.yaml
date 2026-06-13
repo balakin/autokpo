@@ -6,9 +6,6 @@ settings:
 
 catalogs:
   analytics:
-    '@posthog/react':
-      specifier: ^1.10.1
-      version: 1.10.1
     posthog-js:
       specifier: ^1.384.1
       version: 1.384.1
@@ -375,9 +372,6 @@ importers:
       '@marsidev/react-turnstile':
         specifier: catalog:misc
         version: 1.5.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@posthog/react':
-        specifier: catalog:analytics
-        version: 1.10.1(@types/react@19.2.17)(posthog-js@1.384.1)(react@19.2.7)
       '@react-pdf/renderer':
         specifier: catalog:misc
         version: 4.5.1(react@19.2.7)
@@ -2937,16 +2931,6 @@ packages:
 
   '@posthog/core@1.31.1':
     resolution: {integrity: sha512-ZV7qk1lSLpJR7n5HZ/au0iA1H/5TaZjwAF3pVVhQYwCALOSIF5jvnI2X9mvByQIS+wSUckPkZQ+33YaIT6SZJQ==}
-
-  '@posthog/react@1.10.1':
-    resolution: {integrity: sha512-VbZiwshRYJi6PDRTLtSmNLU9cud4DFLrebL4minUlk532aeGTMwyQdTybsMCRDCVStVTBE5/wWY9YYreud4DJQ==}
-    peerDependencies:
-      '@types/react': '>=16.8.0'
-      posthog-js: '>=1.257.2'
-      react: '>=16.8.0'
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
 
   '@posthog/types@1.384.1':
     resolution: {integrity: sha512-tzObc/AIunXrKGX3lsPGQ1vs915L0KEChBDmPvgs9PMkCc7sH9eMn8/XKPbZ/BxJALRN8fsWCeSkR2fyoADWvA==}
@@ -10599,13 +10583,6 @@ snapshots:
   '@posthog/core@1.31.1':
     dependencies:
       '@posthog/types': 1.384.1
-
-  '@posthog/react@1.10.1(@types/react@19.2.17)(posthog-js@1.384.1)(react@19.2.7)':
-    dependencies:
-      posthog-js: 1.384.1
-      react: 19.2.7
-    optionalDependencies:
-      '@types/react': 19.2.17
 
   '@posthog/types@1.384.1': {}
 

@@ -9,9 +9,10 @@ import {
 } from '@heroui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { usePostHog } from '@posthog/react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
+
+import { posthog } from '../analytics/posthog';
 
 type EncryptionSetupScreenProps = {
   isSubmitting: boolean;
@@ -23,7 +24,6 @@ export function EncryptionSetupScreen({
   onSubmit,
 }: EncryptionSetupScreenProps) {
   const { t } = useLingui();
-  const posthog = usePostHog();
   const schema = z
     .object({
       password: z

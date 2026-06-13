@@ -16,9 +16,12 @@ export default defineConfig([
     files: ['**/*.astro'],
     languageOptions: {
       parserOptions: {
+        extraFileExtensions: ['.astro'],
         parser: tseslint.parser,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
+    processor: 'astro/client-side-ts',
   },
 
   eslintConfigPrettier,

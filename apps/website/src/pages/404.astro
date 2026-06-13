@@ -2,7 +2,11 @@
 import BaseLayout from '../layouts/base-layout.astro';
 import SiteHeader from '../components/site-header.astro';
 import SiteFooter from '../components/site-footer.astro';
-import { landingContent, localeAlternates, supportedLocales } from '../i18n/landing';
+import {
+  landingContent,
+  localeAlternates,
+  supportedLocales,
+} from '../i18n/landing';
 
 const primary = landingContent['sr-Latn'];
 const legalUrls = { privacy: '/privacy/', terms: '/terms/' };
@@ -30,18 +34,20 @@ const legalUrls = { privacy: '/privacy/', terms: '/terms/' };
         <div class="container">
           <p class="code">404</p>
           <div class="locales-content">
-            {supportedLocales.map((locale) => {
-              const c = landingContent[locale];
-              return (
-                <div class="locale-block" lang={locale}>
-                  <h1 class="heading">{c.notFound.title}</h1>
-                  <p class="message">{c.notFound.message}</p>
-                  <nav aria-label={c.notFound.navLabel}>
-                    <a href={c.route}>{c.languageName}</a>
-                  </nav>
-                </div>
-              );
-            })}
+            {
+              supportedLocales.map((locale) => {
+                const c = landingContent[locale];
+                return (
+                  <div class="locale-block" lang={locale}>
+                    <h1 class="heading">{c.notFound.title}</h1>
+                    <p class="message">{c.notFound.message}</p>
+                    <nav aria-label={c.notFound.navLabel}>
+                      <a href={c.route}>{c.languageName}</a>
+                    </nav>
+                  </div>
+                );
+              })
+            }
           </div>
         </div>
       </div>
@@ -128,7 +134,9 @@ const legalUrls = { privacy: '/privacy/', terms: '/terms/' };
   }
 
   @media (max-width: 560px) {
-    .code { font-size: 3.5rem; }
+    .code {
+      font-size: 3.5rem;
+    }
 
     .locales-content {
       flex-direction: column;

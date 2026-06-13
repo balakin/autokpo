@@ -139,3 +139,7 @@ catalogs:
     workbox-window: '^7.4.1'
     '@marsidev/react-turnstile': '^1.5.2'
     '@react-pdf/renderer': '^4.5.1'
+
+catalog:
+  parse5: ^8.0.1
+  prettier-plugin-astro: ^0.14.1

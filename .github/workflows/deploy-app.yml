@@ -1,9 +1,7 @@
 name: 🚀 Deploy App
 
 on:
-  push:
-    tags:
-      - '@autokpo/app@*'
+  workflow_dispatch:
 
 # Serialize app deploys; never cancel one in flight.
 concurrency:
@@ -20,8 +18,17 @@ jobs:
     env:
       CLOUDFLARE_ENV: production
     steps:
+      - name: 🏷️ Resolve latest tag
+        id: tag
+        run: |
+          git fetch --tags
+          TAG=$(git tag --list '@autokpo/app@*' --sort=-version:refname | head -1)
+          echo "value=$TAG" >> "$GITHUB_OUTPUT"
+
       - name: 📥 Checkout code
         uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.tag.outputs.value }}
 
       - name: ⚙️ Setup
         uses: ./.github/actions/setup

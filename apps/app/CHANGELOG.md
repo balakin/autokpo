@@ -1,5 +1,11 @@
 # @autokpo/app
 
+## 0.3.1
+
+### Patch Changes
+
+- [#69](https://github.com/balakin/autokpo/pull/69) [`e8e252f`](https://github.com/balakin/autokpo/commit/e8e252fdc18e4f9973e0848301fadcc8f696acf5) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Added Content Security Policy headers with PostHog reporting
+
 ## 0.3.0
 
 ### Minor Changes

@@ -83,7 +83,7 @@ msgstr "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o "
 "ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju "
 "i sinhronizuju između vaših uređaja."
 
-#: src/e2ee/encryption-setup-screen.tsx:76
+#: src/e2ee/encryption-setup-screen.tsx:78
 msgid "AutoKPO ne može da vidi, resetuje ili vrati ovu šifru. Ako je izgubite, "
 "šifrovani podaci ne mogu biti vraćeni."
 msgstr "AutoKPO ne može da vidi, resetuje ili vrati ovu šifru. Ako je izgubite, "
@@ -419,7 +419,7 @@ msgstr "Napustite"
 msgid "Napustiti stranicu?"
 msgstr "Napustiti stranicu?"
 
-#: src/e2ee/encryption-setup-screen.tsx:175
+#: src/e2ee/encryption-setup-screen.tsx:177
 msgid "Nastavi ka aplikaciji"
 msgstr "Nastavi ka aplikaciji"
 
@@ -442,7 +442,7 @@ msgstr "Nazad"
 msgid "Nazad na prijavu"
 msgstr "Nazad na prijavu"
 
-#: src/e2ee/encryption-gate.tsx:319
+#: src/e2ee/encryption-gate.tsx:321
 msgid "Ne možemo da proverimo šifrovanje"
 msgstr "Ne možemo da proverimo šifrovanje"
 
@@ -834,7 +834,13 @@ msgstr "Podešavanja naloga nisu dostupna offline"
 msgid "Podešavanje knjige"
 msgstr "Podešavanje knjige"
 
-#: src/e2ee/encryption-setup-screen.tsx:65
+#: src/e2ee/encryption-setup-screen.tsx:181
+msgid "Podešavanje šifrovanja nije uspelo. Proverite internet vezu i pokušajte "
+"ponovo."
+msgstr "Podešavanje šifrovanja nije uspelo. Proverite internet vezu i pokušajte "
+"ponovo."
+
+#: src/e2ee/encryption-setup-screen.tsx:67
 msgid "Podesite šifru za šifrovanje"
 msgstr "Podesite šifru za šifrovanje"
 
@@ -852,7 +858,7 @@ msgstr "Pogrešan PIN. Preostalo pokušaja: {remaining}."
 msgid "Pogrešna šifra. Pokušajte ponovo."
 msgstr "Pogrešna šifra. Pokušajte ponovo."
 
-#: src/e2ee/encryption-gate.tsx:335
+#: src/e2ee/encryption-gate.tsx:337
 msgid "Pokušaj ponovo"
 msgstr "Pokušaj ponovo"
 
@@ -930,7 +936,7 @@ msgstr "Potpis je sačuvan"
 msgid "Potvrdi"
 msgstr "Potvrdi"
 
-#: src/e2ee/encryption-setup-screen.tsx:35
+#: src/e2ee/encryption-setup-screen.tsx:37
 msgid "Potvrdite da razumete da šifra ne može biti vraćena."
 msgstr "Potvrdite da razumete da šifra ne može biti vraćena."
 
@@ -951,8 +957,8 @@ msgstr "Potvrdite prijavu"
 msgid "Potvrdite promenu šifre"
 msgstr "Potvrdite promenu šifre"
 
-#: src/e2ee/encryption-setup-screen.tsx:117
-#: src/e2ee/encryption-setup-screen.tsx:121
+#: src/e2ee/encryption-setup-screen.tsx:119
+#: src/e2ee/encryption-setup-screen.tsx:123
 msgid "Potvrdite šifru"
 msgstr "Potvrdite šifru"
 
@@ -1008,7 +1014,7 @@ msgstr "Prijava nije uspela."
 msgid "Prijava nije završena. Pokušajte ponovo."
 msgstr "Prijava nije završena. Pokušajte ponovo."
 
-#: src/e2ee/encryption-setup-screen.tsx:68
+#: src/e2ee/encryption-setup-screen.tsx:70
 msgid "Prijava potvrđuje vaš nalog. Ova odvojena šifra otključava vaše "
 "šifrovane podatke posle prijave."
 msgstr "Prijava potvrđuje vaš nalog. Ova odvojena šifra otključava vaše "
@@ -1067,13 +1073,13 @@ msgstr "Promenite šifru za šifrovanje"
 msgid "Proverite internet vezu i pokušajte ponovo kasnije."
 msgstr "Proverite internet vezu i pokušajte ponovo kasnije."
 
-#: src/e2ee/encryption-gate.tsx:322
+#: src/e2ee/encryption-gate.tsx:324
 msgid "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ "
 "dok ne proverimo postojeće podešavanje naloga."
 msgstr "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ "
 "dok ne proverimo postojeće podešavanje naloga."
 
-#: src/e2ee/encryption-setup-screen.tsx:155
+#: src/e2ee/encryption-setup-screen.tsx:157
 msgid "Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane podatke bez "
 "nje."
 msgstr "Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane podatke bez "
@@ -1137,12 +1143,12 @@ msgstr "Šifra delatnosti"
 msgid "Šifra delatnosti mora imati tačno 4 cifre"
 msgstr "Šifra delatnosti mora imati tačno 4 cifre"
 
-#: src/e2ee/encryption-setup-screen.tsx:40
+#: src/e2ee/encryption-setup-screen.tsx:42
 #: src/settings/security-settings-page.tsx:71
 msgid "Šifra i potvrda se ne poklapaju."
 msgstr "Šifra i potvrda se ne poklapaju."
 
-#: src/e2ee/encryption-setup-screen.tsx:32
+#: src/e2ee/encryption-setup-screen.tsx:34
 #: src/settings/security-settings-page.tsx:65
 msgid "Šifra mora imati najmanje 8 znakova."
 msgstr "Šifra mora imati najmanje 8 znakova."
@@ -1160,8 +1166,8 @@ msgstr "Šifra poreskog obveznika"
 msgid "Šifra poreskog obveznika mora imati tačno 8 cifara"
 msgstr "Šifra poreskog obveznika mora imati tačno 8 cifara"
 
-#: src/e2ee/encryption-setup-screen.tsx:91
-#: src/e2ee/encryption-setup-screen.tsx:95
+#: src/e2ee/encryption-setup-screen.tsx:93
+#: src/e2ee/encryption-setup-screen.tsx:97
 #: src/e2ee/encryption-unlock-screen.tsx:71
 #: src/e2ee/encryption-unlock-screen.tsx:75
 #: src/settings/security-settings-page.tsx:386
@@ -1295,7 +1301,7 @@ msgstr "Unesite PIN kod da biste nastavili."
 msgid "Unesite podatke novog unosa."
 msgstr "Unesite podatke novog unosa."
 
-#: src/e2ee/encryption-setup-screen.tsx:31
+#: src/e2ee/encryption-setup-screen.tsx:33
 #: src/settings/security-settings-page.tsx:62
 msgid "Unesite šifru za šifrovanje."
 msgstr "Unesite šifru za šifrovanje."

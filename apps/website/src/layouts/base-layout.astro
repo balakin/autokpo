@@ -25,21 +25,21 @@ const { locale, title, description, skipLink, themeLightLabel, themeDarkLabel } 
   <link rel="shortcut icon" href="/favicon.ico" />
 
   <script is:inline>
-    (function () {
-      try {
-        var saved = localStorage.getItem("autokpo-theme");
-        var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-        var theme = saved || (prefersDark ? "dark" : "light");
-        var root = document.documentElement;
-        root.setAttribute("data-theme", theme);
-        root.classList.toggle("dark", theme === "dark");
-        root.style.colorScheme = theme;
-        var tc = document.createElement("meta");
-        tc.name = "theme-color";
-        tc.content = theme === "dark" ? "#171921" : "#f3f4f8";
-        document.head.appendChild(tc);
-      } catch (e) {}
-    })();
+    try {
+      var autokpoSavedTheme = localStorage.getItem("autokpo-theme");
+      var autokpoPrefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      var autokpoTheme = autokpoSavedTheme || (autokpoPrefersDark ? "dark" : "light");
+      var autokpoRoot = document.documentElement;
+
+      autokpoRoot.setAttribute("data-theme", autokpoTheme);
+      autokpoRoot.classList.toggle("dark", autokpoTheme === "dark");
+      autokpoRoot.style.colorScheme = autokpoTheme;
+
+      var autokpoThemeColor = document.createElement("meta");
+      autokpoThemeColor.name = "theme-color";
+      autokpoThemeColor.content = autokpoTheme === "dark" ? "#171921" : "#f3f4f8";
+      document.head.appendChild(autokpoThemeColor);
+    } catch (e) {}
   </script>
 
   <PostHog />
@@ -173,53 +173,71 @@ const { locale, title, description, skipLink, themeLightLabel, themeDarkLabel } 
 
   <slot />
 
-  <script is:inline>
-    (function () {
-      var root = document.documentElement;
-      var body = document.body;
-      var btn = document.getElementById("themeToggle");
-      if (!btn) return;
-      var strips = [];
-      var stripTimer = null;
-      function sync() {
-        var isDark = root.getAttribute("data-theme") === "dark";
-        btn.setAttribute("aria-pressed", String(isDark));
-        btn.setAttribute("aria-label", isDark ? body.dataset.themeLightLabel : body.dataset.themeDarkLabel);
+  <script>
+    const analyticsSelector = '[data-analytics-event]';
+
+    document.addEventListener('click', (event) => {
+      const target = event.target instanceof Element ? event.target.closest(analyticsSelector) : null;
+      if (!(target instanceof HTMLElement)) return;
+
+      const eventName = target.dataset.analyticsEvent;
+      if (!eventName) return;
+
+      const properties = target.dataset.analyticsProperties ? JSON.parse(target.dataset.analyticsProperties) : undefined;
+      window.posthog?.capture(eventName, properties);
+    });
+
+    const root = document.documentElement;
+    const body = document.body;
+    const themeToggle = document.getElementById('themeToggle');
+
+    if (themeToggle) {
+      const btn = themeToggle;
+      let strips: HTMLElement[] = [];
+      let stripTimer: ReturnType<typeof setTimeout> | undefined;
+
+      function syncThemeToggle() {
+        const isDark = root.getAttribute('data-theme') === 'dark';
+        btn.setAttribute('aria-pressed', String(isDark));
+        btn.setAttribute('aria-label', isDark ? body.dataset.themeLightLabel ?? '' : body.dataset.themeDarkLabel ?? '');
       }
-      sync();
-      btn.addEventListener("click", function () {
-        var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-        window.posthog?.capture("theme_toggled", { theme: next });
-        root.setAttribute("data-theme", next);
-        root.classList.toggle("dark", next === "dark");
+
+      syncThemeToggle();
+
+      btn.addEventListener('click', () => {
+        const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        window.posthog?.capture('theme_toggled', { theme: next });
+        root.setAttribute('data-theme', next);
+        root.classList.toggle('dark', next === 'dark');
         root.style.colorScheme = next;
-        try { localStorage.setItem("autokpo-theme", next); } catch (e) {}
-        var etc = document.querySelector('meta[name="theme-color"]');
-        if (etc) etc.remove();
-        var tc = document.createElement("meta");
-        tc.name = "theme-color";
-        tc.content = next === "dark" ? "#171921" : "#f3f4f8";
-        document.head.appendChild(tc);
+        try { localStorage.setItem('autokpo-theme', next); } catch {}
+
+        document.querySelector('meta[name="theme-color"]')?.remove();
+        const themeColor = document.createElement('meta');
+        themeColor.name = 'theme-color';
+        themeColor.content = next === 'dark' ? '#171921' : '#f3f4f8';
+        document.head.appendChild(themeColor);
+
         // iOS 26 Safari ignores background changes after first paint, but
         // re-derives its bar tints when a fixed element appears at a
         // viewport edge — flash one per edge with the new background.
-        strips.forEach(function (s) { s.remove(); });
+        strips.forEach((strip) => strip.remove());
         clearTimeout(stripTimer);
-        var bg = getComputedStyle(body).backgroundColor;
-        strips = ["top", "bottom"].map(function (edge) {
-          var s = document.createElement("div");
-          s.style.cssText =
-            "position:fixed;" + edge + ":0;left:0;width:100%;height:6px;" +
-            "z-index:9999;pointer-events:none;background:" + bg;
-          body.appendChild(s);
-          return s;
+        const bg = getComputedStyle(body).backgroundColor;
+        strips = ['top', 'bottom'].map((edge) => {
+          const strip = document.createElement('div');
+          strip.style.cssText = `position:fixed;${edge}:0;left:0;width:100%;height:6px;z-index:9999;pointer-events:none;background:${bg}`;
+          body.appendChild(strip);
+          return strip;
         });
-        stripTimer = setTimeout(function () {
-          strips.forEach(function (s) { s.remove(); });
+
+        stripTimer = setTimeout(() => {
+          strips.forEach((strip) => strip.remove());
         }, 500);
-        sync();
+
+        syncThemeToggle();
       });
-    })();
+    }
   </script>
 </body>
 </html>

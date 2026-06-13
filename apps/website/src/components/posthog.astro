@@ -35,8 +35,8 @@
     posthog.register({ app_version: __APP_VERSION__ });
 
     // The npm build, unlike the CDN snippet, doesn't register a global. Expose
-    // it for the inline `window.posthog?.capture(...)` handlers in the header,
-    // footer, landing page, and theme toggle (typed in src/env.d.ts).
+    // it for delegated analytics handlers and the theme toggle (typed in
+    // src/env.d.ts).
     window.posthog = posthog;
   }
 </script>

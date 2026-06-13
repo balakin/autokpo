@@ -18,14 +18,14 @@ const { content, legalUrls } = Astro.props;
       <span class="tagline">{content.footer.taglinePrefix} <a href="https://github.com/dm-balakin" target="_blank" rel="noreferrer noopener">Dmitrii Balakin</a></span>
     </div>
     <div class="footer-project-links">
-      <a href="https://github.com/balakin/autokpo" target="_blank" rel="noreferrer noopener" onclick="window.posthog?.capture('github_clicked', { location: 'footer' })">
+      <a href="https://github.com/balakin/autokpo" target="_blank" rel="noreferrer noopener" data-analytics-event="github_clicked" data-analytics-properties={JSON.stringify({ location: 'footer' })}>
         <span class="github-icon" aria-hidden="true"><img class="github-black" src={githubBlackUrl} alt="" /><img class="github-white" src={githubWhiteUrl} alt="" /></span>
         GitHub
       </a>
       <span class="footer-license">AGPL-3.0</span>
     </div>
     <nav class="footer-legal-links" aria-label="Legal">
-      <a href="mailto:support@autokpo.com" onclick="window.posthog?.capture('support_email_clicked')">{content.support}</a>
+      <a href="mailto:support@autokpo.com" data-analytics-event="support_email_clicked">{content.support}</a>
       <span aria-hidden="true">·</span>
       <a href={legalUrls.terms}>{content.legalLinks.terms}</a>
       <span aria-hidden="true">·</span>

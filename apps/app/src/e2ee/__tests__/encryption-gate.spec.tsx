@@ -298,6 +298,30 @@ describe('EncryptionGate', () => {
     });
   });
 
+  it('shows inline error when setup fails', async () => {
+    const user = userEvent.setup();
+    createKeyRingProfilePayloadMock.mockRejectedValue(new Error('network'));
+
+    renderGate();
+
+    await user.type(
+      await screen.findByLabelText(/Šifra za šifrovanje/i),
+      'secret123',
+    );
+    await user.type(screen.getByLabelText(/Potvrdite šifru/i), 'secret123');
+    await user.click(
+      screen.getByLabelText(/Razumem da AutoKPO ne može da vrati ovu šifru/i),
+    );
+    await user.click(
+      screen.getByRole('button', { name: /Nastavi ka aplikaciji/i }),
+    );
+
+    expect(
+      await screen.findByText(/Podešavanje šifrovanja nije uspelo/i),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('protected content')).not.toBeInTheDocument();
+  });
+
   it('shows unlock screen for an existing profile after backend check', async () => {
     fetchKeyRingProfileMock.mockResolvedValue(makeRecord());
 

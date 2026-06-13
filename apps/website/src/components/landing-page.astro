@@ -872,18 +872,18 @@ const iconByName = {
   </main>
 
   <SiteFooter content={content} legalUrls={legalUrls} />
-</BaseLayout>
 
-<script>
-  document
-    .querySelectorAll<HTMLDetailsElement>('details.faq-item')
-    .forEach((details) => {
-      details.addEventListener('toggle', () => {
-        if (!details.open) return;
+  <script>
+    document
+      .querySelectorAll<HTMLDetailsElement>('details.faq-item')
+      .forEach((details) => {
+        details.addEventListener('toggle', () => {
+          if (!details.open) return;
 
-        window.posthog?.capture('faq_item_expanded', {
-          question_id: details.dataset.faqId,
+          window.posthog?.capture('faq_item_expanded', {
+            question_id: details.dataset.faqId,
+          });
         });
       });
-    });
-</script>
+  </script>
+</BaseLayout>

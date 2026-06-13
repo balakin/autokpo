@@ -147,12 +147,11 @@ function generateHeaders(): Plugin {
 
       const html = readFileSync(join(dir, 'index.html'), 'utf8');
       const scriptHashes = extractInlineTagHashes(html, 'script');
-      const styleHashes = extractInlineTagHashes(html, 'style');
 
       const cspDirectives = [
         "default-src 'none'",
         `script-src 'self' https://challenges.cloudflare.com${scriptHashes.length ? ' ' + scriptHashes.join(' ') : ''}`,
-        `style-src 'self'${styleHashes.length ? ' ' + styleHashes.join(' ') : ''}`,
+        `style-src 'self' 'unsafe-inline'`,
         "font-src 'self'",
         "img-src 'self' data:",
         `connect-src 'self'${host ? ` ${host}` : ''}`,

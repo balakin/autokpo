@@ -2,6 +2,7 @@ name: 🚀 Deploy App
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 # Serialize app deploys; never cancel one in flight.
 concurrency:

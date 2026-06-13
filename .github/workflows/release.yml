@@ -18,6 +18,9 @@ jobs:
       contents: write # to create git tags and GitHub Releases (changesets/action)
       issues: write # to post issue comments (changesets/action)
       pull-requests: write # to create and update the Release PR (changesets/action)
+    outputs:
+      published: ${{ steps.changesets.outputs.published }}
+      publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v6
@@ -28,6 +31,7 @@ jobs:
           cache: false # clean install to prevent cache poisoning from PR-sourced cache entries
 
       - name: Create Release Pull Request or Publish
+        id: changesets
         uses: changesets/action@v1
         with:
           publish: pnpm changeset tag
@@ -35,3 +39,21 @@ jobs:
           commit: 'chore: release packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Tags pushed by changesets/action use GITHUB_TOKEN, so GitHub suppresses the
+  # `push`/`create` events that would otherwise fire a tag trigger on the deploys.
+  # Calling them as reusable workflows sidesteps that — and needs no `actions: write`.
+  # They run at the same commit the release tags point at (current main HEAD).
+  deploy-app:
+    name: 🚀 Deploy app
+    needs: release
+    if: ${{ needs.release.outputs.published == 'true' && contains(needs.release.outputs.publishedPackages, '"@autokpo/app"') }}
+    uses: ./.github/workflows/deploy-app.yml
+    secrets: inherit
+
+  deploy-website:
+    name: 🚀 Deploy website
+    needs: release
+    if: ${{ needs.release.outputs.published == 'true' && contains(needs.release.outputs.publishedPackages, '"@autokpo/website"') }}
+    uses: ./.github/workflows/deploy-website.yml
+    secrets: inherit

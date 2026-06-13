@@ -2,6 +2,7 @@ name: 🚀 Deploy Website
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 # Serialize website deploys; never cancel one in flight.
 concurrency:

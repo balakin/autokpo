@@ -6,7 +6,7 @@ Guidance for AI coding agents working in `apps/app/` (`@autokpo/app`).
 
 ## What this project is
 
-AutoKPO is a local-first web app for generating the Serbian tax "Knjiga prihoda i rashoda" (Book of Income and Expenses). Application state (books, entries, profiles, signatures, locale) lives in a single Yjs `Y.Doc` persisted to IndexedDB via `y-indexeddb`, with cross-device sync through a Cloudflare Worker backed by D1. Theme remains in `localStorage` as a per-device preference. The `src/crdt/` module manages the document, sync state, leader election, cross-tab fan-out, and the React Query–driven sync engine.
+AutoKPO is a local-first web app for generating the Serbian tax "Knjiga o ostvarenom prometu" (KPO — Book of Achieved Turnover). Application state (books, entries, profiles, signatures, locale) lives in a single Yjs `Y.Doc` persisted to IndexedDB via `y-indexeddb`, with cross-device sync through a Cloudflare Worker backed by D1. Theme remains in `localStorage` as a per-device preference. The `src/crdt/` module manages the document, sync state, leader election, cross-tab fan-out, and the React Query–driven sync engine.
 
 ## Commands
 

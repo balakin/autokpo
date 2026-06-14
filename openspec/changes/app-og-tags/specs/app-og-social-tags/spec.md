@@ -7,7 +7,7 @@
 #### Scenario: Social crawler fetches app shell
 
 - **WHEN** a social crawler (e.g., Facebook's `facebookexternalhit` bot) fetches `https://app.autokpo.com`
-- **THEN** the response SHALL contain `<meta property="og:title" content="AutoKPO">`, `<meta property="og:description" content="AutoKPO — Serbian book of income and expenses. Generate the KPO tax form locally, sync across devices.">`, `<meta property="og:site_name" content="AutoKPO">`, `<meta property="og:type" content="website">`, `<meta property="og:url" content="https://app.autokpo.com">`, `<meta property="og:image" content="https://app.autokpo.com/og-image.png">`, and `<meta name="twitter:card" content="summary">`
+- **THEN** the response SHALL contain `<meta property="og:title" content="AutoKPO">`, `<meta property="og:description" content="AutoKPO — local-first web app for generating the Serbian tax Knjiga o ostvarenom prometu (KPO — Book of Achieved Turnover). Syncs across devices.">`, `<meta property="og:site_name" content="AutoKPO">`, `<meta property="og:type" content="website">`, `<meta property="og:url" content="https://app.autokpo.com">`, `<meta property="og:image" content="https://app.autokpo.com/og-image.png">`, and `<meta name="twitter:card" content="summary">`
 
 #### Scenario: Existing SEO tags are preserved
 
@@ -21,4 +21,4 @@
 #### Scenario: Meta description present
 
 - **WHEN** any crawler or browser parses the app shell
-- **THEN** `<meta name="description" content="AutoKPO — Serbian book of income and expenses. Generate the KPO tax form locally, sync across devices.">` SHALL be present in `<head>`
+- **THEN** `<meta name="description" content="AutoKPO — local-first web app for generating the Serbian tax Knjiga o ostvarenom prometu (KPO — Book of Achieved Turnover). Syncs across devices.">` SHALL be present in `<head>`

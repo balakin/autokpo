@@ -8,6 +8,10 @@ interface ImportMetaEnv {
   // Injected at build time by Vite's `define` in astro.config.ts (the website's
   // package.json version).
   readonly PUBLIC_APP_VERSION: string;
+  // Per-build identifier (semver + git SHA + timestamp) injected by
+  // astro.config.ts. Rendered as <meta name="autokpo:version"> so each deploy
+  // yields distinct HTML.
+  readonly PUBLIC_BUILD_VERSION: string;
   readonly PUBLIC_POSTHOG_PROJECT_TOKEN?: string;
   readonly PUBLIC_POSTHOG_HOST?: string;
 }

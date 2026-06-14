@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -17,17 +18,25 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { version } from './package.json';
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => ({
-  define: {
-    __APP_VERSION__: JSON.stringify(
-      mode === 'development' ? `${version}-dev` : version,
-    ),
-  },
-  plugins:
-    mode === 'test'
-      ? transformPlugins(mode)
-      : [...transformPlugins(mode), ...buildOnlyPlugins()],
-}));
+export default defineConfig(({ mode }) => {
+  const appVersion = mode === 'development' ? `${version}-dev` : version;
+  // Per-build identifier (semver + git SHA + timestamp), e.g.
+  // 1.4.2+a48a9b5.20260614T120507Z. Injected into index.html so each build
+  // produces distinct HTML — this rotates the PWA precache revision for the
+  // shell (so installed service workers refetch it) and gives Workers Assets a
+  // changed file to deploy.
+  const buildVersion = `${appVersion}+${gitShortSha()}.${buildTimestamp()}`;
+
+  return {
+    define: {
+      __APP_VERSION__: JSON.stringify(appVersion),
+    },
+    plugins:
+      mode === 'test'
+        ? transformPlugins(mode)
+        : [...transformPlugins(mode), ...buildOnlyPlugins(buildVersion)],
+  };
+});
 
 // Plugins that affect runtime behavior — must run for both build and tests so
 // the code under test matches production. Lingui macros expand `t`...`` /
@@ -44,9 +53,13 @@ const transformPlugins = (mode: string): PluginOption[] => [
 
 // Plugins only needed for `vite dev` / `vite build`. Skipped in test mode to
 // keep each Vitest worker's transform pipeline lean.
-const buildOnlyPlugins = (): PluginOption[] => [
+const buildOnlyPlugins = (buildVersion: string): PluginOption[] => [
   cloudflare(),
   tailwindcss(),
+  ...scopeToEnv(
+    [injectBuildVersion(buildVersion)],
+    (env) => env.name === 'client',
+  ),
   ...(process.env.ANALYZE_BUNDLE
     ? [
         ...scopeToEnv(
@@ -126,6 +139,48 @@ function scopeToEnv(
   predicate: ApplyToEnvironment,
 ): Plugin[] {
   return plugins.map((p) => ({ ...p, applyToEnvironment: predicate }));
+}
+
+// Adds <meta name="autokpo:version" content="..."> to index.html. A meta tag
+// (not a script) so it has no effect on the CSP script hashes computed below.
+function injectBuildVersion(buildVersion: string): Plugin {
+  return {
+    name: 'inject-build-version',
+    transformIndexHtml() {
+      return [
+        {
+          tag: 'meta',
+          attrs: { name: 'autokpo:version', content: buildVersion },
+          injectTo: 'head',
+        },
+      ];
+    },
+  };
+}
+
+function gitShortSha(): string {
+  const envSha =
+    process.env.CF_PAGES_COMMIT_SHA ??
+    process.env.GITHUB_SHA ??
+    process.env.GIT_COMMIT_SHA;
+  if (envSha) return envSha.slice(0, 7);
+  try {
+    return execSync('git rev-parse --short HEAD', {
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+      .toString()
+      .trim();
+  } catch {
+    return 'unknown';
+  }
+}
+
+// Compact ISO-8601 UTC: 2026-06-14T12:05:07.123Z → 20260614T120507Z
+function buildTimestamp(): string {
+  return new Date()
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}Z$/, 'Z');
 }
 
 function generateHeaders(): Plugin {

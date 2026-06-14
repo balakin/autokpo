@@ -1,4 +1,6 @@
 ---
+import { getRelativeLocaleUrl } from 'astro:i18n';
+
 import BaseLayout from '../layouts/base-layout.astro';
 import SiteHeader from '../components/site-header.astro';
 import SiteFooter from '../components/site-footer.astro';
@@ -43,7 +45,9 @@ const legalUrls = { privacy: '/privacy/', terms: '/terms/' };
                     <h1 class="heading">{c.notFound.title}</h1>
                     <p class="message">{c.notFound.message}</p>
                     <nav aria-label={c.notFound.navLabel}>
-                      <a href={c.route}>{c.languageName}</a>
+                      <a href={getRelativeLocaleUrl(locale, '')}>
+                        {c.languageName}
+                      </a>
                     </nav>
                   </div>
                 );

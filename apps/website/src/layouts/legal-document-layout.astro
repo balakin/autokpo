@@ -1,4 +1,6 @@
 ---
+import { getAbsoluteLocaleUrl, getRelativeLocaleUrl } from 'astro:i18n';
+
 import BaseLayout from './base-layout.astro';
 import SiteFooter from '../components/site-footer.astro';
 import SiteHeader from '../components/site-header.astro';
@@ -31,25 +33,23 @@ const formattedDate = new Date(documentUpdated).toLocaleDateString(locale, {
   month: 'long',
   day: 'numeric',
 });
-const homeUrl = content.route;
+const homeUrl = getRelativeLocaleUrl(locale, '');
 const ogImage = new URL('/og-image.png', Astro.site).href;
-const ogUrl = new URL(content.route + document.slug, Astro.site).href;
+const ogUrl = getAbsoluteLocaleUrl(locale, document.slug);
 const legalUrls = {
-  privacy: content.route + legalLocale.documents.privacy.slug,
-  terms: content.route + legalLocale.documents.terms.slug,
+  privacy: getRelativeLocaleUrl(locale, legalLocale.documents.privacy.slug),
+  terms: getRelativeLocaleUrl(locale, legalLocale.documents.terms.slug),
 };
 const alternates = supportedLocales.map((alternateLocale) => {
-  const route = landingContent[alternateLocale].route;
-  const docUrl =
-    route + legalContent[alternateLocale].documents[documentKey].slug;
+  const docSlug = legalContent[alternateLocale].documents[documentKey].slug;
   return {
     locale: alternateLocale,
-    route: docUrl,
-    url: new URL(docUrl, Astro.site).href,
+    route: getRelativeLocaleUrl(alternateLocale, docSlug),
+    url: getAbsoluteLocaleUrl(alternateLocale, docSlug),
     languageName: landingContent[alternateLocale].languageName,
   };
 });
-const xDefaultUrl = alternates.find((a) => a.locale === 'en')?.url ?? ogUrl;
+const xDefaultUrl = getAbsoluteLocaleUrl('en', document.slug);
 ---
 
 <BaseLayout

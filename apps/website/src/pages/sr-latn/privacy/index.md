@@ -4,7 +4,7 @@ locale: sr-Latn
 documentKey: privacy
 title: Politika privatnosti
 description: Kako AutoKPO obrađuje i štiti podatke korisnika.
-updated: 2026-06-12
+updated: 2026-06-15
 ---
 
 # Politika privatnosti
@@ -115,7 +115,7 @@ AutoKPO koristi savremene kriptografske mehanizme za šifrovanje podataka i zaš
 
 | Tehnologija                                                   | Svrha                                                 |
 | ------------------------------------------------------------- | ----------------------------------------------------- |
-| `autokpo_session`                                             | Neophodni kolačić za prijavu i sesiju                 |
+| `__Secure-autokpo_session`                                    | Neophodni kolačić za prijavu i sesiju                 |
 | Lokalno čuvanje podataka                                      | Podešavanja, sinhronizacija i lokalno šifrovanje      |
 | Cloudflare kolačići ili slične tehnologije, ako se primenjuju | Bezbednost, zaštita od botova i rad Turnstile zaštite |
 

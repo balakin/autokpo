@@ -95,14 +95,14 @@ function generateHeaders(): AstroIntegration {
         const host = process.env.PUBLIC_POSTHOG_HOST;
 
         const distDir = fileURLToPath(dir);
+        const scriptHashes = extractInlineTagHashes(distDir, 'script');
         const styleHashes = extractInlineTagHashes(distDir, 'style');
 
         const cspDirectives = [
           // Deny everything not explicitly listed below.
           "default-src 'none'",
-          // 'unsafe-inline' required by Cloudflare Scrape Shield (email protection).
-          // https://developers.cloudflare.com/fundamentals/reference/policies-compliances/content-security-policies/
-          "script-src 'self' 'unsafe-inline'",
+          // Hashes cover inline scripts injected by Astro at build time. No external scripts needed.
+          `script-src 'self' ${scriptHashes.join(' ')}`,
           // Hashes cover inline styles injected by Astro at build time. No unsafe-inline needed.
           `style-src 'self' ${styleHashes.join(' ')}`,
           // Fonts served from same origin.

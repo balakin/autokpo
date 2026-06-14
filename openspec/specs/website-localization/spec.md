@@ -8,32 +8,32 @@ TBD - created by archiving change localize-website. Update Purpose after archive
 
 ### Requirement: Static localized website routes
 
-The system SHALL provide static localized website pages for Serbian Latin, English, and Russian using Astro i18n routing with Serbian Latin as the default unprefixed locale.
+The system SHALL provide static localized website pages for Serbian Latin, English, and Russian using Astro i18n routing with English as the default unprefixed locale.
 
-#### Scenario: Serbian Latin root route renders
+#### Scenario: English root route renders
 
 - **WHEN** a visitor opens `/`
-- **THEN** the system displays the Serbian Latin landing page
-
-#### Scenario: English route renders
-
-- **WHEN** a visitor opens `/en/`
 - **THEN** the system displays the English landing page
+
+#### Scenario: Serbian Latin route renders
+
+- **WHEN** a visitor opens `/sr-Latn/`
+- **THEN** the system displays the Serbian Latin landing page
 
 #### Scenario: Russian route renders
 
 - **WHEN** a visitor opens `/ru/`
 - **THEN** the system displays the Russian landing page
 
-#### Scenario: Serbian Latin legal routes render
-
-- **WHEN** a visitor opens `/privacy/`, `/terms/`, or `/cookies/`
-- **THEN** the system displays the corresponding Serbian Latin legal document page
-
 #### Scenario: English legal routes render
 
-- **WHEN** a visitor opens `/en/privacy/`, `/en/terms/`, or `/en/cookies/`
+- **WHEN** a visitor opens `/privacy/`, `/terms/`, or `/cookies/`
 - **THEN** the system displays the corresponding English legal document page
+
+#### Scenario: Serbian Latin legal routes render
+
+- **WHEN** a visitor opens `/sr-Latn/privacy/`, `/sr-Latn/terms/`, or `/sr-Latn/cookies/`
+- **THEN** the system displays the corresponding Serbian Latin legal document page
 
 #### Scenario: Russian legal routes render
 
@@ -51,7 +51,7 @@ The system SHALL localize the landing page's visible content, metadata, navigati
 
 #### Scenario: English content is localized
 
-- **WHEN** a visitor views `/en/`
+- **WHEN** a visitor views `/`
 - **THEN** product positioning, section headings, body copy, FAQ answers, CTA labels, footer text, and relevant accessibility labels are presented in English
 
 #### Scenario: Russian content is localized
@@ -61,7 +61,7 @@ The system SHALL localize the landing page's visible content, metadata, navigati
 
 #### Scenario: Serbian Latin content remains available
 
-- **WHEN** a visitor views `/`
+- **WHEN** a visitor views `/sr-Latn/`
 - **THEN** the landing page preserves Serbian Latin product, security, legal-disclaimer, open-source, and CTA messaging
 
 ### Requirement: Language switcher
@@ -71,7 +71,7 @@ The system SHALL provide a visible language switcher that lets visitors navigate
 #### Scenario: Visitor switches to English
 
 - **WHEN** a visitor activates the English language link
-- **THEN** the browser navigates to `/en/`
+- **THEN** the browser navigates to `/`
 
 #### Scenario: Visitor switches to Russian
 
@@ -81,7 +81,7 @@ The system SHALL provide a visible language switcher that lets visitors navigate
 #### Scenario: Visitor switches to Serbian Latin
 
 - **WHEN** a visitor activates the Serbian Latin language link
-- **THEN** the browser navigates to `/`
+- **THEN** the browser navigates to `/sr-Latn/`
 
 #### Scenario: Current language is indicated
 
@@ -119,7 +119,7 @@ The system SHALL keep localization compatible with static Astro output and SHALL
 #### Scenario: Root page does not auto-detect browser language
 
 - **WHEN** a visitor opens `/` with any browser language preference
-- **THEN** the system displays Serbian Latin content rather than redirecting based on `Accept-Language`
+- **THEN** the system displays English content rather than redirecting based on `Accept-Language`
 
 #### Scenario: Server output is not required
 

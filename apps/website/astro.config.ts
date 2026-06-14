@@ -63,12 +63,19 @@ function generateHeaders(): AstroIntegration {
         const styleHashes = extractInlineTagHashes(distDir, 'style');
 
         const cspDirectives = [
+          // Deny everything not explicitly listed below.
           "default-src 'none'",
+          // Hashes cover inline scripts injected by Astro at build time. No external scripts needed.
           `script-src 'self' ${scriptHashes.join(' ')}`,
+          // Hashes cover inline styles injected by Astro at build time. No unsafe-inline needed.
           `style-src 'self' ${styleHashes.join(' ')}`,
+          // Fonts served from same origin.
           "font-src 'self'",
+          // data: for base64-encoded images used in landing page content.
           "img-src 'self' data:",
+          // PostHog analytics host for event tracking.
           `connect-src 'self'${host ? ` ${host}` : ''}`,
+          // Prevent <base> tag injection attacks.
           "base-uri 'self'",
         ];
 

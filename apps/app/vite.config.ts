@@ -144,15 +144,29 @@ function generateHeaders(): Plugin {
       const scriptHashes = extractInlineTagHashes(html, 'script');
 
       const cspDirectives = [
+        // Deny everything not explicitly listed below.
         "default-src 'none'",
+        // 'unsafe-eval' is required by hash-wasm (E2EE unlock flow).
+        // Cloudflare Turnstile challenge script.
+        // Hashes cover inline scripts injected by Vite and the PWA plugin.
         `script-src 'self' 'unsafe-eval' https://challenges.cloudflare.com${scriptHashes.length ? ' ' + scriptHashes.join(' ') : ''}`,
+        // HeroUI / React Aria components apply inline styles for layout and animation.
         `style-src 'self' 'unsafe-inline'`,
+        // All fonts are self-hosted; no external font CDN is used.
         "font-src 'self'",
+        // data: for base64-encoded images (e.g. embedded images in generated PDFs).
         "img-src 'self' data:",
+        // data: is required by react-pdf's Emscripten-compiled WASM module, which fetches
+        // its own binary (embedded as a base64 data URI) to instantiate WebAssembly.
         `connect-src 'self' data:${host ? ` ${host}` : ''}`,
+        // Cloudflare Turnstile renders its challenge inside an iframe.
         'frame-src https://challenges.cloudflare.com',
+        // Service worker (PWA), web workers used by react-pdf / fflate for decompression,
+        // and hash-wasm workers for E2EE key derivation.
         "worker-src 'self'",
+        // PWA web app manifest.
         "manifest-src 'self'",
+        // Prevent <base> tag injection attacks.
         "base-uri 'self'",
       ];
 

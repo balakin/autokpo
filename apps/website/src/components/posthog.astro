@@ -5,8 +5,15 @@
 ---
 
 <script>
+  import { AnalyticsExtensions } from 'posthog-js/dist/extension-bundles';
+  // no-external bundles gzip-js inline; without it, disable_external_dependency_loading silently drops compression
+  import posthog, {
+    type PostHogConfig,
+  } from 'posthog-js/dist/module.slim.no-external';
+  // registers onLCP/onCLS/onFCP/onINP on globalThis.__PosthogExtensions__.postHogWebVitalsCallbacks;
+  // WebVitalsAutocapture (via AnalyticsExtensions) reads from there — without this it falls back to
+  // loadExternalDependency, which is blocked by disable_external_dependency_loading
   import 'posthog-js/dist/web-vitals';
-  import posthog from 'posthog-js/dist/module.slim.no-external';
 
   const apiKey = import.meta.env.PUBLIC_POSTHOG_PROJECT_TOKEN;
   const apiHost = import.meta.env.PUBLIC_POSTHOG_HOST;
@@ -23,13 +30,20 @@
       autocapture: false, // no automatic click/form tracking
       capture_pageview: true, // pageviews (SPA-aware via the 2026 defaults)
       capture_pageleave: true, // needed for bounce rate / time-on-page in Web Analytics
-      capture_performance: { web_vitals: true }, // Core Web Vitals
+      capture_performance: { web_vitals: true }, // Core Web Vitals (webVitalsAutocapture via AnalyticsExtensions below)
       disable_session_recording: true, // no replay
       disable_surveys: true, // no surveys
       enable_heatmaps: false, // no mouse-move / click / scroll heatmaps
       person_profiles: 'identified_only', // never identified → events stay anonymous
       advanced_disable_flags: true, // no flags/experiments/remote config; skips the /flags request
-      disable_external_dependency_loading: true, // belt-and-suspenders alongside module.slim.no-external
+      disable_external_dependency_loading: true, // no runtime script fetching; all deps bundled explicitly
+      // Cast needed because extension-bundles.d.ts types extension constructors against the PostHog class
+      // declared in module.slim.d.ts, while we import from module.slim.no-external.d.ts. Both files
+      // independently declare PostHog with private members; TypeScript's private-member compatibility rule
+      // requires the same declaration origin, so the two PostHog types are nominally incompatible even
+      // though they're structurally identical and the same class at runtime.
+      __extensionClasses:
+        AnalyticsExtensions as unknown as PostHogConfig['__extensionClasses'],
     });
 
     // Super property on every event so metrics can be sliced by release.

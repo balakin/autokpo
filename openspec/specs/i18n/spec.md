@@ -1,4 +1,8 @@
-## ADDED Requirements
+## Purpose
+
+Internationalization infrastructure for the AutoKPO PWA, supporting Serbian Latin (source), English, and Russian locales through Lingui.
+
+## Requirements
 
 ### Requirement: Lingui provides internationalization infrastructure
 
@@ -42,27 +46,39 @@ The system SHALL store translations as PO files at `src/locales/{locale}.po`. Ca
 
 ### Requirement: I18nProvider wraps the application at root level
 
-The system SHALL render `LocaleProvider` above the router, outside `AuthProvider` and `SignedInApp`, so that locale is available on the auth page. `LocaleProvider` SHALL NOT depend on the CRDT doc — it reads from `localStorage` only. The `I18nProvider` from `@lingui/react` SHALL remain at the root of the application. `LocaleProvider` SHALL also provide React Aria locale context for descendants by rendering `I18nProvider` from `react-aria-components` with a locale derived from the active app locale using `INTL_LOCALES`. On initial load, `LocaleProvider` SHALL read the `autokpo:locale` key from `localStorage`; if absent or invalid, it SHALL fall back to the best-match supported locale from `navigator.language`, then `sr-Latn` if no match is found.
+The system SHALL render `LocaleProvider` above the router, outside `AuthProvider` and `SignedInApp`, so that locale is available on the auth page. `LocaleProvider` SHALL NOT depend on the CRDT doc — it reads from `localStorage` only. The `I18nProvider` from `@lingui/react` SHALL remain at the root of the application. `LocaleProvider` SHALL also provide React Aria locale context for descendants by rendering `I18nProvider` from `react-aria-components` with a locale derived from the active app locale using `INTL_LOCALES`. On initial load, `LocaleProvider` SHALL read the `autokpo:locale` key from `localStorage`; if absent or invalid, it SHALL check the `?lang=` query parameter for a valid locale hint; if also absent or invalid, it SHALL fall back to the best-match supported locale from `navigator.language`, then `en` if no match is found.
 
 #### Scenario: Locale is loaded from localStorage on mount
 
 - **WHEN** the application mounts
 - **THEN** `LocaleProvider` SHALL read the `autokpo:locale` key from `localStorage`
 - **AND** if a valid locale value (`sr-Latn`, `en`, or `ru`) is found, that locale SHALL be activated
-- **AND** if no value or an invalid value is found, `navigator.language` SHALL be consulted for a supported match
-- **AND** if no supported match is found, `sr-Latn` SHALL be used as the final fallback
+- **AND** the `?lang=` query parameter SHALL NOT be consulted
+
+#### Scenario: Query parameter hint is consumed when localStorage is empty
+
+- **WHEN** `localStorage` has no stored locale
+- **AND** the URL includes a valid `?lang=` query parameter (`sr-Latn`, `en`, or `ru`)
+- **THEN** `LocaleProvider` SHALL activate the hinted locale
+- **AND** the locale SHALL be persisted to `localStorage` under `autokpo:locale`
+
+#### Scenario: Invalid query parameter is ignored
+
+- **WHEN** `localStorage` has no stored locale
+- **AND** the URL includes a `?lang=` value that is not one of `sr-Latn`, `en`, or `ru`
+- **THEN** `LocaleProvider` SHALL fall through to `navigator.language` resolution
 
 #### Scenario: navigator.language fallback matches a supported locale
 
-- **WHEN** `localStorage` has no stored locale
+- **WHEN** `localStorage` has no stored locale and no valid `?lang=` hint is present
 - **AND** `navigator.language` is `'en'` or begins with `'en-'`
 - **THEN** `LocaleProvider` SHALL activate the `'en'` locale
 
 #### Scenario: navigator.language fallback has no supported match
 
-- **WHEN** `localStorage` has no stored locale
+- **WHEN** `localStorage` has no stored locale and no valid `?lang=` hint is present
 - **AND** `navigator.language` is a language not in `['sr-Latn', 'en', 'ru']`
-- **THEN** `LocaleProvider` SHALL activate `'sr-Latn'`
+- **THEN** `LocaleProvider` SHALL activate `'en'`
 
 #### Scenario: Provider hierarchy
 
@@ -70,8 +86,6 @@ The system SHALL render `LocaleProvider` above the router, outside `AuthProvider
 - **THEN** the provider order SHALL be `StrictMode → I18nProvider (@lingui/react) → LocaleProvider → ThemeProvider → Router → AuthProvider → …`
 - **AND** `LocaleProvider` SHALL provide nested React Aria `I18nProvider` context to all descendants that render date/time UI
 - **AND** `LocaleProvider` SHALL NOT appear inside `SignedInApp`
-
----
 
 ### Requirement: Locale syncs across open tabs via storage event
 
@@ -136,9 +150,7 @@ The system SHALL persist the selected locale to `localStorage` under the key `au
 
 - **WHEN** the user closes and reopens the application
 - **THEN** the application SHALL render with the locale stored in `localStorage`
-- **AND** if no stored locale exists, `sr-Latn` SHALL be used
-
----
+- **AND** if no stored locale exists, `en` SHALL be used
 
 ### Requirement: All UI strings are extracted via Lingui macros
 

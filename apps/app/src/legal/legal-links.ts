@@ -14,7 +14,7 @@ function normalizeLocale(locale: string): Locale {
 }
 
 function localePrefix(locale: Locale): string {
-  return locale === DEFAULT_LOCALE ? '' : `/${locale}`;
+  return locale === DEFAULT_LOCALE ? '' : `/${locale.toLowerCase()}`;
 }
 
 export function getLegalLinks(locale: string): LegalLinks {

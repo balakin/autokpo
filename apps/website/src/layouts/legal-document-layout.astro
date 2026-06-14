@@ -40,12 +40,16 @@ const legalUrls = {
   privacy: getRelativeLocaleUrl(locale, legalLocale.documents.privacy.slug),
   terms: getRelativeLocaleUrl(locale, legalLocale.documents.terms.slug),
 };
-const alternates = supportedLocales.map((alternateLocale) => ({
-  locale: alternateLocale,
-  route: getRelativeLocaleUrl(alternateLocale, document.slug),
-  url: getAbsoluteLocaleUrl(alternateLocale, document.slug),
-  languageName: landingContent[alternateLocale].languageName,
-}));
+const alternates = supportedLocales.map((alternateLocale) => {
+  const docSlug = legalContent[alternateLocale].documents[documentKey].slug;
+  return {
+    locale: alternateLocale,
+    route: getRelativeLocaleUrl(alternateLocale, docSlug),
+    url: getAbsoluteLocaleUrl(alternateLocale, docSlug),
+    languageName: landingContent[alternateLocale].languageName,
+  };
+});
+const xDefaultUrl = getAbsoluteLocaleUrl('en', document.slug);
 ---
 
 <BaseLayout
@@ -62,7 +66,7 @@ const alternates = supportedLocales.map((alternateLocale) => ({
 >
   <Fragment slot="head">
     <meta name="updated" content={documentUpdated} />
-    <link rel="canonical" href={getAbsoluteLocaleUrl(locale, document.slug)} />
+    <link rel="canonical" href={ogUrl} />
     {
       alternates.map((alternate) => (
         <link
@@ -72,11 +76,7 @@ const alternates = supportedLocales.map((alternateLocale) => ({
         />
       ))
     }
-    <link
-      rel="alternate"
-      hreflang="x-default"
-      href={getAbsoluteLocaleUrl('sr-Latn', document.slug)}
-    />
+    <link rel="alternate" hreflang="x-default" href={xDefaultUrl} />
   </Fragment>
 
   <SiteHeader

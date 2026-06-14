@@ -7,7 +7,7 @@ import { messages as srLatn } from '../locales/sr-Latn.po';
 export const LOCALES = ['sr-Latn', 'en', 'ru'] as const;
 export type Locale = (typeof LOCALES)[number];
 
-export const DEFAULT_LOCALE: Locale = 'sr-Latn';
+export const DEFAULT_LOCALE: Locale = 'en';
 
 export const LOCALE_NAMES: Record<Locale, string> = {
   'sr-Latn': 'Srpski',

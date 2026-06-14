@@ -1,10 +1,12 @@
 import '@testing-library/jest-dom';
 import 'fake-indexeddb/auto';
 
+import { i18n } from 'src/i18n/i18n';
 import { afterEach, beforeEach } from 'vitest';
 
 beforeEach(() => {
   localStorage.setItem('autokpo:locale', 'sr-Latn');
+  i18n.activate('sr-Latn');
 });
 
 afterEach(async () => {

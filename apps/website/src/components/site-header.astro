@@ -72,8 +72,7 @@ const {
       </button>
       <a
         class="btn primary hide-sm"
-        href="https://app.autokpo.com"
-        rel="noreferrer noopener"
+        href={`https://app.autokpo.com?lang=${currentLocale}`}
         data-analytics-event="app_opened"
         data-analytics-properties={JSON.stringify({ location: 'header' })}
         >{content.links.app}</a

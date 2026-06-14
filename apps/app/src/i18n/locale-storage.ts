@@ -19,6 +19,12 @@ export function readLocale(): Locale {
   if (stored && (LOCALES as readonly string[]).includes(stored)) {
     return stored as Locale;
   }
+  const queryLang = new URL(window.location.href).searchParams.get('lang');
+  if (queryLang && (LOCALES as readonly string[]).includes(queryLang)) {
+    // Persist so CrdtProvider can read it before the doc is ready
+    localStorage.setItem(STORAGE_KEY, queryLang);
+    return queryLang as Locale;
+  }
   const matched = bestMatch(navigator.language) ?? DEFAULT_LOCALE;
   // Persist so CrdtProvider can read it before the doc is ready
   localStorage.setItem(STORAGE_KEY, matched);

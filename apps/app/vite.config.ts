@@ -121,11 +121,11 @@ const buildOnlyPlugins = (buildVersion: string): PluginOption[] => [
       },
       workbox: {
         navigateFallback: 'index.html',
-        navigateFallbackDenylist: [/^\/api\//, /^\/__debug/],
+        navigateFallbackDenylist: [/^\/api\//, /^\/__debug/, /^\/robots\.txt$/],
         globPatterns: [
           '**/*.{js,css,html,ico,png,svg,woff2,ttf,txt,webmanifest}',
         ],
-        globIgnores: ['**/node_modules/**/*', 'robots.txt'],
+        globIgnores: ['**/node_modules/**/*', '**/robots.txt'],
       },
     }),
     (env) => env.name === 'client',

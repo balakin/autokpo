@@ -21,7 +21,6 @@ import BaseLayout from '../layouts/base-layout.astro';
 import SiteFooter from './site-footer.astro';
 import SiteHeader from './site-header.astro';
 import {
-  landingContent,
   localeAlternates,
   type IconName,
   type LandingContent,
@@ -33,6 +32,8 @@ type Props = {
 };
 
 const { content } = Astro.props;
+const appUrl = `https://app.autokpo.com?lang=${content.locale}`;
+const githubUrl = 'https://github.com/balakin/autokpo';
 const canonicalUrl = getAbsoluteLocaleUrl(content.locale, '');
 const ogImage = new URL('/og-image.png', Astro.site).href;
 const alternates = localeAlternates.map((alternate) => ({
@@ -85,7 +86,7 @@ const iconByName = {
     <link
       rel="alternate"
       hreflang="x-default"
-      href={getAbsoluteLocaleUrl(landingContent['sr-Latn'].locale, '')}
+      href={getAbsoluteLocaleUrl('en', '')}
     />
   </Fragment>
 
@@ -693,16 +694,14 @@ const iconByName = {
             <div class="hero-cta">
               <a
                 class="btn primary lg"
-                href="https://app.autokpo.com"
-                target="_blank"
-                rel="noreferrer noopener"
+                href={appUrl}
                 data-analytics-event="app_opened"
                 data-analytics-properties={JSON.stringify({ location: 'hero' })}
                 >{content.links.app}</a
               >
               <a
                 class="btn secondary lg"
-                href="https://github.com/balakin/autokpo"
+                href={githubUrl}
                 target="_blank"
                 rel="noreferrer noopener"
                 data-analytics-event="github_clicked"
@@ -842,8 +841,7 @@ const iconByName = {
           <div class="hero-cta">
             <a
               class="btn primary lg"
-              href="https://app.autokpo.com"
-              rel="noreferrer noopener"
+              href={appUrl}
               data-analytics-event="app_opened"
               data-analytics-properties={JSON.stringify({
                 location: 'final_cta',
@@ -851,7 +849,7 @@ const iconByName = {
             >
             <a
               class="btn secondary lg"
-              href="https://github.com/balakin/autokpo"
+              href={githubUrl}
               target="_blank"
               rel="noreferrer noopener"
               data-analytics-event="github_clicked"

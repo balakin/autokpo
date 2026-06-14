@@ -1,8 +1,4 @@
-## Purpose
-
-Provide locale-aware legal document URLs (Terms of Service, Privacy Policy) that resolve to `https://autokpo.com` routes based on the active app locale.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: App legal links resolve from active locale
 
@@ -33,13 +29,3 @@ The system SHALL map supported locales as follows:
 
 - **WHEN** a legal URL is requested for an unsupported locale value
 - **THEN** the system SHALL return the English default legal routes
-
-### Requirement: App legal links open as external links
-
-The system SHALL render app legal document links as external links that open in a new browser tab with `target="_blank"` and `rel="noopener noreferrer"`.
-
-#### Scenario: Legal link opens safely in new tab
-
-- **WHEN** a user activates an app legal document link
-- **THEN** the link SHALL open the corresponding `https://autokpo.com` legal document in a new browser tab
-- **AND** the link SHALL use `rel="noopener noreferrer"`

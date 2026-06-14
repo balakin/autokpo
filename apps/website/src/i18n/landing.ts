@@ -1,3 +1,5 @@
+import { getRelativeLocaleUrl } from 'astro:i18n';
+
 import { legalContent, type LegalDocumentKey } from './legal';
 
 export type Locale = 'sr-Latn' | 'en' | 'ru';
@@ -23,7 +25,6 @@ type LegalLinkText = Record<LegalDocumentKey, string>;
 
 export type LandingContent = {
   locale: Locale;
-  route: string;
   languageName: string;
   meta: {
     title: string;
@@ -119,7 +120,6 @@ export const supportedLocales: Locale[] = ['sr-Latn', 'en', 'ru'];
 export const landingContent: Record<Locale, LandingContent> = {
   'sr-Latn': {
     locale: 'sr-Latn',
-    route: '/',
     languageName: 'Srpski',
     meta: {
       title: 'AutoKPO — KPO evidencija za preduzetnike i paušalce',
@@ -336,7 +336,6 @@ export const landingContent: Record<Locale, LandingContent> = {
   },
   en: {
     locale: 'en',
-    route: '/en/',
     languageName: 'English',
     meta: {
       title: 'AutoKPO — KPO records for entrepreneurs and flat-rate taxpayers',
@@ -553,7 +552,6 @@ export const landingContent: Record<Locale, LandingContent> = {
   },
   ru: {
     locale: 'ru',
-    route: '/ru/',
     languageName: 'Русский',
     meta: {
       title: 'AutoKPO — учет KPO для предпринимателей и паушальцев',
@@ -772,6 +770,6 @@ export const landingContent: Record<Locale, LandingContent> = {
 
 export const localeAlternates = supportedLocales.map((locale) => ({
   locale,
-  route: landingContent[locale].route,
+  route: getRelativeLocaleUrl(locale, ''),
   languageName: landingContent[locale].languageName,
 }));

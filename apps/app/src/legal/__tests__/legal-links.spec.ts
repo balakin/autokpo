@@ -3,17 +3,17 @@ import { describe, expect, it } from 'vitest';
 import { getLegalLinks } from '../legal-links';
 
 describe('getLegalLinks', () => {
-  it('resolves Serbian Latin default routes', () => {
-    expect(getLegalLinks('sr-Latn')).toEqual({
+  it('resolves English default routes', () => {
+    expect(getLegalLinks('en')).toEqual({
       terms: 'https://autokpo.com/terms/',
       privacy: 'https://autokpo.com/privacy/',
     });
   });
 
-  it('resolves English prefixed routes', () => {
-    expect(getLegalLinks('en')).toEqual({
-      terms: 'https://autokpo.com/en/terms/',
-      privacy: 'https://autokpo.com/en/privacy/',
+  it('resolves Serbian Latin prefixed routes', () => {
+    expect(getLegalLinks('sr-Latn')).toEqual({
+      terms: 'https://autokpo.com/sr-latn/terms/',
+      privacy: 'https://autokpo.com/sr-latn/privacy/',
     });
   });
 
@@ -24,7 +24,7 @@ describe('getLegalLinks', () => {
     });
   });
 
-  it('falls back to Serbian Latin routes for unsupported locales', () => {
+  it('falls back to English routes for unsupported locales', () => {
     expect(getLegalLinks('de')).toEqual({
       terms: 'https://autokpo.com/terms/',
       privacy: 'https://autokpo.com/privacy/',

@@ -1,4 +1,6 @@
 ---
+import { getRelativeLocaleUrl } from 'astro:i18n';
+
 import BaseLayout from '../layouts/base-layout.astro';
 import SiteHeader from '../components/site-header.astro';
 import SiteFooter from '../components/site-footer.astro';
@@ -8,12 +10,12 @@ import {
   supportedLocales,
 } from '../i18n/landing';
 
-const primary = landingContent['sr-Latn'];
+const primary = landingContent.en;
 const legalUrls = { privacy: '/privacy/', terms: '/terms/' };
 ---
 
 <BaseLayout
-  locale="sr-Latn"
+  locale="en"
   title={primary.notFound.meta.title}
   description={primary.notFound.meta.description}
   skipLink={primary.skipLink}
@@ -24,7 +26,7 @@ const legalUrls = { privacy: '/privacy/', terms: '/terms/' };
   <div class="page">
     <SiteHeader
       content={primary}
-      currentLocale="sr-Latn"
+      currentLocale="en"
       homeHref="/"
       navPrefix="/"
       alternates={localeAlternates}
@@ -43,7 +45,9 @@ const legalUrls = { privacy: '/privacy/', terms: '/terms/' };
                     <h1 class="heading">{c.notFound.title}</h1>
                     <p class="message">{c.notFound.message}</p>
                     <nav aria-label={c.notFound.navLabel}>
-                      <a href={c.route}>{c.languageName}</a>
+                      <a href={getRelativeLocaleUrl(locale, '')}>
+                        {c.languageName}
+                      </a>
                     </nav>
                   </div>
                 );

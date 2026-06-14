@@ -1,5 +1,11 @@
 # @autokpo/app
 
+## 0.4.1
+
+### Patch Changes
+
+- [#82](https://github.com/balakin/autokpo/pull/82) [`ec89734`](https://github.com/balakin/autokpo/commit/ec89734472851fc943e2dffa8beda8b36bab872b) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Restored robots.txt to the app with a Cloudflare management comment and excluded it from the PWA precache manifest
+
 ## 0.4.0
 
 ### Minor Changes

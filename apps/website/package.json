@@ -8,8 +8,8 @@
     "build": "astro check --tsconfig tsconfig.app.json && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "astro sync && eslint .",
+    "lint:fix": "astro sync && eslint . --fix",
     "deploy": "wrangler deploy"
   },
   "dependencies": {

@@ -149,7 +149,7 @@ function generateHeaders(): Plugin {
         `style-src 'self' 'unsafe-inline'`,
         "font-src 'self'",
         "img-src 'self' data:",
-        `connect-src 'self'${host ? ` ${host}` : ''}`,
+        `connect-src 'self' data:${host ? ` ${host}` : ''}`,
         'frame-src https://challenges.cloudflare.com',
         "worker-src 'self'",
         "manifest-src 'self'",

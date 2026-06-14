@@ -1,5 +1,17 @@
 # @autokpo/app
 
+## 0.5.0
+
+### Minor Changes
+
+- [#84](https://github.com/balakin/autokpo/pull/84) [`158d02a`](https://github.com/balakin/autokpo/commit/158d02a69fa4e4604ef07fd92fe3166d269ed6d3) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Added ?lang= query parameter so website passes locale to app on navigation
+
+- [#84](https://github.com/balakin/autokpo/pull/84) [`158d02a`](https://github.com/balakin/autokpo/commit/158d02a69fa4e4604ef07fd92fe3166d269ed6d3) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Changed default locale from sr-Latn to en across website and app
+
+### Patch Changes
+
+- [#84](https://github.com/balakin/autokpo/pull/84) [`4953563`](https://github.com/balakin/autokpo/commit/49535630366cfb1f9724cf24b4ccf26da5057a6b) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Excluded robots.txt from service worker navigation fallback to ensure it always reaches the network
+
 ## 0.4.1
 
 ### Patch Changes

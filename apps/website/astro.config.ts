@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -17,6 +18,9 @@ export default defineConfig({
   vite: {
     define: {
       'import.meta.env.PUBLIC_APP_VERSION': JSON.stringify(version),
+      'import.meta.env.PUBLIC_BUILD_VERSION': JSON.stringify(
+        resolveBuildVersion(),
+      ),
     },
   },
   integrations: [
@@ -37,6 +41,38 @@ export default defineConfig({
     defaultLocale: 'sr-Latn',
   },
 });
+
+// e.g. 1.4.2+a48a9b5.20260614T120507Z — unique per build so each deploy
+// produces distinct HTML. Workers Assets only ships changed files, so without a
+// rotating value an unchanged build is rejected as "nothing changed".
+function resolveBuildVersion(): string {
+  return `${version}+${gitShortSha()}.${buildTimestamp()}`;
+}
+
+function gitShortSha(): string {
+  const envSha =
+    process.env.CF_PAGES_COMMIT_SHA ??
+    process.env.GITHUB_SHA ??
+    process.env.GIT_COMMIT_SHA;
+  if (envSha) return envSha.slice(0, 7);
+  try {
+    return execSync('git rev-parse --short HEAD', {
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+      .toString()
+      .trim();
+  } catch {
+    return 'unknown';
+  }
+}
+
+// Compact ISO-8601 UTC: 2026-06-14T12:05:07.123Z → 20260614T120507Z
+function buildTimestamp(): string {
+  return new Date()
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}Z$/, 'Z');
+}
 
 function collectHtmlFiles(dir: string): string[] {
   const results: string[] = [];
@@ -59,14 +95,14 @@ function generateHeaders(): AstroIntegration {
         const host = process.env.PUBLIC_POSTHOG_HOST;
 
         const distDir = fileURLToPath(dir);
-        const scriptHashes = extractInlineTagHashes(distDir, 'script');
         const styleHashes = extractInlineTagHashes(distDir, 'style');
 
         const cspDirectives = [
           // Deny everything not explicitly listed below.
           "default-src 'none'",
-          // Hashes cover inline scripts injected by Astro at build time. No external scripts needed.
-          `script-src 'self' ${scriptHashes.join(' ')}`,
+          // 'unsafe-inline' required by Cloudflare Scrape Shield (email protection).
+          // https://developers.cloudflare.com/fundamentals/reference/policies-compliances/content-security-policies/
+          "script-src 'self' 'unsafe-inline'",
           // Hashes cover inline styles injected by Astro at build time. No unsafe-inline needed.
           `style-src 'self' ${styleHashes.join(' ')}`,
           // Fonts served from same origin.

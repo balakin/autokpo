@@ -56,14 +56,14 @@ describe('readLocale — navigator.language fallback', () => {
     expect(readLocale()).toBe('ru');
   });
 
-  it('falls back to sr-Latn when navigator.language has no supported match', () => {
+  it('falls back to en when navigator.language has no supported match', () => {
     vi.stubGlobal('navigator', { ...navigator, language: 'fr-FR' });
-    expect(readLocale()).toBe('sr-Latn');
+    expect(readLocale()).toBe('en');
   });
 
-  it('falls back to sr-Latn when navigator.language is empty', () => {
+  it('falls back to en when navigator.language is empty', () => {
     vi.stubGlobal('navigator', { ...navigator, language: '' });
-    expect(readLocale()).toBe('sr-Latn');
+    expect(readLocale()).toBe('en');
   });
 
   it('falls back via navigator.language when stored value is invalid', () => {

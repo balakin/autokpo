@@ -1,10 +1,16 @@
+import { AnalyticsExtensions } from 'posthog-js/dist/extension-bundles';
+// no-external bundles gzip-js inline; without it, disable_external_dependency_loading silently drops compression
+import posthog, {
+  type PostHogConfig,
+} from 'posthog-js/dist/module.slim.no-external';
+// registers onLCP/onCLS/onFCP/onINP on globalThis.__PosthogExtensions__.postHogWebVitalsCallbacks;
+// WebVitalsAutocapture (via AnalyticsExtensions) reads from there — without this it falls back to
+// loadExternalDependency, which is blocked by disable_external_dependency_loading
 import 'posthog-js/dist/web-vitals';
-import posthog from 'posthog-js/dist/module.slim.no-external';
 
 import { sanitizeAnalyticsEvent } from './sanitize-analytics-event';
 
 export { posthog };
-export type PostHogInstance = typeof posthog;
 
 /**
  * Initializes PostHog as privacy-first, anonymous analytics: cookieless, no
@@ -28,7 +34,7 @@ export function initAnalytics(): void {
     autocapture: false, // no automatic click/form tracking
     capture_pageview: true, // needed for active-user counts (unique users per day)
     capture_pageleave: true, // bounce / time-on-page
-    capture_performance: { web_vitals: true }, // Core Web Vitals (web-vitals bundled via explicit import above)
+    capture_performance: { web_vitals: true }, // Core Web Vitals (webVitalsAutocapture via AnalyticsExtensions below)
     before_send: sanitizeAnalyticsEvent, // strip route ids + query/hash from urls
     disable_session_recording: true, // no replay
     disable_surveys: true, // no surveys
@@ -36,10 +42,21 @@ export function initAnalytics(): void {
     person_profiles: 'identified_only', // never identified → events stay anonymous
     advanced_disable_flags: true, // we use no flags/experiments/remote config; skips the /flags request (web vitals stays, set client-side above)
     disable_external_dependency_loading: true, // no runtime script fetching; all deps bundled explicitly
+    // Cast needed because extension-bundles.d.ts types extension constructors against the PostHog class
+    // declared in module.slim.d.ts, while we import from module.slim.no-external.d.ts. Both files
+    // independently declare PostHog with private members; TypeScript's private-member compatibility rule
+    // requires the same declaration origin, so the two PostHog types are nominally incompatible even
+    // though they're structurally identical and the same class at runtime.
+    __extensionClasses:
+      AnalyticsExtensions as unknown as PostHogConfig['__extensionClasses'],
   });
 
   // Super property on every event so metrics (web vitals, auth funnels, …) can
   // be sliced by release. Re-registered each load because `persistence: 'memory'`
   // resets super properties per page load.
-  posthog.register({ app_version: __APP_VERSION__ });
+  posthog.register({
+    app_version: import.meta.env.DEV
+      ? `${__APP_VERSION__}-dev`
+      : __APP_VERSION__,
+  });
 }

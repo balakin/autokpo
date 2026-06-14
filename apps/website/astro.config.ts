@@ -27,9 +27,9 @@ export default defineConfig({
     generateHeaders(),
     sitemap({
       i18n: {
-        defaultLocale: 'sr-Latn',
+        defaultLocale: 'en',
         locales: {
-          'sr-Latn': 'sr-Latn',
+          'sr-latn': 'sr-Latn',
           en: 'en',
           ru: 'ru',
         },
@@ -38,7 +38,7 @@ export default defineConfig({
   ],
   i18n: {
     locales: ['sr-Latn', 'en', 'ru'],
-    defaultLocale: 'sr-Latn',
+    defaultLocale: 'en',
   },
 });
 

@@ -1,5 +1,5 @@
 ---
-import { getAbsoluteLocaleUrl, getRelativeLocaleUrl } from 'astro:i18n';
+import { getRelativeLocaleUrl } from 'astro:i18n';
 
 import {
   BookOpen,
@@ -33,11 +33,11 @@ type Props = {
 };
 
 const { content } = Astro.props;
-const canonicalUrl = getAbsoluteLocaleUrl(content.locale, '');
+const canonicalUrl = new URL(content.route, Astro.site).href;
 const ogImage = new URL('/og-image.png', Astro.site).href;
 const alternates = localeAlternates.map((alternate) => ({
   ...alternate,
-  url: getAbsoluteLocaleUrl(alternate.locale, ''),
+  url: new URL(alternate.route, Astro.site).href,
 }));
 const legalRoutes = legalContent[content.locale].documents;
 const legalUrls = {
@@ -85,7 +85,7 @@ const iconByName = {
     <link
       rel="alternate"
       hreflang="x-default"
-      href={getAbsoluteLocaleUrl(landingContent['sr-Latn'].locale, '')}
+      href={new URL(landingContent.en.route, Astro.site).href}
     />
   </Fragment>
 

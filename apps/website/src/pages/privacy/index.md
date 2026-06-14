@@ -1,199 +1,199 @@
 ---
 layout: ../../layouts/legal-document-layout.astro
-locale: sr-Latn
+locale: en
 documentKey: privacy
-title: Politika privatnosti
-description: Kako AutoKPO obrađuje i štiti podatke korisnika.
+title: Privacy Policy
+description: How AutoKPO processes and protects user data.
 updated: 2026-06-12
 ---
 
-# Politika privatnosti
+# Privacy Policy
 
-AutoKPO je besplatan, nekomercijalan projekat za vođenje KPO evidencije.
+AutoKPO is a free, non-commercial project for keeping KPO records.
 
-AutoKPO je namenjen korisnicima koji vode KPO evidenciju u Srbiji, ali je tehnički dostupan i iz drugih zemalja.
+AutoKPO is intended for users who keep KPO records in Serbia, but it is technically accessible from other countries as well.
 
-AutoKPO ne prodaje lične podatke, ne prikazuje oglase, ne šalje marketinške email poruke i ne koristi podatke korisnika za komercijalno profilisanje.
+AutoKPO does not sell personal data, display ads, send marketing emails, or use user data for commercial profiling.
 
-Za pitanja o privatnosti i zahteve u vezi sa ličnim podacima možete pisati na [privacy@autokpo.com](mailto:privacy@autokpo.com).
+For privacy questions and requests related to personal data, contact [privacy@autokpo.com](mailto:privacy@autokpo.com).
 
-## 1. Ko upravlja podacima
+## 1. Who controls the data
 
-Rukovalac podacima je:
+The data controller is:
 
-**Dmitrii Balakin**\
-Beograd, Srbija\
+**Dmitrii Balakin** \
+Belgrade, Serbia\
 Email: [privacy@autokpo.com](mailto:privacy@autokpo.com)
 
-## 2. Javni veb-sajt
+## 2. Public website
 
-Javne stranice AutoKPO veb-sajta, uključujući pravne dokumente, služe se kao statički fajlovi preko Cloudflare infrastrukture. Te stranice nemaju kontakt forme, newsletter prijave, reklamne kolačiće niti marketinške piksele.
+The public AutoKPO website, including legal documents, is served as static files through Cloudflare infrastructure. These pages do not have contact forms, newsletter signups, advertising cookies, or marketing pixels.
 
-Prilikom posete javnom veb-sajtu mogu se tehnički obraditi podaci neophodni za isporuku sajta, bezbednost i rad mreže, kao što su IP adresa, podaci o pregledaču, vreme zahteva i tražena stranica. Cloudflare može pružiti AutoKPO-u agregirane ili anonimizovane operativne podatke o saobraćaju radi bezbednosti, performansi i pouzdanosti usluge.
+When you visit the public website, technical data needed to deliver the site, keep it secure, and operate the network may be processed, such as your IP address, browser information, request time, and requested page. Cloudflare may provide AutoKPO with aggregated or anonymized operational traffic data for security, performance, and reliability.
 
-AutoKPO koristi analitiku javnog veb-sajta koja poštuje privatnost i ne koristi kolačiće, a pruža je PostHog i čuva se u Evropskoj uniji. Beleže se zbirni pregledi stranica, osnovni podaci o performansama i mali broj anonimnih događaja interakcije. Analitika ne koristi kolačiće niti pohranjivanje u pregledaču, ne prati vas kroz druge veb-sajtove i ne gradi reklamne profile niti profile pojedinačnih korisnika.
+AutoKPO uses privacy-friendly, cookieless analytics on the public website, provided by PostHog and hosted in the European Union. It records aggregate page views, basic performance metrics, and a few anonymous interaction events. It does not use cookies or browser storage, track you across other websites, or build advertising or individual user profiles.
 
-## 3. Koje podatke AutoKPO obrađuje i kako ih prikuplja
+## 3. What data AutoKPO processes and how it collects it
 
-AutoKPO obrađuje samo podatke koji su potrebni za rad aplikacije, naloge, sinhronizaciju, bezbednost i korisničke zahteve.
+AutoKPO processes only the data needed to operate the app, accounts, synchronization, security, and user requests.
 
-Podaci se prikupljaju kada ih unesete u aplikaciju, koristite nalog ili prijavu, sinhronizujete podatke, posetite javni veb-sajt ili pošaljete poruku na AutoKPO email adresu. Tehnički podaci mogu se prikupljati automatski radi rada, bezbednosti i pouzdanosti usluge.
+Data is collected when you enter it into the app, use an account or sign-in, synchronize data, visit the public website, or send a message to an AutoKPO email address. Technical data may be collected automatically to operate, secure, and keep the service reliable.
 
-Ako koristite prijavu putem Google ili GitHub naloga, podaci potrebni za prijavu mogu doći od izabranog pružaoca prijave, kao što su identifikator naloga, email adresa i informacija potrebna za povezivanje naloga.
+If you use Google or GitHub sign-in, data needed for sign-in may come from the selected sign-in provider, such as the account identifier, email address, and information needed to link the account.
 
-### 3.1 Podaci naloga i prijave
+### 3.1 Account and sign-in data
 
-Kada koristite nalog, AutoKPO može obrađivati:
+When you use an account, AutoKPO may process:
 
-- email adresu;
-- identifikator korisnika;
-- podatak o tome da li je email adresa potvrđena;
-- vreme kreiranja i ažuriranja naloga;
-- podatke o povezanim Google ili GitHub nalozima, ako ih koristite za prijavu;
-- tehničke podatke o sesiji, kao što su IP adresa, podaci o pregledaču ili uređaju, vreme kreiranja i vreme isteka sesije;
-- verifikacione zapise potrebne za prijavu jednokratnim kodom.
+- email address;
+- user identifier;
+- whether the email address has been verified;
+- account creation and update times;
+- information about linked Google or GitHub accounts, if you use them to sign in;
+- technical session data, such as IP address, browser or device information, session creation time, and session expiry time;
+- verification records needed for one-time-code sign-in.
 
-### 3.2 Podaci koje unosite u aplikaciju
+### 3.2 Data you enter into the app
 
-AutoKPO obrađuje podatke koje unesete u aplikaciju radi vođenja KPO evidencije. To može uključivati podatke o knjigama, poslovnom subjektu, stavkama evidencije, podešavanjima i izvozima koje pripremate u aplikaciji.
+AutoKPO processes data you enter into the app to keep KPO records. This may include data about books, business/entity details, record entries, settings, and exports you prepare in the app.
 
-Ovi podaci se čuvaju lokalno na vašem uređaju i sinhronizuju se sa serverom. Način šifrovanja i sinhronizacije objašnjen je u odeljku o lokalnom čuvanju i šifrovanju.
+This data is stored locally on your device and synchronized with the server. Encryption and synchronization are explained in the local storage and encryption section.
 
-KPO podaci koje unesete mogu sadržati lične podatke drugih osoba, na primer podatke o kupcima, poslovnim partnerima, preduzetnicima ili drugim licima koja navedete u evidenciji. Vi odlučujete koje podatke unosite u aplikaciju i odgovorni ste da za takav unos i korišćenje imate odgovarajući pravni osnov i obaveštenje prema tim licima kada je to potrebno.
+The KPO data you enter may include personal data of other people, for example customers, business partners, entrepreneurs, or other persons you include in your records. You decide what data you enter into the app and are responsible for having an appropriate legal basis and notice to those people where required.
 
-AutoKPO određuje način rada aplikacije, naloga, lokalnog čuvanja, šifrovanja, sinhronizacije i brisanja podataka. Za sinhronizovane KPO podatke AutoKPO čuva i prenosi šifrovani sadržaj radi pružanja funkcije sinhronizacije, ali ne mora da pregleda čitljiv sadržaj vaše KPO evidencije da bi pružio uslugu.
+AutoKPO determines how the app, accounts, local storage, encryption, synchronization, and deletion work. For synchronized KPO data, AutoKPO stores and transmits encrypted content to provide synchronization, but it does not need to inspect the readable contents of your KPO records to provide the service.
 
-### 3.3 Poruke koje šaljete
+### 3.3 Messages you send
 
-Ako pišete na bilo koju email adresu na domenu `autokpo.com`, uključujući [privacy@autokpo.com](mailto:privacy@autokpo.com) i druge adrese koje AutoKPO može objaviti za podršku ili kontakt, AutoKPO obrađuje vašu email adresu, sadržaj poruke i sve podatke koje sami uključite u poruku kako bi mogao da odgovori na vaš zahtev. Ne šaljite u poruci više podataka nego što je potrebno za obradu zahteva.
+If you write to any email address on the `autokpo.com` domain, including [privacy@autokpo.com](mailto:privacy@autokpo.com) and other addresses AutoKPO may publish for support or contact, AutoKPO processes your email address, message content, and any information you choose to include in the message so that it can respond to your request. Please do not include more data than necessary for your request.
 
-### 3.4 Analitika aplikacije
+### 3.4 App analytics
 
-AutoKPO koristi analitiku aplikacije koja poštuje privatnost i ne koristi kolačiće, a pruža je PostHog i čuva se u Evropskoj uniji. Beleže se zbirni pregledi stranica radi merenja broja aktivnih korisnika, osnovni podaci o performansama i mali broj anonimnih događaja o korišćenju, kao što su započinjanje i završetak prijave putem Google ili GitHub naloga.
+AutoKPO uses privacy-friendly, cookieless analytics in the app, provided by PostHog and hosted in the European Union. It records aggregate page views to measure the number of active users, basic performance metrics, and a small number of anonymous usage events, such as starting and completing sign-in with a Google or GitHub account.
 
-Ova analitika ne koristi kolačiće niti pohranjivanje u pregledaču, ne identifikuje vas, ne prati vas kroz druge veb-sajtove i ne gradi reklamne profile niti profile pojedinačnih korisnika. Identifikatori i parametri upita iz adresa stranica uklanjaju se pre slanja kako se ne bi otkrivali pojedinačni podaci iz vaše KPO evidencije.
+This analytics does not use cookies or browser storage, does not identify you, does not track you across other websites, and does not build advertising or individual user profiles. Identifiers and query parameters in page addresses are removed before sending so that individual data from your KPO records is not exposed.
 
-## 4. Zašto AutoKPO obrađuje podatke
+## 4. Why AutoKPO processes data
 
-AutoKPO obrađuje podatke radi sledećih svrha:
+AutoKPO processes data for the following purposes:
 
-- pružanja aplikacije i omogućavanja njenog rada;
-- kreiranja i upravljanja nalozima;
-- prijave korisnika i upravljanja sesijama;
-- sinhronizacije šifrovanih podataka između uređaja;
-- zaštite aplikacije od zloupotreba, automatizovanih napada i neovlašćenog pristupa;
-- slanja transakcionih email poruka, kao što su kodovi za prijavu i obaveštenja o nalogu;
-- omogućavanja izvoza podataka i brisanja naloga;
-- razumevanja zbirnog korišćenja javnog veb-sajta i aplikacije putem analitike koja poštuje privatnost i ne koristi kolačiće;
-- odgovaranja na poruke i zahteve koje pošaljete na kontakt email;
-- odgovaranja na zahteve korisnika u vezi sa privatnošću.
+- providing the app and keeping it operational;
+- creating and managing accounts;
+- signing users in and managing sessions;
+- synchronizing encrypted data between devices;
+- protecting the app from abuse, automated attacks, and unauthorized access;
+- sending transactional emails, such as sign-in codes and account notices;
+- allowing data export and account deletion;
+- understanding aggregate use of the public website and the app through privacy-friendly, cookieless analytics;
+- responding to messages and requests you send to the contact email;
+- responding to user privacy requests.
 
-Pravni osnov zavisi od svrhe obrade:
+The legal basis depends on the purpose:
 
-| Svrha                                                                                 | Pravni osnov                                      |
-| ------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| Nalog, prijava, sesije, sinhronizacija i transakcione poruke                          | Pružanje tražene usluge                           |
-| Lokalno čuvanje, podešavanja, izvoz podataka i brisanje naloga                        | Pružanje tražene usluge                           |
-| Prijava putem Google ili GitHub naloga, ako je izaberete                              | Pružanje tražene usluge na vaš zahtev             |
-| Neophodni kolačići, Turnstile zaštita i tehnički rad javnog veb-sajta                 | Pružanje tražene usluge i legitimni interes       |
-| Bezbednost, sprečavanje zloupotreba, pouzdan rad i tehnički logovi                    | Legitimni interes                                 |
-| Analitika javnog veb-sajta i aplikacije koja poštuje privatnost i ne koristi kolačiće | Legitimni interes                                 |
-| Odgovaranje na poruke i zahteve koje pošaljete na kontakt email                       | Legitimni interes ili postupanje po vašem zahtevu |
-| Zahtevi u vezi sa pravima korisnika i drugi obavezni zahtevi                          | Zakonska obaveza                                  |
+| Purpose                                                                  | Legal basis                                             |
+| ------------------------------------------------------------------------ | ------------------------------------------------------- |
+| Accounts, sign-in, sessions, synchronization, and transactional messages | Providing the requested service                         |
+| Local storage, settings, data export, and account deletion               | Providing the requested service                         |
+| Google or GitHub sign-in, if you choose it                               | Providing the requested service at your request         |
+| Necessary cookies, Turnstile protection, and technical website operation | Providing the requested service and legitimate interest |
+| Security, abuse prevention, reliable operation, and technical logs       | Legitimate interest                                     |
+| Privacy-friendly, cookieless website and app analytics                   | Legitimate interest                                     |
+| Responding to messages and requests you send to the contact email        | Legitimate interest or acting on your request           |
+| User-rights requests and other mandatory requests                        | Legal obligation                                        |
 
-Ako ne pružite podatke potrebne za nalog, prijavu, sinhronizaciju ili bezbednost, odgovarajući delovi aplikacije možda neće biti dostupni.
+If you do not provide data needed for an account, sign-in, synchronization, or security, the relevant parts of the app may not be available.
 
-## 5. Lokalno čuvanje i šifrovanje
+## 5. Local storage and encryption
 
-AutoKPO je aplikacija zasnovana na lokalnom čuvanju podataka. Podaci aplikacije prvenstveno se čuvaju na vašem uređaju.
+AutoKPO is a local-first app. App data is primarily stored on your device.
 
-Postavljate lozinku za šifrovanje. Podaci aplikacije koji se sinhronizuju šifruju se u pregledaču pre slanja na server. AutoKPO server ne može da pročita sadržaj vaše sinhronizovane KPO evidencije.
+You set an encryption password. App data that is synchronized is encrypted in the browser before it is sent to the server. The AutoKPO server cannot read the contents of your synchronized KPO records.
 
-AutoKPO koristi savremene kriptografske mehanizme za šifrovanje podataka i zaštitu lozinke za šifrovanje. Šifrovanje ne sakriva sve metapodatke: AutoKPO i dalje obrađuje podatke naloga, sesije, vremenske oznake, tehničke podatke sinhronizacije i sigurnosne podatke potrebne za rad usluge.
+AutoKPO uses modern cryptographic mechanisms to encrypt data and protect the encryption password. Encryption does not hide all metadata: AutoKPO still processes account data, session data, timestamps, technical synchronization data, and security data needed to operate the service.
 
-## 6. Kolačići i lokalno čuvanje na uređaju
+## 6. Cookies and local device storage
 
-| Tehnologija                                                   | Svrha                                                 |
-| ------------------------------------------------------------- | ----------------------------------------------------- |
-| `autokpo_session`                                             | Neophodni kolačić za prijavu i sesiju                 |
-| Lokalno čuvanje podataka                                      | Podešavanja, sinhronizacija i lokalno šifrovanje      |
-| Cloudflare kolačići ili slične tehnologije, ako se primenjuju | Bezbednost, zaštita od botova i rad Turnstile zaštite |
+| Technology                                                | Purpose                                            |
+| --------------------------------------------------------- | -------------------------------------------------- |
+| `autokpo_session`                                         | Necessary cookie for sign-in and sessions          |
+| Local data storage                                        | Settings, synchronization, and local encryption    |
+| Cloudflare cookies or similar technologies, if applicable | Security, bot protection, and Turnstile protection |
 
-AutoKPO koristi samo neophodne kolačiće.
+AutoKPO uses only necessary cookies.
 
-Analitika veb-sajta i aplikacije koja poštuje privatnost, opisana u odeljcima 2 i 3.4, ne koristi kolačiće niti pohranjivanje u pregledaču.
+The privacy-friendly website and app analytics described in sections 2 and 3.4 do not use cookies or browser storage.
 
-Možete ograničiti ili obrisati kolačiće u podešavanjima pregledača, ali neke funkcije AutoKPO-a možda neće raditi ispravno.
+You can restrict or delete cookies in your browser settings, but some AutoKPO features may not work correctly.
 
-## 7. Pružaoci usluga i prenos podataka
+## 7. Service providers and data transfers
 
-AutoKPO koristi sledeće pružaoce usluga:
+AutoKPO uses the following service providers:
 
-| Pružalac   | Svrha                                                                                                                                                                                                            |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cloudflare | Hosting javnog veb-sajta i aplikacije, Cloudflare Workers, Cloudflare D1 baza podataka konfigurisana za čuvanje u EU, Turnstile zaštita, bezbednost, performanse i pouzdanost                                    |
-| Resend     | Slanje transakcionih email poruka, kao što su kodovi za prijavu i obaveštenja o nalogu                                                                                                                           |
-| PostHog    | Analitika javnog veb-sajta i aplikacije koja poštuje privatnost i ne koristi kolačiće (zbirni pregledi stranica, podaci o performansama i anonimni događaji interakcije i korišćenja), čuva se u Evropskoj uniji |
-| Google     | Prijava putem Google naloga, ako je izaberete                                                                                                                                                                    |
-| GitHub     | Prijava putem GitHub naloga, ako je izaberete                                                                                                                                                                    |
+| Provider   | Purpose                                                                                                                                                                                         |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cloudflare | Hosting the public website and app, Cloudflare Workers, Cloudflare D1 database configured for EU storage, Turnstile protection, security, performance, and reliability                          |
+| Resend     | Sending transactional emails, such as sign-in codes and account notices                                                                                                                         |
+| PostHog    | Privacy-friendly, cookieless analytics for the public website and the app (aggregate page views, performance metrics, and anonymous interaction and usage events), hosted in the European Union |
+| Google     | Google account sign-in, if you choose it                                                                                                                                                        |
+| GitHub     | GitHub account sign-in, if you choose it                                                                                                                                                        |
 
-Cloudflare, Resend i PostHog obrađuju podatke kao pružaoci usluga AutoKPO-a za gore opisane svrhe.
+Cloudflare, Resend, and PostHog process data as AutoKPO service providers for the purposes described above.
 
-Obrada podataka u okviru Cloudflare Turnstile usluge dodatno je opisana u Cloudflare dokumentu <a href="https://www.cloudflare.com/en-gb/turnstile-privacy-policy/" target="_blank" rel="noopener noreferrer">Turnstile Privacy Addendum</a>.
+Cloudflare Turnstile data processing is also described in Cloudflare's <a href="https://www.cloudflare.com/en-gb/turnstile-privacy-policy/" target="_blank" rel="noopener noreferrer">Turnstile Privacy Addendum</a>.
 
-Google i GitHub mogu obrađivati podatke u skladu sa sopstvenim pravilima privatnosti kada koristite njihove servise za prijavu.
+Google and GitHub may process data under their own privacy policies when you use their services to sign in.
 
-Cloudflare D1 podaci za AutoKPO čuvaju se u Evropskoj uniji. Zbog globalne infrastrukture, bezbednosti, slanja email poruka ili prijave putem Google/GitHub naloga, neki pružaoci usluga mogu obrađivati podatke izvan Srbije ili Evropske unije. Kada je primenljivo, AutoKPO koristi dostupne ugovorne i druge mere zaštite za takve prenose, uključujući ugovore o obradi podataka, standardne ugovorne klauzule ili druge odgovarajuće mehanizme koje pružalac usluge stavlja na raspolaganje.
+Cloudflare D1 data for AutoKPO is stored in the European Union. Because of global infrastructure, security, email delivery, or Google/GitHub sign-in, some service providers may process data outside Serbia or the European Union. Where applicable, AutoKPO uses available contractual and other safeguards for such transfers, including data processing agreements, standard contractual clauses, or other appropriate mechanisms made available by the service provider.
 
-## 8. Čuvanje i brisanje podataka
+## 8. Retention and deletion
 
-Podaci se čuvaju samo onoliko koliko je potrebno za svrhe opisane u ovoj politici, osim ako je duže čuvanje potrebno ili dozvoljeno zakonom.
+Data is kept only for as long as needed for the purposes described in this policy, unless longer retention is required or permitted by law.
 
-AutoKPO primenjuje sledeće okvirne rokove čuvanja:
+AutoKPO applies the following indicative retention limits:
 
-| Kategorija                                | Rok čuvanja                                                                                          |
-| ----------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Podaci naloga                             | Dok nalog postoji                                                                                    |
-| Sesije                                    | Do 60 dana, osim ako ih ranije opozovete ili se odjavite                                             |
-| Tehnički logovi AutoKPO-a                 | Minimizuju se; sadržaj KPO evidencije se ne čuva u logovima                                          |
-| Bezbednosni/Turnstile podaci Cloudflare-a | Cloudflare ih obrađuje kao pružalac infrastrukture i zaštite u skladu sa svojim uslovima i pravilima |
-| Poruke i zahtevi u vezi sa privatnošću    | Do 24 meseca, osim ako je duže čuvanje potrebno za pravni zahtev ili zakonsku obavezu                |
+| Category                              | Retention                                                                                           |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Account data                          | While the account exists                                                                            |
+| Sessions                              | Up to 60 days, unless you revoke them or sign out earlier                                           |
+| AutoKPO technical logs                | Minimized; KPO record contents are not stored in logs                                               |
+| Cloudflare security/Turnstile data    | Processed by Cloudflare as an infrastructure and security provider under its own terms and policies |
+| Privacy-related messages and requests | Up to 24 months, unless longer retention is needed for a legal claim or legal obligation            |
 
-Kada obrišete nalog, podaci naloga i sinhronizovani podaci aplikacije brišu se iz aktivnih sistema odmah ili u najkraćem tehnički mogućem roku, a najkasnije u roku od 30 dana, osim ako je duže čuvanje potrebno ili dozvoljeno zakonom. Određeni tehnički zapisi, logovi ili rezervne kopije mogu ostati privremeno sačuvani samo onoliko koliko je neophodno za bezbednost, održavanje sistema, rešavanje tehničkih problema, sprečavanje zloupotreba ili ispunjavanje zakonskih obaveza. Rezervne kopije, ako postoje, brišu se ili prepisuju u okviru redovnog ciklusa rotacije, najčešće u roku do 90 dana. Ako se rezervna kopija obnovi, AutoKPO će preduzeti razumne mere da izbegne ponovno aktiviranje obrisanih naloga ili da ih ponovo obriše kada budu identifikovani.
+When you delete your account, account data and synchronized app data are deleted from active systems immediately or as soon as technically possible, and no later than 30 days, unless longer retention is required or permitted by law. Certain technical records, logs, or backups may remain temporarily stored only for as long as necessary for security, system maintenance, troubleshooting, abuse prevention, or compliance with legal obligations. Backups, if any, are deleted or overwritten during the regular rotation cycle, usually within up to 90 days. If a backup is restored, AutoKPO will take reasonable steps to avoid reactivating deleted accounts or to delete them again when identified.
 
-Podaci koji su vezani samo za konkretan uređaj, kao što su lokalna podešavanja, lokalni keš i lokalni podaci za otključavanje šifrovanja, uklanjaju se kroz funkcije aplikacije, odjavu ili čišćenje podataka pregledača, u zavisnosti od vrste podataka i podešavanja uređaja.
+Device-only data, such as local preferences, local cache, and local encryption unlock data, is removed through app features, sign-out, or clearing browser data, depending on the type of data and your device settings.
 
-## 9. Izvoz podataka i vaša prava
+## 9. Data export and your rights
 
-AutoKPO omogućava izvoz podataka aplikacije i podataka naloga kroz podešavanja aplikacije. Takođe možete obrisati nalog kroz podešavanja naloga.
+AutoKPO allows you to export app data and account data through app settings. You can also delete your account through account settings.
 
-U zavisnosti od primenljivog prava, možete imati pravo da:
+Depending on applicable law, you may have the right to:
 
-- zatražite pristup svojim ličnim podacima;
-- zatražite ispravku netačnih podataka;
-- zatražite brisanje podataka;
-- zatražite ograničenje obrade;
-- uložite prigovor na obradu;
-- zatražite prenosivost podataka;
-- povučete pristanak kada se obrada zasniva na pristanku;
-- podnesete pritužbu Povereniku za informacije od javnog značaja i zaštitu podataka o ličnosti.
+- request access to your personal data;
+- request correction of inaccurate data;
+- request deletion of data;
+- request restriction of processing;
+- object to processing;
+- request data portability;
+- withdraw consent where processing is based on consent;
+- lodge a complaint with the Serbian Commissioner for Information of Public Importance and Personal Data Protection.
 
-Za zahteve u vezi sa ovim pravima pišite na [privacy@autokpo.com](mailto:privacy@autokpo.com).
+For requests related to these rights, contact [privacy@autokpo.com](mailto:privacy@autokpo.com).
 
-AutoKPO odgovara na zahteve bez nepotrebnog odlaganja, najkasnije u roku od 30 dana. Ako je zahtev složen ili ima više zahteva, rok može biti produžen za još 60 dana, uz obaveštenje o razlozima produženja.
+AutoKPO responds to requests without undue delay and no later than 30 days. If a request is complex or there are multiple requests, this period may be extended by 60 additional days, with notice of the reasons for the extension.
 
-## 10. Automatizovano odlučivanje
+## 10. Automated decision-making
 
-AutoKPO ne koristi lične podatke za automatizovano odlučivanje koje proizvodi pravne ili slično značajne posledice za korisnike.
+AutoKPO does not use personal data for automated decision-making that produces legal or similarly significant effects for users.
 
-Mogu se koristiti tehničke bezbednosne provere, kao što su zaštita od automatizovanih prijava, ograničavanje učestalosti zahteva i blokiranje zloupotreba, radi zaštite aplikacije i korisnika.
+Technical security checks, such as protection against automated sign-ins, request rate limiting, and abuse blocking, may be used to protect the app and users.
 
-## 11. Izmene ove politike
+## 11. Changes to this policy
 
-Ova politika može biti povremeno ažurirana. Kada se politika promeni, biće ažuriran datum na vrhu dokumenta. Ako promene budu značajne, AutoKPO može prikazati dodatno obaveštenje na veb-sajtu ili u aplikaciji.
+This policy may be updated from time to time. When the policy changes, the date at the top of the document will be updated. If changes are significant, AutoKPO may show an additional notice on the website or in the app.
 
-## 12. Kontakt
+## 12. Contact
 
-Za pitanja, zahteve ili pritužbe u vezi sa privatnošću pišite na:
+For questions, requests, or complaints related to privacy, contact:
 
 [privacy@autokpo.com](mailto:privacy@autokpo.com)

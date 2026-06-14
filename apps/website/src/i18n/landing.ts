@@ -119,7 +119,7 @@ export const supportedLocales: Locale[] = ['sr-Latn', 'en', 'ru'];
 export const landingContent: Record<Locale, LandingContent> = {
   'sr-Latn': {
     locale: 'sr-Latn',
-    route: '/',
+    route: '/sr-latn/',
     languageName: 'Srpski',
     meta: {
       title: 'AutoKPO — KPO evidencija za preduzetnike i paušalce',
@@ -336,7 +336,7 @@ export const landingContent: Record<Locale, LandingContent> = {
   },
   en: {
     locale: 'en',
-    route: '/en/',
+    route: '/',
     languageName: 'English',
     meta: {
       title: 'AutoKPO — KPO records for entrepreneurs and flat-rate taxpayers',

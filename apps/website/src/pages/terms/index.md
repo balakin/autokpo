@@ -1,212 +1,212 @@
 ---
 layout: ../../layouts/legal-document-layout.astro
-locale: sr-Latn
+locale: en
 documentKey: terms
-title: Uslovi korišćenja
-description: Pravila korišćenja AutoKPO veb sajta i aplikacije.
+title: Terms of Service
+description: Rules for using the AutoKPO website and app.
 updated: 2026-06-10
 ---
 
-# Uslovi korišćenja
+# Terms of Service
 
-Ovi Uslovi korišćenja uređuju pristup AutoKPO veb sajtu, aplikaciji, PWA aplikaciji, funkcijama naloga, sinhronizaciji i drugim povezanim uslugama.
+These Terms of Service govern access to the AutoKPO website, application, PWA, account features, synchronization features, and other related services.
 
-Korišćenjem AutoKPO potvrđujete da ste pročitali, razumeli i prihvatili ove Uslove. Ako se ne slažete sa njima, nemojte koristiti AutoKPO.
+By using AutoKPO, you confirm that you have read, understood, and accept these Terms. If you do not agree with them, do not use AutoKPO.
 
-## 1. Šta je AutoKPO
+## 1. What AutoKPO is
 
-AutoKPO je besplatan, nekomercijalan projekat otvorenog koda, namenjen kao pomoćni alat za vođenje KPO evidencije u Srbiji.
+AutoKPO is a free, non-commercial, open-source project intended as a helper tool for keeping KPO records in Serbia.
 
-AutoKPO nije računovodstvena, poreska, pravna, finansijska ili druga profesionalna usluga. AutoKPO ne zamenjuje savet računovođe, poreskog savetnika, advokata ili drugog kvalifikovanog stručnjaka.
+AutoKPO is not an accounting, tax, legal, financial, or other professional service. AutoKPO does not replace advice from an accountant, tax advisor, lawyer, or other qualified professional.
 
-Za potrebe ovih Uslova, operator usluge označava se kao **AutoKPO**.
+For the purposes of these Terms, the service operator is referred to as **AutoKPO**.
 
-## 2. Ko može da koristi AutoKPO
+## 2. Who may use AutoKPO
 
-AutoKPO je namenjen samo korisnicima koji imaju najmanje **18 godina**.
+AutoKPO is intended only for users who are at least **18 years old**.
 
-Korišćenjem AutoKPO potvrđujete da:
+By using AutoKPO, you confirm that:
 
-- imate 18 godina ili više;
-- imate pravo i poslovnu sposobnost da prihvatite ove Uslove;
-- koristite AutoKPO samo u skladu sa primenljivim pravom.
+- you are 18 years old or older;
+- you have the right and legal capacity to accept these Terms;
+- you use AutoKPO only in accordance with applicable law.
 
-Lica mlađa od 18 godina ne smeju koristiti AutoKPO.
+People under 18 years old may not use AutoKPO.
 
-## 3. Besplatan karakter usluge
+## 3. Free nature of the service
 
-AutoKPO se pruža besplatno. Na datum objavljivanja ovih Uslova, AutoKPO ne naplaćuje korišćenje veb sajta, aplikacije, naloga ili sinhronizacije.
+AutoKPO is provided free of charge. As of the publication date of these Terms, AutoKPO does not charge for use of the website, application, account, or synchronization.
 
-Zbog besplatnog karaktera usluge, AutoKPO ne preuzima plaćene obaveze podrške, održavanja, čuvanja podataka, dostupnosti ili nastavka rada usluge. AutoKPO može menjati, ograničiti, suspendovati ili ukinuti pojedine funkcije ili celu uslugu.
+Because the service is free, AutoKPO does not assume paid support, maintenance, data storage, availability, or continued-operation obligations. AutoKPO may change, limit, suspend, or discontinue individual features or the entire service.
 
-## 4. Odgovornost korisnika za evidenciju i podatke
+## 4. User responsibility for records and data
 
-Vi ste samostalno odgovorni za podatke koje unosite u AutoKPO i za način na koji koristite rezultate koje aplikacija daje.
+You are solely responsible for the data you enter into AutoKPO and for how you use the results produced by the application.
 
-Posebno ste odgovorni za:
+In particular, you are responsible for:
 
-- tačnost, potpunost i ažurnost unetih podataka;
-- proveru zapisa, izveštaja, izvoza i drugih rezultata pre upotrebe;
-- poštovanje primenljivih pravila za KPO evidenciju, poreskih, računovodstvenih i drugih zahteva;
-- pravovremeno pravljenje rezervnih kopija i izvoza;
-- čuvanje dokumenata i informacija koje ste po zakonu dužni da čuvate;
-- donošenje odluka na osnovu sopstvenih provera ili konsultacija sa kvalifikovanim stručnjacima.
+- the accuracy, completeness, and timeliness of entered data;
+- checking records, reports, exports, and other results before using them;
+- complying with applicable KPO record-keeping, tax, accounting, and other requirements;
+- making timely backups and exports;
+- keeping documents and information that you are legally required to keep;
+- making decisions based on your own checks or consultations with qualified professionals.
 
-AutoKPO nije odgovoran za greške u evidenciji, netačne ili nepotpune zapise, propuštene rokove, poreska zaduženja, kazne, kamate, kontrole, sporove sa organima vlasti ili druge posledice povezane sa vašim korišćenjem AutoKPO.
+AutoKPO is not responsible for accounting errors, incorrect or incomplete records, missed deadlines, tax reassessments, penalties, interest, inspections, disputes with authorities, or other consequences related to your use of AutoKPO.
 
-## 5. Lokalno čuvanje, sinhronizacija i šifrovanje
+## 5. Local storage, synchronization, and encryption
 
-AutoKPO koristi lokalni pristup podacima: podaci aplikacije se prvenstveno čuvaju na vašem uređaju. Ako koristite sinhronizaciju, podaci aplikacije mogu se sinhronizovati preko infrastrukture AutoKPO u šifrovanom obliku.
+AutoKPO uses a local-first approach to data: application data is primarily stored on your device. If you use synchronization, application data may be synchronized through AutoKPO infrastructure in encrypted form.
 
-Vi ste odgovorni za čuvanje svojih uređaja, naloga, lozinki, pristupnih kodova, podataka za oporavak, lozinke za šifrovanje i drugih informacija potrebnih za pristup vašim podacima.
+You are responsible for keeping safe your devices, accounts, passwords, access codes, recovery information, encryption password, and other information needed to access your data.
 
-Ako lozinka za šifrovanje, uređaj, nalog ili drugi način pristupa budu izgubljeni, oporavak podataka može biti nemoguć. AutoKPO nije dužan i može biti tehnički nesposoban da obnovi vaše KPO zapise ili dešifruje sinhronizovane podatke.
+If the encryption password, device, account, or other access method is lost, data recovery may be impossible. AutoKPO is not required to, and may be technically unable to, restore your KPO records or decrypt synchronized data.
 
-## 6. Nalog i bezbednost
+## 6. Account and security
 
-Neke funkcije AutoKPO mogu zahtevati nalog ili prijavu preko podržanog pružaoca prijave.
+Some AutoKPO features may require an account or sign-in through a supported identity provider.
 
-Obavezujete se da ćete:
+You agree to:
 
-- pružiti tačne i ažurne informacije ako su potrebne za nalog;
-- održavati bezbednost svog naloga, email adrese, uređaja i sesija;
-- nećete davati pristup nalogu licima koja nemaju pravo da koriste uslugu;
-- blagovremeno prijaviti sumnju na neovlašćen pristup.
+- provide accurate and up-to-date information if it is required for an account;
+- maintain the security of your account, email address, devices, and sessions;
+- not give account access to people who are not allowed to use the service;
+- promptly report any suspected unauthorized access.
 
-Odgovorni ste za radnje izvršene preko vašeg naloga ako su nastale zbog vašeg kršenja ovih Uslova, nedovoljne zaštite pristupa ili drugog nepravilnog korišćenja sa vaše strane.
+You are responsible for actions taken through your account if they occur because of your breach of these Terms, insufficient access protection, or other improper use on your part.
 
-## 7. Dozvoljeno korišćenje
+## 7. Acceptable use
 
-Možete koristiti AutoKPO za zakonito vođenje, proveru, čuvanje, sinhronizaciju i izvoz sopstvenih KPO zapisa i povezanih podataka.
+You may use AutoKPO for lawful keeping, checking, storing, synchronizing, and exporting of your own KPO records and related data.
 
-Ne smete koristiti AutoKPO za:
+You may not use AutoKPO to:
 
-- kršenje zakona ili prava trećih lica;
-- otpremanje, unos, čuvanje ili prenos podataka koje nemate pravo da obrađujete;
-- napade, hakovanje, zaobilaženje bezbednosnih ograničenja, pogađanje lozinki, automatizovanu zloupotrebu ili preopterećenje infrastrukture;
-- ometanje rada veb sajta, aplikacije, sinhronizacije, naloga, email poruka ili infrastrukture AutoKPO;
-- širenje zlonamernog koda, spama, fišinga, prevare ili drugih štetnih aktivnosti;
-- pokušaj pristupa nalozima, podacima, sistemima ili tajnama kojima nemate pravo pristupa;
-- korišćenje usluge na način koji stvara pravni, tehnički, reputacioni ili operativni rizik za AutoKPO ili druge korisnike.
+- violate the law or the rights of third parties;
+- upload, enter, store, or transmit data that you do not have the right to process;
+- attack, hack, bypass security restrictions, guess passwords, abuse automation, or overload infrastructure;
+- disrupt the operation of the website, application, synchronization, accounts, email messages, or AutoKPO infrastructure;
+- distribute malicious code, spam, phishing, fraud, or other harmful activity;
+- attempt to access accounts, data, systems, or secrets that you have no right to access;
+- use the service in a way that creates legal, technical, reputational, or operational risk for AutoKPO or other users.
 
-AutoKPO je projekat otvorenog koda. Ovi Uslovi ne zabranjuju radnje koje su dozvoljene primenljivom open-source licencom. Međutim, otvoreni kod ne daje pravo da zloupotrebljavate hostovanu AutoKPO uslugu, zaobilazite zaštitu, izvlačite tajne, napadate infrastrukturu, kršite prava drugih korisnika ili koristite kod protivno primenljivoj licenci.
+AutoKPO is an open-source project. These Terms do not prohibit actions permitted by the applicable open-source license. However, open source does not give you the right to abuse the hosted AutoKPO service, bypass protection, extract secrets, attack infrastructure, violate the rights of other users, or use the code in violation of the applicable license.
 
-## 8. Otvoreni kod i intelektualna svojina
+## 8. Open source and intellectual property
 
-Izvorni kod AutoKPO može biti dostupan pod uslovima odgovarajuće open-source licence. Ta licenca se primenjuje na takav kod, a ovi Uslovi ne ograničavaju prava koja su vam izričito data open-source licencom.
+AutoKPO source code may be available under the terms of the applicable open-source license. That license applies to such code, and these Terms do not limit rights that are expressly granted to you by the open-source license.
 
-Ako nije izričito drugačije navedeno, naziv AutoKPO, domen, elementi brenda, tekstovi veb sajta, pravni dokumenti, dizajn, struktura usluge i drugi materijali zaštićeni su primenljivim pravima intelektualne svojine.
+Unless expressly stated otherwise, the AutoKPO name, domain name, brand elements, website text, legal documents, design, service structure, and other materials are protected by applicable intellectual property rights.
 
-Dodeljuje vam se ograničeno, opozivo, neisključivo i neprenosivo pravo da koristite hostovanu AutoKPO uslugu u skladu sa ovim Uslovima.
+You are granted a limited, revocable, non-exclusive, and non-transferable right to use the hosted AutoKPO service in accordance with these Terms.
 
-## 9. Korisnički podaci
+## 9. User data
 
-Zadržavate prava na podatke koje unosite u AutoKPO.
+You retain rights to the data you enter into AutoKPO.
 
-Dajete AutoKPO pravo da obrađuje, čuva, prenosi, sinhronizuje, prikazuje i tehnički koristi vaše podatke samo u meri potrebnoj za pružanje i zaštitu usluge, rad naloga, lokalno čuvanje, sinhronizaciju, izvoz, brisanje podataka i podršku.
+You grant AutoKPO the right to process, store, transmit, synchronize, display, and technically use your data only to the extent necessary to provide and protect the service, operate the account, support local storage, synchronization, export, data deletion, and support.
 
-Potvrđujete da imate pravo da unosite i obrađujete podatke koje smeštate u AutoKPO, uključujući podatke o ličnosti trećih lica ako su takvi podaci prisutni u vašim KPO zapisima.
+You confirm that you have the right to enter and process the data you place in AutoKPO, including personal data of third parties if such data is present in your KPO records.
 
-## 10. Privatnost
+## 10. Privacy
 
-Obrada podataka o ličnosti opisana je u [Politici privatnosti](/privacy/).
+Processing of personal data is described in the [Privacy Policy](/en/privacy/).
 
-Ako postoji razlika između ovih Uslova i Politike privatnosti u vezi sa obradom podataka o ličnosti, na ta pitanja primenjuje se Politika privatnosti.
+If there is a difference between these Terms and the Privacy Policy regarding personal-data processing, the Privacy Policy applies to those matters.
 
-## 11. Usluge trećih strana
+## 11. Third-party services
 
-AutoKPO može koristiti pružaoce usluga trećih strana za hosting, bezbednost, prijavu, slanje transakcionih email poruka, infrastrukturu, browser/PWA funkcije i druge tehničke zadatke.
+AutoKPO may use third-party providers for hosting, security, sign-in, transactional email delivery, infrastructure, browser/PWA features, and other technical tasks.
 
-Usluge trećih strana mogu biti uređene sopstvenim uslovima i politikama. AutoKPO ne kontroliše i nije odgovoran za dostupnost, bezbednost, izmene, greške, radnje ili propuste usluga trećih strana, osim ako primenljivo pravo ne zahteva drugačije.
+Third-party services may be governed by their own terms and policies. AutoKPO does not control and is not responsible for the availability, security, changes, errors, acts, or omissions of third-party services, unless otherwise required by applicable law.
 
-## 12. Dostupnost, izmene i prestanak usluge
+## 12. Availability, changes, and discontinuation of the service
 
-AutoKPO se pruža u skladu sa raspoloživim mogućnostima. Usluga, pojedine funkcije, sinhronizacija, nalozi, izvoz, veb sajt ili aplikacija mogu biti nedostupni, raditi sa greškama, menjati se, biti ograničeni, suspendovani ili ukinuti.
+AutoKPO is provided as resources allow. The service, individual features, synchronization, accounts, export, website, or application may be unavailable, work with errors, change, be limited, be suspended, or be discontinued.
 
-AutoKPO može objavljivati ažuriranja, menjati funkcije, interfejs, tehničku arhitekturu, pružaoce usluga, pravila pristupa i načine rada usluge bez prethodnog obaveštenja, osim ako je prethodno obaveštenje zahtevano zakonom.
+AutoKPO may release updates, change features, interface, technical architecture, service providers, access rules, and service operation methods without prior notice, unless prior notice is required by law.
 
-Neophodne kopije, izvoze i dokumente morate samostalno čuvati izvan AutoKPO.
+You must independently keep necessary copies, exports, and documents outside AutoKPO.
 
-## 13. Suspenzija i prestanak pristupa
+## 13. Suspension and termination of access
 
-Možete prestati da koristite AutoKPO u bilo kom trenutku.
+You may stop using AutoKPO at any time.
 
-AutoKPO može suspendovati, ograničiti ili ukinuti vaš pristup usluzi, nalogu ili funkcijama sinhronizacije ako AutoKPO razumno smatra da:
+AutoKPO may suspend, limit, or terminate your access to the service, account, or synchronization features if AutoKPO reasonably believes that:
 
-- ste prekršili ove Uslove;
-- korišćenje stvara bezbednosnu pretnju, zloupotrebu, tehnički rizik ili pravni rizik;
-- nalog se koristi neovlašćeno ili prevarno;
-- to je potrebno radi zaštite AutoKPO, drugih korisnika, infrastrukture ili trećih lica;
-- usluga ili odgovarajuća funkcija se ukida.
+- you have violated these Terms;
+- the use creates a security threat, abuse, technical risk, or legal risk;
+- the account is used without authorization or fraudulently;
+- it is necessary to protect AutoKPO, other users, infrastructure, or third parties;
+- the service or the relevant feature is being discontinued.
 
-U zavisnosti od situacije, to može uključivati privremeno blokiranje pristupa, trajno deaktiviranje naloga, ograničenje pojedinih funkcija ili brisanje podataka naloga ako je to dozvoljeno zakonom, tehnički moguće i u skladu sa Politikom privatnosti.
+Depending on the situation, this may include temporary blocking of access, permanent disabling of the account, limitation of individual features, or deletion of account data if permitted by law, technically possible, and consistent with the Privacy Policy.
 
-Odredbe koje po svojoj prirodi treba da nastave da važe nakon prestanka pristupa nastavljaju da važe, uključujući odredbe o intelektualnoj svojini, odricanju od garancija, ograničenju odgovornosti, odgovornosti za kršenja, primenljivom pravu i rešavanju sporova.
+Provisions that by their nature should continue after access ends continue to apply, including provisions on intellectual property, warranty disclaimers, limitation of liability, responsibility for violations, applicable law, and dispute resolution.
 
-## 14. Odricanje od garancija
+## 14. Disclaimer of warranties
 
-AutoKPO se pruža **„takav kakav jeste”** i **„prema dostupnosti”**.
+AutoKPO is provided **“as is”** and **“as available”**.
 
-U najvećoj meri dozvoljenoj primenljivim pravom, AutoKPO se odriče svih garancija, izjava i uslova, izričitih ili podrazumevanih, uključujući garancije tačnosti, potpunosti, ažurnosti, pouzdanosti, pogodnosti za određenu svrhu, tržišne podobnosti, nekršenja prava, neprekidnog rada, bezbednosti, odsustva grešaka, kompatibilnosti, očuvanja podataka i usklađenosti sa poreskim, računovodstvenim, pravnim ili drugim zahtevima.
+To the maximum extent permitted by applicable law, AutoKPO disclaims all warranties, representations, and conditions, whether express or implied, including warranties of accuracy, completeness, timeliness, reliability, fitness for a particular purpose, merchantability, non-infringement, uninterrupted operation, security, absence of errors, compatibility, preservation of data, and compliance with tax, accounting, legal, or other requirements.
 
-AutoKPO ne garantuje da će usluga raditi bez prekida, grešaka, gubitka podataka, ranjivosti, kašnjenja, nekompatibilnosti, neuspeha sinhronizacije ili nedostupnosti.
+AutoKPO does not warrant that the service will operate without interruptions, errors, data loss, vulnerabilities, delays, incompatibility, synchronization failures, or unavailability.
 
-## 15. Ograničenje odgovornosti
+## 15. Limitation of liability
 
-AutoKPO je besplatna usluga. U najvećoj meri dozvoljenoj primenljivim pravom, AutoKPO nije odgovoran za bilo kakve gubitke, štetu, zahteve ili posledice koje nastanu iz korišćenja ili nemogućnosti korišćenja usluge.
+AutoKPO is a free service. To the maximum extent permitted by applicable law, AutoKPO is not liable for any losses, damages, claims, or consequences arising from use of, or inability to use, the service.
 
-Posebno, AutoKPO nije odgovoran za:
+In particular, AutoKPO is not liable for:
 
-- izgubljenu dobit, izgubljen prihod, izgubljene klijente ili izgubljene poslovne prilike;
-- prekid poslovanja, zastoj, kašnjenja ili nemogućnost vođenja evidencije;
-- gubitak, oštećenje, brisanje, nedostupnost, grešku, nepotpunost ili izobličenje podataka;
-- poreske, računovodstvene, administrativne, regulatorne ili pravne posledice;
-- kazne, kamate, dodatna zaduženja, kontrole, sporove ili zahteve organa vlasti;
-- indirektnu, slučajnu, posebnu, posledičnu, kaznenu, primerenu ili sličnu štetu;
-- greške korisnika, pogrešan unos podataka, pogrešno tumačenje rezultata ili nedostatak rezervnih kopija;
-- kvarove lokalnog uređaja, browsera, mreže, pružalaca usluga, prijave preko trećih strana, email dostave, hostinga, sinhronizacije ili šifrovanja;
-- radnje, propuste, uslove, politike, kvarove ili bezbednosne incidente usluga trećih strana.
+- lost profits, lost revenue, lost customers, or lost business opportunities;
+- business interruption, downtime, delays, or inability to keep records;
+- loss, damage, deletion, unavailability, error, incompleteness, or distortion of data;
+- tax, accounting, administrative, regulatory, or legal consequences;
+- penalties, interest, reassessments, inspections, disputes, or claims by authorities;
+- indirect, incidental, special, consequential, punitive, exemplary, or similar damages;
+- user errors, incorrect data entry, incorrect interpretation of results, or lack of backups;
+- failures of a local device, browser, network, service providers, third-party sign-in, email delivery, hosting, synchronization, or encryption;
+- acts, omissions, terms, policies, failures, or security incidents of third-party services.
 
-Ako primenljivo pravo ne dozvoljava potpuno isključenje odgovornosti, ukupna odgovornost AutoKPO ograničava se na najmanji iznos koji se ne može isključiti po primenljivom pravu. Pošto se usluga pruža besplatno, strane priznaju da je odsustvo naknade bitna osnova za ovo ograničenje odgovornosti.
+If applicable law does not allow liability to be fully excluded, AutoKPO’s total liability is limited to the minimum amount that cannot be excluded under applicable law. Because the service is provided free of charge, the parties acknowledge that the absence of payment is a material basis for this limitation of liability.
 
-Ništa u ovim Uslovima ne isključuje odgovornost koja se ne može isključiti po primenljivom pravu.
+Nothing in these Terms excludes liability that cannot be excluded under applicable law.
 
-## 16. Odgovornost za kršenja
+## 16. Responsibility for violations
 
-Odgovorni ste za svoje korišćenje AutoKPO i za podatke koje unosite u aplikaciju.
+You are responsible for your use of AutoKPO and for the data you enter into the application.
 
-Ako zbog vašeg namernog kršenja ovih Uslova, nezakonitog korišćenja AutoKPO, kršenja prava trećih lica ili zloupotrebe usluge protiv AutoKPO budu podneti zahtevi, saglasni ste da sarađujete sa AutoKPO radi rešavanja takvih zahteva.
+If claims are brought against AutoKPO because of your intentional violation of these Terms, unlawful use of AutoKPO, violation of third-party rights, or abuse of the service, you agree to cooperate with AutoKPO to resolve such claims.
 
-Ova odredba primenjuje se samo u najvećoj meri dozvoljenoj primenljivim pravom i ne ograničava prava korisnika koja se ne mogu ograničiti zakonom.
+This provision applies only to the maximum extent permitted by applicable law and does not limit user rights that cannot be limited by law.
 
-## 17. Izmene Uslova
+## 17. Changes to the Terms
 
-AutoKPO može povremeno ažurirati ove Uslove. Kada se Uslovi promene, datum na vrhu dokumenta biće ažuriran.
+AutoKPO may update these Terms from time to time. When the Terms are changed, the date at the top of the document will be updated.
 
-Ako su izmene značajne, AutoKPO može prikazati dodatno obaveštenje na veb sajtu ili u aplikaciji. Nastavkom korišćenja AutoKPO nakon stupanja ažuriranih Uslova na snagu prihvatate ažurirane Uslove.
+If changes are material, AutoKPO may show an additional notice on the website or in the application. By continuing to use AutoKPO after the updated Terms take effect, you accept the updated Terms.
 
-Ako se ne slažete sa ažuriranim Uslovima, morate prestati da koristite AutoKPO.
+If you do not agree with the updated Terms, you must stop using AutoKPO.
 
-## 18. Primenljivo pravo i sporovi
+## 18. Applicable law and disputes
 
-Ovi Uslovi uređuju se pravom Republike Srbije, osim ako obavezne norme primenljivog prava ne propisuju drugačije.
+These Terms are governed by the law of the Republic of Serbia, unless mandatory provisions of applicable law provide otherwise.
 
-Sporovi povezani sa ovim Uslovima, veb sajtom, aplikacijom ili uslugom AutoKPO podležu nadležnim sudovima Republike Srbije, osim ako obavezne norme primenljivog prava ne propisuju drugačije.
+Disputes related to these Terms, the website, application, or AutoKPO service are subject to the competent courts of the Republic of Serbia, unless mandatory provisions of applicable law provide otherwise.
 
-## 19. Ostale odredbe
+## 19. Miscellaneous
 
-Ako bilo koja odredba ovih Uslova bude proglašena nevažećom, nezakonitom ili neizvršivom, ostale odredbe nastavljaju da važe u najvećoj mogućoj meri.
+If any provision of these Terms is found to be invalid, unlawful, or unenforceable, the remaining provisions continue to apply to the maximum possible extent.
 
-Neostvarivanje bilo kog prava AutoKPO po ovim Uslovima ne znači odricanje od tog prava.
+AutoKPO’s failure to exercise any right under these Terms does not mean that AutoKPO waives that right.
 
-Ne možete preneti svoja prava ili obaveze po ovim Uslovima bez prethodne saglasnosti AutoKPO. AutoKPO može preneti prava i obaveze povezane sa uslugom ako projekat, domen, infrastruktura ili operacije budu preneti drugom licu ili organizaciji.
+You may not transfer your rights or obligations under these Terms without AutoKPO’s prior consent. AutoKPO may transfer rights and obligations related to the service if the project, domain, infrastructure, or operations are transferred to another person or organization.
 
-Ovi Uslovi zajedno sa Politikom privatnosti čine sporazum između vas i AutoKPO u vezi sa korišćenjem usluge.
+These Terms, together with the Privacy Policy, form the agreement between you and AutoKPO regarding use of the service.
 
-AutoKPO nije odgovoran za kašnjenja, zastoje ili nemogućnost izvršenja izazvane okolnostima van razumne kontrole AutoKPO, uključujući kvarove infrastrukture, radnje pružalaca usluga, prekide komunikacije, napade, izmene zakona, postupke organa vlasti, vanredne situacije ili druge događaje više sile.
+AutoKPO is not responsible for delays, failures, or inability to perform caused by circumstances outside AutoKPO’s reasonable control, including infrastructure failures, acts of service providers, communication outages, attacks, changes in law, actions of authorities, emergencies, or other force-majeure events.
 
-## 20. Kontakt
+## 20. Contact
 
-Za pitanja povezana sa ovim Uslovima ili korišćenjem AutoKPO, pišite na:
+For questions related to these Terms or use of AutoKPO, contact:
 
 [support@autokpo.com](mailto:support@autokpo.com)

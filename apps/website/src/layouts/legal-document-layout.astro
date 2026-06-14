@@ -1,6 +1,4 @@
 ---
-import { getAbsoluteLocaleUrl, getRelativeLocaleUrl } from 'astro:i18n';
-
 import BaseLayout from './base-layout.astro';
 import SiteFooter from '../components/site-footer.astro';
 import SiteHeader from '../components/site-header.astro';
@@ -33,19 +31,25 @@ const formattedDate = new Date(documentUpdated).toLocaleDateString(locale, {
   month: 'long',
   day: 'numeric',
 });
-const homeUrl = getRelativeLocaleUrl(locale, '');
+const homeUrl = content.route;
 const ogImage = new URL('/og-image.png', Astro.site).href;
-const ogUrl = getAbsoluteLocaleUrl(locale, document.slug);
+const ogUrl = new URL(content.route + document.slug, Astro.site).href;
 const legalUrls = {
-  privacy: getRelativeLocaleUrl(locale, legalLocale.documents.privacy.slug),
-  terms: getRelativeLocaleUrl(locale, legalLocale.documents.terms.slug),
+  privacy: content.route + legalLocale.documents.privacy.slug,
+  terms: content.route + legalLocale.documents.terms.slug,
 };
-const alternates = supportedLocales.map((alternateLocale) => ({
-  locale: alternateLocale,
-  route: getRelativeLocaleUrl(alternateLocale, document.slug),
-  url: getAbsoluteLocaleUrl(alternateLocale, document.slug),
-  languageName: landingContent[alternateLocale].languageName,
-}));
+const alternates = supportedLocales.map((alternateLocale) => {
+  const route = landingContent[alternateLocale].route;
+  const docUrl =
+    route + legalContent[alternateLocale].documents[documentKey].slug;
+  return {
+    locale: alternateLocale,
+    route: docUrl,
+    url: new URL(docUrl, Astro.site).href,
+    languageName: landingContent[alternateLocale].languageName,
+  };
+});
+const xDefaultUrl = alternates.find((a) => a.locale === 'en')?.url ?? ogUrl;
 ---
 
 <BaseLayout
@@ -62,7 +66,7 @@ const alternates = supportedLocales.map((alternateLocale) => ({
 >
   <Fragment slot="head">
     <meta name="updated" content={documentUpdated} />
-    <link rel="canonical" href={getAbsoluteLocaleUrl(locale, document.slug)} />
+    <link rel="canonical" href={ogUrl} />
     {
       alternates.map((alternate) => (
         <link
@@ -72,11 +76,7 @@ const alternates = supportedLocales.map((alternateLocale) => ({
         />
       ))
     }
-    <link
-      rel="alternate"
-      hreflang="x-default"
-      href={getAbsoluteLocaleUrl('sr-Latn', document.slug)}
-    />
+    <link rel="alternate" hreflang="x-default" href={xDefaultUrl} />
   </Fragment>
 
   <SiteHeader

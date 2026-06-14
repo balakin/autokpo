@@ -8,12 +8,12 @@ import {
   supportedLocales,
 } from '../i18n/landing';
 
-const primary = landingContent['sr-Latn'];
+const primary = landingContent.en;
 const legalUrls = { privacy: '/privacy/', terms: '/terms/' };
 ---
 
 <BaseLayout
-  locale="sr-Latn"
+  locale="en"
   title={primary.notFound.meta.title}
   description={primary.notFound.meta.description}
   skipLink={primary.skipLink}
@@ -24,7 +24,7 @@ const legalUrls = { privacy: '/privacy/', terms: '/terms/' };
   <div class="page">
     <SiteHeader
       content={primary}
-      currentLocale="sr-Latn"
+      currentLocale="en"
       homeHref="/"
       navPrefix="/"
       alternates={localeAlternates}

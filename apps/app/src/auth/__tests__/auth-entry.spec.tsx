@@ -115,10 +115,10 @@ describe('AuthEntry', () => {
     const notice = screen.getByText(/Nastavkom prijave prihvatate/i);
     expect(
       within(notice).getByRole('link', { name: /Uslove korišćenja/i }),
-    ).toHaveAttribute('href', 'https://autokpo.com/terms/');
+    ).toHaveAttribute('href', 'https://autokpo.com/sr-latn/terms/');
     expect(
       within(notice).getByRole('link', { name: /Politiku privatnosti/i }),
-    ).toHaveAttribute('href', 'https://autokpo.com/privacy/');
+    ).toHaveAttribute('href', 'https://autokpo.com/sr-latn/privacy/');
     expect(
       within(notice).queryByRole('link', {
         name: /Kolačići|Politika kolačića/i,
@@ -148,12 +148,12 @@ describe('AuthEntry', () => {
     for (const link of screen.getAllByRole('link', {
       name: /Terms of Service/i,
     })) {
-      expect(link).toHaveAttribute('href', 'https://autokpo.com/en/terms/');
+      expect(link).toHaveAttribute('href', 'https://autokpo.com/terms/');
     }
     for (const link of screen.getAllByRole('link', {
       name: /Privacy Policy/i,
     })) {
-      expect(link).toHaveAttribute('href', 'https://autokpo.com/en/privacy/');
+      expect(link).toHaveAttribute('href', 'https://autokpo.com/privacy/');
     }
   });
 });

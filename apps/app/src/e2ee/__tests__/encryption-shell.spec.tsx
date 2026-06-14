@@ -33,10 +33,10 @@ describe('EncryptionShell legal footer', () => {
     );
     expect(
       screen.getByRole('link', { name: /Uslovi korišćenja/i }),
-    ).toHaveAttribute('href', 'https://autokpo.com/terms/');
+    ).toHaveAttribute('href', 'https://autokpo.com/sr-latn/terms/');
     expect(
       screen.getByRole('link', { name: /Politika privatnosti/i }),
-    ).toHaveAttribute('href', 'https://autokpo.com/privacy/');
+    ).toHaveAttribute('href', 'https://autokpo.com/sr-latn/privacy/');
   });
 
   it('uses active locale for legal footer links', () => {
@@ -45,10 +45,10 @@ describe('EncryptionShell legal footer', () => {
 
     expect(
       screen.getByRole('link', { name: /Terms of Service/i }),
-    ).toHaveAttribute('href', 'https://autokpo.com/en/terms/');
+    ).toHaveAttribute('href', 'https://autokpo.com/terms/');
     expect(
       screen.getByRole('link', { name: /Privacy Policy/i }),
-    ).toHaveAttribute('href', 'https://autokpo.com/en/privacy/');
+    ).toHaveAttribute('href', 'https://autokpo.com/privacy/');
   });
 
   it('legal links open externally', () => {

@@ -1,5 +1,11 @@
 # @autokpo/website
 
+## 0.3.3
+
+### Patch Changes
+
+- [#78](https://github.com/balakin/autokpo/pull/78) [`c197754`](https://github.com/balakin/autokpo/commit/c19775460cf2bb4c2eda29e1374672d85daa4168) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Added a per-build version meta tag so each deploy produces distinct HTML
+
 ## 0.3.2
 
 ### Patch Changes

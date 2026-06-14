@@ -109,7 +109,7 @@ Potvrđujete da imate pravo da unosite i obrađujete podatke koje smeštate u Au
 
 ## 10. Privatnost
 
-Obrada podataka o ličnosti opisana je u [Politici privatnosti](/privacy/).
+Obrada podataka o ličnosti opisana je u [Politici privatnosti](/sr-latn/privacy/).
 
 Ako postoji razlika između ovih Uslova i Politike privatnosti u vezi sa obradom podataka o ličnosti, na ta pitanja primenjuje se Politika privatnosti.
 

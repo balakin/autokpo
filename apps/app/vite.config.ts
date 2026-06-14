@@ -130,20 +130,15 @@ function scopeToEnv(
 
 function generateHeaders(): Plugin {
   let host: string | undefined;
-  let token: string | undefined;
 
   return {
     name: 'generate-csp-headers',
     configResolved(config) {
       host = config.env['VITE_POSTHOG_HOST'] as string | undefined;
-      token = config.env['VITE_POSTHOG_PROJECT_TOKEN'] as string | undefined;
     },
     writeBundle(outputOptions) {
       const dir = outputOptions.dir;
       if (!dir) return;
-
-      const reportUri =
-        token && host ? `${host}/report/?token=${token}&v=${version}` : null;
 
       const html = readFileSync(join(dir, 'index.html'), 'utf8');
       const scriptHashes = extractInlineTagHashes(html, 'script');
@@ -159,7 +154,6 @@ function generateHeaders(): Plugin {
         "worker-src 'self'",
         "manifest-src 'self'",
         "base-uri 'self'",
-        ...(reportUri ? [`report-uri ${reportUri}`, 'report-to posthog'] : []),
       ];
 
       const headers = [
@@ -168,7 +162,6 @@ function generateHeaders(): Plugin {
         '  X-Content-Type-Options: nosniff',
         '  X-Frame-Options: DENY',
         '  Referrer-Policy: strict-origin-when-cross-origin',
-        ...(reportUri ? [`  Reporting-Endpoints: posthog="${reportUri}"`] : []),
         '',
       ].join('\n');
 

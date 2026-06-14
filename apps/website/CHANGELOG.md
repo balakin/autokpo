@@ -1,5 +1,17 @@
 # @autokpo/website
 
+## 0.5.0
+
+### Minor Changes
+
+- [#84](https://github.com/balakin/autokpo/pull/84) [`158d02a`](https://github.com/balakin/autokpo/commit/158d02a69fa4e4604ef07fd92fe3166d269ed6d3) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Added ?lang= query parameter so website passes locale to app on navigation
+
+- [#84](https://github.com/balakin/autokpo/pull/84) [`158d02a`](https://github.com/balakin/autokpo/commit/158d02a69fa4e4604ef07fd92fe3166d269ed6d3) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Changed default locale from sr-Latn to en across website and app
+
+### Patch Changes
+
+- [#86](https://github.com/balakin/autokpo/pull/86) [`9f602e8`](https://github.com/balakin/autokpo/commit/9f602e815adae30ad9c3a567b0c8c8fb7b34e192) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Updated session cookie name to \_\_Secure-autokpo_session in privacy policy across all locales.
+
 ## 0.4.1
 
 ### Patch Changes

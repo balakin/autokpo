@@ -1,5 +1,13 @@
 # @autokpo/app
 
+## 0.3.3
+
+### Patch Changes
+
+- [#76](https://github.com/balakin/autokpo/pull/76) [`a48a9b5`](https://github.com/balakin/autokpo/commit/a48a9b560568ba94ca5b0be9ede0011beadd9314) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Allowed data: URIs in connect-src to fix react-pdf WASM fetch blocked by CSP
+
+- [#76](https://github.com/balakin/autokpo/pull/76) [`86d5f3f`](https://github.com/balakin/autokpo/commit/86d5f3f3d648489263d378e57e9b6c6e9a80d635) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Removed CSP violation reporting to PostHog
+
 ## 0.3.2
 
 ### Patch Changes

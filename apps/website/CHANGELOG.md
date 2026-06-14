@@ -1,5 +1,13 @@
 # @autokpo/website
 
+## 0.3.2
+
+### Patch Changes
+
+- [#76](https://github.com/balakin/autokpo/pull/76) [`86d5f3f`](https://github.com/balakin/autokpo/commit/86d5f3f3d648489263d378e57e9b6c6e9a80d635) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Removed inline style attribute violating website CSP
+
+- [#76](https://github.com/balakin/autokpo/pull/76) [`86d5f3f`](https://github.com/balakin/autokpo/commit/86d5f3f3d648489263d378e57e9b6c6e9a80d635) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Removed CSP violation reporting to PostHog
+
 ## 0.3.1
 
 ### Patch Changes

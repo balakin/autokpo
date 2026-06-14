@@ -33,6 +33,8 @@ type Props = {
 };
 
 const { content } = Astro.props;
+const appUrl = `https://app.autokpo.com?lang=${content.locale}`;
+const githubUrl = 'https://github.com/balakin/autokpo';
 const canonicalUrl = new URL(content.route, Astro.site).href;
 const ogImage = new URL('/og-image.png', Astro.site).href;
 const alternates = localeAlternates.map((alternate) => ({
@@ -693,16 +695,14 @@ const iconByName = {
             <div class="hero-cta">
               <a
                 class="btn primary lg"
-                href={`https://app.autokpo.com?lang=${content.locale}`}
-                target="_blank"
-                rel="noreferrer noopener"
+                href={appUrl}
                 data-analytics-event="app_opened"
                 data-analytics-properties={JSON.stringify({ location: 'hero' })}
                 >{content.links.app}</a
               >
               <a
                 class="btn secondary lg"
-                href="https://github.com/balakin/autokpo"
+                href={githubUrl}
                 target="_blank"
                 rel="noreferrer noopener"
                 data-analytics-event="github_clicked"
@@ -842,8 +842,7 @@ const iconByName = {
           <div class="hero-cta">
             <a
               class="btn primary lg"
-              href={`https://app.autokpo.com?lang=${content.locale}`}
-              rel="noreferrer noopener"
+              href={appUrl}
               data-analytics-event="app_opened"
               data-analytics-properties={JSON.stringify({
                 location: 'final_cta',
@@ -851,7 +850,7 @@ const iconByName = {
             >
             <a
               class="btn secondary lg"
-              href="https://github.com/balakin/autokpo"
+              href={githubUrl}
               target="_blank"
               rel="noreferrer noopener"
               data-analytics-event="github_clicked"

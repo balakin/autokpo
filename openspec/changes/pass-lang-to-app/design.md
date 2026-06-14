@@ -52,18 +52,11 @@ Once `readLocale()` sees a valid localStorage value, it returns early — the qu
 
 **Alternative considered:** Always override with `?lang=`. This would cause the app to switch languages every time the user opens it from a non-English website page, which could disorient returning users who set a different in-app preference.
 
-### Decision 3: URL cleanup location
+### Decision 3: No URL cleanup
 
-**Chosen:** Cleanup via `useEffect` in `LocaleProvider`, after the locale is resolved and activated.
+**Chosen:** The `?lang=` parameter is left in the URL after consumption — no `history.replaceState` cleanup.
 
-**Rationale:** `readLocale()` is called during `useState` initializer (render phase). Side effects like `history.replaceState` belong in effects. The cleanup should run once on mount, after the hint has been consumed and persisted.
-
-```text
-Mount:
-  1. useState(readLocale) → checks localStorage, then ?lang=, falls back to navigator.language
-     → sets localStorage if needed, returns locale
-  2. useEffect (cleanup) → if ?lang= was present, history.replaceState to strip it
-```
+**Rationale:** The param is inert after first consumption (localStorage takes priority on subsequent reads). React Router naturally replaces the URL on the first in-app navigation, removing the param without manual intervention. Avoiding `replaceState` also eliminates risk of corrupting history state that frameworks may rely on.
 
 ### Decision 4: Same locale codes as the website
 
@@ -71,9 +64,9 @@ No mapping needed — the website and app already use identical locale codes (`s
 
 ## Risks / Trade-offs
 
-- **Risk:** User bookmarks `app.autokpo.com?lang=ru` → the param persists in the bookmark. **Mitigation:** URL cleanup runs on mount, so the bookmark would actually capture the clean URL after the first render. Even if it doesn't, the param is harmless — it's only consumed when localStorage is empty.
-- **Risk:** Service worker caches the `?lang=ru` URL separately from the root URL. **Mitigation:** The PWA's service worker serves the same `index.html` regardless of query params, so no cache fragmentation. If this changes in the future, `?lang=` is still just a hint consumed client-side.
-- **Trade-off:** The query param is visible in the address bar for a brief moment before cleanup. This is a cosmetic concern — the param appears for one render cycle (typically <50ms).
+- **Risk:** User bookmarks `app.autokpo.com?lang=ru` → the param persists in the bookmark. **Mitigation:** The param is harmless — it's only consumed when localStorage is empty. On subsequent visits, localStorage has a value and the param is ignored.
+- **Risk:** Service worker caches the `?lang=ru` URL separately from the root URL. **Mitigation:** The PWA's service worker serves the same `index.html` regardless of query params, so no cache fragmentation.
+- **Trade-off:** The query param remains visible in the address bar until the user navigates within the app. React Router replaces the URL on the first route change, so the param disappears naturally.
 
 ## Open Questions
 

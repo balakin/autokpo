@@ -2,7 +2,7 @@
 
 ### Requirement: I18nProvider wraps the application at root level
 
-The system SHALL render `LocaleProvider` above the router, outside `AuthProvider` and `SignedInApp`, so that locale is available on the auth page. `LocaleProvider` SHALL NOT depend on the CRDT doc — it reads from `localStorage` only. The `I18nProvider` from `@lingui/react` SHALL remain at the root of the application. `LocaleProvider` SHALL also provide React Aria locale context for descendants by rendering `I18nProvider` from `react-aria-components` with a locale derived from the active app locale using `INTL_LOCALES`. On initial load, `LocaleProvider` SHALL read the `autokpo:locale` key from `localStorage`; if absent or invalid, it SHALL check the `?lang=` query parameter for a valid locale hint; if also absent or invalid, it SHALL fall back to the best-match supported locale from `navigator.language`, then `en` if no match is found. After consuming the `?lang=` hint (and persisting the resolved locale to localStorage), the system SHALL clean the `?lang=` parameter from the URL via `history.replaceState`.
+The system SHALL render `LocaleProvider` above the router, outside `AuthProvider` and `SignedInApp`, so that locale is available on the auth page. `LocaleProvider` SHALL NOT depend on the CRDT doc — it reads from `localStorage` only. The `I18nProvider` from `@lingui/react` SHALL remain at the root of the application. `LocaleProvider` SHALL also provide React Aria locale context for descendants by rendering `I18nProvider` from `react-aria-components` with a locale derived from the active app locale using `INTL_LOCALES`. On initial load, `LocaleProvider` SHALL read the `autokpo:locale` key from `localStorage`; if absent or invalid, it SHALL check the `?lang=` query parameter for a valid locale hint; if also absent or invalid, it SHALL fall back to the best-match supported locale from `navigator.language`, then `en` if no match is found.
 
 #### Scenario: Locale is loaded from localStorage on mount
 
@@ -17,14 +17,12 @@ The system SHALL render `LocaleProvider` above the router, outside `AuthProvider
 - **AND** the URL includes a valid `?lang=` query parameter (`sr-Latn`, `en`, or `ru`)
 - **THEN** `LocaleProvider` SHALL activate the hinted locale
 - **AND** the locale SHALL be persisted to `localStorage` under `autokpo:locale`
-- **AND** the `?lang=` parameter SHALL be removed from the URL via `history.replaceState`
 
 #### Scenario: Invalid query parameter is ignored
 
 - **WHEN** `localStorage` has no stored locale
 - **AND** the URL includes a `?lang=` value that is not one of `sr-Latn`, `en`, or `ru`
 - **THEN** `LocaleProvider` SHALL fall through to `navigator.language` resolution
-- **AND** the `?lang=` parameter SHALL still be removed from the URL
 
 #### Scenario: navigator.language fallback matches a supported locale
 

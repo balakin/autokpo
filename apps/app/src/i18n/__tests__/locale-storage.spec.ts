@@ -5,6 +5,7 @@ import { STORAGE_KEY, getStoredLocale, readLocale } from '../locale-storage';
 
 beforeEach(() => {
   localStorage.clear();
+  window.history.replaceState({}, '', '/');
 });
 
 afterEach(() => {
@@ -37,6 +38,38 @@ describe('readLocale — stored value', () => {
   it('returns ru when stored', () => {
     localStorage.setItem(STORAGE_KEY, 'ru');
     expect(readLocale()).toBe('ru');
+  });
+});
+
+describe('readLocale — ?lang= query param hint', () => {
+  it('reads locale from ?lang=en param when localStorage is empty', () => {
+    window.history.pushState({}, '', '/?lang=en');
+    expect(readLocale()).toBe('en');
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('en');
+  });
+
+  it('reads locale from ?lang=ru param when localStorage is empty', () => {
+    window.history.pushState({}, '', '/?lang=ru');
+    expect(readLocale()).toBe('ru');
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('ru');
+  });
+
+  it('reads locale from ?lang=sr-Latn param when localStorage is empty', () => {
+    window.history.pushState({}, '', '/?lang=sr-Latn');
+    expect(readLocale()).toBe('sr-Latn');
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('sr-Latn');
+  });
+
+  it('ignores invalid ?lang= value and falls through to navigator.language', () => {
+    vi.stubGlobal('navigator', { ...navigator, language: 'en' });
+    window.history.pushState({}, '', '/?lang=fr');
+    expect(readLocale()).toBe('en');
+  });
+
+  it('ignores ?lang= when localStorage already has a value', () => {
+    localStorage.setItem(STORAGE_KEY, 'sr-Latn');
+    window.history.pushState({}, '', '/?lang=ru');
+    expect(readLocale()).toBe('sr-Latn');
   });
 });
 

@@ -1,5 +1,11 @@
 # @autokpo/website
 
+## 0.4.0
+
+### Minor Changes
+
+- [#80](https://github.com/balakin/autokpo/pull/80) [`247c8a2`](https://github.com/balakin/autokpo/commit/247c8a2fc306de6cb48dcc41db812131fc6fa1d2) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Added Open Graph social sharing tags, SEO meta descriptions, and noindex robots directives to the app and website
+
 ## 0.3.3
 
 ### Patch Changes

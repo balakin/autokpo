@@ -56,26 +56,27 @@ function generateHeaders(): AstroIntegration {
     name: 'generate-headers',
     hooks: {
       'astro:build:done': ({ dir }) => {
-        const token = process.env.PUBLIC_POSTHOG_PROJECT_TOKEN;
         const host = process.env.PUBLIC_POSTHOG_HOST;
-        const reportUri =
-          token && host ? `${host}/report/?token=${token}&v=${version}` : null;
 
         const distDir = fileURLToPath(dir);
         const scriptHashes = extractInlineTagHashes(distDir, 'script');
         const styleHashes = extractInlineTagHashes(distDir, 'style');
 
         const cspDirectives = [
+          // Deny everything not explicitly listed below.
           "default-src 'none'",
+          // Hashes cover inline scripts injected by Astro at build time. No external scripts needed.
           `script-src 'self' ${scriptHashes.join(' ')}`,
+          // Hashes cover inline styles injected by Astro at build time. No unsafe-inline needed.
           `style-src 'self' ${styleHashes.join(' ')}`,
+          // Fonts served from same origin.
           "font-src 'self'",
+          // data: for base64-encoded images used in landing page content.
           "img-src 'self' data:",
+          // PostHog analytics host for event tracking.
           `connect-src 'self'${host ? ` ${host}` : ''}`,
+          // Prevent <base> tag injection attacks.
           "base-uri 'self'",
-          ...(reportUri
-            ? [`report-uri ${reportUri}`, 'report-to posthog']
-            : []),
         ];
 
         const headers = [
@@ -84,9 +85,6 @@ function generateHeaders(): AstroIntegration {
           '  X-Content-Type-Options: nosniff',
           '  X-Frame-Options: DENY',
           '  Referrer-Policy: strict-origin-when-cross-origin',
-          ...(reportUri
-            ? [`  Reporting-Endpoints: posthog="${reportUri}"`]
-            : []),
           '',
         ].join('\n');
 

@@ -8,6 +8,10 @@ interface Props {
   skipLink: string;
   themeLightLabel: string;
   themeDarkLabel: string;
+  ogType?: 'website' | 'article';
+  ogUrl?: string;
+  ogImage?: string;
+  twitterCard?: 'summary' | 'summary_large_image';
 }
 
 const {
@@ -17,6 +21,10 @@ const {
   skipLink,
   themeLightLabel,
   themeDarkLabel,
+  ogType,
+  ogUrl,
+  ogImage,
+  twitterCard,
 } = Astro.props;
 ---
 
@@ -31,6 +39,19 @@ const {
     />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {
+      ogType && (
+        <>
+          <meta property="og:title" content={title} />
+          <meta property="og:description" content={description} />
+          <meta property="og:site_name" content="AutoKPO" />
+          <meta property="og:type" content={ogType} />
+          {ogUrl && <meta property="og:url" content={ogUrl} />}
+          {ogImage && <meta property="og:image" content={ogImage} />}
+          {twitterCard && <meta name="twitter:card" content={twitterCard} />}
+        </>
+      )
+    }
     <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="shortcut icon" href="/favicon.ico" />

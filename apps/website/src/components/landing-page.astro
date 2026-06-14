@@ -34,6 +34,7 @@ type Props = {
 
 const { content } = Astro.props;
 const canonicalUrl = getAbsoluteLocaleUrl(content.locale, '');
+const ogImage = new URL('/og-image.png', Astro.site).href;
 const alternates = localeAlternates.map((alternate) => ({
   ...alternate,
   url: getAbsoluteLocaleUrl(alternate.locale, ''),
@@ -65,6 +66,10 @@ const iconByName = {
   skipLink={content.skipLink}
   themeLightLabel={content.theme.light}
   themeDarkLabel={content.theme.dark}
+  ogType="website"
+  ogUrl={canonicalUrl}
+  ogImage={ogImage}
+  twitterCard="summary_large_image"
 >
   <Fragment slot="head">
     <link rel="canonical" href={canonicalUrl} />

@@ -34,6 +34,8 @@ const formattedDate = new Date(documentUpdated).toLocaleDateString(locale, {
   day: 'numeric',
 });
 const homeUrl = getRelativeLocaleUrl(locale, '');
+const ogImage = new URL('/og-image.png', Astro.site).href;
+const ogUrl = getAbsoluteLocaleUrl(locale, document.slug);
 const legalUrls = {
   privacy: getRelativeLocaleUrl(locale, legalLocale.documents.privacy.slug),
   terms: getRelativeLocaleUrl(locale, legalLocale.documents.terms.slug),
@@ -53,6 +55,10 @@ const alternates = supportedLocales.map((alternateLocale) => ({
   skipLink={content.skipLink}
   themeLightLabel={content.theme.light}
   themeDarkLabel={content.theme.dark}
+  ogType="article"
+  ogUrl={ogUrl}
+  ogImage={ogImage}
+  twitterCard="summary"
 >
   <Fragment slot="head">
     <meta name="updated" content={documentUpdated} />

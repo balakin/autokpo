@@ -4,7 +4,7 @@ locale: en
 documentKey: privacy
 title: Privacy Policy
 description: How AutoKPO processes and protects user data.
-updated: 2026-06-12
+updated: 2026-06-15
 ---
 
 # Privacy Policy
@@ -115,7 +115,7 @@ AutoKPO uses modern cryptographic mechanisms to encrypt data and protect the enc
 
 | Technology                                                | Purpose                                            |
 | --------------------------------------------------------- | -------------------------------------------------- |
-| `autokpo_session`                                         | Necessary cookie for sign-in and sessions          |
+| `__Secure-autokpo_session`                                | Necessary cookie for sign-in and sessions          |
 | Local data storage                                        | Settings, synchronization, and local encryption    |
 | Cloudflare cookies or similar technologies, if applicable | Security, bot protection, and Turnstile protection |
 

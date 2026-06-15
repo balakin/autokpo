@@ -50,6 +50,8 @@ jobs:
     name: 🚀 Deploy app
     needs: release
     if: ${{ needs.release.outputs.published == 'true' && contains(needs.release.outputs.publishedPackages, '"@autokpo/app"') }}
+    permissions:
+      contents: read # ceiling for the reusable workflow's build job (checkout)
     uses: ./.github/workflows/deploy-app.yml
     secrets: inherit
 
@@ -57,5 +59,7 @@ jobs:
     name: 🚀 Deploy website
     needs: release
     if: ${{ needs.release.outputs.published == 'true' && contains(needs.release.outputs.publishedPackages, '"@autokpo/website"') }}
+    permissions:
+      contents: read # ceiling for the reusable workflow's build job (checkout)
     uses: ./.github/workflows/deploy-website.yml
     secrets: inherit

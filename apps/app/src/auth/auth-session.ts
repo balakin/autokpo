@@ -25,7 +25,7 @@ export function ensureNoAuthError(result: unknown): void {
     throw new Error(maybeError);
   }
 
-  if (typeof maybeError === 'object' && maybeError !== null) {
+  if (typeof maybeError === 'object') {
     if ('message' in maybeError && typeof maybeError.message === 'string') {
       throw new Error(maybeError.message);
     }

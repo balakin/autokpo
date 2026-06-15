@@ -109,7 +109,7 @@ You confirm that you have the right to enter and process the data you place in A
 
 ## 10. Privacy
 
-Processing of personal data is described in the [Privacy Policy](/en/privacy/).
+Processing of personal data is described in the [Privacy Policy](/privacy/).
 
 If there is a difference between these Terms and the Privacy Policy regarding personal-data processing, the Privacy Policy applies to those matters.
 

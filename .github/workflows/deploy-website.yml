@@ -19,6 +19,10 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: read # checkout
+    # Single source of truth for the wrangler version: the deploy job installs the
+    # exact version resolved here from the lockfile, so build and deploy never drift.
+    outputs:
+      wrangler-version: ${{ steps.wrangler-version.outputs.version }}
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -27,6 +31,10 @@ jobs:
         uses: ./.github/actions/setup
         with:
           cache: false # clean install, no restored cache — guards against cache poisoning of the build output
+
+      - name: 🔖 Resolve wrangler version
+        id: wrangler-version
+        run: echo "version=$(pnpm -s --filter @autokpo/website exec node -p 'require("wrangler/package.json").version')" >> "$GITHUB_OUTPUT"
 
       - name: 🏗️ Build
         # PUBLIC_* are inlined into the bundle at build time; turbo.json declares
@@ -68,6 +76,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: '4.98.0' # keep in sync with the wrangler catalog version
+          wranglerVersion: ${{ needs.build.outputs.wrangler-version }} # matches the build's lockfile version
           workingDirectory: apps/website
           command: deploy

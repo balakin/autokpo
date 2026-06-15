@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   workflow_call:
 
+permissions: {} # deny all by default; each job grants only what it needs
+
 # Serialize app deploys; never cancel one in flight.
 concurrency:
   group: deploy-app
@@ -13,6 +15,8 @@ jobs:
   deploy:
     name: 📦 Deploy app
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # checkout
     environment:
       name: Application
       url: https://app.autokpo.com

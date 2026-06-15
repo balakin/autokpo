@@ -10,14 +10,16 @@ concurrency:
   cancel-in-progress: false
   queue: max
 
+permissions: {} # deny all by default; each job grants only what it needs
+
 jobs:
   release:
     name: 📦 Release
     runs-on: ubuntu-latest
     permissions:
-      contents: write # to create git tags and GitHub Releases (changesets/action)
-      issues: write # to post issue comments (changesets/action)
-      pull-requests: write # to create and update the Release PR (changesets/action)
+      contents: write # create git tags and GitHub Releases (changesets/action)
+      issues: write # post comments on issues (changesets/action)
+      pull-requests: write # create and update the Release PR (changesets/action)
     outputs:
       published: ${{ steps.changesets.outputs.published }}
       publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}

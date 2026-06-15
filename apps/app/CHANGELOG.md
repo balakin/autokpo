@@ -1,5 +1,11 @@
 # @autokpo/app
 
+## 0.5.2
+
+### Patch Changes
+
+- [#89](https://github.com/balakin/autokpo/pull/89) [`ba4777a`](https://github.com/balakin/autokpo/commit/ba4777a29ad33e45ad5f2b1389de5bf7c095cb33) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Renamed GitHub deploy environments to Application and Website
+
 ## 0.5.1
 
 ### Patch Changes

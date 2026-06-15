@@ -1,5 +1,13 @@
 # @autokpo/website
 
+## 0.5.1
+
+### Patch Changes
+
+- [#87](https://github.com/balakin/autokpo/pull/87) [`c8b863d`](https://github.com/balakin/autokpo/commit/c8b863da20a205a1e1c635ddddc6a6e4b4972d12) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Fixed broken Web Vitals capture in slim PostHog bundle by adding AnalyticsExtensions and web-vitals imports
+
+- [#87](https://github.com/balakin/autokpo/pull/87) [`cd7c330`](https://github.com/balakin/autokpo/commit/cd7c330c70a2718e36e7e9c82112cf6706c82997) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Updated legal doc links to reflect new locale routing where / is English and /sr-latn is Serbian
+
 ## 0.5.0
 
 ### Minor Changes

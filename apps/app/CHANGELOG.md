@@ -1,5 +1,11 @@
 # @autokpo/app
 
+## 0.5.1
+
+### Patch Changes
+
+- [#87](https://github.com/balakin/autokpo/pull/87) [`c8b863d`](https://github.com/balakin/autokpo/commit/c8b863da20a205a1e1c635ddddc6a6e4b4972d12) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Fixed broken Web Vitals capture in slim PostHog bundle by adding AnalyticsExtensions and web-vitals imports
+
 ## 0.5.0
 
 ### Minor Changes

@@ -13,3 +13,17 @@ updates:
           - patch
         patterns:
           - '*'
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 2
+    groups:
+      all-actions:
+        update-types:
+          - minor
+          - patch
+        patterns:
+          - '*'

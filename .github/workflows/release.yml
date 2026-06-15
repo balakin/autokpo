@@ -15,7 +15,7 @@ permissions: {} # deny all by default; each job grants only what it needs
 jobs:
   release:
     name: 📦 Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write # create git tags and GitHub Releases (changesets/action)
       issues: write # post comments on issues (changesets/action)

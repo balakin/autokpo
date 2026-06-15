@@ -11,7 +11,7 @@ permissions: {} # deny all by default; each job grants only what it needs
 jobs:
   verify:
     name: 🔍 Verify
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read # checkout
     env:

@@ -19,7 +19,7 @@ jobs:
   # needs no node_modules.
   build:
     name: 🏗️ Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read # checkout
     steps:
@@ -71,7 +71,7 @@ jobs:
   deploy:
     name: 🚀 Deploy app
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions: {} # no checkout; consumes the same-run build artifact only
     environment:
       name: Application

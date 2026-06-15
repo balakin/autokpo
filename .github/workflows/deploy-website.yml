@@ -16,7 +16,7 @@ jobs:
   # The website is a static Astro build, so the artifact is just dist/ + config.
   build:
     name: 🏗️ Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read # checkout
     steps:
@@ -51,7 +51,7 @@ jobs:
   deploy:
     name: 🚀 Deploy website
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions: {} # no checkout; consumes the same-run build artifact only
     environment:
       name: Website

@@ -1,5 +1,3 @@
-# CLAUDE.md
-
 Guidance for AI coding agents working in this repository.
 
 ## Monorepo structure
@@ -9,7 +7,6 @@ Turborepo + pnpm workspace monorepo. Requires **Node 24**.
 ```
 apps/
   app/      — @autokpo/app  (React PWA + Cloudflare Worker)
-packages/   — empty, reserved for future shared libraries
 ```
 
 App-specific guidance lives in `apps/app/CLAUDE.md`.

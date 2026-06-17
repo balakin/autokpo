@@ -15,22 +15,13 @@ msgstr ""
 
 #. placeholder {0}: item.count
 #: src/books/book-library.tsx:59
-msgid "{0, plural, one {# knjiga} few {# knjige} many {# knjiga} other {# "
-"knjiga}}"
+msgid "{0, plural, one {# knjiga} few {# knjige} many {# knjiga} other {# knjiga}}"
 msgstr "{0, plural, one {# book} other {# books}}"
 
 #. placeholder {0}: book.entryCount
 #: src/books/book-library.tsx:181
-msgid "{0, plural, one {Knjiga sadrži # unos. Ovu radnju nije moguće "
-"poništiti.} few {Knjiga sadrži # unosa. Ovu radnju nije moguće "
-"poništiti.} many {Knjiga sadrži # unosa. Ovu radnju nije moguće "
-"poništiti.} other {Knjiga sadrži # unosa. Ovu radnju nije moguće "
-"poništiti.}}"
-msgstr "{0, plural, one {The book contains # entry. This action cannot be "
-"undone.} few {The book contains # entries. This action cannot be "
-"undone.} many {The book contains # entries. This action cannot be "
-"undone.} other {The book contains # entries. This action cannot be "
-"undone.}}"
+msgid "{0, plural, one {Knjiga sadrži # unos. Ovu radnju nije moguće poništiti.} few {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.} many {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.} other {Knjiga sadrži # unosa. Ovu radnju nije moguće poništiti.}}"
+msgstr "{0, plural, one {The book contains # entry. This action cannot be undone.} few {The book contains # entries. This action cannot be undone.} many {The book contains # entries. This action cannot be undone.} other {The book contains # entries. This action cannot be undone.}}"
 
 #: src/auth/oauth-callback.tsx:76
 msgid "{providerName} prijava nije bila uspešna."
@@ -53,18 +44,12 @@ msgid "Akcije"
 msgstr "Actions"
 
 #: src/auth/goodbye-page.tsx:27
-msgid "Ako ponovo budete želeli da koristite AutoKPO, možete napraviti novi "
-"nalog u bilo kom trenutku."
-msgstr "If you want to use AutoKPO again, you can create a new account at any "
-"time."
+msgid "Ako ponovo budete želeli da koristite AutoKPO, možete napraviti novi nalog u bilo kom trenutku."
+msgstr "If you want to use AutoKPO again, you can create a new account at any time."
 
 #: src/help/help-page.tsx:113
-msgid "Ako ste naišli na grešku ili imate predlog za poboljšanje, otvorite "
-"tiket na GitHub-u. Opišite šta se dogodilo, šta ste očekivali i korake "
-"za reprodukciju."
-msgstr "If you've encountered a bug or have a suggestion, open an issue on "
-"GitHub. Describe what happened, what you expected, and steps to "
-"reproduce."
+msgid "Ako ste naišli na grešku ili imate predlog za poboljšanje, otvorite tiket na GitHub-u. Opišite šta se dogodilo, šta ste očekivali i korake za reprodukciju."
+msgstr "If you've encountered a bug or have a suggestion, open an issue on GitHub. Describe what happened, what you expected, and steps to reproduce."
 
 #: src/help/help-page.tsx:175
 msgid "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
@@ -75,36 +60,24 @@ msgid "Aplikacija se otključava bez interakcije pri svakom pokretanju."
 msgstr "The app unlocks automatically on every launch without any interaction."
 
 #: src/help/help-page.tsx:65
-msgid "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o "
-"ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju "
-"i sinhronizuju između vaših uređaja."
-msgstr "AutoKPO is a free, open-source app for maintaining the <0>Book of "
-"Achieved Turnover (KPO)</0>. Your data is stored locally on your device "
-"and synced across your devices."
+msgid "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između vaših uređaja."
+msgstr "AutoKPO is a free, open-source app for maintaining the <0>Book of Achieved Turnover (KPO)</0>. Your data is stored locally on your device and synced across your devices."
 
 #: src/e2ee/encryption-setup-screen.tsx:78
-msgid "AutoKPO ne može da vidi, resetuje ili vrati ovu šifru. Ako je izgubite, "
-"šifrovani podaci ne mogu biti vraćeni."
-msgstr "AutoKPO cannot see, reset, or recover this password. If you lose it, "
-"encrypted data cannot be restored."
+msgid "AutoKPO ne može da vidi, resetuje ili vrati ovu šifru. Ako je izgubite, šifrovani podaci ne mogu biti vraćeni."
+msgstr "AutoKPO cannot see, reset, or recover this password. If you lose it, encrypted data cannot be restored."
 
 #: src/e2ee/encryption-unlock-screen.tsx:116
-msgid "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju "
-"nedostupni."
-msgstr "AutoKPO cannot recover this password. Without it, encrypted data "
-"remains unavailable."
+msgid "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju nedostupni."
+msgstr "AutoKPO cannot recover this password. Without it, encrypted data remains unavailable."
 
 #: src/help/help-page.tsx:193
 msgid "Autori"
 msgstr "Authors"
 
 #: src/currency/currency-convert-modal.tsx:253
-msgid "Beta funkcija. Kursevi se preuzimaju sa <0>kurs.resenje.org<1/></0>. "
-"Molimo vas da proverite zvanični kurs na sajtu <2>NBS<3/></2> pre "
-"primene."
-msgstr "Beta feature. Exchange rates are fetched from "
-"<0>kurs.resenje.org<1/></0>, a service not affiliated with NBS. Please "
-"verify the official rate on the <2>NBS<3/></2> website before applying."
+msgid "Beta funkcija. Kursevi se preuzimaju sa <0>kurs.resenje.org<1/></0>. Molimo vas da proverite zvanični kurs na sajtu <2>NBS<3/></2> pre primene."
+msgstr "Beta feature. Exchange rates are fetched from <0>kurs.resenje.org<1/></0>, a service not affiliated with NBS. Please verify the official rate on the <2>NBS<3/></2> website before applying."
 
 #: src/settings/settings-page.tsx:32
 msgid "Bezbednost"
@@ -214,10 +187,8 @@ msgid "ili"
 msgstr "or"
 
 #: src/auth/profile-popover.tsx:210
-msgid "Imate lokalne izmene koje nisu sinhronizovane. Ako nastavite, može doći "
-"do gubitka podataka koji nisu poslati."
-msgstr "You have local changes that are not synced. If you continue, unsent "
-"data may be lost."
+msgid "Imate lokalne izmene koje nisu sinhronizovane. Ako nastavite, može doći do gubitka podataka koji nisu poslati."
+msgstr "You have local changes that are not synced. If you continue, unsent data may be lost."
 
 #: src/setup-wizard/unsaved-changes-dialog.tsx:34
 msgid "Imate nesačuvane izmene. Da li zaista želite da napustite stranicu?"
@@ -248,8 +219,7 @@ msgid "Izaberite godinu za novu knjigu."
 msgstr "Select a year for the new book."
 
 #: src/settings/security-settings-page.tsx:336
-msgid "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju "
-"aplikacije."
+msgid "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju aplikacije."
 msgstr "Choose how you unlock encrypted data on every app launch."
 
 #: src/auth/auth-entry.tsx:45
@@ -404,10 +374,8 @@ msgid "Nalog je obrisan"
 msgstr "Account deleted"
 
 #: src/auth/oauth-callback.tsx:101
-msgid "Nalog sa ovom email adresom već postoji. Prijavite se putem jednokratnog "
-"koda na email."
-msgstr "An account with this email address already exists. Sign in using the "
-"one-time code sent to your email."
+msgid "Nalog sa ovom email adresom već postoji. Prijavite se putem jednokratnog koda na email."
+msgstr "An account with this email address already exists. Sign in using the one-time code sent to your email."
 
 #: src/setup-wizard/unsaved-changes-dialog.tsx:45
 msgid "Napustite"
@@ -422,10 +390,8 @@ msgid "Nastavi ka aplikaciji"
 msgstr "Continue to the app"
 
 #: src/auth/auth-entry.tsx:87
-msgid "Nastavkom prijave prihvatate <0>Uslove korišćenja</0> i potvrđujete da "
-"ste pročitali <1>Politiku privatnosti</1>."
-msgstr "By continuing to sign in, you agree to the <0>Terms of Service</0> and "
-"acknowledge the <1>Privacy Policy</1>."
+msgid "Nastavkom prijave prihvatate <0>Uslove korišćenja</0> i potvrđujete da ste pročitali <1>Politiku privatnosti</1>."
+msgstr "By continuing to sign in, you agree to the <0>Terms of Service</0> and acknowledge the <1>Privacy Policy</1>."
 
 #: src/app-shell/mobile-drawer.tsx:37
 msgid "Navigacija"
@@ -496,10 +462,8 @@ msgid "Nije moguće odjaviti sesiju. Pokušajte ponovo."
 msgstr "Unable to sign out the session. Please try again."
 
 #: src/settings/account-settings-page.tsx:478
-msgid "Nije moguće preuzeti podatke naloga. Proverite internet vezu i pokušajte "
-"ponovo."
-msgstr "Could not download account data. Check your internet connection and try "
-"again."
+msgid "Nije moguće preuzeti podatke naloga. Proverite internet vezu i pokušajte ponovo."
+msgstr "Could not download account data. Check your internet connection and try again."
 
 #: src/settings/security-settings-page.tsx:302
 msgid "Nije moguće promeniti šifru. Pokušajte ponovo."
@@ -605,10 +569,8 @@ msgstr "Sign out with unsynced changes?"
 
 #: src/auth/profile-popover.tsx:120
 #: src/e2ee/encryption-profile-popover.tsx:139
-msgid "Odjava zahteva internet vezu. Ako je hitno, obrišite site data ovog "
-"sajta u browseru."
-msgstr "Sign-out requires an internet connection. If urgent, clear this site's "
-"data in your browser."
+msgid "Odjava zahteva internet vezu. Ako je hitno, obrišite site data ovog sajta u browseru."
+msgstr "Sign-out requires an internet connection. If urgent, clear this site's data in your browser."
 
 #: src/auth/profile-popover.tsx:221
 msgid "Odjavi ipak"
@@ -729,11 +691,8 @@ msgid "Ova radnja se ne može opozvati."
 msgstr "This action cannot be undone."
 
 #: src/settings/account-settings-page.tsx:568
-msgid "Ova radnja trajno briše vaš AutoKPO nalog i sve sinhronizovane podatke. "
-"Lokalni podaci na ovom uređaju biće uklonjeni nakon odjave."
-msgstr "This action permanently deletes your AutoKPO account and all "
-"synchronized data. Local data on this device will be removed after "
-"sign-out."
+msgid "Ova radnja trajno briše vaš AutoKPO nalog i sve sinhronizovane podatke. Lokalni podaci na ovom uređaju biće uklonjeni nakon odjave."
+msgstr "This action permanently deletes your AutoKPO account and all synchronized data. Local data on this device will be removed after sign-out."
 
 #: src/entries/entries-table.tsx:138
 msgid "Ovu radnju nije moguće poništiti."
@@ -775,10 +734,8 @@ msgid "PIN kod"
 msgstr "PIN code"
 
 #: src/e2ee/encryption-unlock-screen.tsx:55
-msgid "PIN kod je uklonjen zbog previše neuspelih pokušaja. Unesite šifru za "
-"šifrovanje."
-msgstr "PIN code was removed due to too many failed attempts. Enter your "
-"encryption password."
+msgid "PIN kod je uklonjen zbog previše neuspelih pokušaja. Unesite šifru za šifrovanje."
+msgstr "PIN code was removed due to too many failed attempts. Enter your encryption password."
 
 #: src/e2ee/set-pin-modal.tsx:51
 msgid "PIN kodovi se ne poklapaju."
@@ -834,8 +791,7 @@ msgid "Podešavanje knjige"
 msgstr "Book setup"
 
 #: src/e2ee/encryption-setup-screen.tsx:181
-msgid "Podešavanje šifrovanja nije uspelo. Proverite internet vezu i pokušajte "
-"ponovo."
+msgid "Podešavanje šifrovanja nije uspelo. Proverite internet vezu i pokušajte ponovo."
 msgstr "Encryption setup failed. Check your internet connection and try again."
 
 #: src/e2ee/encryption-setup-screen.tsx:67
@@ -1013,10 +969,8 @@ msgid "Prijava nije završena. Pokušajte ponovo."
 msgstr "Sign-in did not complete. Please try again."
 
 #: src/e2ee/encryption-setup-screen.tsx:70
-msgid "Prijava potvrđuje vaš nalog. Ova odvojena šifra otključava vaše "
-"šifrovane podatke posle prijave."
-msgstr "Sign-in confirms your account. This separate password unlocks your "
-"encrypted data after sign-in."
+msgid "Prijava potvrđuje vaš nalog. Ova odvojena šifra otključava vaše šifrovane podatke posle prijave."
+msgstr "Sign-in confirms your account. This separate password unlocks your encrypted data after sign-in."
 
 #: src/help/help-page.tsx:120
 msgid "Prijavite problem na GitHub-u"
@@ -1049,10 +1003,8 @@ msgid "Promena avatara trenutno nije dostupna"
 msgstr "Changing avatar is not available right now"
 
 #: src/settings/security-settings-page.tsx:558
-msgid "Promena utiče samo na šifru kojom se otključavaju podaci sa servera. "
-"Lokalni PIN ili automatsko otključavanje ostaju isti."
-msgstr "The change affects only the password used to unlock data from the "
-"server. Your local PIN or automatic unlock stays the same."
+msgid "Promena utiče samo na šifru kojom se otključavaju podaci sa servera. Lokalni PIN ili automatsko otključavanje ostaju isti."
+msgstr "The change affects only the password used to unlock data from the server. Your local PIN or automatic unlock stays the same."
 
 #: src/settings/security-settings-page.tsx:401
 #: src/settings/security-settings-page.tsx:629
@@ -1072,16 +1024,12 @@ msgid "Proverite internet vezu i pokušajte ponovo kasnije."
 msgstr "Check your internet connection and try again later."
 
 #: src/e2ee/encryption-gate.tsx:324
-msgid "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ "
-"dok ne proverimo postojeće podešavanje naloga."
-msgstr "Check your internet connection and try again. We won't create a new key "
-"until we verify the account's existing setup."
+msgid "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
+msgstr "Check your internet connection and try again. We won't create a new key until we verify the account's existing setup."
 
 #: src/e2ee/encryption-setup-screen.tsx:157
-msgid "Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane podatke bez "
-"nje."
-msgstr "I understand that AutoKPO cannot recover this password or the encrypted "
-"data without it."
+msgid "Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane podatke bez nje."
+msgstr "I understand that AutoKPO cannot recover this password or the encrypted data without it."
 
 #: src/entries/entries-table.tsx:32
 msgid "Redni broj"
@@ -1365,32 +1313,22 @@ msgstr "You are offline"
 
 #: src/auth/goodbye-page.tsx:19
 msgid "Vaš AutoKPO nalog i sinhronizovani podaci su trajno uklonjeni."
-msgstr "Your AutoKPO account and synchronized data have been permanently "
-"removed."
+msgstr "Your AutoKPO account and synchronized data have been permanently removed."
 
 #: src/auth/oauth-callback.tsx:112
-msgid "Vaš nalog nema javnu email adresu. Prijavite se putem jednokratnog koda "
-"na email."
-msgstr "Your account has no public email address. Sign in via one-time code "
-"instead."
+msgid "Vaš nalog nema javnu email adresu. Prijavite se putem jednokratnog koda na email."
+msgstr "Your account has no public email address. Sign in via one-time code instead."
 
 #: src/settings/account-settings-page.tsx:487
 msgid "Vaši podaci"
 msgstr "Your data"
 
 #: src/help/help-page.tsx:90
-msgid "Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje se izvodi iz "
-"vaše lozinke <0>Argon2id</0> algoritmom, a svi podaci se šifruju "
-"<1>AES-256-GCM</1> algoritmom. Server nikada ne vidi vaše podatke u "
-"čitljivom obliku."
-msgstr "Your data is end-to-end encrypted. The encryption key is derived from "
-"your password using the <0>Argon2id</0> algorithm, and all data is "
-"encrypted using the <1>AES-256-GCM</1> algorithm. The server never sees "
-"your data in readable form."
+msgid "Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje se izvodi iz vaše lozinke <0>Argon2id</0> algoritmom, a svi podaci se šifruju <1>AES-256-GCM</1> algoritmom. Server nikada ne vidi vaše podatke u čitljivom obliku."
+msgstr "Your data is end-to-end encrypted. The encryption key is derived from your password using the <0>Argon2id</0> algorithm, and all data is encrypted using the <1>AES-256-GCM</1> algorithm. The server never sees your data in readable form."
 
 #: src/utils/lazy-chunk-error-boundary.tsx:49
-msgid "Verovatno je dostupna nova verzija. Osvežite aplikaciju da biste "
-"nastavili."
+msgid "Verovatno je dostupna nova verzija. Osvežite aplikaciju da biste nastavili."
 msgstr "A new version is probably available. Reload the app to continue."
 
 #: src/entries/entries-schema.ts:14
@@ -1404,10 +1342,8 @@ msgid "Za potvrdu unesite email adresu naloga:"
 msgstr "To confirm, enter the account email address:"
 
 #: src/settings/account-settings-page.tsx:136
-msgid "Za pregled i izmenu naloga potrebna je internet veza. Opšta podešavanja "
-"aplikacije ostaju dostupna bez interneta."
-msgstr "An internet connection is required to view and edit your account. "
-"General app settings remain available without internet."
+msgid "Za pregled i izmenu naloga potrebna je internet veza. Opšta podešavanja aplikacije ostaju dostupna bez interneta."
+msgstr "An internet connection is required to view and edit your account. General app settings remain available without internet."
 
 #: src/books/book-library.tsx:51
 msgid "Za svaku godinu zadržite jednu knjigu, a ostale obrišite."

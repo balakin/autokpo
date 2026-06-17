@@ -47,11 +47,11 @@ msgstr "Действия"
 msgid "Ako ponovo budete želeli da koristite AutoKPO, možete napraviti novi nalog u bilo kom trenutku."
 msgstr "Если вы снова захотите использовать AutoKPO, вы можете создать новый аккаунт в любое время."
 
-#: src/help/help-page.tsx:113
+#: src/help/help-page.tsx:111
 msgid "Ako ste naišli na grešku ili imate predlog za poboljšanje, otvorite tiket na GitHub-u. Opišite šta se dogodilo, šta ste očekivali i korake za reprodukciju."
 msgstr "Если вы обнаружили ошибку или хотите предложить улучшение, откройте задачу на GitHub. Опишите, что произошло, что вы ожидали и шаги для воспроизведения."
 
-#: src/help/help-page.tsx:175
+#: src/help/help-page.tsx:173
 msgid "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
 msgstr "Если вы хотите улучшить AutoKPO, ваши pull request'ы приветствуются."
 
@@ -60,8 +60,8 @@ msgid "Aplikacija se otključava bez interakcije pri svakom pokretanju."
 msgstr "Приложение разблокируется автоматически при каждом запуске без каких-либо действий."
 
 #: src/help/help-page.tsx:65
-msgid "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između vaših uređaja."
-msgstr "AutoKPO — бесплатное приложение с открытым исходным кодом для ведения <0>Книги о достигнутом обороте (KPO)</0>. Данные хранятся локально на вашем устройстве и синхронизируются между вашими устройствами."
+msgid "AutoKPO je besplatna aplikacija otvorenog koda za <0>KPO evidenciju</0>. Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između vaših uređaja."
+msgstr "AutoKPO — бесплатное приложение с открытым кодом для <0>учета KPO</0>. Данные хранятся локально на устройстве и синхронизируются между вашими устройствами."
 
 #: src/e2ee/encryption-setup-screen.tsx:78
 msgid "AutoKPO ne može da vidi, resetuje ili vrati ovu šifru. Ako je izgubite, šifrovani podaci ne mogu biti vraćeni."
@@ -71,7 +71,7 @@ msgstr "AutoKPO не может видеть, сбросить или восст
 msgid "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju nedostupni."
 msgstr "AutoKPO не может восстановить этот пароль. Без него зашифрованные данные останутся недоступными."
 
-#: src/help/help-page.tsx:193
+#: src/help/help-page.tsx:191
 msgid "Autori"
 msgstr "Авторы"
 
@@ -83,11 +83,11 @@ msgstr "Бета-функция. Курсы валют загружаются с
 msgid "Bezbednost"
 msgstr "Безопасность"
 
-#: src/help/help-page.tsx:153
+#: src/help/help-page.tsx:151
 msgid "čl. 33 — rolling 12 meseci"
 msgstr "Ст. 33 — скользящие 12 месяцев"
 
-#: src/help/help-page.tsx:145
+#: src/help/help-page.tsx:143
 msgid "čl. 42 — godišnji limit"
 msgstr "Ст. 42 — годовой лимит"
 
@@ -134,7 +134,7 @@ msgstr "Добавить {year} в избранное"
 msgid "Dodaj unos"
 msgstr "Добавить запись"
 
-#: src/help/help-page.tsx:170
+#: src/help/help-page.tsx:168
 msgid "Doprinesite projektu"
 msgstr "Внести вклад"
 
@@ -164,7 +164,7 @@ msgstr "Адрес электронной почты"
 msgid "Firma-radnje"
 msgstr "Фирма/магазин"
 
-#: src/help/help-page.tsx:259
+#: src/help/help-page.tsx:257
 msgid "GNU Affero General Public License v3.0"
 msgstr "GNU Affero General Public License v3.0"
 
@@ -263,7 +263,7 @@ msgstr "Экспорт данных аккаунта"
 msgid "Izvorni kod"
 msgstr "Исходный код"
 
-#: src/help/help-page.tsx:181
+#: src/help/help-page.tsx:179
 msgid "Izvorni kod na GitHub-u"
 msgstr "Исходный код на GitHub"
 
@@ -289,7 +289,7 @@ msgstr "На этом устройстве пока не было успешно
 msgid "Još nemate nijednu knjigu. Dodajte prvu da započnete."
 msgstr "У вас пока нет ни одной книги. Добавьте первую, чтобы начать."
 
-#: src/help/help-page.tsx:108
+#: src/help/help-page.tsx:106
 msgid "Kako prijaviti problem"
 msgstr "Как сообщить о проблеме"
 
@@ -334,7 +334,7 @@ msgstr "Создана"
 msgid "Kreirana:"
 msgstr "Создана:"
 
-#: src/help/help-page.tsx:251
+#: src/help/help-page.tsx:249
 msgid "Licenca"
 msgstr "Лицензия"
 
@@ -611,7 +611,7 @@ msgstr "Описание операции"
 msgid "Opšte"
 msgstr "Общие"
 
-#: src/help/help-page.tsx:203
+#: src/help/help-page.tsx:201
 msgid "Osnivač projekta"
 msgstr "Основатель проекта"
 
@@ -741,7 +741,7 @@ msgstr "PIN-код удалён из-за слишком большого кол
 msgid "PIN kodovi se ne poklapaju."
 msgstr "PIN-коды не совпадают."
 
-#: src/help/help-page.tsx:123
+#: src/help/help-page.tsx:121
 msgid "Pišite nam na support@autokpo.com"
 msgstr "Напишите нам на support@autokpo.com"
 
@@ -818,7 +818,7 @@ msgstr "Попробовать снова"
 
 #: src/auth/auth-shell.tsx:84
 #: src/e2ee/encryption-shell.tsx:84
-#: src/help/help-page.tsx:237
+#: src/help/help-page.tsx:235
 msgid "Politika privatnosti"
 msgstr "Политика конфиденциальности"
 
@@ -916,7 +916,7 @@ msgstr "Подтвердите изменение пароля"
 msgid "Potvrdite šifru"
 msgstr "Подтвердите пароль"
 
-#: src/help/help-page.tsx:225
+#: src/help/help-page.tsx:223
 msgid "Pravila i privatnost"
 msgstr "Правила и конфиденциальность"
 
@@ -972,7 +972,7 @@ msgstr "Вход не был завершён. Попробуйте снова."
 msgid "Prijava potvrđuje vaš nalog. Ova odvojena šifra otključava vaše šifrovane podatke posle prijave."
 msgstr "Вход подтверждает вашу учётную запись. Этот отдельный пароль разблокирует ваши зашифрованные данные после входа."
 
-#: src/help/help-page.tsx:120
+#: src/help/help-page.tsx:118
 msgid "Prijavite problem na GitHub-u"
 msgstr "Сообщить о проблеме на GitHub"
 
@@ -1124,7 +1124,7 @@ msgstr "Пароль шифрования"
 msgid "Šifra za šifrovanje je promenjena."
 msgstr "Пароль шифрования изменён."
 
-#: src/help/help-page.tsx:85
+#: src/help/help-page.tsx:83
 msgid "Šifrovanje"
 msgstr "Шифрование"
 
@@ -1167,7 +1167,7 @@ msgstr "Итого (RSD)"
 msgid "Svetla"
 msgstr "Светлая"
 
-#: src/help/help-page.tsx:208
+#: src/help/help-page.tsx:206
 msgid "Svi doprinosioci"
 msgstr "Все участники"
 
@@ -1299,7 +1299,7 @@ msgstr "Редактировать запись"
 
 #: src/auth/auth-shell.tsx:75
 #: src/e2ee/encryption-shell.tsx:75
-#: src/help/help-page.tsx:232
+#: src/help/help-page.tsx:230
 msgid "Uslovi korišćenja"
 msgstr "Условия использования"
 
@@ -1323,7 +1323,7 @@ msgstr "У вашего аккаунта нет публичного адрес�
 msgid "Vaši podaci"
 msgstr "Ваши данные"
 
-#: src/help/help-page.tsx:90
+#: src/help/help-page.tsx:88
 msgid "Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje se izvodi iz vaše lozinke <0>Argon2id</0> algoritmom, a svi podaci se šifruju <1>AES-256-GCM</1> algoritmom. Server nikada ne vidi vaše podatke u čitljivom obliku."
 msgstr "Ваши данные защищены сквозным шифрованием. Ключ шифрования извлекается из вашего пароля с помощью алгоритма <0>Argon2id</0>, а все данные шифруются алгоритмом <1>AES-256-GCM</1>. Сервер никогда не видит ваши данные в читаемом виде."
 
@@ -1353,15 +1353,15 @@ msgstr "Для каждого года оставьте одну книгу, а 
 msgid "Zaboravili ste šifru?"
 msgstr "Забыли пароль?"
 
-#: src/help/help-page.tsx:150
+#: src/help/help-page.tsx:148
 msgid "Zakon o porezu na dodatu vrednost"
 msgstr "Закон о налоге на добавленную стоимость"
 
-#: src/help/help-page.tsx:142
+#: src/help/help-page.tsx:140
 msgid "Zakon o porezu na dohodak građana"
 msgstr "Закон о подоходном налоге с граждан"
 
-#: src/help/help-page.tsx:135
+#: src/help/help-page.tsx:133
 msgid "Zakonski propisi"
 msgstr "Нормативные акты"
 

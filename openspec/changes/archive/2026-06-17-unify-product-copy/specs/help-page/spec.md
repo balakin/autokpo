@@ -1,47 +1,4 @@
-# help-page Specification
-
-## Purpose
-
-Provide a dedicated `/help` page with structured information about the AutoKPO project: project description, bug reporting instructions, relevant Serbian tax laws, contribution guidelines, author attribution, and license details.
-
-## Requirements
-
-### Requirement: Help page is accessible via /help route
-
-The system SHALL render a `HelpPage` component at the `/help` route inside the signed-in application shell. The route SHALL be lazy-loaded following the same pattern as other signed-in routes. The breadcrumb for `/help` SHALL display the translated equivalent of "Pomoć".
-
-#### Scenario: Navigating to /help renders the help page
-
-- **WHEN** a signed-in user navigates to `/help`
-- **THEN** the `HelpPage` SHALL render inside the AppShell content area
-
-#### Scenario: Breadcrumb reflects help route
-
-- **WHEN** the user is on the `/help` route
-- **THEN** the top bar breadcrumb SHALL display the translated equivalent of "Pomoć"
-
----
-
-### Requirement: Help page contains legal document links
-
-The `HelpPage` component SHALL include a localized legal/privacy section that links to the public Terms of Service, Privacy Policy, and Cookies Policy documents for the active app locale. The section SHALL follow the existing Help page card composition pattern, use a HeroUI `Card`, use a Lucide icon, and wrap user-visible text with Lingui macros.
-
-#### Scenario: Help page displays legal document section
-
-- **WHEN** a signed-in user views the `/help` page
-- **THEN** the page SHALL display a legal/privacy card section
-- **AND** the section SHALL contain links to Terms of Service, Privacy Policy, and Cookies Policy
-
-#### Scenario: Help legal links use active locale URLs
-
-- **WHEN** the active app locale is `sr-Latn`, `en`, or `ru`
-- **THEN** the Help page legal document links SHALL point to that locale's public legal document routes on `https://autokpo.com`
-
-#### Scenario: Help legal links are external
-
-- **WHEN** a signed-in user activates any legal document link on the Help page
-- **THEN** the link SHALL open in a new browser tab
-- **AND** the link SHALL use `rel="noopener noreferrer"`
+## MODIFIED Requirements
 
 ### Requirement: Help page contains structured informational sections
 

@@ -95,7 +95,7 @@ const buildOnlyPlugins = (buildVersion: string): PluginOption[] => [
         name: 'AutoKPO',
         short_name: 'AutoKPO',
         description:
-          'AutoKPO — local-first web app for generating the Serbian tax Knjiga o ostvarenom prometu (KPO — Book of Achieved Turnover). Syncs across devices.',
+          'AutoKPO — KPO record-keeping for flat-rate entrepreneurs in Serbia. Yearly books, income entries, PDF export, and encrypted sync across devices.',
         id: '/',
         start_url: '/',
         scope: '/',

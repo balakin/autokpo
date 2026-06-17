@@ -47,11 +47,11 @@ msgstr "Actions"
 msgid "Ako ponovo budete želeli da koristite AutoKPO, možete napraviti novi nalog u bilo kom trenutku."
 msgstr "If you want to use AutoKPO again, you can create a new account at any time."
 
-#: src/help/help-page.tsx:113
+#: src/help/help-page.tsx:111
 msgid "Ako ste naišli na grešku ili imate predlog za poboljšanje, otvorite tiket na GitHub-u. Opišite šta se dogodilo, šta ste očekivali i korake za reprodukciju."
 msgstr "If you've encountered a bug or have a suggestion, open an issue on GitHub. Describe what happened, what you expected, and steps to reproduce."
 
-#: src/help/help-page.tsx:175
+#: src/help/help-page.tsx:173
 msgid "Ako želite da poboljšate AutoKPO, vaši pull request-ovi su dobrodošli."
 msgstr "If you'd like to improve AutoKPO, your pull requests are welcome."
 
@@ -60,8 +60,8 @@ msgid "Aplikacija se otključava bez interakcije pri svakom pokretanju."
 msgstr "The app unlocks automatically on every launch without any interaction."
 
 #: src/help/help-page.tsx:65
-msgid "AutoKPO je besplatna aplikacija otvorenog koda za vođenje <0>Knjige o ostvarenom prometu (KPO)</0>. Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između vaših uređaja."
-msgstr "AutoKPO is a free, open-source app for maintaining the <0>Book of Achieved Turnover (KPO)</0>. Your data is stored locally on your device and synced across your devices."
+msgid "AutoKPO je besplatna aplikacija otvorenog koda za <0>KPO evidenciju</0>. Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između vaših uređaja."
+msgstr "AutoKPO is a free, open-source app for <0>KPO record-keeping</0>. Your data is stored locally on your device and synced across your devices."
 
 #: src/e2ee/encryption-setup-screen.tsx:78
 msgid "AutoKPO ne može da vidi, resetuje ili vrati ovu šifru. Ako je izgubite, šifrovani podaci ne mogu biti vraćeni."
@@ -71,7 +71,7 @@ msgstr "AutoKPO cannot see, reset, or recover this password. If you lose it, enc
 msgid "AutoKPO ne može da vrati ovu šifru. Bez nje šifrovani podaci ostaju nedostupni."
 msgstr "AutoKPO cannot recover this password. Without it, encrypted data remains unavailable."
 
-#: src/help/help-page.tsx:193
+#: src/help/help-page.tsx:191
 msgid "Autori"
 msgstr "Authors"
 
@@ -83,11 +83,11 @@ msgstr "Beta feature. Exchange rates are fetched from <0>kurs.resenje.org<1/></0
 msgid "Bezbednost"
 msgstr "Security"
 
-#: src/help/help-page.tsx:153
+#: src/help/help-page.tsx:151
 msgid "čl. 33 — rolling 12 meseci"
 msgstr "Art. 33 — rolling 12 months"
 
-#: src/help/help-page.tsx:145
+#: src/help/help-page.tsx:143
 msgid "čl. 42 — godišnji limit"
 msgstr "Art. 42 — annual limit"
 
@@ -134,7 +134,7 @@ msgstr "Add {year} to favorites"
 msgid "Dodaj unos"
 msgstr "Add entry"
 
-#: src/help/help-page.tsx:170
+#: src/help/help-page.tsx:168
 msgid "Doprinesite projektu"
 msgstr "Contribute"
 
@@ -164,7 +164,7 @@ msgstr "Email address"
 msgid "Firma-radnje"
 msgstr "Company/Shop"
 
-#: src/help/help-page.tsx:259
+#: src/help/help-page.tsx:257
 msgid "GNU Affero General Public License v3.0"
 msgstr "GNU Affero General Public License v3.0"
 
@@ -263,7 +263,7 @@ msgstr "Export account data"
 msgid "Izvorni kod"
 msgstr "Source code"
 
-#: src/help/help-page.tsx:181
+#: src/help/help-page.tsx:179
 msgid "Izvorni kod na GitHub-u"
 msgstr "Source code on GitHub"
 
@@ -289,7 +289,7 @@ msgstr "No successful sync on this device yet."
 msgid "Još nemate nijednu knjigu. Dodajte prvu da započnete."
 msgstr "You don't have any books yet. Add the first one to get started."
 
-#: src/help/help-page.tsx:108
+#: src/help/help-page.tsx:106
 msgid "Kako prijaviti problem"
 msgstr "How to report an issue"
 
@@ -334,7 +334,7 @@ msgstr "Created"
 msgid "Kreirana:"
 msgstr "Created:"
 
-#: src/help/help-page.tsx:251
+#: src/help/help-page.tsx:249
 msgid "Licenca"
 msgstr "License"
 
@@ -611,7 +611,7 @@ msgstr "Transaction description"
 msgid "Opšte"
 msgstr "General"
 
-#: src/help/help-page.tsx:203
+#: src/help/help-page.tsx:201
 msgid "Osnivač projekta"
 msgstr "Project founder"
 
@@ -741,7 +741,7 @@ msgstr "PIN code was removed due to too many failed attempts. Enter your encrypt
 msgid "PIN kodovi se ne poklapaju."
 msgstr "PIN codes don't match."
 
-#: src/help/help-page.tsx:123
+#: src/help/help-page.tsx:121
 msgid "Pišite nam na support@autokpo.com"
 msgstr "Email us at support@autokpo.com"
 
@@ -818,7 +818,7 @@ msgstr "Try again"
 
 #: src/auth/auth-shell.tsx:84
 #: src/e2ee/encryption-shell.tsx:84
-#: src/help/help-page.tsx:237
+#: src/help/help-page.tsx:235
 msgid "Politika privatnosti"
 msgstr "Privacy Policy"
 
@@ -916,7 +916,7 @@ msgstr "Confirm password change"
 msgid "Potvrdite šifru"
 msgstr "Confirm password"
 
-#: src/help/help-page.tsx:225
+#: src/help/help-page.tsx:223
 msgid "Pravila i privatnost"
 msgstr "Legal and privacy"
 
@@ -972,7 +972,7 @@ msgstr "Sign-in did not complete. Please try again."
 msgid "Prijava potvrđuje vaš nalog. Ova odvojena šifra otključava vaše šifrovane podatke posle prijave."
 msgstr "Sign-in confirms your account. This separate password unlocks your encrypted data after sign-in."
 
-#: src/help/help-page.tsx:120
+#: src/help/help-page.tsx:118
 msgid "Prijavite problem na GitHub-u"
 msgstr "Report an issue on GitHub"
 
@@ -1124,7 +1124,7 @@ msgstr "Encryption password"
 msgid "Šifra za šifrovanje je promenjena."
 msgstr "Encryption password changed."
 
-#: src/help/help-page.tsx:85
+#: src/help/help-page.tsx:83
 msgid "Šifrovanje"
 msgstr "Encryption"
 
@@ -1167,7 +1167,7 @@ msgstr "Total (RSD)"
 msgid "Svetla"
 msgstr "Light"
 
-#: src/help/help-page.tsx:208
+#: src/help/help-page.tsx:206
 msgid "Svi doprinosioci"
 msgstr "All contributors"
 
@@ -1299,7 +1299,7 @@ msgstr "Edit entry"
 
 #: src/auth/auth-shell.tsx:75
 #: src/e2ee/encryption-shell.tsx:75
-#: src/help/help-page.tsx:232
+#: src/help/help-page.tsx:230
 msgid "Uslovi korišćenja"
 msgstr "Terms of Service"
 
@@ -1323,7 +1323,7 @@ msgstr "Your account has no public email address. Sign in via one-time code inst
 msgid "Vaši podaci"
 msgstr "Your data"
 
-#: src/help/help-page.tsx:90
+#: src/help/help-page.tsx:88
 msgid "Vaši podaci su end-to-end šifrovani. Ključ za šifrovanje se izvodi iz vaše lozinke <0>Argon2id</0> algoritmom, a svi podaci se šifruju <1>AES-256-GCM</1> algoritmom. Server nikada ne vidi vaše podatke u čitljivom obliku."
 msgstr "Your data is end-to-end encrypted. The encryption key is derived from your password using the <0>Argon2id</0> algorithm, and all data is encrypted using the <1>AES-256-GCM</1> algorithm. The server never sees your data in readable form."
 
@@ -1353,15 +1353,15 @@ msgstr "Keep one book per year and delete the others."
 msgid "Zaboravili ste šifru?"
 msgstr "Forgot your password?"
 
-#: src/help/help-page.tsx:150
+#: src/help/help-page.tsx:148
 msgid "Zakon o porezu na dodatu vrednost"
 msgstr "Value Added Tax Act"
 
-#: src/help/help-page.tsx:142
+#: src/help/help-page.tsx:140
 msgid "Zakon o porezu na dohodak građana"
 msgstr "Personal Income Tax Act"
 
-#: src/help/help-page.tsx:135
+#: src/help/help-page.tsx:133
 msgid "Zakonski propisi"
 msgstr "Legal references"
 

@@ -122,9 +122,9 @@ export const landingContent: Record<Locale, LandingContent> = {
     locale: 'sr-Latn',
     languageName: 'Srpski',
     meta: {
-      title: 'AutoKPO — KPO evidencija za preduzetnike i paušalce',
+      title: 'AutoKPO — KPO evidencija za preduzetnike paušalce u Srbiji',
       description:
-        'AutoKPO je besplatan alat otvorenog koda za vođenje KPO evidencije. Knjige po godinama, unosi prihoda, pregled i izvoz — uz šifrovanu sinhronizaciju.',
+        'AutoKPO je besplatan alat otvorenog koda za KPO evidenciju preduzetnika paušalaca u Srbiji. Knjige po godinama, unosi prihoda, PDF izvoz i šifrovana sinhronizacija.',
     },
     skipLink: 'Pređi na sadržaj',
     navLabel: 'Glavna navigacija',
@@ -160,10 +160,10 @@ export const landingContent: Record<Locale, LandingContent> = {
     },
     hero: {
       badge: 'Besplatno i otvorenog koda',
-      titlePrefix: 'Vodite KPO-knjige ',
-      titleEmphasis: 'jednostavno i lako',
+      titlePrefix: 'Vodite KPO evidenciju ',
+      titleEmphasis: 'jednostavno',
       titleSuffix: '.',
-      lede: 'Da li ste paušalac u Srbiji? AutoKPO vam pomaže da vodite KPO-knjige u redu — unosi prihoda, knjige po godinama i izvoz u PDF.',
+      lede: 'AutoKPO pomaže preduzetnicima paušalcima u Srbiji da vode KPO evidenciju — knjige po godinama, unosi prihoda, praćenje limita i PDF izvoz.',
     },
     ledger: {
       title: 'KPO unosi',
@@ -209,8 +209,8 @@ export const landingContent: Record<Locale, LandingContent> = {
     },
     features: {
       eyebrow: 'Mogućnosti',
-      title: 'Sve što treba za vođenje KPO knjiga',
-      body: 'Od unosa prihoda do izvoza u PDF — s knjigama po godinama, praćenjem paušalnog limita i sinhronizacijom između uređaja.',
+      title: 'Sve što treba za KPO evidenciju',
+      body: 'Od unosa prihoda do PDF izvoza — s knjigama po godinama, praćenjem paušalnog limita i sinhronizacijom između uređaja.',
       items: [
         {
           icon: 'book',
@@ -246,7 +246,7 @@ export const landingContent: Record<Locale, LandingContent> = {
     },
     trust: {
       eyebrow: 'Sigurnost',
-      title: 'Nalog i sinhronizacija',
+      title: 'Nalog, sinhronizacija i šifrovanje',
       body: 'Registrujte se emailom ili putem Google ili GitHub naloga. Svi vaši uređaji automatski se sinhronizuju, a svi podaci su end-to-end šifrovani.',
       items: [
         {
@@ -338,9 +338,9 @@ export const landingContent: Record<Locale, LandingContent> = {
     locale: 'en',
     languageName: 'English',
     meta: {
-      title: 'AutoKPO — KPO records for entrepreneurs and flat-rate taxpayers',
+      title: 'AutoKPO — KPO records for flat-rate entrepreneurs in Serbia',
       description:
-        'AutoKPO is a free, open-source tool for maintaining KPO income records. Yearly books, income entries, overview and export — with encrypted synchronization.',
+        'AutoKPO is a free, open-source tool for KPO record-keeping by flat-rate entrepreneurs in Serbia. Yearly books, income entries, PDF export and encrypted sync.',
     },
     skipLink: 'Skip to content',
     navLabel: 'Main navigation',
@@ -376,10 +376,10 @@ export const landingContent: Record<Locale, LandingContent> = {
     },
     hero: {
       badge: 'Free and open source',
-      titlePrefix: 'Keep your KPO book ',
-      titleEmphasis: 'effortlessly',
+      titlePrefix: 'Keep your KPO records ',
+      titleEmphasis: 'in order',
       titleSuffix: '.',
-      lede: 'Are you a flat-rate taxpayer in Serbia? AutoKPO helps you keep your KPO book in order — income entries, yearly books and PDF export.',
+      lede: 'AutoKPO helps flat-rate entrepreneurs in Serbia keep KPO records — yearly books, income entries, limit tracking and PDF export.',
     },
     ledger: {
       title: 'KPO entries',
@@ -425,8 +425,8 @@ export const landingContent: Record<Locale, LandingContent> = {
     },
     features: {
       eyebrow: 'Features',
-      title: 'Everything needed for keeping KPO books',
-      body: 'From recording income to exporting PDF — with yearly books, flat-rate limit tracking and sync across devices.',
+      title: 'Everything needed for KPO record-keeping',
+      body: 'From recording income to PDF export — with yearly books, flat-rate limit tracking and sync across devices.',
       items: [
         {
           icon: 'book',
@@ -440,8 +440,8 @@ export const landingContent: Record<Locale, LandingContent> = {
         },
         {
           icon: 'chart',
-          title: 'Overview and flat-rate limit',
-          body: 'Track income by year and see clearly how close you are to the flat-rate taxation limit.',
+          title: 'Overview and income limit',
+          body: 'Track income by year and see clearly how close you are to the flat-rate income limit.',
         },
         {
           icon: 'fileDown',
@@ -462,7 +462,7 @@ export const landingContent: Record<Locale, LandingContent> = {
     },
     trust: {
       eyebrow: 'Security',
-      title: 'Account and synchronization',
+      title: 'Account, sync and encryption',
       body: 'Sign up with email, Google or GitHub. Your devices synchronize automatically, and your application data is end-to-end encrypted.',
       items: [
         {
@@ -554,9 +554,9 @@ export const landingContent: Record<Locale, LandingContent> = {
     locale: 'ru',
     languageName: 'Русский',
     meta: {
-      title: 'AutoKPO — учет KPO для предпринимателей и паушальцев',
+      title: 'AutoKPO — учет KPO для паушальных предпринимателей в Сербии',
       description:
-        'AutoKPO — бесплатный инструмент с открытым исходным кодом для ведения учета KPO. Книги по годам, записи доходов, обзор и экспорт — с зашифрованной синхронизацией.',
+        'AutoKPO — бесплатный open-source инструмент для учета KPO у паушальных предпринимателей в Сербии. Книги по годам, записи доходов, PDF-экспорт и шифрованная синхронизация.',
     },
     skipLink: 'Перейти к содержимому',
     navLabel: 'Основная навигация',
@@ -595,7 +595,7 @@ export const landingContent: Record<Locale, LandingContent> = {
       titlePrefix: 'Ведите KPO-книгу ',
       titleEmphasis: 'без лишних усилий',
       titleSuffix: '.',
-      lede: 'Вы паушал в Сербии? AutoKPO поможет держать KPO-книгу в порядке — записи доходов, книги по годам и экспорт в PDF.',
+      lede: 'AutoKPO помогает паушальным предпринимателям в Сербии вести учет KPO — книги по годам, записи доходов, контроль лимита и PDF-экспорт.',
     },
     ledger: {
       title: 'Записи KPO',
@@ -641,8 +641,8 @@ export const landingContent: Record<Locale, LandingContent> = {
     },
     features: {
       eyebrow: 'Возможности',
-      title: 'Все, что нужно для ведения KPO-книг',
-      body: 'От записи дохода до экспорта в PDF — с книгами по годам, контролем паушального лимита и синхронизацией между устройствами.',
+      title: 'Все, что нужно для учета KPO',
+      body: 'От записи дохода до PDF-экспорта — с книгами по годам, контролем лимита и синхронизацией между устройствами.',
       items: [
         {
           icon: 'book',
@@ -656,8 +656,8 @@ export const landingContent: Record<Locale, LandingContent> = {
         },
         {
           icon: 'chart',
-          title: 'Обзор и паушальный лимит',
-          body: 'Доход по годам и понятное отображение того, насколько вы близки к паушальному лимиту.',
+          title: 'Обзор и лимит дохода',
+          body: 'Доход по годам и понятное отображение того, насколько вы близки к лимиту дохода.',
         },
         {
           icon: 'fileDown',
@@ -678,7 +678,7 @@ export const landingContent: Record<Locale, LandingContent> = {
     },
     trust: {
       eyebrow: 'Безопасность',
-      title: 'Аккаунт и синхронизация',
+      title: 'Аккаунт, синхронизация и шифрование',
       body: 'Зарегистрируйтесь по email или через Google/GitHub. Все ваши устройства синхронизируются автоматически, а данные приложения защищены end-to-end шифрованием.',
       items: [
         {

@@ -63,11 +63,9 @@ export function HelpPage() {
         <Card.Content>
           <p className="text-sm/relaxed  text-muted">
             <Trans>
-              AutoKPO je besplatna aplikacija otvorenog koda za vođenje{' '}
-              <strong className="text-foreground">
-                Knjige o ostvarenom prometu (KPO)
-              </strong>
-              . Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između
+              AutoKPO je besplatna aplikacija otvorenog koda za{' '}
+              <strong className="text-foreground">KPO evidenciju</strong>.
+              Podaci se čuvaju lokalno na vašem uređaju i sinhronizuju između
               vaših uređaja.
             </Trans>
           </p>

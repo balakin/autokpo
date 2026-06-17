@@ -8,6 +8,14 @@ updates:
       default-days: 2
     groups:
       all-dependencies:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
+        patterns:
+          - '*'
+      security-dependencies:
+        applies-to: security-updates
         update-types:
           - minor
           - patch

@@ -1,33 +1,33 @@
 # @autokpo/app
 
+[![Application deployment](https://img.shields.io/github/deployments/balakin/autokpo/Application?label=deployment&logo=cloudflare&logoColor=white&style=flat-square)](https://app.autokpo.com)
+![React](https://img.shields.io/badge/React-149eca?logo=react&logoColor=white&style=flat-square)
+![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-f38020?logo=cloudflareworkers&logoColor=white&style=flat-square)
+![Vite](https://img.shields.io/badge/Vite-646cff?logo=vite&logoColor=white&style=flat-square)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?logo=typescript&logoColor=white&style=flat-square)
+[![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-blue?style=flat-square)](../../LICENSE)
+
 React PWA + Cloudflare Worker for the AutoKPO application.
 
 ## Architecture overview
 
-All app state lives in a single Yjs `Y.Doc` persisted to IndexedDB (`y-indexeddb`). Cross-device sync runs through a Cloudflare Worker backed by Cloudflare D1. The leader tab (determined via Web Locks) is the only one that makes HTTP requests; other tabs communicate via `BroadcastChannel`.
+Local-first. All app state lives in a single Yjs `Y.Doc` persisted to IndexedDB, so the app works fully offline. Cross-device sync runs through a Cloudflare Worker (Hono) backed by D1 — the leader tab (elected via Web Locks) is the only one that makes HTTP requests, while other tabs follow over `BroadcastChannel`. Synced updates are end-to-end encrypted: the Worker stores opaque ciphertext and never sees plaintext.
 
-```
-src/          — React PWA (Vite)
-  crdt/       — Yjs doc, sync engine, leader election, BroadcastChannel bus
-  auth/       — authentication screens and hooks
-  books/      — KPO book management
-  entries/    — KPO entry management
-  stats/      — income statistics and charts
-  pdf/        — PDF export (@react-pdf/renderer)
-  settings/   — app settings
-  ui/         — shared UI components (HeroUI v3 + Tailwind v4)
-  locales/    — compiled i18n catalogs (sr-Latn, en, ru)
+The frontend (`src/`) is a React PWA built with Vite, HeroUI v3 + Tailwind v4, organized as flat feature modules (`books`, `entries`, `stats`, `pdf`, `auth`, `settings`, …) with the CRDT/sync core in `crdt/`. The backend (`worker/`) is the Hono Worker with Drizzle-managed D1 schema and migrations.
 
-worker/       — Cloudflare Worker (Hono)
-  routes/     — API routes (sync, auth, avatars)
-  db/         — Drizzle ORM schema and D1 migrations
-  locales/    — worker-side i18n catalogs
-```
+Deeper design docs live in [`docs/`](docs/):
+
+- [`docs/sync.md`](docs/sync.md) — encrypted sync protocol and leader election
+- [`docs/e2ee.md`](docs/e2ee.md) — end-to-end encryption design
+- [`docs/csp.md`](docs/csp.md) — Content Security Policy and security headers
+- [`docs/migrations.md`](docs/migrations.md) — D1 migration safety rules
+
+For feature-level requirements and architecture decisions, see `openspec/`.
 
 ## Prerequisites
 
 - Node 24
-- Cloudflare account (for D1 and R2)
+- Cloudflare account (for D1)
 - [Resend](https://resend.com) account (transactional email)
 - [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) site (bot protection)
 - Google and/or GitHub OAuth app credentials
@@ -84,17 +84,18 @@ pnpm deploy                # build output is deployed with wrangler deploy --env
 
 ## Deployment
 
-Deployment is automated. Cutting a release with Changesets creates an `@autokpo/app@<version>` git tag, which triggers the **Deploy App** GitHub Actions workflow (`.github/workflows/deploy-app.yml`). The workflow:
+Deployment is automated. When a Release PR merges to `main`, the **Release** workflow (`.github/workflows/release.yml`) publishes the changesets and then — only if `@autokpo/app` was among the published packages — calls the **Deploy App** workflow (`.github/workflows/deploy-app.yml`) as a reusable workflow (`workflow_call`, `secrets: inherit`). It is **not** triggered by the release tag: tags pushed with `GITHUB_TOKEN` don't fire `push`/`create` events, so the reusable-workflow call is what kicks off the deploy, at the same commit the tag points to. You can also run it manually via `workflow_dispatch`.
 
-1. installs cleanly (no restored cache) and builds the app,
-2. applies pending D1 migrations to the **production** database — see [`docs/migrations.md`](docs/migrations.md) for migration safety rules,
-3. deploys the worker with `wrangler deploy`.
+The workflow is split into two jobs for least privilege:
 
-The workflow sets `CLOUDFLARE_ENV=production` at the job level so every Wrangler command targets the `env.production` config — `autokpo-database` and `app.autokpo.com` — without needing an `--env` flag. You do **not** configure `CLOUDFLARE_ENV` yourself; it lives in `deploy-app.yml` only. The website deploy is a separate workflow that sets no `CLOUDFLARE_ENV` (it has no `production` environment), so the two never interfere.
+1. **Build** — installs cleanly (no restored cache) and builds the app, then uploads the deployable output as an artifact. `@cloudflare/vite-plugin` bundles the worker into `dist/` alongside a generated `wrangler.json` deploy snapshot, so the deploy job never re-bundles. This job holds **no** Cloudflare credentials, since it runs untrusted dependency code.
+2. **Deploy** — no checkout; downloads the build artifact and runs the pinned `cloudflare/wrangler-action` (installs only `wrangler`, no `pnpm install`) with two commands: `d1 migrations apply DB --remote` to apply pending D1 migrations to the **production** database (see [`docs/migrations.md`](docs/migrations.md) for migration safety rules), then `wrangler deploy`. It runs in the `Application` GitHub Environment (`https://app.autokpo.com`).
 
-It runs under the `production` GitHub Environment, which holds the workflow's two secrets — `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` — and the **client-side build variables** (see below). Application _runtime_ secrets (`BETTER_AUTH_SECRET`, OAuth credentials, `RESEND_API_KEY`, etc.) are managed separately in the Cloudflare dashboard or via `wrangler secret put`, not by the workflow.
+Both jobs set `CLOUDFLARE_ENV=production`, so Wrangler targets the `env.production` config — `autokpo-database` and `app.autokpo.com` — without needing an `--env` flag. `d1 migrations apply` reads it from the source `wrangler.jsonc`; `wrangler deploy` follows the build's prebaked snapshot and ignores it. You do **not** configure `CLOUDFLARE_ENV` yourself; it lives in `deploy-app.yml` only. The website deploy is a separate workflow that sets no `CLOUDFLARE_ENV` (it has no `env.production` section), so the two never interfere.
 
-**Client-side build variables.** The browser bundle inlines `VITE_*` variables at **build time**, so they must be present in CI when the workflow builds — otherwise production ships with an empty Turnstile key (captcha/auth breaks) and no analytics. They are publishable (they end up in the client bundle), so they are stored as GitHub Actions **variables** (`vars`), not secrets, on the `production` environment, and listed in `turbo.json`'s `build.env` so Turbo's strict mode passes them through:
+The deploy job authenticates with `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` (inherited from the caller via `secrets: inherit`). Application _runtime_ secrets (`BETTER_AUTH_SECRET`, OAuth credentials, `RESEND_API_KEY`, etc.) are managed separately in the Cloudflare dashboard or via `wrangler secret put`, not by the workflow.
+
+**Client-side build variables.** The browser bundle inlines `VITE_*` variables at **build time**, so they must be present in CI when the build job runs — otherwise production ships with an empty Turnstile key (captcha/auth breaks) and no analytics. They are publishable (they end up in the client bundle), so they are read from GitHub Actions **variables** (`vars`), not secrets, and listed in `turbo.json`'s `build.env` so Turbo's strict mode passes them through:
 
 | Variable                     | Required | Purpose                           |
 | ---------------------------- | -------- | --------------------------------- |
@@ -106,8 +107,8 @@ See [`.env.example`](.env.example) for local development.
 
 First-time setup (operator):
 
-1. Create a Cloudflare API token (D1 Edit + Workers Scripts Edit) and add `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` as secrets on the `production` GitHub Environment.
-2. Add the client-side build variables (`VITE_*` above) as **variables** on the `production` environment.
+1. Create a Cloudflare API token (D1 Edit + Workers Scripts Edit) and add `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` as secrets the deploy job can read (repository secrets, or the `Application` GitHub Environment).
+2. Add the client-side build variables (`VITE_*` above) as repository **variables** (`vars`) so the build job picks them up.
 3. Create the Cloudflare D1 resource and set `database_id` in `wrangler.jsonc`.
 4. Set the application runtime secrets in Cloudflare.
 

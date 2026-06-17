@@ -1,6 +1,6 @@
 # D1 migration safety
 
-Deploys are automated: pushing an `@autokpo/app@*` release tag runs the deploy workflow, which applies pending D1 migrations to the **production** database (`--env production`, `autokpo-database`) **before** deploying the new worker. Because migrations run automatically, every migration must be safe to apply this way.
+Deploys are automated: when a release publishes `@autokpo/app`, the Release workflow calls the Deploy App workflow, whose deploy job runs `d1 migrations apply DB --remote` against the **production** database (`CLOUDFLARE_ENV=production`, `autokpo-database`) **before** `wrangler deploy` ships the new worker. Because migrations run automatically ahead of the deploy, every migration must be safe to apply this way.
 
 ## The invariant
 

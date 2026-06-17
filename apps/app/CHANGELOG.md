@@ -1,5 +1,11 @@
 # @autokpo/app
 
+## 0.5.3
+
+### Patch Changes
+
+- [#100](https://github.com/balakin/autokpo/pull/100) [`ace3410`](https://github.com/balakin/autokpo/commit/ace3410804a8e62f1d8ff678f39e5aeb3b57c21f) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Updated dependencies
+
 ## 0.5.2
 
 ### Patch Changes

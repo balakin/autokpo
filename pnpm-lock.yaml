@@ -184,8 +184,8 @@ catalogs:
       specifier: ^19.2.7
       version: 19.2.7
     react-easy-crop:
-      specifier: ^5.5.7
-      version: 5.5.7
+      specifier: ^6.0.2
+      version: 6.0.2
     react-hook-form:
       specifier: ^7.79.0
       version: 7.79.0
@@ -413,7 +413,7 @@ importers:
         version: 19.2.7(react@19.2.7)
       react-easy-crop:
         specifier: catalog:react
-        version: 5.5.7(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        version: 6.0.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       react-email:
         specifier: catalog:email
         version: 6.6.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -6919,8 +6919,8 @@ packages:
     peerDependencies:
       react: ^19.2.7
 
-  react-easy-crop@5.5.7:
-    resolution: {integrity: sha512-kYo4NtMeXFQB7h1U+h5yhUkE46WQbQdq7if54uDlbMdZHdRgNehfvaFrXnFw5NR1PNoUOJIfTwLnWmEx/MaZnA==}
+  react-easy-crop@6.0.2:
+    resolution: {integrity: sha512-nY/YiNEuRjc851+/PsOR6Q7XoshmnXMl+oEOsxp3Ah0PrhECi5388jjRnHwsTFx3W0o2zPwvq85oljzUqZNpEw==}
     peerDependencies:
       react: '>=16.4.0'
       react-dom: '>=16.4.0'
@@ -14913,12 +14913,11 @@ snapshots:
       react: 19.2.7
       scheduler: 0.27.0
 
-  react-easy-crop@5.5.7(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
+  react-easy-crop@6.0.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:
       normalize-wheel: 1.0.1
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
-      tslib: 2.8.1
 
   react-email@6.6.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:

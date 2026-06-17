@@ -1,0 +1,47 @@
+name: 🔧 Fix Dependabot Worker Types
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - apps/*/package.json
+      - packages/*/package.json
+
+permissions: {} # deny all by default; the job grants only what it needs
+
+jobs:
+  fix-worker-types:
+    name: 🔧 Regenerate worker types
+    runs-on: ubuntu-24.04
+    if: >-
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: write # commit regenerated worker types to the Dependabot branch
+    steps:
+      - name: 📥 Checkout Dependabot branch
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: ⚙️ Setup
+        uses: ./.github/actions/setup
+
+      - name: 🔧 Regenerate worker types
+        run: pnpm generate:worker-types
+
+      - name: 💾 Commit regenerated worker types
+        run: |
+          if git diff --quiet -- apps/app/worker-configuration.d.ts; then
+            echo "Worker types are already up to date."
+            exit 0
+          fi
+
+          git config user.name "dependabot[bot]"
+          git config user.email "49699333+dependabot[bot]@users.noreply.github.com"
+          git add apps/app/worker-configuration.d.ts
+          git commit -m "chore: regenerate worker types [dependabot skip]"
+          git push

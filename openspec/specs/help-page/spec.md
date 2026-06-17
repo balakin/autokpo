@@ -45,7 +45,7 @@ The `HelpPage` component SHALL include a localized legal/privacy section that li
 
 ### Requirement: Help page contains structured informational sections
 
-The `HelpPage` component SHALL render seven sections using HeroUI `Card` components, matching the card-based composition pattern used in the rest of the application. All text SHALL be wrapped with Lingui `<Trans>` or `t` macros. External links SHALL open in a new tab (`target="_blank"`, `rel="noopener noreferrer"`). The page container SHALL use `p-4 lg:p-6` with `gap-4 lg:gap-6`, consistent with dashboard and settings pages.
+The `HelpPage` component SHALL render seven sections using HeroUI `Card` components, matching the card-based composition pattern used in the rest of the application. All text SHALL be wrapped with Lingui `<Trans>` or `t` macros. External links SHALL open in a new tab (`target="_blank"`, `rel="noopener noreferrer"`). The page container SHALL use `p-4 lg:p-6` with `gap-4 lg:gap-6`, consistent with dashboard and settings pages. Product-description text SHALL use KPO record-keeping terminology and avoid awkward literal English/Russian translations of `Knjiga o ostvarenom prometu`.
 
 Layout:
 
@@ -58,7 +58,7 @@ Each card uses `Card.Header` with a Lucide icon and `Card.Title`, and `Card.Cont
 
 Section content:
 
-1. **O projektu** (icon: `LuInfo`) — Brief description of AutoKPO as a free open-source app for maintaining the Knjiga o ostvarenom prometu (KPO), with local-first data storage and cross-device sync.
+1. **O projektu** (icon: `LuInfo`) — Brief description of AutoKPO as a free open-source app for KPO record-keeping, with local-first data storage and cross-device sync.
 2. **Kako prijaviti problem** (icon: `LuBug`) — Instructions to open a GitHub Issue, with a link to `https://github.com/balakin/autokpo/issues`. Below the GitHub link, a `mailto:support@autokpo.com` link SHALL be present as a second contact option.
 3. **Zakonski propisi** (icon: `LuScale`) — Two law links, each with an article reference subtitle below:
    - Zakon o porezu na dohodak građana: `https://mfin.gov.rs/sr/propisi-1/zakon-o-porezu-na-dohodak-gradjana-1` / subtitle: "čl. 42 — godišnji limit"
@@ -118,3 +118,9 @@ Section content:
 - **THEN** a `mailto:support@autokpo.com` link SHALL be present below the GitHub Issues link
 - **AND** the link label SHALL be the translated equivalent of "Pišite nam na support@autokpo.com"
 - **AND** the link SHALL open in a new tab
+
+#### Scenario: About section uses KPO record-keeping wording
+
+- **WHEN** the user views the "O projektu" card in English or Russian
+- **THEN** the body text SHALL describe AutoKPO as an app for KPO record-keeping
+- **AND** it SHALL avoid using a literal translation of `Knjiga o ostvarenom prometu` as the primary product phrase

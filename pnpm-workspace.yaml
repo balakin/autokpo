@@ -122,7 +122,7 @@ catalogs:
     '@commitlint/types': '^21.0.1'
 
   astro:
-    astro: '^6.4.4'
+    astro: '^6.4.6'
     '@lucide/astro': '^1.17.0'
     '@astrojs/check': '^0.9.9'
     '@astrojs/sitemap': '^3.4.1'
@@ -131,7 +131,7 @@ catalogs:
     posthog-js: '^1.384.1'
 
   misc:
-    hono: '^4.12.23'
+    hono: '^4.12.25'
     zod: '^4.4.3'
     yjs: '^13.6.31'
     hash-wasm: '^4.12.0'

@@ -20,8 +20,8 @@ catalogs:
       specifier: ^1.17.0
       version: 1.17.0
     astro:
-      specifier: ^6.4.4
-      version: 6.4.4
+      specifier: ^6.4.6
+      version: 6.4.8
   auth:
     '@better-auth/drizzle-adapter':
       specifier: ^1.6.12
@@ -147,8 +147,8 @@ catalogs:
       specifier: ^4.12.0
       version: 4.12.0
     hono:
-      specifier: ^4.12.23
-      version: 4.12.23
+      specifier: ^4.12.25
+      version: 4.12.25
     workbox-window:
       specifier: ^7.4.1
       version: 7.4.1
@@ -398,7 +398,7 @@ importers:
         version: 4.12.0
       hono:
         specifier: catalog:misc
-        version: 4.12.23
+        version: 4.12.25
       posthog-js:
         specifier: catalog:analytics
         version: 1.384.1
@@ -573,10 +573,10 @@ importers:
     dependencies:
       '@lucide/astro':
         specifier: catalog:astro
-        version: 1.17.0(astro@6.4.4(@types/node@25.9.2)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.61.1)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0))
+        version: 1.17.0(astro@6.4.8(@types/node@25.9.2)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.61.1)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0))
       astro:
         specifier: catalog:astro
-        version: 6.4.4(@types/node@25.9.2)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.61.1)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0)
+        version: 6.4.8(@types/node@25.9.2)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.61.1)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0)
       posthog-js:
         specifier: catalog:analytics
         version: 1.384.1
@@ -4278,8 +4278,8 @@ packages:
     resolution: {integrity: sha512-+QDcgc7e+au6EZ0YjMmRRjNoQo5bDMlaR45aWDoFsuxQTCM9qmCHRoiKJPELgckJ8Wmr7vcfpa9eCDHBFh6G4w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  astro@6.4.4:
-    resolution: {integrity: sha512-hVe8tq3lqt/Dr0UyB//yUmQSlHMTU8scTiF/vQddQVahLE4TTaSdH5H0nb7OvRcwo0UmlAO8DWYar4jNaS7H+A==}
+  astro@6.4.8:
+    resolution: {integrity: sha512-KK5lX90uU9EeVaTjINyj3sy9/NFXVa59aowaqbWBDDKLXZh4rr7GwIaCFYVetE22MJtsCNFerQXn0vlCLmpP/Q==}
     engines: {node: '>=22.12.0', npm: '>=9.6.5', pnpm: '>=7.1.0'}
     hasBin: true
 
@@ -5639,8 +5639,8 @@ packages:
   hastscript@9.0.1:
     resolution: {integrity: sha512-g7df9rMFX/SPi34tyGCyUBREQoKkapwdY/T04Qn9TDWfHhAYt4/I0gMVirzK5wEzeUqIjEB+LXC/ypb7Aqno5w==}
 
-  hono@4.12.23:
-    resolution: {integrity: sha512-eIaZ9qDgu7XV0pxOCrg7/WhnQ6Ivm22UcxhXx/A3dcbqbbYgBEkc6e/J/s7j2tS96zoB0S9VBdLwQNCWwUo4LA==}
+  hono@4.12.25:
+    resolution: {integrity: sha512-2NFaIyNVgJmBs/ecmtGzlmluTFs5cHEWGTdu0t1HBwYzoGXOL5nUQBRMXsXWla5i4KkG//QMzVP88m1+I3fdAQ==}
     engines: {node: '>=16.9.0'}
 
   hsl-to-hex@1.0.0:
@@ -10465,9 +10465,9 @@ snapshots:
       - babel-plugin-macros
       - supports-color
 
-  '@lucide/astro@1.17.0(astro@6.4.4(@types/node@25.9.2)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.61.1)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0))':
+  '@lucide/astro@1.17.0(astro@6.4.8(@types/node@25.9.2)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.61.1)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0))':
     dependencies:
-      astro: 6.4.4(@types/node@25.9.2)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.61.1)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0)
+      astro: 6.4.8(@types/node@25.9.2)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.61.1)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0)
 
   '@manypkg/find-root@1.1.0':
     dependencies:
@@ -11819,7 +11819,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  astro@6.4.4(@types/node@25.9.2)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.61.1)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0):
+  astro@6.4.8(@types/node@25.9.2)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.61.1)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0):
     dependencies:
       '@astrojs/compiler': 4.0.0
       '@astrojs/internal-helpers': 0.10.0
@@ -13426,7 +13426,7 @@ snapshots:
       property-information: 7.2.0
       space-separated-tokens: 2.0.2
 
-  hono@4.12.23: {}
+  hono@4.12.25: {}
 
   hsl-to-hex@1.0.0:
     dependencies:

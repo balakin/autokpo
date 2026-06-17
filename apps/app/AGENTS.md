@@ -1,6 +1,6 @@
 Guidance for AI coding agents working in `apps/app/` (`@autokpo/app`).
 
-> Root guidance (monorepo layout, turbo commands, token-efficiency principles) is in the repository root `CLAUDE.md`.
+> Root guidance (monorepo layout, turbo commands, token-efficiency principles) is in the repository root `AGENTS.md`.
 
 ## What this project is
 

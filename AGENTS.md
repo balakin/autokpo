@@ -6,21 +6,24 @@ Turborepo + pnpm workspace monorepo. Requires **Node 24**.
 
 ```
 apps/
-  app/      — @autokpo/app  (React PWA + Cloudflare Worker)
+  app/      — @autokpo/app             (React PWA + Cloudflare Worker)
+  website/  — @autokpo/website         (Astro public website)
+packages/
+  eslint-config/ — @autokpo/eslint-config  (shared ESLint preset)
 ```
 
-App-specific guidance lives in `apps/app/CLAUDE.md`.
+App-specific guidance lives in `apps/app/AGENTS.md`. Each package's `README.md` covers its own setup, env vars, and deployment.
 
 ## Commands
 
-Prefer running commands directly inside the package (`cd apps/app && pnpm -s <script>`). Two root turbo commands exist for regression checks (e.g. after updating shared dependencies) — bare calls only, piping to `head` / `tail` is fine:
+Prefer running commands directly inside the target package (`cd apps/app && pnpm -s <script>`, `cd apps/website && pnpm -s <script>`). Two root turbo commands exist for repo-wide regression checks (e.g. after updating shared dependencies) — bare calls only, piping to `head` / `tail` is fine:
 
 ```bash
 pnpm build    # turbo run build
 pnpm test     # turbo run test
 ```
 
-Turbo's TUI breaks pipes and swallows flags — never pass extra params to these. All other root scripts (`lint`, `lint:fix`, `dev`, `i18n:extract`, `generate:worker-types`, `check:worker-types`, `db:*`, `prepare`) are for CI/CD, Husky, and developers — do not invoke them.
+Turbo's TUI breaks pipes and swallows flags — never pass extra params to these. All other root scripts (`lint`, `lint:fix`, `format`, `format:fix`, `dev`, `i18n:extract`, `generate:worker-types`, `check:worker-types`, `auth:generate`, `db:*`, `prepare`) are for CI/CD, Husky, and developers — do not invoke them.
 
 ## Commits
 
@@ -30,16 +33,14 @@ Turbo's TUI breaks pipes and swallows flags — never pass extra params to these
 
 Always prefix `pnpm` with `-s` when running directly — lifecycle logs otherwise break parsers. For tests in this repo, use Vitest's verbose reporter; Wrangler emits warnings to stdout and breaks JSON parsing.
 
-**Tests** — tests are written in Vitest. Use verbose reporter (`cd apps/app && pnpm -s test --reporter=verbose`). For large/full runs, pipe to `tail` to keep output manageable. Use direct verbose output without piping only for scoped runs (one or several files) or targeted `-t <name>` checks.
+**Tests** — Vitest, always `--reporter=verbose`. Run scoped without piping; pipe full/changed runs to `tail`.
 
 ```bash
-cd apps/app && pnpm -s test --reporter=verbose --changed | tail -n 120
-
-# narrow to a file or test name
+# scoped: a file, or a test name
 cd apps/app && pnpm -s test src/foo/foo.spec.ts -t 'test name' --reporter=verbose
 
-# full run (trim output)
-cd apps/app && pnpm -s test --reporter=verbose | tail -n 120
+# full or changed-file run (trim output)
+cd apps/app && pnpm -s test --reporter=verbose --changed | tail -n 120
 ```
 
 **Build / typecheck** — filter errors directly:
@@ -48,19 +49,16 @@ cd apps/app && pnpm -s test --reporter=verbose | tail -n 120
 cd apps/app && pnpm -s build 2>&1 | grep -E 'error TS|error:' | head -n 40
 ```
 
-**Lint** — run ESLint and Prettier directly, never via `pnpm lint` / `pnpm lint:fix` (those are chain commands for CI/developers). Run from the repo root — not `cd apps/app` — so root configs are picked up, with path scoped to the package or file:
+**Lint** — run ESLint and Prettier directly, never via `pnpm lint` / `pnpm lint:fix` (those are chain commands for CI/developers).
+
+ESLint config is per-package (`apps/app/eslint.config.ts`, `apps/website/eslint.config.ts`, both extending `@autokpo/eslint-config`). Flat config resolves from the current directory, so run ESLint **from inside the package**:
 
 ```bash
-pnpm -s eslint apps/app --fix --format=json | jq '[.[] | select(.errorCount > 0) | {file: .filePath, errors: [.messages[] | select(.severity == 2) | {line, col: .column, rule: .ruleId, msg: .message}]}]'
-pnpm -s prettier --write --log-level=error apps/app
+cd apps/app && pnpm -s eslint . --fix --format=json | jq '[.[] | select(.errorCount > 0) | {file: .filePath, errors: [.messages[] | select(.severity == 2) | {line, col: .column, rule: .ruleId, msg: .message}]}]'
 ```
 
-**Git** — overview first, then targeted:
+Prettier uses a single root config (`.prettierrc`), so run it **from the repo root** with the path scoped to the package or file:
 
-- `git status -s`, `git diff --stat`, `git log --oneline -n 20`
-- `git diff --name-only` → targeted `git diff <file>`
-- `git log -L :symbolName:path/to/file.ts` for a single symbol's history
-
-## Context-efficient reading
-
-For questions that would take more than 3 searches or span several unrelated files ("how is X wired up?", "which components use this hook?"), delegate to the `Explore` subagent so raw search output stays out of the main context.
+```bash
+pnpm -s prettier --write --log-level=error apps/app
+```

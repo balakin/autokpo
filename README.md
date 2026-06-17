@@ -1,10 +1,22 @@
+<div align="center">
+
+<img src="apps/app/public/favicon.svg" alt="AutoKPO" width="96" height="96" />
+
 # AutoKPO
 
-A local-first web app for generating the Serbian tax **Knjiga o ostvarenom prometu** (KPO — Book of Achieved Turnover).
+**KPO record-keeping for flat-rate entrepreneurs in Serbia.**
+
+[**Open the app**](https://app.autokpo.com) &nbsp;·&nbsp; [**Website**](https://autokpo.com)
+
+[![Application deployment](https://img.shields.io/github/deployments/balakin/autokpo/Application?label=app&logo=cloudflare&logoColor=white&style=flat-square)](https://app.autokpo.com)
+[![Website deployment](https://img.shields.io/github/deployments/balakin/autokpo/Website?label=website&logo=cloudflare&logoColor=white&style=flat-square)](https://autokpo.com)
+[![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-blue?style=flat-square)](LICENSE)
+
+</div>
 
 ## What it does
 
-AutoKPO helps Serbian entrepreneurs under the flat-rate taxation regime (paušalno oporezivanje) maintain their KPO ledger and export it as a PDF. All data lives on-device first (IndexedDB via Yjs) and syncs across devices through a Cloudflare Worker backed by a D1 database.
+AutoKPO helps flat-rate entrepreneurs in Serbia maintain yearly KPO books, record income, track limits, and export PDFs. Application data lives on-device first (IndexedDB via Yjs) and syncs across devices through a Cloudflare Worker backed by a D1 database.
 
 Key features:
 
@@ -19,7 +31,10 @@ Key features:
 
 ```
 apps/
-  app/    — @autokpo/app  (React PWA + Cloudflare Worker)
+  app/      — @autokpo/app      (React PWA + Cloudflare Worker)
+  website/  — @autokpo/website  (Astro public website)
+packages/
+  eslint-config/ — @autokpo/eslint-config  (shared ESLint preset)
 openspec/
   specs/  — feature specs and architecture decisions
 ```
@@ -33,11 +48,14 @@ openspec/
 ```bash
 corepack enable
 pnpm install
-cp apps/app/.env.example apps/app/.env
-cp apps/app/.dev.vars.example apps/app/.dev.vars
-# fill in the required values, then:
-pnpm dev
 ```
+
+Each app has its own environment files and setup steps (env vars, local D1 database, migrations). Follow the per-package README before running it:
+
+- **[`apps/app`](apps/app/README.md)** — `@autokpo/app` (the PWA + Worker; requires `.env`, `.dev.vars`, and a local D1 migration)
+- **[`apps/website`](apps/website/README.md)** — `@autokpo/website` (the public site)
+
+Once a package is configured, `pnpm dev` from the repo root runs every app via Turborepo.
 
 ## Releases
 

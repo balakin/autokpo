@@ -1,12 +1,10 @@
-# CLAUDE.md
-
 Guidance for AI coding agents working in `apps/app/` (`@autokpo/app`).
 
-> Root guidance (monorepo layout, turbo commands, token-efficiency principles) is in the repository root `CLAUDE.md`.
+> Root guidance (monorepo layout, turbo commands, token-efficiency principles) is in the repository root `AGENTS.md`.
 
 ## What this project is
 
-AutoKPO is a local-first web app for generating the Serbian tax "Knjiga o ostvarenom prometu" (KPO — Book of Achieved Turnover). Application state (books, entries, profiles, signatures, locale) lives in a single Yjs `Y.Doc` persisted to IndexedDB via `y-indexeddb`, with cross-device sync through a Cloudflare Worker backed by D1. Theme remains in `localStorage` as a per-device preference. The `src/crdt/` module manages the document, sync state, leader election, cross-tab fan-out, and the React Query–driven sync engine.
+AutoKPO is a local-first web app for generating the Serbian tax "Knjiga o ostvarenom prometu" (KPO — Book of Achieved Turnover). Application state (books, entries, profiles, signatures, locale) lives in a single Yjs `Y.Doc`, persisted to IndexedDB **encrypted at rest** by a custom persistence layer (`src/crdt/encrypted-indexeddb-persistence.ts`), with cross-device sync through a Cloudflare Worker backed by D1. Sync payloads are **end-to-end encrypted** (`src/e2ee/`) — the Worker only ever stores ciphertext. Theme remains in `localStorage` as a per-device preference. `src/crdt/` manages the document, sync state, cross-tab fan-out, and the React Query–driven sync engine; leader election lives in `src/leader/`.
 
 ## Commands
 
@@ -25,19 +23,21 @@ db:migrate:remote      # apply migrations to remote D1 (before worker deploy)
 
 **Wrangler**: run `generate:worker-types` after any change to `wrangler.jsonc`. The pre-commit hook and CI/CD run `check:worker-types` to verify types are up to date.
 
-**D1 migrations**: after changing `worker/db/schema.ts`, run `db:generate` to create a migration, then `db:migrate:local` to apply it locally. Production migrations are applied automatically by the deploy workflow (`db:migrate:prod`, `--env production`) before the worker deploy step.
+**D1 migrations**: after changing the Drizzle schema in `worker/db/schema/`, run `db:generate` to create a migration, then `db:migrate:local` to apply it locally. Production migrations are applied automatically by the deploy workflow before the worker deploy step — its deploy job runs `wrangler d1 migrations apply DB --remote` with `CLOUDFLARE_ENV=production` (the `db:migrate:prod` script is the manual equivalent).
 
 Deploys auto-apply migrations to production, so every migration must follow the **expand/contract** rule — it must be tolerated by the currently-live (old) worker. Never emit a single-shot `RENAME COLUMN` / `DROP COLUMN`; split renames and drops across releases. See [`docs/migrations.md`](docs/migrations.md) for the safe/unsafe table and step-by-step recipes.
 
 ## Architecture
 
-Feature specs, architecture decisions, and design rationale live in `openspec/`. Read `openspec/specs/` for current requirements and `openspec/changes/archive/` for historical context.
+Feature specs, architecture decisions, and design rationale live in `openspec/`. Read `openspec/specs/` for current requirements and `openspec/changes/archive/` for historical context. Deep-dive docs for the trickiest subsystems are in [`docs/`](docs/): sync protocol (`sync.md`), end-to-end encryption (`e2ee.md`), Content Security Policy (`csp.md`), and D1 migration safety (`migrations.md`).
 
 ### Module layout
 
-- `src/crdt/` — Y.Doc factory (`doc.ts`), selector hook (`use-y-doc.ts`), sync state side-channel (`sync-state.ts`), wire-format client (`sync-client.ts`), sync engine hook (`use-sync-engine.ts`), pure sync logic (`sync-logic.ts`), leader election (`leader.ts`), BroadcastChannel bus (`bus.ts`), provider (`crdt-provider.tsx`)
-- `worker/db/` — Drizzle schema + migrations for the `updates` table
-- `worker/routes/sync.ts` — Hono sub-app for `GET/POST /api/sync` and `POST /api/sync/compact`
+- `src/crdt/` — Y.Doc factory (`doc.ts`), selector hook (`use-y-doc.ts`), sync state side-channel (`sync-state.ts`), wire-format client (`sync-client.ts`), sync engine hook (`use-sync-engine.ts`), pure sync logic (`sync-logic.ts`), encrypted-at-rest IndexedDB persistence (`encrypted-indexeddb-persistence.ts`), BroadcastChannel bus (`bus.ts`), provider (`crdt-provider.tsx`)
+- `src/leader/` — Web Locks leader election (`leader-provider.tsx`, `use-leader.ts`)
+- `src/e2ee/` — end-to-end encryption: key ring, KDF (run in a worker), AES-GCM helpers, and the unlock / PIN gate UI
+- `worker/db/schema/` — Drizzle schema for sync records (`sync-record.ts`), auth (`auth.ts`), and the encryption key ring (`encryption.ts`)
+- `worker/routes/` — Hono sub-apps: `sync.ts` (`/api/sync` — pull/push/compact), `e2ee.ts` (`/api/e2ee` — key ring), `exchange-rates.ts` (`/api/exchange-rates`)
 
 ## Key conventions
 

@@ -1,5 +1,11 @@
 # @autokpo/app
 
+## 0.5.4
+
+### Patch Changes
+
+- [#102](https://github.com/balakin/autokpo/pull/102) [`35500b8`](https://github.com/balakin/autokpo/commit/35500b8b26dd9a279b747b2b13aeca0da6b72c80) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Unified AutoKPO product copy across website, app metadata, PWA manifest, and Help page
+
 ## 0.5.3
 
 ### Patch Changes

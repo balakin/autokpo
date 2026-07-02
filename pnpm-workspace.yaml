@@ -103,7 +103,7 @@ catalogs:
     '@react-email/ui': '^6.6.5'
 
   babel:
-    '@babel/core': '^7.29.7'
+    '@babel/core': '^8.0.1'
     babel-plugin-react-compiler: '^1.0.0'
 
   tooling:

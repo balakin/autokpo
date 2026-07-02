@@ -27,7 +27,7 @@ catalogs:
     eslint-plugin-lingui: '^0.14.0'
     eslint-plugin-react-refresh: '^0.5.3'
     eslint-plugin-testing-library: '^7.16.2'
-    eslint-plugin-astro: '^1.7.0'
+    eslint-plugin-astro: '^2.1.1'
 
   react:
     react: '^19.2.7'

@@ -3,7 +3,8 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useImperativeHandle } from 'react';
 import type { Ref } from 'react';
-import { createMemoryRouter, RouterProvider } from 'react-router';
+import { createMemoryRouter } from 'react-router';
+import { RouterProvider } from 'react-router/dom';
 import { I18nWrapper, LocationDisplay } from 'tests/render-helpers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

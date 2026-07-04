@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { createMemoryRouter, RouterProvider } from 'react-router';
+import { createMemoryRouter } from 'react-router';
+import { RouterProvider } from 'react-router/dom';
 import { BOOK_ID_1, BOOK_ID_2 } from 'tests/fixtures/book';
 import { VALID_PROFILE } from 'tests/fixtures/entity-profile';
 import { VALID_SIGNATURE } from 'tests/fixtures/signature';

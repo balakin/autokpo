@@ -27,12 +27,12 @@ catalogs:
     eslint-plugin-lingui: '^0.14.0'
     eslint-plugin-react-refresh: '^0.5.3'
     eslint-plugin-testing-library: '^7.16.2'
-    eslint-plugin-astro: '^1.7.0'
+    eslint-plugin-astro: '^2.1.1'
 
   react:
     react: '^19.2.7'
     react-dom: '^19.2.7'
-    react-router: '^7.18.1'
+    react-router: '^8.1.0'
     react-hook-form: '^7.80.0'
     '@hookform/resolvers': '^5.4.0'
     react-transition-group: '^4.4.5'
@@ -44,7 +44,7 @@ catalogs:
     react-icons: '^5.7.0'
     recharts: '^3.9.1'
     react-currency-input-field: '^4.0.5'
-    react-easy-crop: '^6.0.2'
+    react-easy-crop: '^6.1.0'
 
   heroui:
     '@heroui/react': '^3.2.1'
@@ -66,17 +66,17 @@ catalogs:
     '@lingui/vite-plugin': '^6.4.0'
 
   cloudflare:
-    '@cloudflare/vite-plugin': '^1.42.3'
-    '@cloudflare/vitest-pool-workers': '^0.16.20'
-    wrangler: '^4.105.0'
+    '@cloudflare/vite-plugin': '^1.43.0'
+    '@cloudflare/vitest-pool-workers': '^0.18.0'
+    wrangler: '^4.107.0'
 
   vite:
-    vite: '^8.1.1'
+    vite: '^8.1.3'
     '@vitejs/plugin-react': '^6.0.3'
     '@tailwindcss/vite': '^4.3.2'
     tailwindcss: '^4.3.2'
     vite-plugin-pwa: '^1.3.0'
-    rolldown: '^1.1.3'
+    rolldown: '^1.1.4'
     '@rolldown/plugin-babel': '^0.2.3'
     rollup-plugin-visualizer: '^7.0.1'
 
@@ -103,16 +103,16 @@ catalogs:
     '@react-email/ui': '^6.6.5'
 
   babel:
-    '@babel/core': '^7.29.7'
+    '@babel/core': '^8.0.1'
     babel-plugin-react-compiler: '^1.0.0'
 
   tooling:
     typescript: '~6.0.3'
-    '@types/node': '^25.9.4'
+    '@types/node': '^24.13.2'
     prettier: '^3.9.4'
     husky: '^9.1.7'
     lint-staged: '^17.0.8'
-    turbo: '^2.10.1'
+    turbo: '^2.10.2'
     jiti: '^2.7.0'
     cross-env: '^10.1.0'
     '@changesets/changelog-github': '^0.7.0'
@@ -122,13 +122,13 @@ catalogs:
     '@commitlint/types': '^21.2.0'
 
   astro:
-    astro: '^6.4.8'
-    '@lucide/astro': '^1.22.0'
+    astro: '^7.0.5'
+    '@lucide/astro': '^1.23.0'
     '@astrojs/check': '^0.9.9'
     '@astrojs/sitemap': '^3.4.1'
 
   analytics:
-    posthog-js: '^1.396.2'
+    posthog-js: '^1.396.5'
 
   misc:
     hono: '^4.12.27'

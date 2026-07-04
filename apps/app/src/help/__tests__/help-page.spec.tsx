@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { createMemoryRouter, RouterProvider } from 'react-router';
+import { createMemoryRouter } from 'react-router';
+import { RouterProvider } from 'react-router/dom';
 import { I18nWrapper } from 'tests/render-helpers';
 import { beforeEach, describe, expect, it } from 'vitest';
 

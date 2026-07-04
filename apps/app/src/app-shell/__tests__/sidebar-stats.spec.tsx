@@ -1,7 +1,8 @@
 import { Toast } from '@heroui/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, within } from '@testing-library/react';
-import { createMemoryRouter, RouterProvider } from 'react-router';
+import { createMemoryRouter } from 'react-router';
+import { RouterProvider } from 'react-router/dom';
 import { SESSION_QUERY_KEY } from 'src/auth/use-session-query';
 import {
   getTestDoc,

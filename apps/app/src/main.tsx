@@ -5,7 +5,7 @@ import { I18nProvider } from '@lingui/react';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { RouterProvider } from 'react-router';
+import { RouterProvider } from 'react-router/dom';
 
 import { initAnalytics } from './analytics/posthog';
 import { SessionSync } from './auth/session-sync';

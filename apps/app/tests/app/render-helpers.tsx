@@ -5,10 +5,10 @@ import { render, act } from '@testing-library/react';
 import { type ReactNode } from 'react';
 import {
   createMemoryRouter,
-  RouterProvider,
   useLocation,
   type RouteObject,
 } from 'react-router';
+import { RouterProvider } from 'react-router/dom';
 import { TopBarActionsProvider } from 'src/app-shell/top-bar-actions';
 import { SESSION_QUERY_KEY } from 'src/auth/use-session-query';
 import type { Book } from 'src/books/book-schema';

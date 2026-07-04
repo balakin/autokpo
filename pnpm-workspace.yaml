@@ -27,7 +27,7 @@ catalogs:
     eslint-plugin-lingui: '^0.14.0'
     eslint-plugin-react-refresh: '^0.5.3'
     eslint-plugin-testing-library: '^7.16.2'
-    eslint-plugin-astro: '^1.7.0'
+    eslint-plugin-astro: '^2.1.1'
 
   react:
     react: '^19.2.7'
@@ -122,7 +122,7 @@ catalogs:
     '@commitlint/types': '^21.2.0'
 
   astro:
-    astro: '^6.4.8'
+    astro: '^7.0.5'
     '@lucide/astro': '^1.23.0'
     '@astrojs/check': '^0.9.9'
     '@astrojs/sitemap': '^3.4.1'

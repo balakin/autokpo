@@ -1,5 +1,11 @@
 # @autokpo/app
 
+## 0.5.6
+
+### Patch Changes
+
+- [#114](https://github.com/balakin/autokpo/pull/114) [`9b8f2fe`](https://github.com/balakin/autokpo/commit/9b8f2fe1d5f1450efa6612ad7361f5d40c3a7434) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Updated react-router to v8
+
 ## 0.5.5
 
 ### Patch Changes

@@ -66,9 +66,9 @@ catalogs:
     '@lingui/vite-plugin': '^6.4.0'
 
   cloudflare:
-    '@cloudflare/vite-plugin': '^1.42.4'
-    '@cloudflare/vitest-pool-workers': '^0.17.0'
-    wrangler: '^4.106.0'
+    '@cloudflare/vite-plugin': '^1.43.0'
+    '@cloudflare/vitest-pool-workers': '^0.18.0'
+    wrangler: '^4.107.0'
 
   vite:
     vite: '^8.1.3'

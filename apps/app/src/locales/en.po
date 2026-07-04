@@ -295,7 +295,7 @@ msgstr "How to report an issue"
 
 #: src/app-shell/sidebar.tsx:39
 #: src/app-shell/top-bar.tsx:31
-#: src/app-shell/top-bar.tsx:35
+#: src/app-shell/top-bar.tsx:38
 #: src/books/book-library.tsx:39
 msgid "Knjige"
 msgstr "Books"
@@ -673,7 +673,7 @@ msgstr "Duplicate books detected"
 msgid "Otvori"
 msgstr "Open"
 
-#: src/app-shell/top-bar.tsx:53
+#: src/app-shell/top-bar.tsx:56
 msgid "Otvori meni"
 msgstr "Open menu"
 
@@ -703,7 +703,7 @@ msgid "Označite knjigu zvezdicom u <0>Knjigama</0> da biste je dodali ovde."
 msgstr "Star a book in <0>Books</0> to add it here."
 
 #: src/app-shell/sidebar.tsx:38
-#: src/app-shell/top-bar.tsx:40
+#: src/app-shell/top-bar.tsx:43
 #: src/dashboard/dashboard-page.tsx:49
 msgid "Panel"
 msgstr "Dashboard"
@@ -767,7 +767,7 @@ msgid "Podaci o obvezniku"
 msgstr "Taxpayer data"
 
 #: src/app-shell/sidebar.tsx:40
-#: src/app-shell/top-bar.tsx:37
+#: src/app-shell/top-bar.tsx:40
 #: src/auth/auth-preferences-popover.tsx:21
 #: src/auth/auth-preferences-popover.tsx:98
 #: src/auth/auth-preferences-popover.tsx:103
@@ -841,7 +841,7 @@ msgid "Polje je obavezno"
 msgstr "This field is required"
 
 #: src/app-shell/sidebar.tsx:129
-#: src/app-shell/top-bar.tsx:39
+#: src/app-shell/top-bar.tsx:42
 msgid "Pomoć"
 msgstr "Help"
 

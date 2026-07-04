@@ -295,7 +295,7 @@ msgstr "Как сообщить о проблеме"
 
 #: src/app-shell/sidebar.tsx:39
 #: src/app-shell/top-bar.tsx:31
-#: src/app-shell/top-bar.tsx:35
+#: src/app-shell/top-bar.tsx:38
 #: src/books/book-library.tsx:39
 msgid "Knjige"
 msgstr "Книги"
@@ -673,7 +673,7 @@ msgstr "Обнаружены дубликаты книг"
 msgid "Otvori"
 msgstr "Открыть"
 
-#: src/app-shell/top-bar.tsx:53
+#: src/app-shell/top-bar.tsx:56
 msgid "Otvori meni"
 msgstr "Открыть меню"
 
@@ -703,7 +703,7 @@ msgid "Označite knjigu zvezdicom u <0>Knjigama</0> da biste je dodali ovde."
 msgstr "Отметьте книгу звёздочкой в <0>Книгах</0>, чтобы добавить её сюда."
 
 #: src/app-shell/sidebar.tsx:38
-#: src/app-shell/top-bar.tsx:40
+#: src/app-shell/top-bar.tsx:43
 #: src/dashboard/dashboard-page.tsx:49
 msgid "Panel"
 msgstr "Панель"
@@ -767,7 +767,7 @@ msgid "Podaci o obvezniku"
 msgstr "Данные налогоплательщика"
 
 #: src/app-shell/sidebar.tsx:40
-#: src/app-shell/top-bar.tsx:37
+#: src/app-shell/top-bar.tsx:40
 #: src/auth/auth-preferences-popover.tsx:21
 #: src/auth/auth-preferences-popover.tsx:98
 #: src/auth/auth-preferences-popover.tsx:103
@@ -841,7 +841,7 @@ msgid "Polje je obavezno"
 msgstr "Поле обязательно для заполнения"
 
 #: src/app-shell/sidebar.tsx:129
-#: src/app-shell/top-bar.tsx:39
+#: src/app-shell/top-bar.tsx:42
 msgid "Pomoć"
 msgstr "Помощь"
 

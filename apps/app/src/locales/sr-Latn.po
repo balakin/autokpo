@@ -295,7 +295,7 @@ msgstr "Kako prijaviti problem"
 
 #: src/app-shell/sidebar.tsx:39
 #: src/app-shell/top-bar.tsx:31
-#: src/app-shell/top-bar.tsx:35
+#: src/app-shell/top-bar.tsx:38
 #: src/books/book-library.tsx:39
 msgid "Knjige"
 msgstr "Knjige"
@@ -673,7 +673,7 @@ msgstr "Otkriveni duplikati knjiga"
 msgid "Otvori"
 msgstr "Otvori"
 
-#: src/app-shell/top-bar.tsx:53
+#: src/app-shell/top-bar.tsx:56
 msgid "Otvori meni"
 msgstr "Otvori meni"
 
@@ -703,7 +703,7 @@ msgid "Označite knjigu zvezdicom u <0>Knjigama</0> da biste je dodali ovde."
 msgstr "Označite knjigu zvezdicom u <0>Knjigama</0> da biste je dodali ovde."
 
 #: src/app-shell/sidebar.tsx:38
-#: src/app-shell/top-bar.tsx:40
+#: src/app-shell/top-bar.tsx:43
 #: src/dashboard/dashboard-page.tsx:49
 msgid "Panel"
 msgstr "Panel"
@@ -767,7 +767,7 @@ msgid "Podaci o obvezniku"
 msgstr "Podaci o obvezniku"
 
 #: src/app-shell/sidebar.tsx:40
-#: src/app-shell/top-bar.tsx:37
+#: src/app-shell/top-bar.tsx:40
 #: src/auth/auth-preferences-popover.tsx:21
 #: src/auth/auth-preferences-popover.tsx:98
 #: src/auth/auth-preferences-popover.tsx:103
@@ -841,7 +841,7 @@ msgid "Polje je obavezno"
 msgstr "Polje je obavezno"
 
 #: src/app-shell/sidebar.tsx:129
-#: src/app-shell/top-bar.tsx:39
+#: src/app-shell/top-bar.tsx:42
 msgid "Pomoć"
 msgstr "Pomoć"
 

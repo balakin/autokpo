@@ -15,7 +15,7 @@ interface TopBarProps {
 
 interface BreadcrumbItem {
   label: string;
-  href?: string;
+  href: string;
 }
 
 function useBreadcrumbs(): BreadcrumbItem[] {
@@ -29,15 +29,18 @@ function useBreadcrumbs(): BreadcrumbItem[] {
   if (pathname.startsWith('/books/') && bookId) {
     return [
       { label: t`Knjige`, href: '/books' },
-      { label: breadcrumbYear !== null ? String(breadcrumbYear) : '…' },
+      {
+        label: breadcrumbYear !== null ? String(breadcrumbYear) : '…',
+        href: pathname,
+      },
     ];
   }
-  if (pathname === '/books') return [{ label: t`Knjige` }];
+  if (pathname === '/books') return [{ label: t`Knjige`, href: pathname }];
   if (pathname === '/settings' || pathname.startsWith('/settings/')) {
-    return [{ label: t`Podešavanja` }];
+    return [{ label: t`Podešavanja`, href: pathname }];
   }
-  if (pathname === '/help') return [{ label: t`Pomoć` }];
-  return [{ label: t`Panel` }];
+  if (pathname === '/help') return [{ label: t`Pomoć`, href: pathname }];
+  return [{ label: t`Panel`, href: pathname }];
 }
 
 export function TopBar({ onMenuPress }: TopBarProps) {

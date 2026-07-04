@@ -346,6 +346,16 @@ body,
       animation: none !important;
     }
   }
+
+  /* Radio: the RadioField wrapper is full-width, but only its content
+     (control + label) is the actual click target. Show the interactive
+     cursor there rather than across the wrapper's empty space. */
+  .radio {
+    cursor: default;
+  }
+  .radio__content {
+    cursor: var(--cursor-interactive);
+  }
 }
 
 @theme inline {

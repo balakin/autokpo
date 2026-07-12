@@ -1,5 +1,11 @@
 # @autokpo/app
 
+## 0.6.0
+
+### Minor Changes
+
+- [#118](https://github.com/balakin/autokpo/pull/118) [`5a97250`](https://github.com/balakin/autokpo/commit/5a97250f3828b31f2f357c80d749f1661db03945) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Added autocomplete suggestions for entry descriptions (Opis prometa) sourced from prior entries across all books
+
 ## 0.5.6
 
 ### Patch Changes

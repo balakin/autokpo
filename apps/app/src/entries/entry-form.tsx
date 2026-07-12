@@ -14,11 +14,12 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CalendarDate, parseDate } from '@internationalized/date';
 import { useLingui } from '@lingui/react/macro';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import CurrencyInput from 'react-currency-input-field';
 import { useForm, useWatch, Controller } from 'react-hook-form';
 import { LuArrowLeftRight } from 'react-icons/lu';
 
+import { useYDoc } from '../crdt';
 import { CurrencyConvertModal } from '../currency/currency-convert-modal';
 import { belgradeToday } from '../utils/belgrade-date';
 
@@ -28,6 +29,8 @@ import {
   type EntryModelData,
   createEntryFormSchema,
 } from './entries-schema';
+import { entrySelectors } from './entry-selectors';
+import { filterSuggestions } from './entry-suggestions';
 
 const DEFAULT_VALUES: EntryFormData = {
   datumPrometa: '',
@@ -66,6 +69,14 @@ export function EntryForm({ formId, entry, year, onSuccess }: EntryFormProps) {
   const [activeConverterField, setActiveConverterField] =
     useState<AmountField | null>(null);
   const datumPrometa = useWatch({ control, name: 'datumPrometa' });
+
+  const descriptionListId = useId();
+  const descriptionCorpus = useYDoc(entrySelectors.descriptionSuggestions());
+  const opisPrometa = useWatch({ control, name: 'opisPrometa' });
+  const descriptionSuggestions = filterSuggestions(
+    descriptionCorpus,
+    opisPrometa,
+  );
 
   function onSubmit(data: EntryFormData) {
     onSuccess({
@@ -162,7 +173,16 @@ export function EntryForm({ formId, entry, year, onSuccess }: EntryFormProps) {
               onChange={field.onChange}
             >
               <Label>{t`Opis prometa`}</Label>
-              <Input ref={field.ref} onBlur={field.onBlur} />
+              <Input
+                ref={field.ref}
+                onBlur={field.onBlur}
+                list={descriptionListId}
+              />
+              <datalist id={descriptionListId}>
+                {descriptionSuggestions.map((suggestion) => (
+                  <option key={suggestion} value={suggestion} />
+                ))}
+              </datalist>
               {fieldState.error && (
                 <FieldError>{fieldState.error.message}</FieldError>
               )}

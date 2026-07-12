@@ -1,8 +1,12 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { VALID_ENTRY } from 'tests/fixtures/entry';
-import { renderWithProviders } from 'tests/render-helpers';
-import { describe, expect, it, vi } from 'vitest';
+import {
+  renderWithProviders,
+  resetTestDoc,
+  seedEntries,
+} from 'tests/render-helpers';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   useCurrencies,
@@ -81,7 +85,35 @@ async function fillDate(
   }
 }
 
+/** The datalist is exposed to the a11y tree as a hidden listbox. */
+function getDescriptionDatalist(): HTMLDataListElement {
+  const datalist = screen.getByRole('listbox', { hidden: true });
+  const listId = screen.getByLabelText('Opis prometa').getAttribute('list');
+  expect(listId).toBeTruthy();
+  expect(datalist.id).toBe(listId);
+  return datalist as HTMLDataListElement;
+}
+
+function datalistValues(): string[] {
+  return within(getDescriptionDatalist())
+    .queryAllByRole('option', { hidden: true })
+    .map((option) => (option as HTMLOptionElement).value);
+}
+
+function suggestionEntry(index: number, opisPrometa: string): KpoEntry {
+  return {
+    ...VALID_ENTRY,
+    id: `00000000-0000-4000-8000-0000000001${index.toString().padStart(2, '0')}`,
+    datumPrometa: `2025-03-${(index + 1).toString().padStart(2, '0')}`,
+    opisPrometa,
+  };
+}
+
 describe('EntryForm', () => {
+  beforeEach(() => {
+    resetTestDoc();
+  });
+
   it('renders all fields with correct Serbian labels', async () => {
     await renderForm();
     expect(screen.getByText('Datum prometa')).toBeInTheDocument();
@@ -189,6 +221,50 @@ describe('EntryForm', () => {
     await user.click(convertBtn);
 
     await screen.findByText('Konverzija valute');
+  });
+
+  describe('description suggestions', () => {
+    it('wires the description input to a rendered datalist', async () => {
+      await renderForm();
+      expect(getDescriptionDatalist()).toBeInTheDocument();
+    });
+
+    it('renders no options while the field is empty', async () => {
+      seedEntries([VALID_ENTRY]);
+      await renderForm();
+
+      expect(datalistValues()).toEqual([]);
+    });
+
+    it('offers matching prior descriptions once the user types', async () => {
+      const user = userEvent.setup();
+      seedEntries([
+        suggestionEntry(1, 'Konsultacije'),
+        suggestionEntry(2, 'Izrada sajta'),
+      ]);
+      await renderForm();
+
+      await user.type(screen.getByLabelText('Opis prometa'), 'kons');
+
+      await waitFor(() => expect(datalistValues()).toEqual(['Konsultacije']));
+    });
+
+    it('matches mid-string and caps the options at five', async () => {
+      const user = userEvent.setup();
+      seedEntries(
+        Array.from({ length: 7 }, (_, i) =>
+          suggestionEntry(i, `Usluga ${i + 1} mesecno`),
+        ),
+      );
+      await renderForm();
+
+      await user.type(screen.getByLabelText('Opis prometa'), 'mesecno');
+
+      await waitFor(() => expect(datalistValues()).toHaveLength(5));
+      for (const value of datalistValues()) {
+        expect(value).toContain('mesecno');
+      }
+    });
   });
 
   it('applying converter fills the target field and closes the modal', async () => {

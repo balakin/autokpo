@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Outlet, RouterProvider, createMemoryRouter } from 'react-router';
+import { Outlet, createMemoryRouter } from 'react-router';
+import { RouterProvider } from 'react-router/dom';
 import { I18nWrapper } from 'tests/render-helpers';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

@@ -46,12 +46,10 @@ type LocalMethod = 'ldk' | 'pin' | null;
 type PinSubmitResult = { ok: true } | { ok: false; message: string };
 
 type VerificationPayload =
-  | { method: 'pin'; pin: string }
-  | { method: 'password'; password: string };
+  { method: 'pin'; pin: string } | { method: 'password'; password: string };
 
 type VerificationResult =
-  | { ok: true }
-  | { ok: false; message: string; lockout?: boolean };
+  { ok: true } | { ok: false; message: string; lockout?: boolean };
 
 function createChangePasswordSchema() {
   return z
@@ -346,32 +344,33 @@ export function SecuritySettingsPage() {
               </div>
             ) : (
               <RadioGroup
+                aria-label={t`Lokalno otključavanje`}
                 isDisabled={switchingToLdk || pinModalSubmitting}
                 name="local-unlock"
                 value={radioValue}
                 onChange={handleRadioChange}
               >
                 <Radio value="none">
-                  <Radio.Control>
-                    <Radio.Indicator />
-                  </Radio.Control>
                   <Radio.Content>
-                    <Label>{t`Ništa`}</Label>
-                    <Description>
-                      {t`Aplikacija se otključava bez interakcije pri svakom pokretanju.`}
-                    </Description>
+                    <Radio.Control>
+                      <Radio.Indicator />
+                    </Radio.Control>
+                    {t`Ništa`}
                   </Radio.Content>
+                  <Description>
+                    {t`Aplikacija se otključava bez interakcije pri svakom pokretanju.`}
+                  </Description>
                 </Radio>
                 <Radio value="pin">
-                  <Radio.Control>
-                    <Radio.Indicator />
-                  </Radio.Control>
                   <Radio.Content>
-                    <Label>{t`PIN kod`}</Label>
-                    <Description>
-                      {t`Pri svakom pokretanju unosite 6-cifreni PIN kod.`}
-                    </Description>
+                    <Radio.Control>
+                      <Radio.Indicator />
+                    </Radio.Control>
+                    {t`PIN kod`}
                   </Radio.Content>
+                  <Description>
+                    {t`Pri svakom pokretanju unosite 6-cifreni PIN kod.`}
+                  </Description>
                 </Radio>
               </RadioGroup>
             )}

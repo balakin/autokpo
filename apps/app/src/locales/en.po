@@ -112,8 +112,8 @@ msgstr "Date must be within the book's year"
 msgid "Datum ne može biti u budućnosti"
 msgstr "Date cannot be in the future"
 
-#: src/entries/entry-form.tsx:113
-#: src/entries/entry-form.tsx:129
+#: src/entries/entry-form.tsx:124
+#: src/entries/entry-form.tsx:140
 msgid "Datum prometa"
 msgstr "Transaction date"
 
@@ -218,7 +218,7 @@ msgstr "Select year"
 msgid "Izaberite godinu za novu knjigu."
 msgstr "Select a year for the new book."
 
-#: src/settings/security-settings-page.tsx:336
+#: src/settings/security-settings-page.tsx:334
 msgid "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju aplikacije."
 msgstr "Choose how you unlock encrypted data on every app launch."
 
@@ -295,7 +295,7 @@ msgstr "How to report an issue"
 
 #: src/app-shell/sidebar.tsx:39
 #: src/app-shell/top-bar.tsx:31
-#: src/app-shell/top-bar.tsx:35
+#: src/app-shell/top-bar.tsx:38
 #: src/books/book-library.tsx:39
 msgid "Knjige"
 msgstr "Books"
@@ -304,8 +304,8 @@ msgstr "Books"
 msgid "Kod nije važeći ili je istekao."
 msgstr "The code is invalid or has expired."
 
-#: src/entries/entry-form.tsx:202
-#: src/entries/entry-form.tsx:247
+#: src/entries/entry-form.tsx:222
+#: src/entries/entry-form.tsx:267
 msgid "Konvertuj valutu"
 msgstr "Convert currency"
 
@@ -317,7 +317,7 @@ msgstr "Currency conversion"
 msgid "Korisnički avatar"
 msgstr "User avatar"
 
-#: src/settings/security-settings-page.tsx:245
+#: src/settings/security-settings-page.tsx:243
 msgid "Korisnik nije prijavljen."
 msgstr "User is not signed in."
 
@@ -350,7 +350,8 @@ msgstr "Limit: {limitFormatted} (<0>Art. 42 ZPDGa</0>)"
 msgid "Limit: {rollingLimitFormatted} (<0>čl. 33 ZPDV</0>)"
 msgstr "Limit: {rollingLimitFormatted} (<0>Art. 33 ZPDV</0>)"
 
-#: src/settings/security-settings-page.tsx:333
+#: src/settings/security-settings-page.tsx:331
+#: src/settings/security-settings-page.tsx:347
 msgid "Lokalno otključavanje"
 msgstr "Local unlock"
 
@@ -465,7 +466,7 @@ msgstr "Unable to sign out the session. Please try again."
 msgid "Nije moguće preuzeti podatke naloga. Proverite internet vezu i pokušajte ponovo."
 msgstr "Could not download account data. Check your internet connection and try again."
 
-#: src/settings/security-settings-page.tsx:302
+#: src/settings/security-settings-page.tsx:300
 msgid "Nije moguće promeniti šifru. Pokušajte ponovo."
 msgstr "Unable to change the password. Please try again."
 
@@ -478,7 +479,7 @@ msgstr "Unable to load sessions"
 msgid "Nismo uspeli da pošaljemo kod. Pokušajte ponovo."
 msgstr "We couldn't send the code. Please try again."
 
-#: src/settings/security-settings-page.tsx:359
+#: src/settings/security-settings-page.tsx:358
 msgid "Ništa"
 msgstr "None"
 
@@ -491,7 +492,7 @@ msgstr "Didn't receive a code?"
 msgid "Nova knjiga"
 msgstr "New book"
 
-#: src/settings/security-settings-page.tsx:578
+#: src/settings/security-settings-page.tsx:577
 msgid "Nova šifra"
 msgstr "New password"
 
@@ -536,8 +537,8 @@ msgstr "Delete account?"
 msgid "Obveznik"
 msgstr "Taxpayer"
 
-#: src/entries/entry-form.tsx:223
-#: src/entries/entry-form.tsx:277
+#: src/entries/entry-form.tsx:243
+#: src/entries/entry-form.tsx:297
 msgid "Od izvršenih usluga"
 msgstr "From services rendered"
 
@@ -545,8 +546,8 @@ msgstr "From services rendered"
 msgid "Od izvršenih usluga (RSD)"
 msgstr "From services rendered (RSD)"
 
-#: src/entries/entry-form.tsx:178
-#: src/entries/entry-form.tsx:276
+#: src/entries/entry-form.tsx:198
+#: src/entries/entry-form.tsx:296
 msgid "Od prodaje proizvoda"
 msgstr "From product sales"
 
@@ -603,7 +604,7 @@ msgstr "Favorite books"
 msgid "Online"
 msgstr "Online"
 
-#: src/entries/entry-form.tsx:164
+#: src/entries/entry-form.tsx:175
 msgid "Opis prometa"
 msgstr "Transaction description"
 
@@ -645,9 +646,9 @@ msgstr "You cancelled the sign-in. Please try again."
 #: src/entries/entries-table.tsx:145
 #: src/entries/entry-modal.tsx:70
 #: src/settings/account-settings-page.tsx:612
-#: src/settings/security-settings-page.tsx:514
-#: src/settings/security-settings-page.tsx:622
-#: src/settings/security-settings-page.tsx:830
+#: src/settings/security-settings-page.tsx:513
+#: src/settings/security-settings-page.tsx:621
+#: src/settings/security-settings-page.tsx:829
 #: src/signatures/signature-preview.tsx:61
 msgid "Otkaži"
 msgstr "Cancel"
@@ -673,7 +674,7 @@ msgstr "Duplicate books detected"
 msgid "Otvori"
 msgstr "Open"
 
-#: src/app-shell/top-bar.tsx:53
+#: src/app-shell/top-bar.tsx:56
 msgid "Otvori meni"
 msgstr "Open menu"
 
@@ -703,7 +704,7 @@ msgid "Označite knjigu zvezdicom u <0>Knjigama</0> da biste je dodali ovde."
 msgstr "Star a book in <0>Books</0> to add it here."
 
 #: src/app-shell/sidebar.tsx:38
-#: src/app-shell/top-bar.tsx:40
+#: src/app-shell/top-bar.tsx:43
 #: src/dashboard/dashboard-page.tsx:49
 msgid "Panel"
 msgstr "Dashboard"
@@ -727,9 +728,9 @@ msgstr "TIN must contain digits only"
 
 #: src/e2ee/pin-unlock-screen.tsx:63
 #: src/e2ee/set-pin-modal.tsx:82
-#: src/settings/security-settings-page.tsx:370
-#: src/settings/security-settings-page.tsx:479
-#: src/settings/security-settings-page.tsx:755
+#: src/settings/security-settings-page.tsx:369
+#: src/settings/security-settings-page.tsx:478
+#: src/settings/security-settings-page.tsx:754
 msgid "PIN kod"
 msgstr "PIN code"
 
@@ -767,7 +768,7 @@ msgid "Podaci o obvezniku"
 msgstr "Taxpayer data"
 
 #: src/app-shell/sidebar.tsx:40
-#: src/app-shell/top-bar.tsx:37
+#: src/app-shell/top-bar.tsx:40
 #: src/auth/auth-preferences-popover.tsx:21
 #: src/auth/auth-preferences-popover.tsx:98
 #: src/auth/auth-preferences-popover.tsx:103
@@ -799,8 +800,8 @@ msgid "Podesite šifru za šifrovanje"
 msgstr "Set up an encryption password"
 
 #: src/e2ee/pin-unlock-screen.tsx:80
-#: src/settings/security-settings-page.tsx:202
-#: src/settings/security-settings-page.tsx:270
+#: src/settings/security-settings-page.tsx:200
+#: src/settings/security-settings-page.tsx:268
 msgid "Pogrešan PIN. Pokušajte ponovo."
 msgstr "Wrong PIN. Try again."
 
@@ -808,7 +809,7 @@ msgstr "Wrong PIN. Try again."
 msgid "Pogrešan PIN. Preostalo pokušaja: {remaining}."
 msgstr "Wrong PIN. Attempts remaining: {remaining}."
 
-#: src/settings/security-settings-page.tsx:271
+#: src/settings/security-settings-page.tsx:269
 msgid "Pogrešna šifra. Pokušajte ponovo."
 msgstr "Wrong password. Try again."
 
@@ -841,7 +842,7 @@ msgid "Polje je obavezno"
 msgstr "This field is required"
 
 #: src/app-shell/sidebar.tsx:129
-#: src/app-shell/top-bar.tsx:39
+#: src/app-shell/top-bar.tsx:42
 msgid "Pomoć"
 msgstr "Help"
 
@@ -886,7 +887,7 @@ msgstr "Signature"
 msgid "Potpis je sačuvan"
 msgstr "Signature saved"
 
-#: src/settings/security-settings-page.tsx:838
+#: src/settings/security-settings-page.tsx:837
 msgid "Potvrdi"
 msgstr "Confirm"
 
@@ -894,7 +895,7 @@ msgstr "Confirm"
 msgid "Potvrdite da razumete da šifra ne može biti vraćena."
 msgstr "Confirm that you understand the password cannot be recovered."
 
-#: src/settings/security-settings-page.tsx:599
+#: src/settings/security-settings-page.tsx:598
 msgid "Potvrdite novu šifru"
 msgstr "Confirm new password"
 
@@ -907,7 +908,7 @@ msgstr "Confirm PIN code"
 msgid "Potvrdite prijavu"
 msgstr "Confirm sign-in"
 
-#: src/settings/security-settings-page.tsx:726
+#: src/settings/security-settings-page.tsx:725
 msgid "Potvrdite promenu šifre"
 msgstr "Confirm password change"
 
@@ -1002,20 +1003,20 @@ msgstr "Profile saved"
 msgid "Promena avatara trenutno nije dostupna"
 msgstr "Changing avatar is not available right now"
 
-#: src/settings/security-settings-page.tsx:558
+#: src/settings/security-settings-page.tsx:557
 msgid "Promena utiče samo na šifru kojom se otključavaju podaci sa servera. Lokalni PIN ili automatsko otključavanje ostaju isti."
 msgstr "The change affects only the password used to unlock data from the server. Your local PIN or automatic unlock stays the same."
 
-#: src/settings/security-settings-page.tsx:401
-#: src/settings/security-settings-page.tsx:629
+#: src/settings/security-settings-page.tsx:400
+#: src/settings/security-settings-page.tsx:628
 msgid "Promeni šifru"
 msgstr "Change password"
 
-#: src/settings/security-settings-page.tsx:389
+#: src/settings/security-settings-page.tsx:388
 msgid "Promenite glavnu šifru. Podaci neće biti ponovo šifrovani."
 msgstr "Change your master password. Data will not be re-encrypted."
 
-#: src/settings/security-settings-page.tsx:555
+#: src/settings/security-settings-page.tsx:554
 msgid "Promenite šifru za šifrovanje"
 msgstr "Change encryption password"
 
@@ -1090,12 +1091,12 @@ msgid "Šifra delatnosti mora imati tačno 4 cifre"
 msgstr "Activity code must have exactly 4 digits"
 
 #: src/e2ee/encryption-setup-screen.tsx:42
-#: src/settings/security-settings-page.tsx:71
+#: src/settings/security-settings-page.tsx:69
 msgid "Šifra i potvrda se ne poklapaju."
 msgstr "The password and confirmation do not match."
 
 #: src/e2ee/encryption-setup-screen.tsx:34
-#: src/settings/security-settings-page.tsx:65
+#: src/settings/security-settings-page.tsx:63
 msgid "Šifra mora imati najmanje 8 znakova."
 msgstr "The password must be at least 8 characters."
 
@@ -1116,11 +1117,11 @@ msgstr "Taxpayer code must have exactly 8 digits"
 #: src/e2ee/encryption-setup-screen.tsx:97
 #: src/e2ee/encryption-unlock-screen.tsx:71
 #: src/e2ee/encryption-unlock-screen.tsx:75
-#: src/settings/security-settings-page.tsx:386
+#: src/settings/security-settings-page.tsx:385
 msgid "Šifra za šifrovanje"
 msgstr "Encryption password"
 
-#: src/settings/security-settings-page.tsx:294
+#: src/settings/security-settings-page.tsx:292
 msgid "Šifra za šifrovanje je promenjena."
 msgstr "Encryption password changed."
 
@@ -1194,7 +1195,7 @@ msgstr "Theme"
 msgid "Trenutna sesija"
 msgstr "Current session"
 
-#: src/settings/security-settings-page.tsx:797
+#: src/settings/security-settings-page.tsx:796
 msgid "Trenutna šifra"
 msgstr "Current password"
 
@@ -1210,7 +1211,7 @@ msgstr "Loading sessions…"
 msgid "Ukloni iz omiljenih za {year}"
 msgstr "Remove {year} from favorites"
 
-#: src/settings/security-settings-page.tsx:456
+#: src/settings/security-settings-page.tsx:455
 msgid "Ukloni PIN kod"
 msgstr "Remove PIN code"
 
@@ -1222,7 +1223,7 @@ msgstr "Total"
 msgid "Unesite 6-cifreni PIN kod."
 msgstr "Enter a 6-digit PIN code."
 
-#: src/entries/entry-form.tsx:88
+#: src/entries/entry-form.tsx:99
 msgid "Unesite ispravan datum pre konverzije"
 msgstr "Enter a valid date before converting"
 
@@ -1235,11 +1236,11 @@ msgid "Unesite jednokratni kod koji smo poslali na:"
 msgstr "Enter the one-time code we sent to:"
 
 #: src/e2ee/pin-unlock-screen.tsx:52
-#: src/settings/security-settings-page.tsx:749
+#: src/settings/security-settings-page.tsx:748
 msgid "Unesite PIN kod"
 msgstr "Enter PIN code"
 
-#: src/settings/security-settings-page.tsx:730
+#: src/settings/security-settings-page.tsx:729
 msgid "Unesite PIN kod da biste nastavili."
 msgstr "Enter your PIN code to continue."
 
@@ -1248,15 +1249,15 @@ msgid "Unesite podatke novog unosa."
 msgstr "Enter new entry details."
 
 #: src/e2ee/encryption-setup-screen.tsx:33
-#: src/settings/security-settings-page.tsx:62
+#: src/settings/security-settings-page.tsx:60
 msgid "Unesite šifru za šifrovanje."
 msgstr "Enter the encryption password."
 
-#: src/settings/security-settings-page.tsx:459
+#: src/settings/security-settings-page.tsx:458
 msgid "Unesite trenutni PIN kod da biste potvrdili."
 msgstr "Enter your current PIN code to confirm."
 
-#: src/settings/security-settings-page.tsx:732
+#: src/settings/security-settings-page.tsx:731
 msgid "Unesite trenutnu šifru da biste nastavili."
 msgstr "Enter your current password to continue."
 

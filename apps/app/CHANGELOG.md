@@ -1,5 +1,23 @@
 # @autokpo/app
 
+## 0.6.0
+
+### Minor Changes
+
+- [#118](https://github.com/balakin/autokpo/pull/118) [`5a97250`](https://github.com/balakin/autokpo/commit/5a97250f3828b31f2f357c80d749f1661db03945) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Added autocomplete suggestions for entry descriptions (Opis prometa) sourced from prior entries across all books
+
+## 0.5.6
+
+### Patch Changes
+
+- [#114](https://github.com/balakin/autokpo/pull/114) [`9b8f2fe`](https://github.com/balakin/autokpo/commit/9b8f2fe1d5f1450efa6612ad7361f5d40c3a7434) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Updated react-router to v8
+
+## 0.5.5
+
+### Patch Changes
+
+- [#112](https://github.com/balakin/autokpo/pull/112) [`786114c`](https://github.com/balakin/autokpo/commit/786114cb33e973242301a2dbba88fecb9b8c4c1d) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Updated dependencies
+
 ## 0.5.4
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # @autokpo/website
 
+## 0.5.6
+
+### Patch Changes
+
+- [#114](https://github.com/balakin/autokpo/pull/114) [`9b8f2fe`](https://github.com/balakin/autokpo/commit/9b8f2fe1d5f1450efa6612ad7361f5d40c3a7434) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Updated astro to v7
+
+## 0.5.5
+
+### Patch Changes
+
+- [#112](https://github.com/balakin/autokpo/pull/112) [`786114c`](https://github.com/balakin/autokpo/commit/786114cb33e973242301a2dbba88fecb9b8c4c1d) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Updated dependencies
+
 ## 0.5.4
 
 ### Patch Changes

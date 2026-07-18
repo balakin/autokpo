@@ -23,15 +23,10 @@ updates:
           - '*'
 
   - package-ecosystem: github-actions
-    directory: /
+    directories:
+      - /
+      - /.github/actions/**
     schedule:
       interval: weekly
     cooldown:
       default-days: 2
-    groups:
-      all-actions:
-        update-types:
-          - minor
-          - patch
-        patterns:
-          - '*'

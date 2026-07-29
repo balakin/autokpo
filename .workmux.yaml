@@ -1,0 +1,25 @@
+# Project workmux config.
+# Sandbox, Lima, and agent definitions are inherited from the global config.
+
+# New worktrees are clean checkouts, so gitignored local state has to be copied
+# in. The worktree is bind-mounted into the VM, so these land in the VM too.
+files:
+  copy:
+    - apps/app/.env
+    - apps/app/.dev.vars
+    - apps/website/.env
+    # Local D1 SQLite state — copied so a fresh worktree does not need
+    # `pnpm db:migrate:local` before `pnpm dev` works.
+    - apps/app/.wrangler
+    # MCP server definitions (gitignored, hold API keys) — without these the
+    # agent in the worktree starts with no MCP servers.
+    - .mcp.json # claude-code
+    - opencode.jsonc # opencode
+
+panes:
+  # Coding agent inside Lima.
+  - command: <agent>
+    focus: true
+
+  - command: workmux sandbox shell
+    split: horizontal

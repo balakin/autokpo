@@ -19,8 +19,8 @@ jobs:
       github.event.pull_request.user.login == 'dm-balakin' &&
       github.event.pull_request.head.repo.full_name == github.repository
     permissions:
-      contents: read # checkout
-      id-token: write # exchange OIDC for an OpenCode GitHub App token
+      contents: read # inspect the PR diff
+      pull-requests: write # replace the PR description
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -31,10 +31,12 @@ jobs:
       - name: ✨ Generate PR description
         uses: ./.github/actions/opencode
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         with:
           model: ${{ vars.OPENCODE_PR_MODEL || 'opencode-go/kimi-k2.7-code' }}
           share: false
+          use_github_token: true
           prompt: |
             Update only this pull request's description. Do not post a comment,
             submit a review, change the title or labels, modify files, create

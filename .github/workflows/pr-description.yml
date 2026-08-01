@@ -59,15 +59,21 @@ jobs:
             The managed block must have exactly this structure:
 
             <!-- opencode:pr-description:start -->
-            ## What changed
+            ## 🤖 OpenCode-generated summary
+
+            > [!NOTE]
+            > This section was generated automatically by OpenCode. Content
+            > outside this section is human-written.
+
+            ### What changed
 
             <!-- Replace with 2-4 concise bullets focused on what, not how. -->
 
-            ## Why
+            ### Why
 
             <!-- Replace with 1-3 concise sentences explaining the motivation. -->
 
-            ## Breaking changes
+            ### Breaking changes
 
             <!-- Replace with a bullet list, or "None." when there are none. -->
             <!-- opencode:pr-description:end -->

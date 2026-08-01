@@ -59,6 +59,8 @@ jobs:
             The managed block must have exactly this structure:
 
             <!-- opencode:pr-description:start -->
+            ---
+
             ## 🤖 OpenCode-generated summary
 
             > [!NOTE]
@@ -76,6 +78,8 @@ jobs:
             ### Breaking changes
 
             <!-- Replace with a bullet list, or "None." when there are none. -->
+
+            ---
             <!-- opencode:pr-description:end -->
 
             Replace the instructional comments inside the block with generated

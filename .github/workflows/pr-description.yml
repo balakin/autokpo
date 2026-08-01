@@ -9,82 +9,293 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
-permissions: {} # deny all by default; the job grants only what it needs
+permissions: {}
 
 jobs:
-  generate-description:
-    name: ✍️ Generate description
+  collect:
+    name: Collect bounded PR context
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     if: >-
-      github.event.pull_request.user.login == 'dm-balakin' &&
-      github.event.pull_request.head.repo.full_name == github.repository
+      github.event.pull_request.user.id == 68006090 &&
+      github.event.pull_request.head.repo.id == github.event.repository.id
     permissions:
-      contents: read # inspect the PR diff
-      pull-requests: write # replace the PR description
+      contents: read
+      pull-requests: read
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: ✨ Generate PR description
-        uses: ./.github/actions/opencode
+      - name: Collect PR data without checkout
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
-          GITHUB_TOKEN: ${{ github.token }}
-          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         with:
-          model: ${{ vars.OPENCODE_PR_MODEL || 'opencode-go/kimi-k2.7-code' }}
-          share: false
-          use_github_token: true
-          prompt: |
-            Update only this pull request's description. Do not post a comment,
-            submit a review, change the title or labels, modify files, create
-            commits, push branches, or update any other pull request.
+          github-token: ${{ github.token }}
+          script: |
+            const fs = require("node:fs");
+            const path = require("node:path");
 
-            Preserve human-written content using these rules:
+            const { owner, repo } = context.repo;
+            const repository = `${owner}/${repo}`;
+            const number = Number(process.env.PR_NUMBER);
 
-            1. Treat content outside the markers below as immutable. Preserve it
-               verbatim, including its whitespace and Markdown.
-            2. If both markers already exist in the correct order, replace only
-               the content between them and keep exactly one marker pair.
-            3. If neither marker exists, append the managed block after the
-               existing description. If the description is empty, use only the
-               managed block.
-            4. If only one marker exists or their order is malformed, make no
-               changes to the pull request.
-            5. Never move human-written content into the managed block and never
-               duplicate the managed block.
+            function bounded(value, limit) {
+              const raw = Buffer.from(String(value ?? ""), "utf8");
+              if (raw.length <= limit) return [raw.toString("utf8"), false];
+              let end = limit;
+              const decoder = new TextDecoder("utf-8", { fatal: true });
+              while (end > 0) {
+                try {
+                  return [decoder.decode(raw.subarray(0, end)), true];
+                } catch {
+                  end -= 1;
+                }
+              }
+              return ["", true];
+            }
 
-            The managed block must have exactly this structure:
+            function hasNextPage(response) {
+              return /(?:^|,)\s*<[^>]+>;\s*rel="next"(?:\s*(?:;|,|$))/u.test(response.headers.link ?? "");
+            }
 
-            <!-- opencode:pr-description:start -->
-            ---
+            const pull = (await github.rest.pulls.get({ owner, repo, pull_number: number })).data;
+            const filesResponse = await github.rest.pulls.listFiles({ owner, repo, pull_number: number, per_page: 100 });
+            const commitsResponse = await github.rest.pulls.listCommits({ owner, repo, pull_number: number, per_page: 50 });
 
-            ## 🤖 OpenCode-generated summary
+            let patchBudget = 200_000;
+            const files = [];
+            let patchTruncated = false;
+            for (const item of filesResponse.data.slice(0, 100)) {
+              const [patch, truncated] = bounded(item.patch, Math.min(40_000, patchBudget));
+              patchBudget -= Buffer.byteLength(patch);
+              patchTruncated ||= truncated || !item.patch;
+              files.push({
+                path: bounded(item.filename, 1_024)[0],
+                status: item.status,
+                additions: item.additions,
+                deletions: item.deletions,
+                patch,
+              });
+              if (patchBudget <= 0) {
+                patchTruncated = true;
+                break;
+              }
+            }
 
-            > [!NOTE]
-            > This section was generated automatically by OpenCode. Content
-            > outside this section is human-written.
+            const commits = commitsResponse.data.slice(0, 50).map((item) => ({
+              sha: String(item.sha ?? "").slice(0, 40),
+              message: bounded(item.commit?.message, 1_024)[0],
+            }));
 
-            ### What changed
+            const descriptionContext = {
+              schemaVersion: 1,
+              kind: "description",
+              repository,
+              number,
+              baseSha: pull.base.sha,
+              headSha: pull.head.sha,
+              title: bounded(pull.title, 512)[0],
+              body: bounded(pull.body, 12_000)[0],
+              branch: bounded(pull.head?.ref, 512)[0],
+              files,
+              commits,
+              truncated: {
+                files: hasNextPage(filesResponse) || filesResponse.data.length > files.length,
+                patches: patchTruncated,
+                commits: hasNextPage(commitsResponse),
+              },
+            };
+            const encoded = `${JSON.stringify(descriptionContext)}\n`;
+            if (Buffer.byteLength(encoded) > 512_000) {
+              throw new Error("Bounded description context unexpectedly exceeds 512 KiB.");
+            }
+            const outputDirectory = path.join(process.env.RUNNER_TEMP, "context");
+            fs.mkdirSync(outputDirectory, { recursive: true });
+            fs.writeFileSync(path.join(outputDirectory, "context.json"), encoded);
 
-            <!-- Replace with 2-4 concise bullets focused on what, not how. -->
+      - name: Upload bounded context
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: opencode-description-context
+          path: ${{ runner.temp }}/context/context.json
+          if-no-files-found: error
+          retention-days: 1
 
-            ### Why
+  model:
+    name: Generate isolated description
+    needs: collect
+    permissions: {}
+    uses: ./.github/workflows/opencode-model.yml
+    with:
+      context-artifact: opencode-description-context
+      mode: description
+      model: ${{ vars.OPENCODE_PR_MODEL || 'opencode-go/kimi-k2.7-code' }}
+      result-artifact: opencode-description-result
+    secrets:
+      OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
 
-            <!-- Replace with 1-3 concise sentences explaining the motivation. -->
+  publish:
+    name: Publish validated description
+    needs: [collect, model]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Download bounded context
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: opencode-description-context
+          path: ${{ runner.temp }}/context
 
-            ### Breaking changes
+      - name: Download validated result
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: opencode-description-result
+          path: ${{ runner.temp }}/result
 
-            <!-- Replace with a bullet list, or "None." when there are none. -->
+      - name: Revalidate and update managed section
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const fs = require("node:fs");
+            const path = require("node:path");
 
-            ---
-            <!-- opencode:pr-description:end -->
+            const { owner, repo } = context.repo;
+            const repository = `${owner}/${repo}`;
+            const number = Number(process.env.PR_NUMBER);
+            const temp = process.env.RUNNER_TEMP;
+            const descriptionContext = JSON.parse(fs.readFileSync(path.join(temp, "context/context.json"), "utf8"));
+            const result = JSON.parse(fs.readFileSync(path.join(temp, "result/result.json"), "utf8"));
 
-            Replace the instructional comments inside the block with generated
-            content; retain only the start and end marker comments. Generate the
-            content from the pull request diff, commit messages, and branch name.
-            Prioritize the diff, infer motivation cautiously, and ignore
-            generated-file, lockfile, translation-catalog, or formatting churn
-            unless it is itself the purpose of the pull request.
+            function isObject(value) {
+              return value !== null && typeof value === "object" && !Array.isArray(value);
+            }
+
+            function hasExactKeys(value, expected) {
+              return isObject(value) && Object.keys(value).sort().join("\0") === [...expected].sort().join("\0");
+            }
+
+            function hasUnpairedSurrogate(value) {
+              for (let index = 0; index < value.length; index += 1) {
+                const code = value.charCodeAt(index);
+                if (code >= 0xd800 && code <= 0xdbff) {
+                  const next = value.charCodeAt(index + 1);
+                  if (!(next >= 0xdc00 && next <= 0xdfff)) return true;
+                  index += 1;
+                } else if (code >= 0xdc00 && code <= 0xdfff) {
+                  return true;
+                }
+              }
+              return false;
+            }
+
+            function clean(value, limit) {
+              if (typeof value !== "string" || hasUnpairedSurrogate(value)) {
+                throw new Error("Description item is not valid text.");
+              }
+              const cleaned = value
+                .split(/\s+/u)
+                .filter(Boolean)
+                .join(" ")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll("@", "@\u200b");
+              if (cleaned.length < 1 || cleaned.length > limit) {
+                throw new Error("Description item has invalid length.");
+              }
+              return cleaned;
+            }
+
+            if (descriptionContext.repository !== repository || descriptionContext.number !== number) {
+              throw new Error("Context target does not match the triggering PR.");
+            }
+            const pull = (await github.rest.pulls.get({ owner, repo, pull_number: number })).data;
+            if (pull.user?.id !== 68006090 || pull.head?.repo?.full_name !== repository) {
+              throw new Error("PR authorization changed before publication.");
+            }
+            if (pull.head.sha !== descriptionContext.headSha || pull.base.sha !== descriptionContext.baseSha) {
+              console.log("Skipping stale description because the PR base or head changed.");
+              return;
+            }
+
+            if (
+              !hasExactKeys(result, ["schemaVersion", "whatChanged", "why", "breakingChanges"]) ||
+              !Number.isInteger(result.schemaVersion) ||
+              result.schemaVersion !== 1
+            ) {
+              throw new Error("Invalid description result contract.");
+            }
+            if (!Array.isArray(result.whatChanged) || result.whatChanged.length < 2 || result.whatChanged.length > 4) {
+              throw new Error("Invalid whatChanged items.");
+            }
+            if (typeof result.why !== "string" || result.why.length < 1 || result.why.length > 2_000) {
+              throw new Error("Invalid description motivation.");
+            }
+            if (!Array.isArray(result.breakingChanges) || result.breakingChanges.length > 5) {
+              throw new Error("Invalid breakingChanges items.");
+            }
+
+            const whatChanged = result.whatChanged.map((item) => clean(item, 500));
+            const why = clean(result.why, 2_000);
+            const breaking = result.breakingChanges.map((item) => clean(item, 500));
+
+            const latest = (await github.rest.pulls.get({ owner, repo, pull_number: number })).data;
+            if (latest.user?.id !== 68006090 || latest.head?.repo?.full_name !== repository) {
+              throw new Error("PR authorization changed before publication.");
+            }
+            if (latest.head.sha !== descriptionContext.headSha || latest.base.sha !== descriptionContext.baseSha) {
+              console.log("Skipping stale description because the PR changed before publication.");
+              return;
+            }
+
+            const start = "<!-- opencode:pr-description:start -->";
+            const end = "<!-- opencode:pr-description:end -->";
+            const blockLines = [
+              start,
+              "---",
+              "",
+              "## OpenCode-generated summary",
+              "",
+              "> [!NOTE]",
+              "> This section was generated automatically by OpenCode. Content outside this section is human-written.",
+              "",
+              "### What changed",
+              "",
+              ...whatChanged.map((item) => `- ${item}`),
+              "",
+              "### Why",
+              "",
+              why,
+              "",
+              "### Breaking changes",
+              "",
+              ...(breaking.length ? breaking.map((item) => `- ${item}`) : ["None."]),
+              "",
+              "---",
+              end,
+            ];
+            const block = blockLines.join("\n");
+            const current = latest.body ?? "";
+            const startCount = current.split(start).length - 1;
+            const endCount = current.split(end).length - 1;
+            let updated;
+            if (startCount === 0 && endCount === 0) {
+              updated = current ? `${current}\n\n${block}` : block;
+            } else if (startCount === 1 && endCount === 1 && current.indexOf(start) < current.indexOf(end)) {
+              const before = current.slice(0, current.indexOf(start));
+              const after = current.slice(current.indexOf(end) + end.length);
+              updated = before + block + after;
+            } else {
+              console.log("Skipping description because managed markers are malformed.");
+              return;
+            }
+
+            if (updated.length > 60_000) {
+              throw new Error("Rendered PR description is too large.");
+            }
+            if (updated !== current) {
+              await github.rest.pulls.update({ owner, repo, pull_number: number, body: updated });
+            }

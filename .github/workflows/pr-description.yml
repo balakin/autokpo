@@ -1,0 +1,80 @@
+name: ✍️ Generate PR Description
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, ready_for_review]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions: {} # deny all by default; the job grants only what it needs
+
+jobs:
+  generate-description:
+    name: ✍️ Generate description
+    runs-on: ubuntu-24.04
+    if: >-
+      github.event.pull_request.user.login == 'dm-balakin' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read # inspect the PR diff
+      pull-requests: write # replace the PR description
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: ✨ Generate PR description
+        uses: anomalyco/opencode/github@7902e04c3a67f7c69726bc955efb46e29214c797 # v1.18.10
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+        with:
+          model: ${{ vars.OPENCODE_PR_MODEL || 'opencode-go/kimi-k2.7-code' }}
+          share: false
+          use_github_token: true
+          prompt: |
+            Update only this pull request's description. Do not post a comment,
+            submit a review, change the title or labels, modify files, create
+            commits, push branches, or update any other pull request.
+
+            Preserve human-written content using these rules:
+
+            1. Treat content outside the markers below as immutable. Preserve it
+               verbatim, including its whitespace and Markdown.
+            2. If both markers already exist in the correct order, replace only
+               the content between them and keep exactly one marker pair.
+            3. If neither marker exists, append the managed block after the
+               existing description. If the description is empty, use only the
+               managed block.
+            4. If only one marker exists or their order is malformed, make no
+               changes to the pull request.
+            5. Never move human-written content into the managed block and never
+               duplicate the managed block.
+
+            The managed block must have exactly this structure:
+
+            <!-- opencode:pr-description:start -->
+            ## What changed
+
+            <!-- Replace with 2-4 concise bullets focused on what, not how. -->
+
+            ## Why
+
+            <!-- Replace with 1-3 concise sentences explaining the motivation. -->
+
+            ## Breaking changes
+
+            <!-- Replace with a bullet list, or "None." when there are none. -->
+            <!-- opencode:pr-description:end -->
+
+            Replace the instructional comments inside the block with generated
+            content; retain only the start and end marker comments. Generate the
+            content from the pull request diff, commit messages, and branch name.
+            Prioritize the diff, infer motivation cautiously, and ignore
+            generated-file, lockfile, translation-catalog, or formatting churn
+            unless it is itself the purpose of the pull request.

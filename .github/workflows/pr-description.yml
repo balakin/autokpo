@@ -381,7 +381,7 @@ jobs:
             ) {
               throw new Error("Invalid description result contract.");
             }
-            if (!Array.isArray(result.whatChanged) || result.whatChanged.length < 2 || result.whatChanged.length > 5) {
+            if (!Array.isArray(result.whatChanged) || result.whatChanged.length < 1 || result.whatChanged.length > 10) {
               throw new Error("Invalid whatChanged items.");
             }
             if (typeof result.why !== "string" || result.why.length < 1 || result.why.length > 2_000) {

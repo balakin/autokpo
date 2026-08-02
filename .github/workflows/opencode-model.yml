@@ -562,7 +562,7 @@ jobs:
               if (!hasExactKeys(result, ["schemaVersion", "whatChanged", "why", "breakingChanges"])) {
                 throw new Error("Unexpected description result fields.");
               }
-              if (!Array.isArray(result.whatChanged) || result.whatChanged.length < 2 || result.whatChanged.length > 5) {
+              if (!Array.isArray(result.whatChanged) || result.whatChanged.length < 1 || result.whatChanged.length > 10) {
                 throw new Error("Invalid whatChanged items.");
               }
               for (const item of result.whatChanged) {

@@ -74,8 +74,10 @@ jobs:
             }
             const root = path.join(snapshotRoot, snapshot.name);
             fs.rmSync(path.join(root, ".git"), { recursive: true, force: true });
+            const manifestPath = path.join(root, ".opencode-review-snapshot.json");
+            fs.rmSync(manifestPath, { recursive: true, force: true });
             const manifest = `${JSON.stringify({ schemaVersion: 1, snapshot: snapshot.name, sha: snapshot.sha })}\n`;
-            fs.writeFileSync(path.join(root, ".opencode-review-snapshot.json"), manifest, { mode: 0o444 });
+            fs.writeFileSync(manifestPath, manifest, { mode: 0o444, flag: "wx" });
             const pending = [root];
             while (pending.length) {
               const directory = pending.pop();
@@ -149,6 +151,8 @@ jobs:
                 if (rawLine.startsWith("@@")) {
                   const match = rawLine.match(/\+(\d+)/u);
                   current = match ? Number(match[1]) : null;
+                } else if (rawLine === "\\ No newline at end of file") {
+                  continue;
                 } else if (current !== null && rawLine.startsWith("+") && !rawLine.startsWith("+++")) {
                   lines.push(current);
                   current += 1;
@@ -277,7 +281,7 @@ jobs:
       context-artifact: opencode-review-context
       workspace-artifact: opencode-review-workspace
       mode: review
-      model: ${{ vars.OPENCODE_ASSISTANT_MODEL || 'opencode-go/kimi-k3' }}
+      model: ${{ vars.OPENCODE_REVIEW_MODEL || vars.OPENCODE_ASSISTANT_MODEL || 'opencode-go/gpt-5.6-luna' }}
       result-artifact: opencode-review-result
     secrets:
       OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
@@ -380,8 +384,24 @@ jobs:
             }
             const changed = new Set(reviewContext.changedPaths ?? []);
             const changedLines = reviewContext.changedLines ?? {};
+            function isAddedRange(lines, startLine, endLine) {
+              if (
+                !Number.isInteger(startLine) ||
+                !Number.isInteger(endLine) ||
+                startLine < 1 ||
+                endLine < startLine ||
+                endLine - startLine >= 100
+              ) {
+                return false;
+              }
+              const added = new Set(lines);
+              for (let line = startLine; line <= endLine; line += 1) {
+                if (!added.has(line)) return false;
+              }
+              return true;
+            }
             for (const finding of result.findings) {
-              if (!hasExactKeys(finding, ["severity", "path", "line", "title", "body"])) {
+              if (!hasExactKeys(finding, ["severity", "path", "startLine", "endLine", "title", "body"])) {
                 throw new Error("Invalid finding fields.");
               }
               if (!["critical", "high", "medium"].includes(finding.severity)) {
@@ -390,8 +410,8 @@ jobs:
               if (!changed.has(finding.path)) {
                 throw new Error("Finding references an unchanged path.");
               }
-              if (!Number.isInteger(finding.line) || !(changedLines[finding.path] ?? []).includes(finding.line)) {
-                throw new Error("Finding does not reference an added line.");
+              if (!isAddedRange(changedLines[finding.path] ?? [], finding.startLine, finding.endLine)) {
+                throw new Error("Finding does not reference a valid added-line range.");
               }
               if (typeof finding.title !== "string" || finding.title.length < 1 || finding.title.length > 120) {
                 throw new Error("Invalid finding title.");
@@ -423,16 +443,22 @@ jobs:
             }
 
             const safe = (text) => text.replaceAll("@", "@\u200b").replaceAll("`", "'");
+            const labels = { critical: "Critical", high: "High", medium: "Medium" };
             const lines = [marker, "## OpenCode review", "", safe(result.summary)];
-            if (result.findings.length) {
-              lines.push("", "### Actionable findings", "");
-              const labels = { critical: "Critical", high: "High", medium: "Medium" };
-              for (const finding of result.findings) {
-                lines.push(
-                  `- **${labels[finding.severity]} — ${safe(finding.title)}**`,
-                  `  \`${safe(finding.path)}\` line ${finding.line}: ${safe(finding.body)}`,
-                );
-              }
+            const comments = result.findings.map((finding) => ({
+              path: finding.path,
+              ...(finding.startLine < finding.endLine
+                ? { start_line: finding.startLine, start_side: "RIGHT" }
+                : {}),
+              line: finding.endLine,
+              side: "RIGHT",
+              body: `**${labels[finding.severity]} — ${safe(finding.title)}**\n\n${safe(finding.body)}`,
+            }));
+            if (comments.length) {
+              lines.push(
+                "",
+                `${comments.length} actionable ${comments.length === 1 ? "finding was" : "findings were"} published as inline comments.`,
+              );
             } else {
               lines.push("", "No actionable findings met the publication threshold.");
             }
@@ -445,4 +471,12 @@ jobs:
               console.log("Skipping stale review because the PR changed before publication.");
               return;
             }
-            await github.rest.pulls.createReview({ owner, repo, pull_number: number, body, event: "COMMENT" });
+            await github.rest.pulls.createReview({
+              owner,
+              repo,
+              pull_number: number,
+              commit_id: reviewContext.headSha,
+              body,
+              event: "COMMENT",
+              comments,
+            });

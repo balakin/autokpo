@@ -30,12 +30,181 @@ jobs:
       issues: read
       pull-requests: read
     steps:
-      - name: Collect issue or PR data without checkout
+      - name: Validate command and determine target type
+        id: target
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           COMMENT_ID: ${{ github.event.comment.id }}
           COMMENT_KIND: ${{ github.event_name }}
           TARGET_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const target = Number(process.env.TARGET_NUMBER);
+            const commentId = Number(process.env.COMMENT_ID);
+            const kind = process.env.COMMENT_KIND;
+
+            let source;
+            if (kind === "issue_comment") {
+              source = (await github.rest.issues.getComment({ owner, repo, comment_id: commentId })).data;
+            } else if (kind === "pull_request_review_comment") {
+              source = (await github.rest.pulls.getReviewComment({ owner, repo, comment_id: commentId })).data;
+            } else {
+              throw new Error("Unsupported comment event.");
+            }
+
+            if (source.user?.id !== 68006090) {
+              throw new Error("Command author is not authorized.");
+            }
+            if (!/^\/(?:oc|opencode)(?:\s|$)/u.test(source.body)) {
+              throw new Error("Command syntax is not authorized.");
+            }
+
+            let isPr = false;
+            let baseSha = "";
+            let headSha = "";
+
+            if (kind === "pull_request_review_comment") {
+              // PR review comment - PR data is in the event payload
+              isPr = true;
+              baseSha = context.payload.pull_request.base.sha;
+              headSha = context.payload.pull_request.head.sha;
+            } else {
+              // Issue comment - check if the issue is actually a PR
+              const issue = (await github.rest.issues.get({ owner, repo, issue_number: target })).data;
+              if (issue.pull_request) {
+                // It's a PR, fetch the PR data to get SHAs
+                const pull = (await github.rest.pulls.get({ owner, repo, pull_number: target })).data;
+                isPr = true;
+                baseSha = pull.base.sha;
+                headSha = pull.head.sha;
+              }
+            }
+
+            core.setOutput("is_pr", isPr ? "true" : "false");
+            core.setOutput("base_sha", baseSha);
+            core.setOutput("head_sha", headSha);
+
+      - name: Download base snapshot (PR)
+        if: steps.target.outputs.is_pr == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.target.outputs.base_sha }}
+          path: .command-snapshots/BASE
+          persist-credentials: false
+          fetch-depth: 1
+          submodules: false
+          lfs: false
+          show-progress: false
+
+      - name: Download head snapshot (PR)
+        if: steps.target.outputs.is_pr == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.target.outputs.head_sha }}
+          path: .command-snapshots/HEAD
+          persist-credentials: false
+          fetch-depth: 1
+          submodules: false
+          lfs: false
+          show-progress: false
+
+      - name: Download main snapshot (issue)
+        if: steps.target.outputs.is_pr != 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          path: .command-snapshots/HEAD
+          persist-credentials: false
+          fetch-depth: 1
+          submodules: false
+          lfs: false
+          show-progress: false
+
+      - name: Sanitize snapshots
+        id: snapshot
+        env:
+          IS_PR: ${{ steps.target.outputs.is_pr }}
+          BASE_SHA: ${{ steps.target.outputs.base_sha }}
+          HEAD_SHA: ${{ steps.target.outputs.head_sha }}
+          SNAPSHOT_ROOT: ${{ github.workspace }}/.command-snapshots
+        run: |
+          set -euo pipefail
+          node <<'JS'
+          const fs = require("node:fs");
+          const path = require("node:path");
+          const { execSync } = require("node:child_process");
+
+          const snapshotRoot = process.env.SNAPSHOT_ROOT;
+          const isPr = process.env.IS_PR === "true";
+          const maximumEntries = 50_000;
+          const maximumBytes = 250 * 1024 * 1024;
+          let entries = 0;
+          let bytes = 0;
+
+          const snapshots = [];
+          if (isPr) {
+            snapshots.push({ name: "BASE", sha: process.env.BASE_SHA });
+            snapshots.push({ name: "HEAD", sha: process.env.HEAD_SHA });
+          } else {
+            // For issues, get HEAD SHA from git before removing .git
+            const headPath = path.join(snapshotRoot, "HEAD");
+            const headSha = execSync("git rev-parse HEAD", { cwd: headPath, encoding: "utf8" }).trim();
+            snapshots.push({ name: "HEAD", sha: headSha });
+          }
+
+          for (const snapshot of snapshots) {
+            if (!/^[0-9a-f]{40}$/u.test(snapshot.sha ?? "")) {
+              throw new Error(`Invalid ${snapshot.name} snapshot SHA.`);
+            }
+            const root = path.join(snapshotRoot, snapshot.name);
+            fs.rmSync(path.join(root, ".git"), { recursive: true, force: true });
+            const manifestPath = path.join(root, ".opencode-review-snapshot.json");
+            fs.rmSync(manifestPath, { recursive: true, force: true });
+            const manifest = `${JSON.stringify({ schemaVersion: 1, snapshot: snapshot.name, sha: snapshot.sha })}\n`;
+            fs.writeFileSync(manifestPath, manifest, { mode: 0o444, flag: "wx" });
+            const pending = [root];
+            while (pending.length) {
+              const directory = pending.pop();
+              for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+                const entryPath = path.join(directory, entry.name);
+                const metadata = fs.lstatSync(entryPath);
+                entries += 1;
+                if (metadata.isSymbolicLink()) {
+                  const target = fs.readlinkSync(entryPath);
+                  fs.unlinkSync(entryPath);
+                  const replacement = `Symlink target (not followed): ${target}\n`;
+                  fs.writeFileSync(entryPath, replacement, { mode: 0o444 });
+                  bytes += Buffer.byteLength(replacement);
+                } else if (metadata.isDirectory()) {
+                  pending.push(entryPath);
+                } else if (metadata.isFile()) {
+                  bytes += metadata.size;
+                } else {
+                  throw new Error(`Unsupported repository entry type: ${entryPath}`);
+                }
+                if (entries > maximumEntries || bytes > maximumBytes) {
+                  throw new Error("Repository snapshots exceed the workspace limits.");
+                }
+              }
+            }
+          }
+          const head = snapshots.find((snapshot) => snapshot.name === "HEAD");
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `head_sha=${head.sha}\n`);
+          console.log(`Prepared ${entries} entries (${bytes} bytes) across snapshots.`);
+          JS
+
+      - name: Collect full context
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          COMMENT_ID: ${{ github.event.comment.id }}
+          COMMENT_KIND: ${{ github.event_name }}
+          TARGET_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+          IS_PR: ${{ steps.target.outputs.is_pr }}
+          EXPECTED_BASE_SHA: ${{ steps.target.outputs.base_sha }}
+          EXPECTED_HEAD_SHA: ${{ steps.target.outputs.head_sha }}
+          REPOSITORY_SHA: ${{ steps.snapshot.outputs.head_sha }}
         with:
           github-token: ${{ github.token }}
           script: |
@@ -47,6 +216,10 @@ jobs:
             const target = Number(process.env.TARGET_NUMBER);
             const commentId = Number(process.env.COMMENT_ID);
             const kind = process.env.COMMENT_KIND;
+            const isPr = process.env.IS_PR === "true";
+            const expectedBaseSha = process.env.EXPECTED_BASE_SHA;
+            const expectedHeadSha = process.env.EXPECTED_HEAD_SHA;
+            const repositorySha = process.env.REPOSITORY_SHA;
 
             function bounded(value, limit) {
               const raw = Buffer.from(String(value ?? ""), "utf8");
@@ -67,6 +240,25 @@ jobs:
               return /(?:^|,)\s*<[^>]+>;\s*rel="next"(?:\s*(?:;|,|$))/u.test(response.headers.link ?? "");
             }
 
+            function addedLines(patch) {
+              const lines = [];
+              let current = null;
+              for (const rawLine of String(patch ?? "").split(/\r?\n/u)) {
+                if (rawLine.startsWith("@@")) {
+                  const match = rawLine.match(/\+(\d+)/u);
+                  current = match ? Number(match[1]) : null;
+                } else if (rawLine === "\\ No newline at end of file") {
+                  continue;
+                } else if (current !== null && rawLine.startsWith("+") && !rawLine.startsWith("+++")) {
+                  lines.push(current);
+                  current += 1;
+                } else if (current !== null && !rawLine.startsWith("-")) {
+                  current += 1;
+                }
+              }
+              return lines;
+            }
+
             let source;
             let inlineContext = null;
             if (kind === "issue_comment") {
@@ -83,20 +275,21 @@ jobs:
             }
 
             const [command, commandTruncated] = bounded(source.body, 4_000);
-            if (source.user?.id !== 68006090) {
-              throw new Error("Command author is not authorized.");
-            }
-            if (!/^\/(?:oc|opencode)(?:\s|$)/u.test(command)) {
-              throw new Error("Command syntax is not authorized.");
-            }
 
             const issue = (await github.rest.issues.get({ owner, repo, issue_number: target })).data;
             const [issueBody, issueBodyTruncated] = bounded(issue.body, 12_000);
             const commentsResponse = await github.rest.issues.listComments({ owner, repo, issue_number: target, per_page: 50 });
-            const discussion = commentsResponse.data.slice(0, 50).map((item) => ({
-              authorId: item.user?.id,
-              body: bounded(item.body, 2_000)[0],
-            }));
+
+            function discussions(items) {
+              return items.slice(0, 50).map((item) => ({
+                authorId: item.user?.id ?? null,
+                path: item.path ?? null,
+                line: item.line ?? null,
+                body: bounded(item.body, 2_000)[0],
+              }));
+            }
+
+            const discussion = discussions(commentsResponse.data);
 
             const commandContext = {
               schemaVersion: 1,
@@ -113,6 +306,9 @@ jobs:
               },
               inlineContext,
               changedPaths: [],
+              changedLines: {},
+              repositoryRef: isPr ? null : "main",
+              repositorySha: isPr ? null : repositorySha,
               pullRequest: null,
               truncated: {
                 command: commandTruncated,
@@ -121,12 +317,19 @@ jobs:
               },
             };
 
-            if (issue.pull_request || kind === "pull_request_review_comment") {
+            if (isPr) {
               const pull = (await github.rest.pulls.get({ owner, repo, pull_number: target })).data;
               const filesResponse = await github.rest.pulls.listFiles({ owner, repo, pull_number: target, per_page: 100 });
               const commitsResponse = await github.rest.pulls.listCommits({ owner, repo, pull_number: target, per_page: 50 });
+              const reviewCommentsResponse = await github.rest.pulls.listReviewComments({ owner, repo, pull_number: target, per_page: 50 });
+              const reviewsResponse = await github.rest.pulls.listReviews({ owner, repo, pull_number: target, per_page: 50 });
+              if (pull.base.sha !== expectedBaseSha || pull.head.sha !== expectedHeadSha) {
+                throw new Error("PR base or head changed while immutable snapshots were collected.");
+              }
+
               const files = [];
               const paths = [];
+              const changedLines = Object.create(null);
               let patchBudget = 200_000;
               let patchTruncated = false;
               for (const item of filesResponse.data.slice(0, 100)) {
@@ -135,6 +338,7 @@ jobs:
                 patchBudget -= Buffer.byteLength(patch);
                 patchTruncated ||= truncated || !item.patch;
                 paths.push(filePath);
+                changedLines[filePath] = addedLines(patch);
                 files.push({
                   path: filePath,
                   status: item.status,
@@ -151,7 +355,17 @@ jobs:
                 sha: String(item.sha ?? "").slice(0, 40),
                 message: bounded(item.commit?.message, 1_024)[0],
               }));
+              
+              // Add review comments and reviews to discussion
+              const allDiscussion = [
+                ...discussion,
+                ...discussions(reviewCommentsResponse.data),
+                ...discussions(reviewsResponse.data),
+              ];
+              
               commandContext.changedPaths = paths;
+              commandContext.changedLines = changedLines;
+              commandContext.issue.discussion = allDiscussion.slice(0, 50);
               commandContext.pullRequest = {
                 baseSha: pull.base.sha,
                 headSha: pull.head.sha,
@@ -163,6 +377,15 @@ jobs:
               commandContext.truncated.files = hasNextPage(filesResponse) || filesResponse.data.length > files.length;
               commandContext.truncated.patches = patchTruncated;
               commandContext.truncated.commits = hasNextPage(commitsResponse);
+              commandContext.truncated.discussion =
+                hasNextPage(commentsResponse) ||
+                hasNextPage(reviewCommentsResponse) ||
+                hasNextPage(reviewsResponse) ||
+                allDiscussion.length > 50;
+            }
+
+            if (!isPr && !/^[0-9a-f]{40}$/u.test(repositorySha)) {
+              throw new Error("Invalid main snapshot SHA.");
             }
 
             const encoded = `${JSON.stringify(commandContext)}\n`;
@@ -181,6 +404,15 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+      - name: Upload workspace
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: opencode-command-workspace
+          path: ${{ github.workspace }}/.command-snapshots
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+
   model:
     name: Run isolated assistant
     needs: collect
@@ -188,8 +420,9 @@ jobs:
     uses: ./.github/workflows/opencode-model.yml
     with:
       context-artifact: opencode-command-context
+      workspace-artifact: opencode-command-workspace
       mode: command
-      model: ${{ vars.OPENCODE_ASSISTANT_MODEL || 'opencode-go/kimi-k3' }}
+      model: ${{ vars.OPENCODE_COMMAND_MODEL || vars.OPENCODE_ASSISTANT_MODEL || 'opencode-go/gpt-5.6-luna' }}
       result-artifact: opencode-command-result
     secrets:
       OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
@@ -200,6 +433,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
+      contents: read
       issues: write
       pull-requests: read
     steps:
@@ -260,6 +494,13 @@ jobs:
             if (commandContext.sourceCommentId !== commentId || commandContext.sourceCommentKind !== kind) {
               throw new Error("Context comment does not match the triggering event.");
             }
+            if (
+              !commandContext.pullRequest &&
+              (commandContext.repositoryRef !== "main" ||
+                !/^[0-9a-f]{40}$/u.test(commandContext.repositorySha ?? ""))
+            ) {
+              throw new Error("Invalid issue repository snapshot context.");
+            }
             if (commandContext.pullRequest) {
               const pull = (await github.rest.pulls.get({ owner, repo, pull_number: target })).data;
               if (
@@ -267,6 +508,16 @@ jobs:
                 pull.base.sha !== commandContext.pullRequest.baseSha
               ) {
                 console.log("Skipping stale answer because the PR base or head changed.");
+                return;
+              }
+            } else {
+              const branch = await github.rest.repos.getBranch({
+                owner,
+                repo,
+                branch: commandContext.repositoryRef,
+              });
+              if (branch.data.commit.sha !== commandContext.repositorySha) {
+                console.log("Skipping stale answer because main changed.");
                 return;
               }
             }
@@ -351,6 +602,16 @@ jobs:
                 latestPull.base.sha !== commandContext.pullRequest.baseSha
               ) {
                 console.log("Skipping stale answer because the PR changed before publication.");
+                return;
+              }
+            } else {
+              const latestBranch = await github.rest.repos.getBranch({
+                owner,
+                repo,
+                branch: commandContext.repositoryRef,
+              });
+              if (latestBranch.data.commit.sha !== commandContext.repositorySha) {
+                console.log("Skipping answer because main changed before publication.");
                 return;
               }
             }

@@ -304,8 +304,40 @@ jobs:
             .filter(Boolean);
           const text = textParts.at(-1) ?? "";
 
+          console.log(`Total events: ${events.length}`);
           console.log(`Text parts found: ${textParts.length}`);
           console.log(`Final text length: ${text.length} characters`);
+
+          if (textParts.length === 0) {
+            console.log('\n=== NO TEXT EVENTS FOUND ===');
+            console.log('Event types present:');
+            const eventTypes = {};
+            events.forEach((event, i) => {
+              const type = event?.type || 'unknown';
+              if (!eventTypes[type]) eventTypes[type] = [];
+              eventTypes[type].push(i);
+            });
+            Object.entries(eventTypes).forEach(([type, indices]) => {
+              console.log(`  ${type}: ${indices.length} events (indices: ${indices.slice(0, 5).join(', ')}${indices.length > 5 ? '...' : ''})`);
+            });
+            
+            console.log('\nFirst 5 events:');
+            events.slice(0, 5).forEach((event, i) => {
+              console.log(`  [${i}]`, JSON.stringify(event, null, 2).split('\n').slice(0, 10).join('\n'));
+            });
+            
+            console.log('\nError events:');
+            events.filter(e => e?.type === 'error').forEach((event, i) => {
+              console.log(`  [${i}]`, JSON.stringify(event, null, 2));
+            });
+            
+            console.log('\nLast 5 events:');
+            events.slice(-5).forEach((event, i) => {
+              console.log(`  [${events.length - 5 + i}]`, JSON.stringify(event, null, 2).split('\n').slice(0, 10).join('\n'));
+            });
+            console.log('=== END DEBUG ===\n');
+          }
+
           console.log('Final text (last 2000 chars):');
           console.log(text.slice(-2000));
           console.log('---');

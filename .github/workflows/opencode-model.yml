@@ -304,8 +304,15 @@ jobs:
             .filter(Boolean);
           const text = textParts.at(-1) ?? "";
 
+          console.log(`Text parts found: ${textParts.length}`);
+          console.log(`Final text length: ${text.length} characters`);
+          console.log('Final text (last 2000 chars):');
+          console.log(text.slice(-2000));
+          console.log('---');
+
           if (!text || text.length > 50_000 || text.endsWith("```")) {
-            throw new Error("Final model output is empty, oversized, or fenced.");
+            const reason = !text ? 'empty' : text.length > 50_000 ? 'oversized' : 'fenced';
+            throw new Error(`Final model output is ${reason}.`);
           }
 
           function parseFinalJsonObject(value) {

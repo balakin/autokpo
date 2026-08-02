@@ -384,8 +384,24 @@ jobs:
             }
             const changed = new Set(reviewContext.changedPaths ?? []);
             const changedLines = reviewContext.changedLines ?? {};
+            function isAddedRange(lines, startLine, endLine) {
+              if (
+                !Number.isInteger(startLine) ||
+                !Number.isInteger(endLine) ||
+                startLine < 1 ||
+                endLine < startLine ||
+                endLine - startLine >= 100
+              ) {
+                return false;
+              }
+              const added = new Set(lines);
+              for (let line = startLine; line <= endLine; line += 1) {
+                if (!added.has(line)) return false;
+              }
+              return true;
+            }
             for (const finding of result.findings) {
-              if (!hasExactKeys(finding, ["severity", "path", "line", "title", "body"])) {
+              if (!hasExactKeys(finding, ["severity", "path", "startLine", "endLine", "title", "body"])) {
                 throw new Error("Invalid finding fields.");
               }
               if (!["critical", "high", "medium"].includes(finding.severity)) {
@@ -394,8 +410,8 @@ jobs:
               if (!changed.has(finding.path)) {
                 throw new Error("Finding references an unchanged path.");
               }
-              if (!Number.isInteger(finding.line) || !(changedLines[finding.path] ?? []).includes(finding.line)) {
-                throw new Error("Finding does not reference an added line.");
+              if (!isAddedRange(changedLines[finding.path] ?? [], finding.startLine, finding.endLine)) {
+                throw new Error("Finding does not reference a valid added-line range.");
               }
               if (typeof finding.title !== "string" || finding.title.length < 1 || finding.title.length > 120) {
                 throw new Error("Invalid finding title.");
@@ -431,7 +447,10 @@ jobs:
             const lines = [marker, "## OpenCode review", "", safe(result.summary)];
             const comments = result.findings.map((finding) => ({
               path: finding.path,
-              line: finding.line,
+              ...(finding.startLine < finding.endLine
+                ? { start_line: finding.startLine, start_side: "RIGHT" }
+                : {}),
+              line: finding.endLine,
               side: "RIGHT",
               body: `**${labels[finding.severity]} — ${safe(finding.title)}**\n\n${safe(finding.body)}`,
             }));

@@ -273,12 +273,14 @@ jobs:
           Focus on user-visible or architectural changes. Infer motivation cautiously from the
           actual code changes, commits, and discussion. Ignore generated-file, lockfile,
           translation-catalog, and formatting churn unless it is the purpose of the pull request.
+          Return between two and five whatChanged items, one to three concise sentences in why,
+          and at most five breakingChanges items.
 
           STRICT OUTPUT PROTOCOL: Use tools silently. Do not emit plans, progress, analysis,
           summaries, or other assistant text before or after the result. Your only text response
           must be exactly one JSON object. Its first character must be `{` and its last character
           must be `}`. Do not use Markdown fences.
-          {"schemaVersion":1,"whatChanged":["2 to 4 concise items"],"why":"1 to 3 concise sentences","breakingChanges":[]}
+          {"schemaVersion":1,"whatChanged":["concise change 1","concise change 2"],"why":"concise motivation","breakingChanges":[]}
           Use an empty breakingChanges array when there are none.
           PROMPT
               ;;
@@ -560,7 +562,7 @@ jobs:
               if (!hasExactKeys(result, ["schemaVersion", "whatChanged", "why", "breakingChanges"])) {
                 throw new Error("Unexpected description result fields.");
               }
-              if (!Array.isArray(result.whatChanged) || result.whatChanged.length < 2 || result.whatChanged.length > 4) {
+              if (!Array.isArray(result.whatChanged) || result.whatChanged.length < 2 || result.whatChanged.length > 5) {
                 throw new Error("Invalid whatChanged items.");
               }
               for (const item of result.whatChanged) {

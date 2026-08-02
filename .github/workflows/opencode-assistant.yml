@@ -279,7 +279,7 @@ jobs:
       context-artifact: opencode-review-context
       workspace-artifact: opencode-review-workspace
       mode: review
-      model: ${{ vars.OPENCODE_ASSISTANT_MODEL || 'opencode-go/kimi-k3' }}
+      model: ${{ vars.OPENCODE_REVIEW_MODEL || 'opencode-go/gpt-5.6-luna' }}
       result-artifact: opencode-review-result
     secrets:
       OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}

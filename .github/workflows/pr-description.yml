@@ -278,7 +278,7 @@ jobs:
       context-artifact: opencode-description-context
       workspace-artifact: opencode-description-workspace
       mode: description
-      model: ${{ vars.OPENCODE_ASSISTANT_MODEL || 'opencode-go/kimi-k3' }}
+      model: ${{ vars.OPENCODE_PR_MODEL || 'opencode-go/minimax-m3' }}
       result-artifact: opencode-description-result
     secrets:
       OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}

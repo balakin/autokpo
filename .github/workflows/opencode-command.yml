@@ -420,7 +420,7 @@ jobs:
       context-artifact: opencode-command-context
       workspace-artifact: opencode-command-workspace
       mode: command
-      model: ${{ vars.OPENCODE_ASSISTANT_MODEL || 'opencode-go/kimi-k3' }}
+      model: ${{ vars.OPENCODE_COMMAND_MODEL || 'opencode-go/gpt-5.6-luna' }}
       result-artifact: opencode-command-result
     secrets:
       OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}

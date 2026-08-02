@@ -220,9 +220,11 @@ jobs:
           problems, and findings already covered by existing discussion.
 
           Every finding must identify a changed file, a concrete triggering state,
-          observable impact, and an actionable correction. A true truncation flag means
-          some later content was omitted; still inspect every retained patch. Do not claim
-          patches are unavailable when their `patch` fields contain text. Use at most five findings.
+          observable impact, and an actionable correction. Each finding is published as a
+          separate inline review comment, so select the narrowest directly relevant added
+          line. A true truncation flag means some later content was omitted; still inspect
+          every retained patch. Do not claim patches are unavailable when their `patch`
+          fields contain text. Use at most five findings.
 
           STRICT OUTPUT PROTOCOL: Use tools silently. Do not emit plans, progress,
           analysis, summaries, or other assistant text before or after the result. Your

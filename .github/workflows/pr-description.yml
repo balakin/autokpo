@@ -150,6 +150,8 @@ jobs:
                 if (rawLine.startsWith("@@")) {
                   const match = rawLine.match(/\+(\d+)/u);
                   current = match ? Number(match[1]) : null;
+                } else if (rawLine === "\\ No newline at end of file") {
+                  continue;
                 } else if (current !== null && rawLine.startsWith("+") && !rawLine.startsWith("+++")) {
                   lines.push(current);
                   current += 1;

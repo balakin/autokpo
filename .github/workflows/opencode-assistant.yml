@@ -151,6 +151,8 @@ jobs:
                 if (rawLine.startsWith("@@")) {
                   const match = rawLine.match(/\+(\d+)/u);
                   current = match ? Number(match[1]) : null;
+                } else if (rawLine === "\\ No newline at end of file") {
+                  continue;
                 } else if (current !== null && rawLine.startsWith("+") && !rawLine.startsWith("+++")) {
                   lines.push(current);
                   current += 1;
@@ -279,7 +281,7 @@ jobs:
       context-artifact: opencode-review-context
       workspace-artifact: opencode-review-workspace
       mode: review
-      model: ${{ vars.OPENCODE_REVIEW_MODEL || 'opencode-go/gpt-5.6-luna' }}
+      model: ${{ vars.OPENCODE_REVIEW_MODEL || vars.OPENCODE_ASSISTANT_MODEL || 'opencode-go/gpt-5.6-luna' }}
       result-artifact: opencode-review-result
     secrets:
       OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
@@ -425,16 +427,19 @@ jobs:
             }
 
             const safe = (text) => text.replaceAll("@", "@\u200b").replaceAll("`", "'");
+            const labels = { critical: "Critical", high: "High", medium: "Medium" };
             const lines = [marker, "## OpenCode review", "", safe(result.summary)];
-            if (result.findings.length) {
-              lines.push("", "### Actionable findings", "");
-              const labels = { critical: "Critical", high: "High", medium: "Medium" };
-              for (const finding of result.findings) {
-                lines.push(
-                  `- **${labels[finding.severity]} — ${safe(finding.title)}**`,
-                  `  \`${safe(finding.path)}\` line ${finding.line}: ${safe(finding.body)}`,
-                );
-              }
+            const comments = result.findings.map((finding) => ({
+              path: finding.path,
+              line: finding.line,
+              side: "RIGHT",
+              body: `**${labels[finding.severity]} — ${safe(finding.title)}**\n\n${safe(finding.body)}`,
+            }));
+            if (comments.length) {
+              lines.push(
+                "",
+                `${comments.length} actionable ${comments.length === 1 ? "finding was" : "findings were"} published as inline comments.`,
+              );
             } else {
               lines.push("", "No actionable findings met the publication threshold.");
             }
@@ -447,4 +452,12 @@ jobs:
               console.log("Skipping stale review because the PR changed before publication.");
               return;
             }
-            await github.rest.pulls.createReview({ owner, repo, pull_number: number, body, event: "COMMENT" });
+            await github.rest.pulls.createReview({
+              owner,
+              repo,
+              pull_number: number,
+              commit_id: reviewContext.headSha,
+              body,
+              event: "COMMENT",
+              comments,
+            });

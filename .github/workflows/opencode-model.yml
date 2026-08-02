@@ -170,6 +170,7 @@ jobs:
           const path = require("node:path");
 
           const temp = process.env.RUNNER_TEMP;
+          const context = JSON.parse(fs.readFileSync(path.join(temp, "context/context.json"), "utf8"));
           const manifestPath = path.join(temp, "workspace", "HEAD", ".opencode-review-snapshot.json");
           const metadata = fs.lstatSync(manifestPath);
           if (!metadata.isFile() || metadata.isSymbolicLink()) {
@@ -177,10 +178,13 @@ jobs:
           }
           const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
           if (
+            context?.repositoryRef !== "main" ||
+            !/^[0-9a-f]{40}$/u.test(context?.repositorySha ?? "") ||
             manifest?.schemaVersion !== 1 ||
-            manifest?.snapshot !== "HEAD"
+            manifest?.snapshot !== "HEAD" ||
+            manifest?.sha !== context.repositorySha
           ) {
-            throw new Error('HEAD snapshot manifest is invalid.');
+            throw new Error('HEAD snapshot does not match the bounded context.');
           }
           JS
               fi

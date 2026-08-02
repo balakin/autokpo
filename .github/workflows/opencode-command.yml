@@ -123,6 +123,7 @@ jobs:
           show-progress: false
 
       - name: Sanitize snapshots
+        id: snapshot
         env:
           IS_PR: ${{ steps.target.outputs.is_pr }}
           BASE_SHA: ${{ steps.target.outputs.base_sha }}
@@ -159,8 +160,10 @@ jobs:
             }
             const root = path.join(snapshotRoot, snapshot.name);
             fs.rmSync(path.join(root, ".git"), { recursive: true, force: true });
+            const manifestPath = path.join(root, ".opencode-review-snapshot.json");
+            fs.rmSync(manifestPath, { recursive: true, force: true });
             const manifest = `${JSON.stringify({ schemaVersion: 1, snapshot: snapshot.name, sha: snapshot.sha })}\n`;
-            fs.writeFileSync(path.join(root, ".opencode-review-snapshot.json"), manifest, { mode: 0o444 });
+            fs.writeFileSync(manifestPath, manifest, { mode: 0o444, flag: "wx" });
             const pending = [root];
             while (pending.length) {
               const directory = pending.pop();
@@ -187,6 +190,8 @@ jobs:
               }
             }
           }
+          const head = snapshots.find((snapshot) => snapshot.name === "HEAD");
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `head_sha=${head.sha}\n`);
           console.log(`Prepared ${entries} entries (${bytes} bytes) across snapshots.`);
           JS
 
@@ -197,6 +202,9 @@ jobs:
           COMMENT_KIND: ${{ github.event_name }}
           TARGET_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
           IS_PR: ${{ steps.target.outputs.is_pr }}
+          EXPECTED_BASE_SHA: ${{ steps.target.outputs.base_sha }}
+          EXPECTED_HEAD_SHA: ${{ steps.target.outputs.head_sha }}
+          REPOSITORY_SHA: ${{ steps.snapshot.outputs.head_sha }}
         with:
           github-token: ${{ github.token }}
           script: |
@@ -209,6 +217,9 @@ jobs:
             const commentId = Number(process.env.COMMENT_ID);
             const kind = process.env.COMMENT_KIND;
             const isPr = process.env.IS_PR === "true";
+            const expectedBaseSha = process.env.EXPECTED_BASE_SHA;
+            const expectedHeadSha = process.env.EXPECTED_HEAD_SHA;
+            const repositorySha = process.env.REPOSITORY_SHA;
 
             function bounded(value, limit) {
               const raw = Buffer.from(String(value ?? ""), "utf8");
@@ -294,6 +305,8 @@ jobs:
               inlineContext,
               changedPaths: [],
               changedLines: {},
+              repositoryRef: isPr ? null : "main",
+              repositorySha: isPr ? null : repositorySha,
               pullRequest: null,
               truncated: {
                 command: commandTruncated,
@@ -308,7 +321,10 @@ jobs:
               const commitsResponse = await github.rest.pulls.listCommits({ owner, repo, pull_number: target, per_page: 50 });
               const reviewCommentsResponse = await github.rest.pulls.listReviewComments({ owner, repo, pull_number: target, per_page: 50 });
               const reviewsResponse = await github.rest.pulls.listReviews({ owner, repo, pull_number: target, per_page: 50 });
-              
+              if (pull.base.sha !== expectedBaseSha || pull.head.sha !== expectedHeadSha) {
+                throw new Error("PR base or head changed while immutable snapshots were collected.");
+              }
+
               const files = [];
               const paths = [];
               const changedLines = Object.create(null);
@@ -366,6 +382,10 @@ jobs:
                 allDiscussion.length > 50;
             }
 
+            if (!isPr && !/^[0-9a-f]{40}$/u.test(repositorySha)) {
+              throw new Error("Invalid main snapshot SHA.");
+            }
+
             const encoded = `${JSON.stringify(commandContext)}\n`;
             if (Buffer.byteLength(encoded) > 512_000) {
               throw new Error("Bounded command context unexpectedly exceeds 512 KiB.");
@@ -411,6 +431,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
+      contents: read
       issues: write
       pull-requests: read
     steps:
@@ -471,6 +492,13 @@ jobs:
             if (commandContext.sourceCommentId !== commentId || commandContext.sourceCommentKind !== kind) {
               throw new Error("Context comment does not match the triggering event.");
             }
+            if (
+              !commandContext.pullRequest &&
+              (commandContext.repositoryRef !== "main" ||
+                !/^[0-9a-f]{40}$/u.test(commandContext.repositorySha ?? ""))
+            ) {
+              throw new Error("Invalid issue repository snapshot context.");
+            }
             if (commandContext.pullRequest) {
               const pull = (await github.rest.pulls.get({ owner, repo, pull_number: target })).data;
               if (
@@ -478,6 +506,16 @@ jobs:
                 pull.base.sha !== commandContext.pullRequest.baseSha
               ) {
                 console.log("Skipping stale answer because the PR base or head changed.");
+                return;
+              }
+            } else {
+              const branch = await github.rest.repos.getBranch({
+                owner,
+                repo,
+                branch: commandContext.repositoryRef,
+              });
+              if (branch.data.commit.sha !== commandContext.repositorySha) {
+                console.log("Skipping stale answer because main changed.");
                 return;
               }
             }
@@ -562,6 +600,16 @@ jobs:
                 latestPull.base.sha !== commandContext.pullRequest.baseSha
               ) {
                 console.log("Skipping stale answer because the PR changed before publication.");
+                return;
+              }
+            } else {
+              const latestBranch = await github.rest.repos.getBranch({
+                owner,
+                repo,
+                branch: commandContext.repositoryRef,
+              });
+              if (latestBranch.data.commit.sha !== commandContext.repositorySha) {
+                console.log("Skipping answer because main changed before publication.");
                 return;
               }
             }

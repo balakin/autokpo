@@ -73,8 +73,10 @@ jobs:
             }
             const root = path.join(snapshotRoot, snapshot.name);
             fs.rmSync(path.join(root, ".git"), { recursive: true, force: true });
+            const manifestPath = path.join(root, ".opencode-review-snapshot.json");
+            fs.rmSync(manifestPath, { recursive: true, force: true });
             const manifest = `${JSON.stringify({ schemaVersion: 1, snapshot: snapshot.name, sha: snapshot.sha })}\n`;
-            fs.writeFileSync(path.join(root, ".opencode-review-snapshot.json"), manifest, { mode: 0o444 });
+            fs.writeFileSync(manifestPath, manifest, { mode: 0o444, flag: "wx" });
             const pending = [root];
             while (pending.length) {
               const directory = pending.pop();

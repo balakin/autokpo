@@ -22,4 +22,5 @@ panes:
     focus: true
 
   - command: workmux sandbox shell
-    split: horizontal
+    # Side-by-side panes; tmux gives both panes an equal 50/50 width.
+    split: vertical

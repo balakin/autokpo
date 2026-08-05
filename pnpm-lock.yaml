@@ -147,8 +147,8 @@ catalogs:
       specifier: ^4.12.0
       version: 4.12.0
     hono:
-      specifier: ^4.12.33
-      version: 4.12.33
+      specifier: ^4.12.34
+      version: 4.13.0
     workbox-window:
       specifier: ^7.4.1
       version: 7.4.1
@@ -398,7 +398,7 @@ importers:
         version: 4.12.0
       hono:
         specifier: catalog:misc
-        version: 4.12.33
+        version: 4.13.0
       posthog-js:
         specifier: catalog:analytics
         version: 1.409.5
@@ -6047,8 +6047,8 @@ packages:
   hastscript@9.0.1:
     resolution: {integrity: sha512-g7df9rMFX/SPi34tyGCyUBREQoKkapwdY/T04Qn9TDWfHhAYt4/I0gMVirzK5wEzeUqIjEB+LXC/ypb7Aqno5w==}
 
-  hono@4.12.33:
-    resolution: {integrity: sha512-+SwvkaiJtxsiPjhy9LivY/1m7UsNqCJetM1BrZl9A5DkQhlbHQDU730mMiDPWjnoCYOM8Chf3WrCJw27kNTPFQ==}
+  hono@4.13.0:
+    resolution: {integrity: sha512-jhunvfHWxd7J5EFfSgH4xsYJzSe/lfqbUCxiyyeaQasUsXeEHXtzVid+7EOGByc5JnFa23SSFL3Y2RV/z1T+eQ==}
     engines: {node: '>=16.9.0'}
 
   hsl-to-hex@1.0.0:
@@ -14074,7 +14074,7 @@ snapshots:
       property-information: 7.2.0
       space-separated-tokens: 2.0.2
 
-  hono@4.12.33: {}
+  hono@4.13.0: {}
 
   hsl-to-hex@1.0.0:
     dependencies:

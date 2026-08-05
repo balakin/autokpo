@@ -27,14 +27,14 @@ catalogs:
     eslint-plugin-lingui: '^0.14.0'
     eslint-plugin-react-refresh: '^0.5.3'
     eslint-plugin-testing-library: '^7.16.2'
-    eslint-plugin-astro: '^3.0.1'
+    eslint-plugin-astro: '^3.1.0'
 
   react:
     react: '^19.2.8'
     react-dom: '^19.2.8'
     react-router: '^8.3.0'
-    react-hook-form: '^7.83.0'
-    '@hookform/resolvers': '^5.5.7'
+    react-hook-form: '^7.84.0'
+    '@hookform/resolvers': '^5.7.1'
     react-transition-group: '^4.4.5'
     '@types/react': '^19.2.18'
     '@types/react-dom': '^19.2.4'
@@ -48,10 +48,10 @@ catalogs:
 
   heroui:
     '@heroui/react': '^3.2.2'
-    '@heroui/styles': '^3.2.2'
+    '@heroui/styles': '^3.2.3'
     '@react-spectrum/provider': '^3.11.1'
     tailwind-variants: '^3.3.0'
-    '@internationalized/date': '^3.12.2'
+    '@internationalized/date': '^3.12.3'
 
   tanstack:
     '@tanstack/react-query': '^5.101.4'
@@ -67,8 +67,8 @@ catalogs:
 
   cloudflare:
     '@cloudflare/vite-plugin': '^1.49.0'
-    '@cloudflare/vitest-pool-workers': '^0.19.1'
-    wrangler: '^4.116.0'
+    '@cloudflare/vitest-pool-workers': '^0.20.1'
+    wrangler: '^4.118.0'
 
   vite:
     vite: '^8.2.0'
@@ -111,8 +111,8 @@ catalogs:
     '@types/node': '^24.13.3'
     prettier: '^3.9.6'
     husky: '^9.1.7'
-    lint-staged: '^17.2.0'
-    turbo: '^2.10.7'
+    lint-staged: '^17.3.0'
+    turbo: '^2.10.8'
     jiti: '^2.7.0'
     cross-env: '^10.1.0'
     '@changesets/changelog-github': '^0.7.0'
@@ -128,10 +128,10 @@ catalogs:
     '@astrojs/sitemap': '^3.4.1'
 
   analytics:
-    posthog-js: '^1.409.2'
+    posthog-js: '^1.409.5'
 
   misc:
-    hono: '^4.12.32'
+    hono: '^4.12.33'
     zod: '^4.4.3'
     yjs: '^13.6.31'
     hash-wasm: '^4.12.0'

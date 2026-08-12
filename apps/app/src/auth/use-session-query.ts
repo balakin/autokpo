@@ -5,8 +5,6 @@ import {
   type QueryFunctionContext,
 } from '@tanstack/react-query';
 
-import { SESSION_LIFETIME_MS } from '../constants';
-
 import { authClient } from './auth-client';
 
 export const SESSION_QUERY_KEY = ['session'] as const;
@@ -21,7 +19,7 @@ export const sessionQueryOptions = queryOptions({
   queryKey: SESSION_QUERY_KEY,
   queryFn: fetchSession,
   staleTime: 5 * 60 * 1000,
-  gcTime: SESSION_LIFETIME_MS,
+  gcTime: Infinity,
   retry: false,
 });
 

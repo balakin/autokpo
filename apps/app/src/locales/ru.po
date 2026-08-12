@@ -390,7 +390,7 @@ msgstr "Покинуть"
 msgid "Napustiti stranicu?"
 msgstr "Покинуть страницу?"
 
-#: src/e2ee/encryption-setup-screen.tsx:177
+#: src/e2ee/encryption-setup-screen.tsx:172
 msgid "Nastavi ka aplikaciji"
 msgstr "Перейти в приложение"
 
@@ -795,7 +795,7 @@ msgstr "Настройки аккаунта недоступны офлайн"
 msgid "Podešavanje knjige"
 msgstr "Настройка книги"
 
-#: src/e2ee/encryption-setup-screen.tsx:181
+#: src/e2ee/encryption-setup-screen.tsx:176
 msgid "Podešavanje šifrovanja nije uspelo. Proverite internet vezu i pokušajte ponovo."
 msgstr "Не удалось настроить шифрование. Проверьте подключение к интернету и повторите попытку."
 
@@ -1032,7 +1032,7 @@ msgstr "Проверьте подключение к интернету и по�
 msgid "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
 msgstr "Проверьте подключение к интернету и попробуйте снова. Мы не будем создавать новый ключ, пока не проверим существующую настройку учётной записи."
 
-#: src/e2ee/encryption-setup-screen.tsx:157
+#: src/e2ee/encryption-setup-screen.tsx:154
 msgid "Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane podatke bez nje."
 msgstr "Я понимаю, что AutoKPO не может восстановить этот пароль или зашифрованные данные без него."
 

@@ -1,5 +1,11 @@
 # @autokpo/website
 
+## 0.5.7
+
+### Patch Changes
+
+- [#148](https://github.com/balakin/autokpo/pull/148) [`185e591`](https://github.com/balakin/autokpo/commit/185e591d676e5d17a13dca222de9a9bcefe71462) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Updated dependencies
+
 ## 0.5.6
 
 ### Patch Changes

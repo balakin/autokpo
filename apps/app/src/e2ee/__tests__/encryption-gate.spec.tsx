@@ -545,7 +545,6 @@ describe('EncryptionGate', () => {
   it('refetches React Query key-ring cache on context update conflict', async () => {
     const user = userEvent.setup();
     fetchKeyRingProfileMock.mockResolvedValueOnce(makeRecord());
-    fetchKeyRingProfileMock.mockResolvedValueOnce(makeRecord());
     const latest = makeRecord();
     latest.keyRing.revision = 3;
     latest.keyRing.ciphertext = 'latest-ciphertext';

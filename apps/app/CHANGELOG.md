@@ -1,5 +1,13 @@
 # @autokpo/app
 
+## 0.6.1
+
+### Patch Changes
+
+- [#148](https://github.com/balakin/autokpo/pull/148) [`185e591`](https://github.com/balakin/autokpo/commit/185e591d676e5d17a13dca222de9a9bcefe71462) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Fixed tab bar stretching to full width and clarified the language section description in settings
+
+- [#148](https://github.com/balakin/autokpo/pull/148) [`185e591`](https://github.com/balakin/autokpo/commit/185e591d676e5d17a13dca222de9a9bcefe71462) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Fixed persisted session and key-ring caches being garbage-collected before their 60-day expiry
+
 ## 0.6.0
 
 ### Minor Changes

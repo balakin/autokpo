@@ -1,5 +1,11 @@
 # @autokpo/app
 
+## 0.6.2
+
+### Patch Changes
+
+- [#150](https://github.com/balakin/autokpo/pull/150) [`276c82a`](https://github.com/balakin/autokpo/commit/276c82ac60864fbdeb54b42697313852808d59d7) Thanks [@dm-balakin](https://github.com/dm-balakin)! - Fixed the acknowledgement checkbox on the encryption password setup screen not toggling when the box itself was clicked
+
 ## 0.6.1
 
 ### Patch Changes

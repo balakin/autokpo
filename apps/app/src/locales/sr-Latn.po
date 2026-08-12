@@ -218,6 +218,10 @@ msgstr "Izaberite godinu"
 msgid "Izaberite godinu za novu knjigu."
 msgstr "Izaberite godinu za novu knjigu."
 
+#: src/settings/general-settings-page.tsx:76
+msgid "Izaberite jezik aplikacije."
+msgstr "Izaberite jezik aplikacije."
+
 #: src/settings/security-settings-page.tsx:334
 msgid "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju aplikacije."
 msgstr "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju aplikacije."
@@ -226,7 +230,7 @@ msgstr "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju ap
 msgid "Izaberite način prijave."
 msgstr "Izaberite način prijave."
 
-#: src/settings/general-settings-page.tsx:33
+#: src/settings/general-settings-page.tsx:32
 msgid "Izaberite svetlu, tamnu ili sistemsku temu."
 msgstr "Izaberite svetlu, tamnu ili sistemsku temu."
 
@@ -250,7 +254,7 @@ msgstr "Izmijenite podatke unosa."
 msgid "Iznos u stranoj valuti"
 msgstr "Iznos u stranoj valuti"
 
-#: src/settings/general-settings-page.tsx:145
+#: src/settings/general-settings-page.tsx:144
 msgid "Izvezi podatke"
 msgstr "Izvezi podatke"
 
@@ -276,8 +280,8 @@ msgstr "Jednokratni kod"
 #: src/auth/auth-preferences-popover.tsx:37
 #: src/e2ee/encryption-profile-popover.tsx:75
 #: src/e2ee/encryption-profile-popover.tsx:81
-#: src/settings/general-settings-page.tsx:74
-#: src/settings/general-settings-page.tsx:83
+#: src/settings/general-settings-page.tsx:73
+#: src/settings/general-settings-page.tsx:82
 msgid "Jezik"
 msgstr "Jezik"
 
@@ -754,7 +758,7 @@ msgstr "Početak"
 msgid "Počnite"
 msgstr "Počnite"
 
-#: src/settings/general-settings-page.tsx:118
+#: src/settings/general-settings-page.tsx:117
 msgid "Podaci"
 msgstr "Podaci"
 
@@ -937,7 +941,7 @@ msgstr "Preuzmi PDF"
 msgid "Preuzmite kopiju podataka vašeg naloga."
 msgstr "Preuzmite kopiju podataka vašeg naloga."
 
-#: src/settings/general-settings-page.tsx:121
+#: src/settings/general-settings-page.tsx:120
 msgid "Preuzmite kopiju svih podataka knjiga i stavki."
 msgstr "Preuzmite kopiju svih podataka knjiga i stavki."
 
@@ -1134,7 +1138,7 @@ msgstr "Šifrovanje"
 msgid "Sinhronizovano"
 msgstr "Sinhronizovano"
 
-#: src/settings/general-settings-page.tsx:133
+#: src/settings/general-settings-page.tsx:132
 msgid "Sinhronizuj sada"
 msgstr "Sinhronizuj sada"
 
@@ -1142,8 +1146,8 @@ msgstr "Sinhronizuj sada"
 #: src/auth/auth-preferences-popover.tsx:80
 #: src/e2ee/encryption-profile-popover.tsx:123
 #: src/e2ee/encryption-profile-popover.tsx:124
+#: src/settings/general-settings-page.tsx:56
 #: src/settings/general-settings-page.tsx:57
-#: src/settings/general-settings-page.tsx:58
 msgid "Sistemska"
 msgstr "Sistemska"
 
@@ -1163,8 +1167,8 @@ msgstr "Svega (RSD)"
 #: src/auth/auth-preferences-popover.tsx:72
 #: src/e2ee/encryption-profile-popover.tsx:115
 #: src/e2ee/encryption-profile-popover.tsx:116
+#: src/settings/general-settings-page.tsx:48
 #: src/settings/general-settings-page.tsx:49
-#: src/settings/general-settings-page.tsx:50
 msgid "Svetla"
 msgstr "Svetla"
 
@@ -1176,8 +1180,8 @@ msgstr "Svi doprinosioci"
 #: src/auth/auth-preferences-popover.tsx:76
 #: src/e2ee/encryption-profile-popover.tsx:119
 #: src/e2ee/encryption-profile-popover.tsx:120
+#: src/settings/general-settings-page.tsx:52
 #: src/settings/general-settings-page.tsx:53
-#: src/settings/general-settings-page.tsx:54
 msgid "Tamna"
 msgstr "Tamna"
 
@@ -1185,8 +1189,8 @@ msgstr "Tamna"
 #: src/auth/auth-preferences-popover.tsx:64
 #: src/e2ee/encryption-profile-popover.tsx:104
 #: src/e2ee/encryption-profile-popover.tsx:108
-#: src/settings/general-settings-page.tsx:30
-#: src/settings/general-settings-page.tsx:39
+#: src/settings/general-settings-page.tsx:29
+#: src/settings/general-settings-page.tsx:38
 msgid "Tema"
 msgstr "Tema"
 
@@ -1198,10 +1202,6 @@ msgstr "Trenutna sesija"
 #: src/settings/security-settings-page.tsx:796
 msgid "Trenutna šifra"
 msgstr "Trenutna šifra"
-
-#: src/settings/general-settings-page.tsx:77
-msgid "Trenutni jezik: {localeName}"
-msgstr "Trenutni jezik: {localeName}"
 
 #: src/settings/account-settings-page.tsx:258
 msgid "Učitavanje sesija…"

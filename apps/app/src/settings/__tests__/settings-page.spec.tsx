@@ -172,7 +172,7 @@ describe('SettingsPage', () => {
 
   it('renders the language section description', async () => {
     await renderSettings();
-    expect(screen.getByText('Trenutni jezik: English')).toBeInTheDocument();
+    expect(screen.getByText('Izaberite jezik aplikacije.')).toBeInTheDocument();
   });
 
   it('renders the theme Select with Sistemska selected by default', async () => {

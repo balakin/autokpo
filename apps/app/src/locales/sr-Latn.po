@@ -390,7 +390,7 @@ msgstr "Napustite"
 msgid "Napustiti stranicu?"
 msgstr "Napustiti stranicu?"
 
-#: src/e2ee/encryption-setup-screen.tsx:177
+#: src/e2ee/encryption-setup-screen.tsx:172
 msgid "Nastavi ka aplikaciji"
 msgstr "Nastavi ka aplikaciji"
 
@@ -795,7 +795,7 @@ msgstr "Podešavanja naloga nisu dostupna offline"
 msgid "Podešavanje knjige"
 msgstr "Podešavanje knjige"
 
-#: src/e2ee/encryption-setup-screen.tsx:181
+#: src/e2ee/encryption-setup-screen.tsx:176
 msgid "Podešavanje šifrovanja nije uspelo. Proverite internet vezu i pokušajte ponovo."
 msgstr "Podešavanje šifrovanja nije uspelo. Proverite internet vezu i pokušajte ponovo."
 
@@ -1032,7 +1032,7 @@ msgstr "Proverite internet vezu i pokušajte ponovo kasnije."
 msgid "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
 msgstr "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
 
-#: src/e2ee/encryption-setup-screen.tsx:157
+#: src/e2ee/encryption-setup-screen.tsx:154
 msgid "Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane podatke bez nje."
 msgstr "Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane podatke bez nje."
 

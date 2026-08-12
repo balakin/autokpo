@@ -390,7 +390,7 @@ msgstr "Leave"
 msgid "Napustiti stranicu?"
 msgstr "Leave page?"
 
-#: src/e2ee/encryption-setup-screen.tsx:177
+#: src/e2ee/encryption-setup-screen.tsx:172
 msgid "Nastavi ka aplikaciji"
 msgstr "Continue to the app"
 
@@ -795,7 +795,7 @@ msgstr "Account settings are not available offline"
 msgid "Podešavanje knjige"
 msgstr "Book setup"
 
-#: src/e2ee/encryption-setup-screen.tsx:181
+#: src/e2ee/encryption-setup-screen.tsx:176
 msgid "Podešavanje šifrovanja nije uspelo. Proverite internet vezu i pokušajte ponovo."
 msgstr "Encryption setup failed. Check your internet connection and try again."
 
@@ -1032,7 +1032,7 @@ msgstr "Check your internet connection and try again later."
 msgid "Proverite internet vezu i pokušajte ponovo. Nećemo praviti novi ključ dok ne proverimo postojeće podešavanje naloga."
 msgstr "Check your internet connection and try again. We won't create a new key until we verify the account's existing setup."
 
-#: src/e2ee/encryption-setup-screen.tsx:157
+#: src/e2ee/encryption-setup-screen.tsx:154
 msgid "Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane podatke bez nje."
 msgstr "I understand that AutoKPO cannot recover this password or the encrypted data without it."
 

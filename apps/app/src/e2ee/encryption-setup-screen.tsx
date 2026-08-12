@@ -141,30 +141,25 @@ export function EncryptionSetupScreen({
             control={control}
             name="acknowledged"
             render={({ field, fieldState }) => (
-              <div>
-                <Checkbox
-                  id="encryption-recovery-ack"
-                  isInvalid={!!fieldState.error}
-                  isSelected={field.value}
-                  onBlur={field.onBlur}
-                  onChange={field.onChange}
-                >
+              <Checkbox
+                isInvalid={!!fieldState.error}
+                isSelected={field.value}
+                onBlur={field.onBlur}
+                onChange={field.onChange}
+              >
+                <Checkbox.Content>
                   <Checkbox.Control>
                     <Checkbox.Indicator />
                   </Checkbox.Control>
-                  <Checkbox.Content>
-                    <Label htmlFor="encryption-recovery-ack">
-                      <Trans>
-                        Razumem da AutoKPO ne može da vrati ovu šifru ili
-                        šifrovane podatke bez nje.
-                      </Trans>
-                    </Label>
-                  </Checkbox.Content>
-                </Checkbox>
+                  <Trans>
+                    Razumem da AutoKPO ne može da vrati ovu šifru ili šifrovane
+                    podatke bez nje.
+                  </Trans>
+                </Checkbox.Content>
                 {fieldState.error?.message ? (
                   <FieldError>{fieldState.error.message}</FieldError>
                 ) : null}
-              </div>
+              </Checkbox>
             )}
           />
 

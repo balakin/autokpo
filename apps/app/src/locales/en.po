@@ -218,6 +218,10 @@ msgstr "Select year"
 msgid "Izaberite godinu za novu knjigu."
 msgstr "Select a year for the new book."
 
+#: src/settings/general-settings-page.tsx:76
+msgid "Izaberite jezik aplikacije."
+msgstr "Choose the application language."
+
 #: src/settings/security-settings-page.tsx:334
 msgid "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju aplikacije."
 msgstr "Choose how you unlock encrypted data on every app launch."
@@ -226,7 +230,7 @@ msgstr "Choose how you unlock encrypted data on every app launch."
 msgid "Izaberite način prijave."
 msgstr "Choose your way to sign in."
 
-#: src/settings/general-settings-page.tsx:33
+#: src/settings/general-settings-page.tsx:32
 msgid "Izaberite svetlu, tamnu ili sistemsku temu."
 msgstr "Choose light, dark or system theme."
 
@@ -250,7 +254,7 @@ msgstr "Edit entry details."
 msgid "Iznos u stranoj valuti"
 msgstr "Foreign currency amount"
 
-#: src/settings/general-settings-page.tsx:145
+#: src/settings/general-settings-page.tsx:144
 msgid "Izvezi podatke"
 msgstr "Export data"
 
@@ -276,8 +280,8 @@ msgstr "One-time code"
 #: src/auth/auth-preferences-popover.tsx:37
 #: src/e2ee/encryption-profile-popover.tsx:75
 #: src/e2ee/encryption-profile-popover.tsx:81
-#: src/settings/general-settings-page.tsx:74
-#: src/settings/general-settings-page.tsx:83
+#: src/settings/general-settings-page.tsx:73
+#: src/settings/general-settings-page.tsx:82
 msgid "Jezik"
 msgstr "Language"
 
@@ -754,7 +758,7 @@ msgstr "Start"
 msgid "Počnite"
 msgstr "Get started"
 
-#: src/settings/general-settings-page.tsx:118
+#: src/settings/general-settings-page.tsx:117
 msgid "Podaci"
 msgstr "Data"
 
@@ -937,7 +941,7 @@ msgstr "Download PDF"
 msgid "Preuzmite kopiju podataka vašeg naloga."
 msgstr "Download a copy of your account data."
 
-#: src/settings/general-settings-page.tsx:121
+#: src/settings/general-settings-page.tsx:120
 msgid "Preuzmite kopiju svih podataka knjiga i stavki."
 msgstr "Download a copy of all your book and entry data."
 
@@ -1134,7 +1138,7 @@ msgstr "Encryption"
 msgid "Sinhronizovano"
 msgstr "Synced"
 
-#: src/settings/general-settings-page.tsx:133
+#: src/settings/general-settings-page.tsx:132
 msgid "Sinhronizuj sada"
 msgstr "Sync now"
 
@@ -1142,8 +1146,8 @@ msgstr "Sync now"
 #: src/auth/auth-preferences-popover.tsx:80
 #: src/e2ee/encryption-profile-popover.tsx:123
 #: src/e2ee/encryption-profile-popover.tsx:124
+#: src/settings/general-settings-page.tsx:56
 #: src/settings/general-settings-page.tsx:57
-#: src/settings/general-settings-page.tsx:58
 msgid "Sistemska"
 msgstr "System"
 
@@ -1163,8 +1167,8 @@ msgstr "Total (RSD)"
 #: src/auth/auth-preferences-popover.tsx:72
 #: src/e2ee/encryption-profile-popover.tsx:115
 #: src/e2ee/encryption-profile-popover.tsx:116
+#: src/settings/general-settings-page.tsx:48
 #: src/settings/general-settings-page.tsx:49
-#: src/settings/general-settings-page.tsx:50
 msgid "Svetla"
 msgstr "Light"
 
@@ -1176,8 +1180,8 @@ msgstr "All contributors"
 #: src/auth/auth-preferences-popover.tsx:76
 #: src/e2ee/encryption-profile-popover.tsx:119
 #: src/e2ee/encryption-profile-popover.tsx:120
+#: src/settings/general-settings-page.tsx:52
 #: src/settings/general-settings-page.tsx:53
-#: src/settings/general-settings-page.tsx:54
 msgid "Tamna"
 msgstr "Dark"
 
@@ -1185,8 +1189,8 @@ msgstr "Dark"
 #: src/auth/auth-preferences-popover.tsx:64
 #: src/e2ee/encryption-profile-popover.tsx:104
 #: src/e2ee/encryption-profile-popover.tsx:108
-#: src/settings/general-settings-page.tsx:30
-#: src/settings/general-settings-page.tsx:39
+#: src/settings/general-settings-page.tsx:29
+#: src/settings/general-settings-page.tsx:38
 msgid "Tema"
 msgstr "Theme"
 
@@ -1198,10 +1202,6 @@ msgstr "Current session"
 #: src/settings/security-settings-page.tsx:796
 msgid "Trenutna šifra"
 msgstr "Current password"
-
-#: src/settings/general-settings-page.tsx:77
-msgid "Trenutni jezik: {localeName}"
-msgstr "Current language: {localeName}"
 
 #: src/settings/account-settings-page.tsx:258
 msgid "Učitavanje sesija…"

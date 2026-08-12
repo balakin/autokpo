@@ -18,7 +18,6 @@ export function GeneralSettingsPage() {
   const { locale, setLocale } = useLocale();
   const { t } = useLingui();
   const queryClient = useQueryClient();
-  const localeName = LOCALE_NAMES[locale];
   const ydoc = useDoc();
 
   return (
@@ -74,7 +73,7 @@ export function GeneralSettingsPage() {
             <Trans>Jezik</Trans>
           </Card.Title>
           <Card.Description>
-            <Trans>Trenutni jezik: {localeName}</Trans>
+            <Trans>Izaberite jezik aplikacije.</Trans>
           </Card.Description>
         </Card.Header>
         <Card.Content>

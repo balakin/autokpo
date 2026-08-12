@@ -18,8 +18,8 @@ export function SettingsPage() {
       </h1>
 
       <Tabs selectedKey={selectedTab}>
-        <Tabs.ListContainer>
-          <Tabs.List aria-label={t`Podešavanja`} className="w-fit">
+        <Tabs.ListContainer className="w-fit">
+          <Tabs.List aria-label={t`Podešavanja`}>
             <Tabs.Tab id="general" href="/settings/general">
               <Trans>Opšte</Trans>
               <Tabs.Indicator />

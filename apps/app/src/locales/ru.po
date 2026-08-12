@@ -218,6 +218,10 @@ msgstr "Выберите год"
 msgid "Izaberite godinu za novu knjigu."
 msgstr "Выберите год для новой книги."
 
+#: src/settings/general-settings-page.tsx:76
+msgid "Izaberite jezik aplikacije."
+msgstr "Выберите язык приложения."
+
 #: src/settings/security-settings-page.tsx:334
 msgid "Izaberite kako otključavate šifrovane podatke pri svakom pokretanju aplikacije."
 msgstr "Выберите способ разблокировки зашифрованных данных при каждом запуске приложения."
@@ -226,7 +230,7 @@ msgstr "Выберите способ разблокировки зашифро�
 msgid "Izaberite način prijave."
 msgstr "Выберите способ входа."
 
-#: src/settings/general-settings-page.tsx:33
+#: src/settings/general-settings-page.tsx:32
 msgid "Izaberite svetlu, tamnu ili sistemsku temu."
 msgstr "Выберите светлую, тёмную или системную тему."
 
@@ -250,7 +254,7 @@ msgstr "Редактировать данные записи."
 msgid "Iznos u stranoj valuti"
 msgstr "Сумма в иностранной валюте"
 
-#: src/settings/general-settings-page.tsx:145
+#: src/settings/general-settings-page.tsx:144
 msgid "Izvezi podatke"
 msgstr "Экспорт данных"
 
@@ -276,8 +280,8 @@ msgstr "Одноразовый код"
 #: src/auth/auth-preferences-popover.tsx:37
 #: src/e2ee/encryption-profile-popover.tsx:75
 #: src/e2ee/encryption-profile-popover.tsx:81
-#: src/settings/general-settings-page.tsx:74
-#: src/settings/general-settings-page.tsx:83
+#: src/settings/general-settings-page.tsx:73
+#: src/settings/general-settings-page.tsx:82
 msgid "Jezik"
 msgstr "Язык"
 
@@ -754,7 +758,7 @@ msgstr "Начало"
 msgid "Počnite"
 msgstr "Начать"
 
-#: src/settings/general-settings-page.tsx:118
+#: src/settings/general-settings-page.tsx:117
 msgid "Podaci"
 msgstr "Данные"
 
@@ -937,7 +941,7 @@ msgstr "Скачать PDF"
 msgid "Preuzmite kopiju podataka vašeg naloga."
 msgstr "Скачайте копию данных вашего аккаунта."
 
-#: src/settings/general-settings-page.tsx:121
+#: src/settings/general-settings-page.tsx:120
 msgid "Preuzmite kopiju svih podataka knjiga i stavki."
 msgstr "Скачайте копию всех данных книг и записей."
 
@@ -1134,7 +1138,7 @@ msgstr "Шифрование"
 msgid "Sinhronizovano"
 msgstr "Синхронизировано"
 
-#: src/settings/general-settings-page.tsx:133
+#: src/settings/general-settings-page.tsx:132
 msgid "Sinhronizuj sada"
 msgstr "Синхронизировать сейчас"
 
@@ -1142,8 +1146,8 @@ msgstr "Синхронизировать сейчас"
 #: src/auth/auth-preferences-popover.tsx:80
 #: src/e2ee/encryption-profile-popover.tsx:123
 #: src/e2ee/encryption-profile-popover.tsx:124
+#: src/settings/general-settings-page.tsx:56
 #: src/settings/general-settings-page.tsx:57
-#: src/settings/general-settings-page.tsx:58
 msgid "Sistemska"
 msgstr "Системная"
 
@@ -1163,8 +1167,8 @@ msgstr "Итого (RSD)"
 #: src/auth/auth-preferences-popover.tsx:72
 #: src/e2ee/encryption-profile-popover.tsx:115
 #: src/e2ee/encryption-profile-popover.tsx:116
+#: src/settings/general-settings-page.tsx:48
 #: src/settings/general-settings-page.tsx:49
-#: src/settings/general-settings-page.tsx:50
 msgid "Svetla"
 msgstr "Светлая"
 
@@ -1176,8 +1180,8 @@ msgstr "Все участники"
 #: src/auth/auth-preferences-popover.tsx:76
 #: src/e2ee/encryption-profile-popover.tsx:119
 #: src/e2ee/encryption-profile-popover.tsx:120
+#: src/settings/general-settings-page.tsx:52
 #: src/settings/general-settings-page.tsx:53
-#: src/settings/general-settings-page.tsx:54
 msgid "Tamna"
 msgstr "Тёмная"
 
@@ -1185,8 +1189,8 @@ msgstr "Тёмная"
 #: src/auth/auth-preferences-popover.tsx:64
 #: src/e2ee/encryption-profile-popover.tsx:104
 #: src/e2ee/encryption-profile-popover.tsx:108
-#: src/settings/general-settings-page.tsx:30
-#: src/settings/general-settings-page.tsx:39
+#: src/settings/general-settings-page.tsx:29
+#: src/settings/general-settings-page.tsx:38
 msgid "Tema"
 msgstr "Тема"
 
@@ -1198,10 +1202,6 @@ msgstr "Текущая сессия"
 #: src/settings/security-settings-page.tsx:796
 msgid "Trenutna šifra"
 msgstr "Текущий пароль"
-
-#: src/settings/general-settings-page.tsx:77
-msgid "Trenutni jezik: {localeName}"
-msgstr "Текущий язык: {localeName}"
 
 #: src/settings/account-settings-page.tsx:258
 msgid "Učitavanje sesija…"

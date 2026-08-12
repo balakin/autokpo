@@ -1,7 +1,5 @@
 import { queryOptions, type QueryClient } from '@tanstack/react-query';
 
-import { SESSION_LIFETIME_MS } from '../constants';
-
 import { fetchKeyRingProfile } from './key-ring-api';
 import type { SerializedKeyRingProfile } from './key-ring-record';
 
@@ -12,7 +10,7 @@ export function keyRingProfileQueryOptions(userId: string) {
     queryKey: [KEY_RING_PROFILE_QUERY_KEY, userId] as const,
     queryFn: () => fetchKeyRingProfile(),
     staleTime: 5 * 60 * 1000,
-    gcTime: SESSION_LIFETIME_MS,
+    gcTime: Infinity,
     retry: false,
   });
 }

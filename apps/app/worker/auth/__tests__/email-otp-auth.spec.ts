@@ -358,6 +358,7 @@ describe('email otp auth', () => {
       expect(authRateLimitMock).toHaveBeenCalledWith({
         key: 'auth:203.0.113.99:/api/auth/email-otp/send-verification-otp',
       });
+      await flushWaitUntil();
     } finally {
       fetchSpy.mockRestore();
     }

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -526,13 +526,15 @@ describe('EncryptionGate', () => {
     );
     await screen.findByText('protected content');
 
-    await capturedContext!.updateKeyRingProfile({
-      currentRevision: 1,
-      activeDekId: 'dek-1',
-      plaintextSchemaVersion: 1,
-      encryptionAlgorithm: 'aes-256-gcm',
-      encryptionParams: { iv: 'iv', tagBits: 128 },
-      ciphertext: 'updated-ciphertext',
+    await act(async () => {
+      await capturedContext!.updateKeyRingProfile({
+        currentRevision: 1,
+        activeDekId: 'dek-1',
+        plaintextSchemaVersion: 1,
+        encryptionAlgorithm: 'aes-256-gcm',
+        encryptionParams: { iv: 'iv', tagBits: 128 },
+        ciphertext: 'updated-ciphertext',
+      });
     });
 
     const cached = queryClient.getQueryData(

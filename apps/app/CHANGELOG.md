@@ -1,5 +1,11 @@
 # @autokpo/app
 
+## 0.6.3
+
+### Patch Changes
+
+- [#160](https://github.com/balakin/autokpo/pull/160) [`efb2bd8`](https://github.com/balakin/autokpo/commit/efb2bd89ca700a236b32995569dc39b0cdb6b1e7) Thanks [@dependabot](https://github.com/apps/dependabot)! - Update application and website dependencies.
+
 ## 0.6.2
 
 ### Patch Changes

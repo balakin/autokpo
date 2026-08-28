@@ -139,6 +139,7 @@ async function renderSettings(route = '/settings/general') {
           { path: 'account', element: <AccountSettingsPage /> },
         ],
       },
+      { path: '/goodbye', element: <div data-testid="goodbye-page" /> },
     ],
   });
 }
@@ -556,5 +557,6 @@ describe('SettingsPage', () => {
     );
 
     expect(mockDeleteAccount).toHaveBeenCalledTimes(1);
+    expect(await screen.findByTestId('goodbye-page')).toBeInTheDocument();
   });
 });

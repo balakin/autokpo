@@ -22,7 +22,7 @@ jobs:
       pull-requests: write # create and update the Release PR (changesets/action)
     outputs:
       published: ${{ steps.changesets.outputs.published }}
-      publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}
+      published-packages: ${{ steps.changesets.outputs.published-packages }}
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -34,11 +34,11 @@ jobs:
 
       - name: Create Release Pull Request or Publish
         id: changesets
-        uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
+        uses: changesets/action@8488615a623b1b9c987934bb89eae8af6a946ac1 # v2.1.1
         with:
-          publish: pnpm changeset tag
-          title: 'chore: release packages'
-          commit: 'chore: release packages'
+          publish-script: pnpm changeset git-tag
+          pr-title: 'chore: release packages'
+          commit-message: 'chore: release packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -49,7 +49,7 @@ jobs:
   deploy-app:
     name: 🚀 Deploy app
     needs: release
-    if: ${{ needs.release.outputs.published == 'true' && contains(needs.release.outputs.publishedPackages, '"@autokpo/app"') }}
+    if: ${{ needs.release.outputs.published == 'true' && contains(needs.release.outputs.published-packages, '"@autokpo/app"') }}
     permissions:
       contents: read # ceiling for the reusable workflow's build job (checkout)
     uses: ./.github/workflows/deploy-app.yml
@@ -58,7 +58,7 @@ jobs:
   deploy-website:
     name: 🚀 Deploy website
     needs: release
-    if: ${{ needs.release.outputs.published == 'true' && contains(needs.release.outputs.publishedPackages, '"@autokpo/website"') }}
+    if: ${{ needs.release.outputs.published == 'true' && contains(needs.release.outputs.published-packages, '"@autokpo/website"') }}
     permissions:
       contents: read # ceiling for the reusable workflow's build job (checkout)
     uses: ./.github/workflows/deploy-website.yml

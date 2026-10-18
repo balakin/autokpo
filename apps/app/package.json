@@ -16,7 +16,7 @@
     "generate:worker-types": "wrangler types",
     "check:worker-types": "wrangler types --check",
     "emails:dev": "email dev",
-    "auth:generate": "pnpm dlx @better-auth/cli generate --config auth.config.ts --output worker/db/schema/auth.ts",
+    "auth:generate": "pnpm dlx auth@1.7.10 generate --config auth.config.ts --output worker/db/schema/auth.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",

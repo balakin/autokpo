@@ -137,8 +137,4 @@ describe('sanitizeAnalyticsEvent', () => {
     expect(result?.properties.distinct_id).toBe(42);
     expect(result?.properties.provider).toBe('google');
   });
-
-  it('passes a null event through (drop signal)', () => {
-    expect(sanitizeAnalyticsEvent(null)).toBeNull();
-  });
 });

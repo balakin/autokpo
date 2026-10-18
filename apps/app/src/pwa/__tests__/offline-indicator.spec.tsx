@@ -1,5 +1,5 @@
 import { toast } from '@heroui/react';
-import { screen, act } from '@testing-library/react';
+import { screen, act, waitFor } from '@testing-library/react';
 import { renderWithProviders } from 'tests/render-helpers';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -10,9 +10,14 @@ describe('OfflineIndicator', () => {
     Object.defineProperty(navigator, 'onLine', { value: true, writable: true });
   });
 
-  afterEach(() => {
+  // Closed toasts stay mounted for HeroUI's exit animation, so wait for the
+  // DOM to empty before the next test renders.
+  afterEach(async () => {
     act(() => {
       toast.clear();
+    });
+    await waitFor(() => {
+      expect(screen.queryByText(/van mreže ste/i)).toBeNull();
     });
   });
 
@@ -36,6 +41,8 @@ describe('OfflineIndicator', () => {
     act(() => {
       window.dispatchEvent(new Event('online'));
     });
-    expect(screen.queryByText(/van mreže ste/i)).toBeNull();
+    await waitFor(() => {
+      expect(screen.queryByText(/van mreže ste/i)).toBeNull();
+    });
   });
 });

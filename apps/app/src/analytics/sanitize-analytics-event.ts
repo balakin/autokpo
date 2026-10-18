@@ -59,10 +59,10 @@ function sanitizeUrlValue(value: string): string | null {
  * `before_send` hook: strips route ids and query/hash from every URL-like
  * property so pageviews can power active-user counts without leaking sensitive
  * in-app locations. Mutates and returns the event in place (PostHog's
- * documented pattern); `null` passes through to mean "drop the event".
+ * documented pattern). PostHog never passes `null` in — it stops the hook chain
+ * as soon as a hook drops an event.
  */
 export const sanitizeAnalyticsEvent: BeforeSendFn = (event) => {
-  if (!event) return event;
   const { properties } = event;
   for (const key of Object.keys(properties)) {
     const value: unknown = properties[key];

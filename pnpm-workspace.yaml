@@ -135,7 +135,7 @@ catalogs:
     posthog-js: '^1.438.12'
 
   misc:
-    hono: '^4.13.13'
+    hono: '^4.13.16'
     zod: '^4.6.7'
     yjs: '^13.6.33'
     hash-wasm: '^4.12.0'
